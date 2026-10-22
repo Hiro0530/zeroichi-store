@@ -1,39 +1,39 @@
-/* ヒトフデ — daily one-stroke path puzzle. ZEROICHI WORKS
+/* マスミチ — daily one-stroke path puzzle. ZEROICHI WORKS
    Data stays in this browser (localStorage). No tracking, no server. */
 (() => {
 "use strict";
 const $ = s => document.querySelector(s);
 const EPOCH = Date.UTC(2026, 8, 1); // No.1 = 2026-09-01 (JST)
 const FREE_BACK = 2;                // free players can catch up on the last 2 days
-const URL_SELF = "https://hiro0530.github.io/zeroichi-store/game/hitofude/";
+const URL_SELF = "https://hiro0530.github.io/zeroichi-store/game/masumichi/";
 const PRICE = "¥480";
 
 /* ---------- i18n ---------- */
 const T = {
-ja:{tagline:"1から順に、全部のマスを<br>1本の線で。",days:"日連続",playToday:"今日の1問をはじめる",continueToday:"続きから",replayToday:"もう一度あそぶ(記録は変わりません)",howto:"遊び方",howtoSub:"3問・30秒",endless:"エンドレス",archive:"過去の問題",themes:"色テーマ",supporterPack:"サポーターパック",supporterPitch:`エンドレス・過去問・ヒント・色テーマ<br>${PRICE}(買い切り)`,supporterOwned:"サポーターパック登録済み。応援ありがとうございます",tokushoho:"特定商取引法に基づく表記",privacy:"プライバシー",contact:"お問い合わせ",undo:"戻す",reset:"最初から",hint:"ヒント",streakLabel:"連続日数",bestLabel:"自己ベスト",playedLabel:"クリア数",share:"結果をシェア",saveImg:"画像で保存",next:"次の問題",toHome:"ホームへ",oneTime:"税込・買い切り(月額ではありません)",f1:"エンドレス:5×5〜8×8の問題を無限に",f2:"過去の日替わり問題をすべて",f3:"ヒント(詰まったら次の3マスを表示)",f4:"色テーマ4種(桜・抹茶・墨・夜光)",freeNote:"今日の1問・連続記録・シェアはずっと無料です。",buy:"メールで申し込む",flow:"お申し込み後、PayPalの請求書をお送りします。お支払いを確認したら、利用キーをメールでお送りします(当日〜翌日)。デジタル商品のため、キー送付後の返金はできません。",apply:"登録",
- keyOk:"登録しました。すべてのモードが遊べます。",keyNg:"キーが正しくありません。メールに書かれたキー(HF- で始まる文字)をそのまま貼り付けてください。",
+ja:{shotEndless:"エンドレス 8×8",shotThemes:"色テーマ",shotArchive:"過去の問題",colFree:"無料",colFull:"フルパック",rowDaily:"今日の1問・記録・シェア",rowTut:"遊び方(3問)",rowArchive:"過去の問題",rowEndless:"エンドレス(5×5〜8×8)",rowHint:"ヒント",rowTheme:"色テーマ",last2:"直近2日",all:"すべて",unlimited:"無制限",th1:"1種",th5:"5種",flow1:"お申し込み後、PayPalの請求書をメールでお送りします。",flow2:"お申し込みから原則12時間以内に利用キーをメールでお送りします(お支払いの確認後)。",flow3:"キーをなくしたときは、同じメールアドレスからご連絡いただければ再発行します(無料)。",flow4:"デジタル商品のため、キー送付後の返金はできません。",seller:"販売事業者:ZEROICHI WORKS",upT:"もっと遊ぶなら フルパック",upS:"エンドレス無制限・過去問すべて ¥480 買い切り",ctxEndless:"エンドレスはフルパックで遊べます",ctxArchive:"この日の問題はフルパックで遊べます",ctxHint:"ヒントはフルパックで使えます",ctxTheme:"この色テーマはフルパックで使えます",ctxDaily:"今日の1問、おつかれさまでした。続きはこちらで",tagline:"1から順に、全部のマスを<br>1本の線で。",days:"日連続",playToday:"今日の1問をはじめる",continueToday:"続きから",replayToday:"もう一度あそぶ(記録は変わりません)",howto:"遊び方",howtoSub:"3問・30秒",endless:"エンドレス",archive:"過去の問題",themes:"色テーマ",supporterPack:"フルパック",supporterPitch:`エンドレス・過去問・ヒント・色テーマ<br>${PRICE}(買い切り)`,supporterOwned:"フルパック登録済み。応援ありがとうございます",tokushoho:"特定商取引法に基づく表記",privacy:"プライバシー",contact:"お問い合わせ",undo:"戻す",reset:"最初から",hint:"ヒント",streakLabel:"連続日数",bestLabel:"自己ベスト",playedLabel:"クリア数",share:"結果をシェア",saveImg:"画像で保存",next:"次の問題",toHome:"ホームへ",oneTime:"税込・買い切り(月額ではありません)",f1:"エンドレス:5×5〜8×8の問題を無限に",f2:"過去の日替わり問題をすべて",f3:"ヒント(詰まったら次の3マスを表示)",f4:"色テーマ4種(桜・抹茶・墨・夜光)",freeNote:"今日の1問・連続記録・シェアはずっと無料です。",buy:"メールで申し込む(¥480)",flow:"お申し込み後、PayPalの請求書をお送りします。お支払いを確認したら、利用キーをメールでお送りします(当日〜翌日)。デジタル商品のため、キー送付後の返金はできません。",apply:"登録",
+ keyOk:"登録しました。すべてのモードが遊べます。",keyNg:"キーが正しくありません。メールに書かれたキー(MM- で始まる文字)をそのまま貼り付けてください。",
  clearedToday:t=>`今日はクリア済み ${t}。次の問題は0時に出ます`,notYet:"まだ誰も解いていない今日の問題です",inProgress:"途中から再開できます",
  coachStart:"「1」から指でなぞってスタート",coachNext:n=>`次は「${n}」へ`,coachFill:"全部のマスを通ってから、最後の数字へ",coachOrder:n=>`数字は順番に。いまは「${n}」を目指そう`,coachEnd:"最後の数字はゴール。残りのマスを通ってから入ろう",coachBack:"線をなぞり返すと戻れます",
  tut1:"「1」に指を置いて、2→3の順になぞってみよう",tut2:"ルールは1つ:全部のマスを通ること",tut3:"最後の数字がゴール。これで準備完了",tutDone:"遊び方はこれで全部。今日の1問へどうぞ",
  solved:"クリア",dailyKicker:n=>`No.${n} クリア`,nextIn:h=>`次の問題まで あと${h}`,moreArchive:"過去の問題も遊ぶ",moreEndless:"エンドレスで続ける",
- noHint:"ノーヒント",undoN:n=>`戻し${n}回`,copied:"結果をコピーしました",imgSaved:"画像を保存しました",locked:"サポーターパックで遊べます",hintShown:"光ったマスが正解ルートです",
- archiveTitle:"過去の問題",archiveNote:`無料では直近${FREE_BACK}日分まで。サポーターパックで全部遊べます。`,archiveNoteOwned:"好きな日の問題を選んでください。",endlessTitle:"エンドレス",endlessNote:"サイズを選んでください。解くたびに新しい問題が出ます。",themeTitle:"色テーマ",themeNote:"「藍」は無料。ほかはサポーターパックで使えます。",
+ noHint:"ノーヒント",undoN:n=>`戻し${n}回`,copied:"結果をコピーしました",imgSaved:"画像を保存しました",locked:"フルパックで遊べます",hintShown:"光ったマスが正解ルートです",
+ archiveTitle:"過去の問題",archiveNote:`無料では直近${FREE_BACK}日分まで。フルパックで全部遊べます。`,archiveNoteOwned:"好きな日の問題を選んでください。",endlessTitle:"エンドレス",endlessNote:"サイズを選んでください。解くたびに新しい問題が出ます。",themeTitle:"色テーマ",themeNote:"「藍」は無料。ほかはフルパックで使えます。",
  solvedCount:n=>`${n}問クリア`,size:n=>`${n}×${n}`,tutorial:"遊び方",daily:"今日の1問",th:{ai:"藍",sakura:"桜",matcha:"抹茶",sumi:"墨",yakou:"夜光"},
- shareHead:n=>`ヒトフデ No.${n}`,shareStreak:n=>`🔥${n}日連続`,sound:"音",back:"ホームへ",archiveSub:n=>`${n}問`,themeSub:n=>n},
-en:{tagline:"Start at 1. Fill every cell<br>with one line.",days:"day streak",playToday:"Play today's puzzle",continueToday:"Continue",replayToday:"Play again (record unchanged)",howto:"How to play",howtoSub:"3 puzzles · 30 sec",endless:"Endless",archive:"Archive",themes:"Themes",supporterPack:"Supporter Pack",supporterPitch:`Endless, archive, hints & themes<br>${PRICE} one-time`,supporterOwned:"Supporter Pack active. Thank you!",tokushoho:"Legal notice (JP)",privacy:"Privacy",contact:"Contact",undo:"Undo",reset:"Restart",hint:"Hint",streakLabel:"Streak",bestLabel:"Best",playedLabel:"Solved",share:"Share result",saveImg:"Save image",next:"Next puzzle",toHome:"Home",oneTime:"one-time purchase, tax incl. (not a subscription)",f1:"Endless: unlimited 5×5 to 8×8 puzzles",f2:"Every past daily puzzle",f3:"Hints (shows the next 3 cells)",f4:"4 color themes",freeNote:"Today's puzzle, streaks and sharing stay free forever.",buy:"Request by email",flow:"We reply with a PayPal invoice. Once paid, your unlock key arrives by email (same or next day). Digital goods: no refunds after the key is sent.",apply:"Apply",
- keyOk:"Unlocked. Every mode is open.",keyNg:"That key doesn't match. Paste the key from the email exactly (it starts with HF-).",
+ shareHead:n=>`マスミチ No.${n}`,shareStreak:n=>`🔥${n}日連続`,sound:"音",back:"ホームへ",archiveSub:n=>`${n}問`,themeSub:n=>n},
+en:{shotEndless:"Endless 8×8",shotThemes:"Themes",shotArchive:"Archive",colFree:"Free",colFull:"Full Pack",rowDaily:"Daily puzzle, streak, sharing",rowTut:"Tutorial (3)",rowArchive:"Past puzzles",rowEndless:"Endless (5×5–8×8)",rowHint:"Hints",rowTheme:"Color themes",last2:"Last 2 days",all:"All",unlimited:"Unlimited",th1:"1",th5:"5",flow1:"We reply with a PayPal invoice by email.",flow2:"Your unlock key arrives by email, normally within 12 hours of your request (after payment).",flow3:"Lost your key? Email us from the same address and we'll reissue it for free.",flow4:"Digital goods: no refunds after the key is sent.",seller:"Seller: ZEROICHI WORKS",upT:"Want more? Full Pack",upS:"Unlimited Endless + every past puzzle, ¥480 one-time",ctxEndless:"Endless is part of the Full Pack",ctxArchive:"This day is part of the Full Pack",ctxHint:"Hints come with the Full Pack",ctxTheme:"This theme comes with the Full Pack",ctxDaily:"Nice solve. Keep playing with:",tagline:"Start at 1. Fill every cell<br>with one line.",days:"day streak",playToday:"Play today's puzzle",continueToday:"Continue",replayToday:"Play again (record unchanged)",howto:"How to play",howtoSub:"3 puzzles · 30 sec",endless:"Endless",archive:"Archive",themes:"Themes",supporterPack:"Full Pack",supporterPitch:`Endless, archive, hints & themes<br>${PRICE} one-time`,supporterOwned:"Full Pack active. Thank you!",tokushoho:"Legal notice (JP)",privacy:"Privacy",contact:"Contact",undo:"Undo",reset:"Restart",hint:"Hint",streakLabel:"Streak",bestLabel:"Best",playedLabel:"Solved",share:"Share result",saveImg:"Save image",next:"Next puzzle",toHome:"Home",oneTime:"one-time purchase, tax incl. (not a subscription)",f1:"Endless: unlimited 5×5 to 8×8 puzzles",f2:"Every past daily puzzle",f3:"Hints (shows the next 3 cells)",f4:"4 color themes",freeNote:"Today's puzzle, streaks and sharing stay free forever.",buy:"Request by email (¥480)",flow:"We reply with a PayPal invoice. Once paid, your unlock key arrives by email (same or next day). Digital goods: no refunds after the key is sent.",apply:"Apply",
+ keyOk:"Unlocked. Every mode is open.",keyNg:"That key doesn't match. Paste the key from the email exactly (it starts with MM-).",
  clearedToday:t=>`Solved today in ${t}. Next puzzle at midnight JST`,notYet:"A fresh puzzle, same for everyone today",inProgress:"Pick up where you left off",
  coachStart:"Drag from 1 to begin",coachNext:n=>`Next: ${n}`,coachFill:"Cover every cell, then reach the last number",coachOrder:n=>`Numbers go in order. Head for ${n}`,coachEnd:"The last number is the finish. Fill the rest first",coachBack:"Trace back over the line to undo",
  tut1:"Put your finger on 1 and drag through 2, then 3",tut2:"One rule: pass through every cell",tut3:"The last number is the goal. You're ready",tutDone:"That's it. Try today's puzzle",
  solved:"Solved",dailyKicker:n=>`No.${n} solved`,nextIn:h=>`Next puzzle in ${h}`,moreArchive:"Play past puzzles",moreEndless:"Keep going in Endless",
- noHint:"no hints",undoN:n=>`${n} undos`,copied:"Result copied",imgSaved:"Image saved",locked:"Included in the Supporter Pack",hintShown:"The glowing cells are the route",
- archiveTitle:"Archive",archiveNote:`Free: last ${FREE_BACK} days. Supporter Pack: all of them.`,archiveNoteOwned:"Pick any day.",endlessTitle:"Endless",endlessNote:"Pick a size. Every solve deals a new puzzle.",themeTitle:"Themes",themeNote:"Indigo is free. The rest come with the Supporter Pack.",
+ noHint:"no hints",undoN:n=>`${n} undos`,copied:"Result copied",imgSaved:"Image saved",locked:"Included in the Full Pack",hintShown:"The glowing cells are the route",
+ archiveTitle:"Archive",archiveNote:`Free: last ${FREE_BACK} days. Full Pack: all of them.`,archiveNoteOwned:"Pick any day.",endlessTitle:"Endless",endlessNote:"Pick a size. Every solve deals a new puzzle.",themeTitle:"Themes",themeNote:"Indigo is free. The rest come with the Full Pack.",
  solvedCount:n=>`${n} solved`,size:n=>`${n}×${n}`,tutorial:"How to play",daily:"Today",th:{ai:"Indigo",sakura:"Sakura",matcha:"Matcha",sumi:"Ink",yakou:"Neon"},
- shareHead:n=>`HITOFUDE No.${n}`,shareStreak:n=>`🔥${n}-day streak`,sound:"Sound",back:"Home",archiveSub:n=>`${n} puzzles`,themeSub:n=>n}
+ shareHead:n=>`MASUMICHI No.${n}`,shareStreak:n=>`🔥${n}-day streak`,sound:"Sound",back:"Home",archiveSub:n=>`${n} puzzles`,themeSub:n=>n}
 };
 
 /* ---------- storage ---------- */
-const KEY = "hitofude.v1";
+const KEY = "masumichi.v1";
 let S = {v:1,lang:null,sound:true,theme:"ai",pro:null,daily:{},streak:{last:-9,cur:0,best:0},best:{},tutDone:false,endless:{},solved:0,cur:null};
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch(e) {}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
@@ -277,7 +277,7 @@ $("#undoBtn").addEventListener("click", () => { if (!G || G.done || G.path.lengt
 $("#resetBtn").addEventListener("click", () => { if (!G || G.done || !G.path.length) return; G.path = []; G.undos++; sBack(); after(); persistCur(); });
 $("#hintBtn").addEventListener("click", () => {
   if (!G || G.done) return;
-  if (!isPro() && G.kind !== "tut") { toast(L().locked); openSup(); return; }
+  if (!isPro() && G.kind !== "tut") { openSup("ctxHint"); return; }
   const sol = G.P.sol; let k = 0; while (k < G.path.length && G.path[k] === sol[k]) k++;
   if (k === 0) { G.path = [sol[0]]; k = 1; } else G.path.length = k;
   if (!G.t0) G.t0 = performance.now();
@@ -372,6 +372,7 @@ function showResult(isNewBest){
   $("#rDailyActions").hidden = !daily; $("#rNextActions").hidden = daily;
   $("#nextBtn").textContent = (k === "tut" && G.opts.i === 2) ? L().playToday : L().next;
   $("#rNext").textContent = daily ? L().nextIn(fmtH(msToMidnightJST())) : (k==="tut" && G.opts.i===2 ? L().tutDone : "");
+  $("#rUp").hidden = !(daily && !isPro());
   const more = $("#rMore"); more.textContent = daily ? (isPro() ? L().moreEndless : L().moreArchive) : "";
   openSheet("#resultSheet");
 }
@@ -419,25 +420,25 @@ function cardCanvas(){
   x.globalAlpha = 1;
   x.fillStyle = "rgba(10,14,32,.55)"; x.beginPath(); x.roundRect ? x.roundRect(110,250,860,580,60) : x.rect(110,250,860,580); x.fill();
   x.textAlign = "center"; x.fillStyle = "#fff";
-  x.font = '800 64px "M PLUS Rounded 1c", sans-serif'; x.fillText(S.lang==="ja" ? "ヒトフデ" : "HITOFUDE", 540, 350);
+  x.font = '800 64px "M PLUS Rounded 1c", sans-serif'; x.fillText(S.lang==="ja" ? "マスミチ" : "MASUMICHI", 540, 350);
   x.font = '500 40px "M PLUS Rounded 1c", sans-serif'; x.fillStyle = "#c6cdea"; x.fillText(`No.${no} · ${N}×${N}`, 540, 420);
   const tg = x.createLinearGradient(300,0,780,0); tg.addColorStop(0,C.p0); tg.addColorStop(.5,C.p1); tg.addColorStop(1,C.p2);
   x.fillStyle = tg; x.font = '800 210px "M PLUS Rounded 1c", sans-serif'; x.fillText(fmt(d.t), 540, 620);
   x.fillStyle = "#fff"; x.font = '800 46px "M PLUS Rounded 1c", sans-serif';
   x.fillText(`${L().shareStreak(streakNow())}   ${!d.h ? "✨"+L().noHint : "💡"+d.h}`, 540, 740);
-  x.fillStyle = "#9aa3c7"; x.font = '500 34px "M PLUS Rounded 1c", sans-serif'; x.fillText("hiro0530.github.io/zeroichi-store/game/hitofude", 540, 990);
+  x.fillStyle = "#9aa3c7"; x.font = '500 34px "M PLUS Rounded 1c", sans-serif'; x.fillText("hiro0530.github.io/zeroichi-store/game/masumichi", 540, 990);
   x.fillText("ZEROICHI WORKS", 540, 1040);
   return cv;
 }
 $("#imgBtn").addEventListener("click", async () => {
   const cv = cardCanvas();
   cv.toBlob(async blob => {
-    const file = new File([blob], `hitofude-${G.no}.png`, {type:"image/png"});
+    const file = new File([blob], `masumichi-${G.no}.png`, {type:"image/png"});
     try { if (navigator.canShare && navigator.canShare({files:[file]})) { await navigator.share({files:[file], text: shareText()}); return; } } catch(e) { if (e && e.name === "AbortError") return; }
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); toast(L().imgSaved);
   }, "image/png");
 });
-window.__hitofudeCard = () => cardCanvas().toDataURL("image/png");
+window.__masumichiCard = () => cardCanvas().toDataURL("image/png");
 
 /* ---------- screens & sheets ---------- */
 function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); window.scrollTo(0,0); }
@@ -454,11 +455,12 @@ $("#nextBtn").addEventListener("click", () => {
   if (G.kind === "tut"){ if (G.opts.i < 2) startGame("tut", {i:G.opts.i+1}); else startGame("daily", {no: todayNo()}); }
   else startGame("endless", {N: G.P.N});
 });
+$("#rUp").addEventListener("click", () => { closeSheets(); openSup("ctxDaily"); });
 $("#rMore").addEventListener("click", () => { closeSheets(); G = null; home(); if (isPro()) openEndless(); else openArchive(); });
 
 $("#playDaily").addEventListener("click", () => { ac(); if (!S.tutDone && !Object.keys(S.daily).length) startGame("tut", {i:0}); else startGame("daily", {no: todayNo()}); });
 $("#modeTutorial").addEventListener("click", () => { ac(); startGame("tut", {i:0}); });
-$("#modeEndless").addEventListener("click", () => { ac(); if (!isPro()) { toast(L().locked); openSup(); return; } openEndless(); });
+$("#modeEndless").addEventListener("click", () => { ac(); if (!isPro()) { openSup("ctxEndless"); return; } openEndless(); });
 $("#modeArchive").addEventListener("click", () => { ac(); openArchive(); });
 $("#modeTheme").addEventListener("click", () => openThemes());
 $("#supporterBtn").addEventListener("click", () => openSup());
@@ -471,7 +473,7 @@ function openArchive(){
     const free = no >= t - FREE_BACK, open = isPro() || free, d = S.daily[no];
     const b = document.createElement("button"); b.className = "cellbtn" + (d ? " clear" : "") + (open ? "" : " locked");
     b.innerHTML = `<span>${no}</span><small>${d ? fmt(d.t) : dateOfNo(no)}</small>`;
-    b.addEventListener("click", () => { if (!open) { toast(L().locked); closeSheets(); openSup(); return; } closeSheets(); startGame("daily", {no}); });
+    b.addEventListener("click", () => { if (!open) { closeSheets(); openSup("ctxArchive"); return; } closeSheets(); startGame("daily", {no}); });
     g.appendChild(b);
   }
   openSheet("#listSheet");
@@ -488,16 +490,17 @@ function openThemes(){
   $("#listTitle").textContent = L().themeTitle; $("#listNote").textContent = L().themeNote;
   Object.keys(THEMES).forEach(k => { const open = k === "ai" || isPro(); const b = document.createElement("button"); b.className = "cellbtn" + (S.theme === k ? " cur" : "") + (open ? "" : " locked");
     b.innerHTML = `<i class="swatch" style="background:linear-gradient(90deg,${THEMES[k].join(",")})"></i><span>${L().th[k]}</span>`;
-    b.addEventListener("click", () => { if (!open) { toast(L().locked); closeSheets(); openSup(); return; } S.theme = k; save(); applyTheme(); openThemes(); });
+    b.addEventListener("click", () => { if (!open) { closeSheets(); openSup("ctxTheme"); return; } S.theme = k; save(); applyTheme(); openThemes(); });
     g.appendChild(b); });
   openSheet("#listSheet");
 }
 function applyTheme(){ document.body.dataset.theme = isPro() || S.theme === "ai" ? S.theme : "ai"; readColors(); const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(document.body).getPropertyValue("--bg").trim() || "#13203d"; $("#themeSub").textContent = L().th[document.body.dataset.theme]; if (G) draw(); }
 
-function openSup(){
+function openSup(ctx){
+  const cx = $("#supCtx"); cx.hidden = !ctx || isPro(); if (ctx) cx.textContent = L()[ctx];
   const ja = S.lang === "ja";
-  const subj = encodeURIComponent(ja ? "ヒトフデ サポーターパック申し込み" : "HITOFUDE Supporter Pack");
-  const body = encodeURIComponent(ja ? `ヒトフデのサポーターパック(${PRICE}・買い切り)を申し込みます。\n\nお名前(ニックネーム可):\nPayPalのメールアドレス(請求書の送り先):\n` : `I'd like the HITOFUDE Supporter Pack (${PRICE}, one-time).\n\nName (nickname OK):\nPayPal email (for the invoice):\n`);
+  const subj = encodeURIComponent(ja ? "マスミチ フルパック申し込み" : "MASUMICHI Full Pack");
+  const body = encodeURIComponent(ja ? `マスミチのフルパック(${PRICE}・買い切り)を申し込みます。\n\nお名前(ニックネーム可):\nPayPalのメールアドレス(請求書の送り先):\n` : `I'd like the MASUMICHI Full Pack (${PRICE}, one-time).\n\nName (nickname OK):\nPayPal email (for the invoice):\n`);
   $("#buyMail").href = `mailto:zeroichi.works.jp@gmail.com?subject=${subj}&body=${body}`;
   $("#keyMsg").textContent = isPro() ? L().keyOk : ""; $("#keyMsg").className = "key-msg" + (isPro() ? " ok" : "");
   if (isPro()) $("#keyInput").value = S.pro.key;
@@ -505,9 +508,9 @@ function openSup(){
 }
 async function verifyKey(k){
   k = (k||"").trim().toUpperCase();
-  const m = /^HF-([A-Z0-9]{8})-([A-F0-9]{4})$/.exec(k); if (!m) return false;
+  const m = /^MM-([A-Z0-9]{8})-([A-F0-9]{4})$/.exec(k); if (!m) return false;
   if (!(window.crypto && crypto.subtle)) return false;
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hitofude:" + m[1]));
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("masumichi:" + m[1]));
   const hx = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("").toUpperCase();
   return hx.slice(0,4) === m[2];
 }
@@ -577,5 +580,5 @@ readColors(); home();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (G) draw(); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { applyTheme(); });
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
-window.__hitofude = { get S(){ return S; }, get G(){ return G; }, makePuzzle, todayNo, sizeOfNo };
+window.__masumichi = { get S(){ return S; }, get G(){ return G; }, makePuzzle, todayNo, sizeOfNo };
 })();
