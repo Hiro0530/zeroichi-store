@@ -1,0 +1,22 @@
+{
+ "total": {
+  "days": 0,
+  "graded_races": 0,
+  "win_hits": 0,
+  "tri_hits": 0,
+  "near": 0,
+  "stake_win": 0,
+  "return_win": 0,
+  "stake_tri": 0,
+  "return_tri": 0,
+  "base_hits": 0,
+  "base_return": 0,
+  "win_rate": 0.0,
+  "base_win_rate": 0.0,
+  "tri_rate": 0.0,
+  "roi_win": 0.0,
+  "roi_tri": 0.0,
+  "roi_base": 0.0
+ },
+ "daily": []
+}
