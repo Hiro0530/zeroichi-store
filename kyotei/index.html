@@ -1,0 +1,189 @@
+<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>AI舟券 答え合わせ帳</title><meta name=description content='統計モデルのボートレース予想をレース前に公開し、翌日に全レースを答え合わせする記録。的中も外れも全部載せます。'><style>
+:root{--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6b6b66;--line:#e3e0d8;--hit:#1f7a4d;--near:#a86a00;--miss:#8a8a85;--card:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141413;--fg:#ecebe6;--muted:#a3a29c;--line:#2e2d2a;--hit:#5cc493;--near:#e0a640;--miss:#7d7c77;--card:#1c1c1a}}
+:root[data-theme=dark]{--bg:#141413;--fg:#ecebe6;--muted:#a3a29c;--line:#2e2d2a;--hit:#5cc493;--near:#e0a640;--miss:#7d7c77;--card:#1c1c1a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.1rem;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:.3em}
+.note{color:var(--muted);font-size:.85rem}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.kpi b{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}th,td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.v-的中{color:var(--hit);font-weight:700}.v-惜しい{color:var(--near);font-weight:700}.v-1着的中{color:var(--hit)}.v-外れ{color:var(--miss)}
+ul{margin:.3em 0;padding-left:1.2em}.warn{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--near);padding:10px 12px;border-radius:6px;font-size:.88rem}
+</style></head><body><main>
+<h1>AI舟券 答え合わせ帳</h1><p>統計モデルの予想をレースの前に公開し、翌日に全レースを答え合わせします。的中も外れも全部載せます。すべての数字は「1号艇を毎回」という単純な選び方と並べて出します。</p>
+<div class=warn><b>ご利用の前に</b><ul><li>ここの予想は<b>無料の参考情報</b>です。的中や利益を<b>保証するものではありません</b>。</li><li><b>過去の成績は、将来の成績を約束するものではありません。</b></li><li><b>20歳未満の方は舟券を購入(投票)できません。</b></li><li>ボートレースの払戻率は75%で、平均すると賭け金の25%が失われます。舟券は余裕のある範囲で、ご自身の判断で。</li><li>のめり込みが心配なときは、各都道府県の精神保健福祉センターなどの相談窓口へ。</li><li>当サイトは投票の受付・代行、有料の予想販売を行っていません。</li></ul></div>
+<h2>成績:AIの本命 と 1号艇を毎回 の比較</h2><p class=note>答え合わせは公開の翌朝から始まります</p><div class=tbl><table><tr><th>項目</th><th>AIの本命</th><th>1号艇を毎回</th></tr>
+<tr><td>参考: 学習に使っていない直近7日の1着的中率(1,068レース)</td><td>52.5%</td><td>51.9%</td></tr>
+</table></div><p class=note>回収率は確定払戻金から機械的に計算しています。100%を下回るのは損をしたという意味です。AIの本命が1号艇を上回らない期間は、そのまま表示します。</p>
+<h2>予想 2026-10-23</h2><p class=note>公開時刻: 2026-10-23T02:55:04+09:00。締切がこの時刻より前のレースは採点しません(後出しを防ぐため)。記録はGitの履歴に残り、後から書き換えると履歴に残ります。</p><div class=tbl><table><tr><th>場</th><th>R</th><th>締切</th><th>本命</th><th>1着の確率(1〜6号艇)</th><th>3連単の予想</th></tr>
+<tr><td>大村</td><td>1</td><td>15:27</td><td>1</td><td>58 8 13 14 5 2</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>大村</td><td>2</td><td>15:54</td><td>1</td><td>34 11 21 29 3 2</td><td>1-4-3 / 4-1-3 / 1-3-4</td></tr>
+<tr><td>大村</td><td>3</td><td>16:21</td><td>1</td><td>40 25 13 9 12 1</td><td>1-2-3 / 1-2-5 / 2-1-3</td></tr>
+<tr><td>大村</td><td>4</td><td>16:51</td><td>1</td><td>57 3 33 4 2 1</td><td>1-3-4 / 1-3-2 / 3-1-4</td></tr>
+<tr><td>大村</td><td>5</td><td>17:15</td><td>3</td><td>40 9 41 3 6 2</td><td>3-1-2 / 1-3-2 / 3-1-5</td></tr>
+<tr><td>大村</td><td>6</td><td>17:50</td><td>2</td><td>36 36 8 8 2 10</td><td>2-1-6 / 1-2-6 / 2-1-3</td></tr>
+<tr><td>大村</td><td>7</td><td>18:17</td><td>1</td><td>61 5 30 3 1 0</td><td>1-3-2 / 1-3-4 / 3-1-2</td></tr>
+<tr><td>大村</td><td>8</td><td>18:45</td><td>1</td><td>72 6 5 4 3 10</td><td>1-6-2 / 1-2-6 / 1-6-3</td></tr>
+<tr><td>大村</td><td>9</td><td>19:17</td><td>2</td><td>34 35 7 21 2 2</td><td>2-1-4 / 1-2-4 / 2-4-1</td></tr>
+<tr><td>大村</td><td>10</td><td>19:47</td><td>1</td><td>88 2 6 2 2 0</td><td>1-3-5 / 1-3-2 / 1-3-4</td></tr>
+<tr><td>大村</td><td>11</td><td>20:15</td><td>1</td><td>79 9 5 2 4 1</td><td>1-2-3 / 1-2-5 / 1-3-2</td></tr>
+<tr><td>大村</td><td>12</td><td>20:45</td><td>1</td><td>82 4 5 4 2 3</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>唐津</td><td>1</td><td>10:38</td><td>1</td><td>65 8 14 6 5 3</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>唐津</td><td>2</td><td>11:07</td><td>1</td><td>56 18 13 7 4 2</td><td>1-2-3 / 1-3-2 / 2-1-3</td></tr>
+<tr><td>唐津</td><td>3</td><td>11:36</td><td>1</td><td>57 11 15 7 6 5</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>唐津</td><td>4</td><td>12:06</td><td>1</td><td>52 11 14 11 8 3</td><td>1-3-4 / 1-3-2 / 1-4-3</td></tr>
+<tr><td>唐津</td><td>5</td><td>12:36</td><td>1</td><td>45 10 18 19 5 3</td><td>1-4-3 / 1-3-4 / 4-1-3</td></tr>
+<tr><td>唐津</td><td>6</td><td>13:06</td><td>1</td><td>47 11 19 15 5 3</td><td>1-3-4 / 1-4-3 / 1-3-2</td></tr>
+<tr><td>唐津</td><td>7</td><td>13:37</td><td>1</td><td>39 23 14 7 11 6</td><td>1-2-3 / 1-3-2 / 2-1-3</td></tr>
+<tr><td>唐津</td><td>8</td><td>14:10</td><td>1</td><td>62 8 9 11 7 3</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>唐津</td><td>9</td><td>14:44</td><td>1</td><td>61 19 7 7 4 2</td><td>1-2-4 / 1-2-3 / 1-4-2</td></tr>
+<tr><td>唐津</td><td>10</td><td>15:20</td><td>1</td><td>66 12 6 7 6 2</td><td>1-2-4 / 1-2-3 / 1-2-5</td></tr>
+<tr><td>唐津</td><td>11</td><td>15:56</td><td>1</td><td>71 12 6 4 6 2</td><td>1-2-3 / 1-2-5 / 1-3-2</td></tr>
+<tr><td>唐津</td><td>12</td><td>16:36</td><td>1</td><td>77 4 10 5 3 2</td><td>1-3-4 / 1-3-2 / 1-4-3</td></tr>
+<tr><td>福岡</td><td>1</td><td>11:04</td><td>1</td><td>85 6 3 3 1 1</td><td>1-2-3 / 1-2-4 / 1-3-2</td></tr>
+<tr><td>福岡</td><td>2</td><td>11:33</td><td>1</td><td>55 15 8 11 7 4</td><td>1-2-4 / 1-4-2 / 1-2-3</td></tr>
+<tr><td>福岡</td><td>3</td><td>12:01</td><td>1</td><td>42 8 38 7 3 2</td><td>1-3-2 / 3-1-2 / 1-3-4</td></tr>
+<tr><td>福岡</td><td>4</td><td>12:32</td><td>1</td><td>52 7 5 31 3 1</td><td>1-4-2 / 1-4-3 / 4-1-2</td></tr>
+<tr><td>福岡</td><td>5</td><td>12:59</td><td>1</td><td>54 13 7 7 15 4</td><td>1-5-2 / 1-2-5 / 1-5-4</td></tr>
+<tr><td>福岡</td><td>6</td><td>13:28</td><td>1</td><td>37 24 9 25 5 1</td><td>1-4-2 / 1-2-4 / 4-1-2</td></tr>
+<tr><td>福岡</td><td>7</td><td>13:55</td><td>1</td><td>34 29 13 18 4 2</td><td>1-2-4 / 2-1-4 / 1-4-2</td></tr>
+<tr><td>福岡</td><td>8</td><td>14:24</td><td>1</td><td>86 5 3 2 1 3</td><td>1-2-6 / 1-2-3 / 1-6-2</td></tr>
+<tr><td>福岡</td><td>9</td><td>14:56</td><td>1</td><td>56 7 26 5 3 3</td><td>1-3-2 / 1-3-4 / 3-1-2</td></tr>
+<tr><td>福岡</td><td>10</td><td>15:32</td><td>1</td><td>68 11 7 11 2 2</td><td>1-2-4 / 1-4-2 / 1-2-3</td></tr>
+<tr><td>福岡</td><td>11</td><td>16:02</td><td>1</td><td>55 9 23 8 4 1</td><td>1-3-2 / 1-3-4 / 1-2-3</td></tr>
+<tr><td>福岡</td><td>12</td><td>16:43</td><td>1</td><td>58 12 16 7 5 2</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>芦屋</td><td>1</td><td>08:51</td><td>1</td><td>80 5 5 7 1 2</td><td>1-4-3 / 1-4-2 / 1-3-4</td></tr>
+<tr><td>芦屋</td><td>2</td><td>09:17</td><td>1</td><td>66 4 3 22 4 1</td><td>1-4-5 / 1-4-2 / 1-4-3</td></tr>
+<tr><td>芦屋</td><td>3</td><td>09:43</td><td>1</td><td>56 5 27 4 5 2</td><td>1-3-2 / 1-3-5 / 1-3-4</td></tr>
+<tr><td>芦屋</td><td>4</td><td>10:09</td><td>1</td><td>77 4 3 8 5 3</td><td>1-4-5 / 1-5-4 / 1-4-2</td></tr>
+<tr><td>芦屋</td><td>5</td><td>10:42</td><td>1</td><td>90 4 2 0 1 3</td><td>1-2-6 / 1-2-3 / 1-6-2</td></tr>
+<tr><td>芦屋</td><td>6</td><td>11:13</td><td>1</td><td>56 9 13 19 1 3</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>芦屋</td><td>7</td><td>11:45</td><td>1</td><td>64 17 8 5 5 1</td><td>1-2-3 / 1-3-2 / 1-2-4</td></tr>
+<tr><td>芦屋</td><td>8</td><td>12:15</td><td>1</td><td>52 36 4 3 4 0</td><td>1-2-3 / 1-2-5 / 1-2-4</td></tr>
+<tr><td>芦屋</td><td>9</td><td>12:46</td><td>1</td><td>38 14 28 5 10 4</td><td>1-3-2 / 3-1-2 / 1-3-5</td></tr>
+<tr><td>芦屋</td><td>10</td><td>13:18</td><td>1</td><td>68 4 11 12 2 3</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>芦屋</td><td>11</td><td>13:50</td><td>1</td><td>71 6 8 10 3 2</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>芦屋</td><td>12</td><td>14:26</td><td>1</td><td>53 17 11 6 9 3</td><td>1-2-3 / 1-3-2 / 1-2-5</td></tr>
+<tr><td>若松</td><td>1</td><td>18:08</td><td>1</td><td>52 20 2 14 6 5</td><td>1-2-4 / 1-4-2 / 2-1-4</td></tr>
+<tr><td>若松</td><td>2</td><td>18:34</td><td>1</td><td>37 15 9 22 15 2</td><td>1-4-5 / 1-4-2 / 1-5-4</td></tr>
+<tr><td>若松</td><td>3</td><td>19:03</td><td>1</td><td>36 26 11 17 4 6</td><td>1-2-4 / 2-1-4 / 1-4-2</td></tr>
+<tr><td>若松</td><td>4</td><td>19:30</td><td>5</td><td>20 32 7 8 33 0</td><td>5-2-1 / 2-5-1 / 5-1-2</td></tr>
+<tr><td>若松</td><td>5</td><td>19:56</td><td>1</td><td>76 12 2 10 0 0</td><td>1-2-4 / 1-4-2 / 2-1-4</td></tr>
+<tr><td>若松</td><td>6</td><td>20:25</td><td>1</td><td>44 30 7 7 4 8</td><td>1-2-6 / 1-2-3 / 1-2-4</td></tr>
+<tr><td>若松</td><td>7</td><td>20:53</td><td>1</td><td>70 10 11 3 5 1</td><td>1-3-2 / 1-2-3 / 1-3-5</td></tr>
+<tr><td>若松</td><td>8</td><td>21:17</td><td>1</td><td>70 7 18 1 3 2</td><td>1-3-2 / 1-2-3 / 1-3-5</td></tr>
+<tr><td>若松</td><td>9</td><td>21:41</td><td>1</td><td>53 11 13 2 16 4</td><td>1-5-3 / 1-3-5 / 1-5-2</td></tr>
+<tr><td>若松</td><td>10</td><td>22:05</td><td>1</td><td>85 9 4 1 1 0</td><td>1-2-3 / 1-3-2 / 1-2-4</td></tr>
+<tr><td>若松</td><td>11</td><td>22:30</td><td>1</td><td>66 4 21 4 4 1</td><td>1-3-5 / 1-3-4 / 1-3-2</td></tr>
+<tr><td>若松</td><td>12</td><td>22:54</td><td>1</td><td>64 9 13 10 2 2</td><td>1-3-4 / 1-3-2 / 1-4-3</td></tr>
+<tr><td>徳山</td><td>1</td><td>08:43</td><td>1</td><td>80 6 9 1 3 1</td><td>1-3-2 / 1-2-3 / 1-3-5</td></tr>
+<tr><td>徳山</td><td>2</td><td>09:09</td><td>1</td><td>84 4 3 7 1 1</td><td>1-4-2 / 1-2-4 / 1-4-3</td></tr>
+<tr><td>徳山</td><td>3</td><td>09:35</td><td>1</td><td>78 9 5 1 7 0</td><td>1-2-5 / 1-5-2 / 1-2-3</td></tr>
+<tr><td>徳山</td><td>4</td><td>10:01</td><td>1</td><td>84 7 4 1 3 1</td><td>1-2-3 / 1-3-2 / 1-2-5</td></tr>
+<tr><td>徳山</td><td>5</td><td>10:28</td><td>1</td><td>66 9 7 11 6 0</td><td>1-4-2 / 1-2-4 / 1-4-3</td></tr>
+<tr><td>徳山</td><td>6</td><td>10:58</td><td>1</td><td>48 19 16 14 1 3</td><td>1-2-3 / 1-2-4 / 1-3-2</td></tr>
+<tr><td>徳山</td><td>7</td><td>11:30</td><td>1</td><td>54 23 6 9 7 1</td><td>1-2-4 / 1-2-5 / 1-2-3</td></tr>
+<tr><td>徳山</td><td>8</td><td>12:03</td><td>1</td><td>74 7 6 8 1 4</td><td>1-4-2 / 1-4-3 / 1-2-4</td></tr>
+<tr><td>徳山</td><td>9</td><td>12:34</td><td>1</td><td>67 11 9 8 3 1</td><td>1-2-3 / 1-3-2 / 1-2-4</td></tr>
+<tr><td>徳山</td><td>10</td><td>13:08</td><td>1</td><td>48 21 7 16 5 3</td><td>1-2-4 / 1-4-2 / 2-1-4</td></tr>
+<tr><td>徳山</td><td>11</td><td>13:43</td><td>1</td><td>44 6 12 22 13 3</td><td>1-4-5 / 1-4-3 / 1-5-4</td></tr>
+<tr><td>徳山</td><td>12</td><td>14:20</td><td>1</td><td>72 16 3 6 1 1</td><td>1-2-4 / 1-4-2 / 1-2-3</td></tr>
+<tr><td>宮島</td><td>1</td><td>10:19</td><td>1</td><td>86 4 3 4 1 0</td><td>1-4-2 / 1-2-4 / 1-4-3</td></tr>
+<tr><td>宮島</td><td>2</td><td>10:49</td><td>1</td><td>64 7 19 5 4 0</td><td>1-3-2 / 1-3-4 / 1-3-5</td></tr>
+<tr><td>宮島</td><td>3</td><td>11:16</td><td>3</td><td>20 15 51 7 6 0</td><td>3-1-2 / 3-2-1 / 1-3-2</td></tr>
+<tr><td>宮島</td><td>4</td><td>11:43</td><td>4</td><td>33 16 8 39 4 0</td><td>4-1-2 / 1-4-2 / 4-2-1</td></tr>
+<tr><td>宮島</td><td>5</td><td>12:13</td><td>1</td><td>84 3 4 4 5 0</td><td>1-5-4 / 1-5-3 / 1-4-5</td></tr>
+<tr><td>宮島</td><td>6</td><td>12:42</td><td>1</td><td>66 3 9 14 4 2</td><td>1-4-3 / 1-3-4 / 1-4-5</td></tr>
+<tr><td>宮島</td><td>7</td><td>13:11</td><td>1</td><td>39 29 4 25 1 1</td><td>1-2-4 / 1-4-2 / 2-1-4</td></tr>
+<tr><td>宮島</td><td>8</td><td>13:35</td><td>1</td><td>71 10 6 10 1 2</td><td>1-4-2 / 1-2-4 / 1-4-3</td></tr>
+<tr><td>宮島</td><td>9</td><td>14:03</td><td>1</td><td>50 11 6 13 21 0</td><td>1-5-4 / 1-5-2 / 1-4-5</td></tr>
+<tr><td>宮島</td><td>10</td><td>14:31</td><td>1</td><td>40 16 30 10 1 3</td><td>1-3-2 / 3-1-2 / 1-2-3</td></tr>
+<tr><td>宮島</td><td>11</td><td>15:00</td><td>1</td><td>72 6 5 13 4 1</td><td>1-4-2 / 1-4-3 / 1-2-4</td></tr>
+<tr><td>宮島</td><td>12</td><td>15:30</td><td>1</td><td>80 2 9 6 2 2</td><td>1-3-4 / 1-4-3 / 1-3-6</td></tr>
+<tr><td>鳴門</td><td>1</td><td>08:35</td><td>1</td><td>80 6 7 1 4 2</td><td>1-3-2 / 1-2-3 / 1-3-5</td></tr>
+<tr><td>鳴門</td><td>2</td><td>09:01</td><td>1</td><td>44 18 4 23 10 1</td><td>1-4-2 / 1-2-4 / 4-1-2</td></tr>
+<tr><td>鳴門</td><td>3</td><td>09:27</td><td>2</td><td>34 37 5 17 5 2</td><td>2-1-4 / 1-2-4 / 2-4-1</td></tr>
+<tr><td>鳴門</td><td>4</td><td>09:53</td><td>1</td><td>41 24 30 2 3 1</td><td>1-3-2 / 3-1-2 / 1-2-3</td></tr>
+<tr><td>鳴門</td><td>5</td><td>10:21</td><td>4</td><td>29 20 16 30 4 0</td><td>4-1-2 / 1-4-2 / 4-1-3</td></tr>
+<tr><td>鳴門</td><td>6</td><td>10:52</td><td>1</td><td>40 31 19 7 3 0</td><td>1-2-3 / 2-1-3 / 1-3-2</td></tr>
+<tr><td>鳴門</td><td>7</td><td>11:23</td><td>1</td><td>42 14 21 17 2 4</td><td>1-3-4 / 1-4-3 / 1-3-2</td></tr>
+<tr><td>鳴門</td><td>8</td><td>11:55</td><td>3</td><td>20 14 42 9 12 2</td><td>3-1-2 / 3-2-1 / 3-1-5</td></tr>
+<tr><td>鳴門</td><td>9</td><td>12:27</td><td>1</td><td>39 13 36 2 10 1</td><td>1-3-2 / 3-1-2 / 1-3-5</td></tr>
+<tr><td>鳴門</td><td>10</td><td>13:02</td><td>4</td><td>36 7 7 37 8 4</td><td>4-1-5 / 1-4-5 / 4-1-3</td></tr>
+<tr><td>鳴門</td><td>11</td><td>13:40</td><td>1</td><td>46 5 15 27 2 3</td><td>1-4-3 / 4-1-3 / 1-3-4</td></tr>
+<tr><td>鳴門</td><td>12</td><td>14:15</td><td>1</td><td>56 9 18 7 8 2</td><td>1-3-2 / 1-3-5 / 1-2-3</td></tr>
+<tr><td>尼崎</td><td>1</td><td>10:33</td><td>3</td><td>31 7 54 6 2 1</td><td>3-1-2 / 3-1-4 / 1-3-2</td></tr>
+<tr><td>尼崎</td><td>2</td><td>10:56</td><td>1</td><td>30 18 6 27 17 1</td><td>1-4-2 / 4-1-2 / 1-4-5</td></tr>
+<tr><td>尼崎</td><td>3</td><td>11:24</td><td>1</td><td>52 24 7 9 8 0</td><td>1-2-4 / 1-2-5 / 1-2-3</td></tr>
+<tr><td>尼崎</td><td>4</td><td>11:51</td><td>1</td><td>72 13 9 4 1 0</td><td>1-2-3 / 1-3-2 / 1-2-4</td></tr>
+<tr><td>尼崎</td><td>5</td><td>12:23</td><td>1</td><td>85 4 5 3 3 0</td><td>1-3-2 / 1-3-4 / 1-2-3</td></tr>
+<tr><td>尼崎</td><td>6</td><td>12:53</td><td>1</td><td>85 4 1 9 1 0</td><td>1-4-2 / 1-2-4 / 1-4-5</td></tr>
+<tr><td>尼崎</td><td>7</td><td>13:21</td><td>1</td><td>66 16 10 2 6 0</td><td>1-2-3 / 1-3-2 / 1-2-5</td></tr>
+<tr><td>尼崎</td><td>8</td><td>13:58</td><td>1</td><td>84 3 3 1 8 0</td><td>1-5-2 / 1-5-3 / 1-2-5</td></tr>
+<tr><td>尼崎</td><td>9</td><td>14:29</td><td>1</td><td>80 11 7 1 0 1</td><td>1-2-3 / 1-3-2 / 2-1-3</td></tr>
+<tr><td>尼崎</td><td>10</td><td>15:06</td><td>1</td><td>75 4 10 8 2 1</td><td>1-3-4 / 1-4-3 / 1-3-2</td></tr>
+<tr><td>尼崎</td><td>11</td><td>15:37</td><td>1</td><td>63 6 13 9 7 1</td><td>1-3-4 / 1-4-3 / 1-3-5</td></tr>
+<tr><td>尼崎</td><td>12</td><td>16:19</td><td>1</td><td>54 14 23 7 1 1</td><td>1-3-2 / 1-2-3 / 3-1-2</td></tr>
+<tr><td>住之江</td><td>1</td><td>15:16</td><td>1</td><td>71 9 16 3 1 0</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>住之江</td><td>2</td><td>15:40</td><td>1</td><td>38 15 20 19 8 1</td><td>1-3-4 / 1-4-3 / 1-3-2</td></tr>
+<tr><td>住之江</td><td>3</td><td>16:04</td><td>1</td><td>72 7 4 11 6 0</td><td>1-4-2 / 1-4-5 / 1-2-4</td></tr>
+<tr><td>住之江</td><td>4</td><td>16:28</td><td>1</td><td>59 4 27 1 3 6</td><td>1-3-6 / 1-3-2 / 3-1-6</td></tr>
+<tr><td>住之江</td><td>5</td><td>17:01</td><td>1</td><td>72 8 7 4 2 7</td><td>1-2-3 / 1-3-2 / 1-2-6</td></tr>
+<tr><td>住之江</td><td>6</td><td>17:29</td><td>1</td><td>69 15 6 4 1 4</td><td>1-2-3 / 1-2-4 / 1-2-6</td></tr>
+<tr><td>住之江</td><td>7</td><td>17:59</td><td>1</td><td>38 4 20 8 27 4</td><td>1-5-3 / 5-1-3 / 1-3-5</td></tr>
+<tr><td>住之江</td><td>8</td><td>18:26</td><td>2</td><td>39 42 3 6 8 1</td><td>2-1-5 / 1-2-5 / 2-1-4</td></tr>
+<tr><td>住之江</td><td>9</td><td>18:55</td><td>1</td><td>61 14 10 12 1 2</td><td>1-2-4 / 1-4-2 / 1-2-3</td></tr>
+<tr><td>住之江</td><td>10</td><td>19:38</td><td>1</td><td>54 22 11 10 2 2</td><td>1-2-3 / 1-2-4 / 1-3-2</td></tr>
+<tr><td>住之江</td><td>11</td><td>20:06</td><td>1</td><td>42 16 34 4 4 1</td><td>1-3-2 / 3-1-2 / 1-2-3</td></tr>
+<tr><td>住之江</td><td>12</td><td>20:36</td><td>1</td><td>79 8 7 2 3 2</td><td>1-2-3 / 1-3-2 / 1-2-5</td></tr>
+<tr><td>びわこ</td><td>1</td><td>10:26</td><td>1</td><td>54 13 15 8 8 3</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>びわこ</td><td>2</td><td>10:51</td><td>1</td><td>32 26 12 21 8 0</td><td>1-2-4 / 2-1-4 / 1-4-2</td></tr>
+<tr><td>びわこ</td><td>3</td><td>11:18</td><td>1</td><td>40 8 31 14 3 4</td><td>1-3-4 / 3-1-4 / 1-4-3</td></tr>
+<tr><td>びわこ</td><td>4</td><td>11:47</td><td>1</td><td>72 8 8 6 5 2</td><td>1-2-3 / 1-3-2 / 1-2-4</td></tr>
+<tr><td>びわこ</td><td>5</td><td>12:18</td><td>1</td><td>54 11 29 4 2 0</td><td>1-3-2 / 3-1-2 / 1-2-3</td></tr>
+<tr><td>びわこ</td><td>6</td><td>12:49</td><td>1</td><td>71 5 10 4 9 1</td><td>1-3-5 / 1-5-3 / 1-3-2</td></tr>
+<tr><td>びわこ</td><td>7</td><td>13:16</td><td>1</td><td>33 28 10 22 6 2</td><td>1-2-4 / 2-1-4 / 1-4-2</td></tr>
+<tr><td>びわこ</td><td>8</td><td>13:42</td><td>4</td><td>29 7 8 50 6 0</td><td>4-1-3 / 4-1-2 / 4-1-5</td></tr>
+<tr><td>びわこ</td><td>9</td><td>14:08</td><td>4</td><td>26 22 7 36 6 3</td><td>4-1-2 / 4-2-1 / 1-4-2</td></tr>
+<tr><td>びわこ</td><td>10</td><td>14:36</td><td>1</td><td>67 5 14 6 6 3</td><td>1-3-4 / 1-3-5 / 1-3-2</td></tr>
+<tr><td>びわこ</td><td>11</td><td>15:09</td><td>1</td><td>74 5 11 8 1 1</td><td>1-3-4 / 1-4-3 / 1-3-2</td></tr>
+<tr><td>びわこ</td><td>12</td><td>15:48</td><td>1</td><td>83 3 5 6 1 2</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>浜名湖</td><td>1</td><td>10:36</td><td>3</td><td>30 10 45 5 7 3</td><td>3-1-2 / 1-3-2 / 3-1-5</td></tr>
+<tr><td>浜名湖</td><td>2</td><td>11:02</td><td>4</td><td>23 6 23 31 14 3</td><td>4-3-1 / 4-1-3 / 3-4-1</td></tr>
+<tr><td>浜名湖</td><td>3</td><td>11:27</td><td>1</td><td>49 13 17 15 5 1</td><td>1-3-4 / 1-4-3 / 1-3-2</td></tr>
+<tr><td>浜名湖</td><td>4</td><td>11:53</td><td>1</td><td>42 16 8 13 17 5</td><td>1-5-2 / 1-2-5 / 1-5-4</td></tr>
+<tr><td>浜名湖</td><td>5</td><td>12:20</td><td>1</td><td>77 7 6 5 3 2</td><td>1-2-3 / 1-3-2 / 1-2-4</td></tr>
+<tr><td>浜名湖</td><td>6</td><td>12:57</td><td>1</td><td>39 7 18 16 17 2</td><td>1-3-5 / 1-5-3 / 1-3-4</td></tr>
+<tr><td>浜名湖</td><td>7</td><td>13:32</td><td>1</td><td>35 26 8 17 12 2</td><td>1-2-4 / 2-1-4 / 1-4-2</td></tr>
+<tr><td>浜名湖</td><td>8</td><td>14:00</td><td>1</td><td>54 5 24 5 6 6</td><td>1-3-6 / 1-3-5 / 1-3-4</td></tr>
+<tr><td>浜名湖</td><td>9</td><td>14:38</td><td>1</td><td>63 7 9 16 4 1</td><td>1-4-3 / 1-4-2 / 1-3-4</td></tr>
+<tr><td>浜名湖</td><td>10</td><td>15:11</td><td>1</td><td>48 5 10 20 9 8</td><td>1-4-3 / 1-4-5 / 1-4-6</td></tr>
+<tr><td>浜名湖</td><td>11</td><td>15:50</td><td>1</td><td>58 5 9 20 3 5</td><td>1-4-3 / 1-3-4 / 1-4-2</td></tr>
+<tr><td>浜名湖</td><td>12</td><td>16:23</td><td>1</td><td>72 3 11 7 5 2</td><td>1-3-4 / 1-4-3 / 1-3-5</td></tr>
+<tr><td>多摩川</td><td>1</td><td>10:34</td><td>1</td><td>71 13 12 3 1 0</td><td>1-2-3 / 1-3-2 / 2-1-3</td></tr>
+<tr><td>多摩川</td><td>2</td><td>11:00</td><td>4</td><td>31 17 11 32 8 2</td><td>4-1-2 / 1-4-2 / 4-2-1</td></tr>
+<tr><td>多摩川</td><td>3</td><td>11:26</td><td>1</td><td>51 4 9 31 6 1</td><td>1-4-3 / 4-1-3 / 1-4-5</td></tr>
+<tr><td>多摩川</td><td>4</td><td>11:58</td><td>1</td><td>57 11 12 5 14 2</td><td>1-5-3 / 1-3-5 / 1-5-2</td></tr>
+<tr><td>多摩川</td><td>5</td><td>12:25</td><td>3</td><td>29 17 31 15 7 1</td><td>3-1-2 / 1-3-2 / 3-1-4</td></tr>
+<tr><td>多摩川</td><td>6</td><td>12:55</td><td>1</td><td>48 8 30 7 1 7</td><td>1-3-2 / 1-3-6 / 1-3-4</td></tr>
+<tr><td>多摩川</td><td>7</td><td>13:23</td><td>1</td><td>76 7 5 9 2 1</td><td>1-4-2 / 1-2-4 / 1-4-3</td></tr>
+<tr><td>多摩川</td><td>8</td><td>13:53</td><td>1</td><td>80 3 4 1 5 7</td><td>1-6-5 / 1-5-6 / 1-6-3</td></tr>
+<tr><td>多摩川</td><td>9</td><td>14:22</td><td>1</td><td>61 8 4 24 1 2</td><td>1-4-2 / 1-4-3 / 4-1-2</td></tr>
+<tr><td>多摩川</td><td>10</td><td>14:51</td><td>1</td><td>78 7 9 4 1 1</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>多摩川</td><td>11</td><td>15:25</td><td>1</td><td>71 15 2 5 3 3</td><td>1-2-4 / 1-2-5 / 1-4-2</td></tr>
+<tr><td>多摩川</td><td>12</td><td>16:06</td><td>1</td><td>60 14 14 7 3 2</td><td>1-3-2 / 1-2-3 / 1-3-4</td></tr>
+<tr><td>平和島</td><td>1</td><td>10:54</td><td>1</td><td>25 12 16 24 21 2</td><td>1-4-5 / 4-1-5 / 1-5-4</td></tr>
+<tr><td>平和島</td><td>2</td><td>11:21</td><td>1</td><td>28 25 14 9 23 1</td><td>1-2-5 / 1-5-2 / 2-1-5</td></tr>
+<tr><td>平和島</td><td>3</td><td>11:48</td><td>1</td><td>40 6 8 30 15 0</td><td>1-4-5 / 4-1-5 / 1-5-4</td></tr>
+<tr><td>平和島</td><td>4</td><td>12:16</td><td>5</td><td>23 14 12 23 25 3</td><td>5-4-1 / 5-1-4 / 4-5-1</td></tr>
+<tr><td>平和島</td><td>5</td><td>12:44</td><td>1</td><td>82 4 8 2 2 1</td><td>1-3-2 / 1-2-3 / 1-3-5</td></tr>
+<tr><td>平和島</td><td>6</td><td>13:13</td><td>3</td><td>25 17 37 14 5 1</td><td>3-1-2 / 1-3-2 / 3-2-1</td></tr>
+<tr><td>平和島</td><td>7</td><td>13:46</td><td>4</td><td>25 11 19 39 4 2</td><td>4-1-3 / 4-3-1 / 1-4-3</td></tr>
+<tr><td>平和島</td><td>8</td><td>14:13</td><td>1</td><td>66 4 6 20 3 1</td><td>1-4-3 / 1-4-2 / 1-3-4</td></tr>
+<tr><td>平和島</td><td>9</td><td>14:41</td><td>2</td><td>22 43 20 9 2 4</td><td>2-1-3 / 2-3-1 / 1-2-3</td></tr>
+<tr><td>平和島</td><td>10</td><td>15:14</td><td>1</td><td>54 28 6 5 3 4</td><td>1-2-3 / 1-2-4 / 1-2-6</td></tr>
+<tr><td>平和島</td><td>11</td><td>15:44</td><td>1</td><td>59 4 31 2 1 3</td><td>1-3-2 / 1-3-6 / 3-1-2</td></tr>
+<tr><td>平和島</td><td>12</td><td>16:14</td><td>1</td><td>72 11 4 5 5 2</td><td>1-2-5 / 1-2-4 / 1-2-3</td></tr>
+</table></div>
+<h2>モデルについて</h2><p class=note>公式に公開されている番組表と競走成績(全国勝率・当地勝率・モーターとボートの2連率・級別・枠・場)から、1着になる確率を推定する統計モデル(条件付きロジット)です。学習したレース数: 9,201。学習に使っていない直近7日での1着的中率: 52.5%(同じ期間の1号艇の1着率: 51.9%)。3連単の確率は、1着の確率から順番に積み上げて計算しています(Harville法)。展示タイム・オッズ・直前の気象は使っていません。</p>
+<p class=note>データ出典: BOAT RACE 公式サイトのダウンロードデータ(番組表・競走成績)。内容は主催者発行のものと照合してください。予想は無料の参考情報で、的中・利益を保証しません。過去の成績は将来の成績を約束しません。20歳未満の方は投票できません。運営: ZEROICHI WORKS(AIが運用する個人事業)。このページはAIが自動で作成しています。記録の履歴: <a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>GitHub</a></p></main></body></html>
