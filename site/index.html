@@ -5,55 +5,69 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ZEROICHI WORKS ストア</title>
 <meta name="description" content="AIに小さな事業を立ち上げさせる手順書と指示文20本(AI番頭パッケージ)。売上0円の時点も含めて、実際に起きたことを書いた実録付き。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="zw.css">
+<meta name="theme-color" content="#1b2a6b">
 <style>
-:root{--navy:#1a2a6c;--ink:#1a2238;--muted:#5b6478;--bg:#f6f7fb;--card:#fff;--accent:#e0a100}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;overflow-wrap:break-word}
-header{background:var(--navy);color:#fff;padding:28px 16px}
-header h1{margin:0;font-size:20px}header p{margin:6px 0 0;opacity:.85;font-size:14px}
-main{max-width:720px;margin:0 auto;padding:16px}
-.card{background:var(--card);border-radius:14px;padding:20px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.card img{width:100%;max-width:260px;border:1px solid #e3e6ef;border-radius:8px;display:block;margin:0 auto 14px}
-h2{font-size:18px;margin:0 0 6px}h3{font-size:15px;margin:16px 0 6px}.price{font-size:26px;font-weight:700;color:var(--navy);margin:8px 0}
-.price small{font-size:13px;color:var(--muted);font-weight:400}
-ul{padding-left:20px;margin:8px 0}li{margin:4px 0}
-.btn{display:block;text-align:center;background:var(--accent);color:#1a1a1a;text-decoration:none;padding:14px;border-radius:10px;font-weight:700;font-size:16px;margin-top:14px}
-.muted{color:var(--muted);font-size:13px}
-.who{background:#eef1f8;border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0}
-.honest{border-left:4px solid var(--accent);background:#fff8e6;padding:10px 12px;border-radius:0 8px 8px 0;font-size:14px;margin:12px 0}
-pre.sample{background:#1a2238;color:#eef1f8;border-radius:8px;padding:12px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
-.paused{background:#f1f2f6;border-radius:8px;padding:10px 12px;font-size:14px;margin-top:12px}
-footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}footer a{color:var(--navy)}
-.faq details{border-top:1px solid #e3e6ef;padding:10px 0}.faq details:last-child{border-bottom:1px solid #e3e6ef}
-.faq summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;padding-right:24px;position:relative}
-.faq summary::-webkit-details-marker{display:none}.faq summary::after{content:"+";position:absolute;right:4px;top:0;color:var(--muted)}
-.faq details[open] summary::after{content:"−"}.faq p{margin:8px 0 0;font-size:14px}
+.svc{display:grid;gap:12px;margin-top:6px}
+.svc .item{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--ac);border-radius:var(--r-m);padding:18px 20px}
+.svc .item h3{margin:0;font-size:19px}
+.svc .item h3 a{text-decoration:none;color:var(--ink)}
+.svc .meta{margin:2px 0 8px;font-weight:700;color:var(--ac-text);font-size:14.5px}
+.svc .item p{margin:0;font-size:15px;color:var(--muted)}
+.svc .btn{margin:14px 0 0}
+.book{display:grid;gap:20px}
+.book .cover{display:block;width:100%;max-width:260px;border:1px solid var(--line);border-radius:8px;margin:0 auto;box-shadow:0 18px 36px -24px rgba(20,32,50,.6)}
+.book h2{margin-bottom:6px}
+.who{background:var(--sunk);border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;font-size:15px;margin:12px 0}
+pre.sample{background:#142032;border:1px solid var(--line);color:#e9eef6;border-radius:var(--r-s);padding:14px 16px;font:13.5px/1.75 var(--jp);white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+.paused{background:var(--sunk);border:1px dashed var(--line2);border-radius:var(--r-m);padding:16px 18px}
+.paused h2{font-size:18px;color:var(--muted)}
+@media(min-width:820px){.book{grid-template-columns:240px minmax(0,1fr);gap:36px;align-items:start}.book .cover{position:sticky;top:20px}}
 </style>
 </head>
-<body>
-<header>
-  <h1>ZEROICHI WORKS ストア</h1>
-  <p>AIに事業を任せたら何が起きるか。うまくいかなかったことも含めて記録して売っている、小さな資料店です。</p>
+<body class="p-store">
+<header class="zw-head">
+  <div class="in"><a class="zw-logo" href="./"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a></div>
+  <div class="bar"></div>
 </header>
-<main>
+<main class="wrap">
 
-<section class="card" id="services">
-  <h2>月額のサービス(新しく始めました)</h2>
-  <h3><a href="hojokin/">補助金ナビ</a> ― 月980円・初回号無料</h3>
-  <p>都道府県と業種を教えていただくと、関係する補助金・助成金を、申請の順序・締切・必要書類・よくある不備・相談先つきで毎週メールでお届けします。書類作成の代行はしません。</p>
-  <a class="btn" href="hojokin/">補助金ナビを見る</a>
-  <h3><a href="shitagoshirae/">営業の下ごしらえ便</a> ― 月29,800円から・無料見本あり</h3>
-  <p>営業日ごとに、送ってよい見込み客20社(公表アドレスと「お断り表示なし」を確認済み)と、相手のサイトを読んで書き分けた文面をお届けします。</p>
-  <a class="btn" href="shitagoshirae/">下ごしらえ便を見る</a>
+<section class="hero">
+  <h1><span class="name">ZEROICHI WORKS ストア</span>AIに事業を任せたら何が起きるか。</h1>
+  <p class="lead">うまくいかなかったことも含めて記録して売っている、小さな資料店です。</p>
 </section>
 
-<section class="card" id="bantou">
-  <img src="cover-bantou.png" alt="AI番頭パッケージ 表紙">
-  <h2>AI番頭パッケージ ― AIに小さな事業を立ち上げさせる手順書+指示文20本(PDF・35ページ)</h2>
-  <div class="price">¥4,980 <small>税込・一回払い・デジタル資料</small></div>
-  <div class="who">「AIで何か始めたい。でも何を、どう頼めばいいか分からない」方へ。スマホだけで、打ち込みが苦手でも進められる手順にしています。</div>
+<section class="sec" id="services">
+  <h2>月額のサービス(新しく始めました)</h2>
+  <div class="svc">
+    <div class="item p-hojokin">
+      <h3><a href="hojokin/">補助金ナビ</a></h3>
+      <p class="meta">月980円・初回号無料</p>
+      <p>都道府県と業種を教えていただくと、関係する補助金・助成金を、申請の順序・締切・必要書類・よくある不備・相談先つきで毎週メールでお届けします。書類作成の代行はしません。</p>
+      <a class="btn ghost" href="hojokin/">補助金ナビを見る</a>
+    </div>
+    <div class="item p-shitago">
+      <h3><a href="shitagoshirae/">営業の下ごしらえ便</a></h3>
+      <p class="meta">月29,800円から・無料見本あり</p>
+      <p>営業日ごとに、送ってよい見込み客20社(公表アドレスと「お断り表示なし」を確認済み)と、相手のサイトを読んで書き分けた文面をお届けします。</p>
+      <a class="btn ghost" href="shitagoshirae/">下ごしらえ便を見る</a>
+    </div>
+  </div>
+</section>
 
-  <h3>中に入っているもの</h3>
-  <ul>
+<section class="sec" id="bantou">
+  <div class="book">
+    <img class="cover" src="cover-bantou.png" alt="AI番頭パッケージ 表紙" width="497" height="702">
+    <div>
+      <h2>AI番頭パッケージ ― AIに小さな事業を立ち上げさせる手順書+指示文20本(PDF・35ページ)</h2>
+      <div class="price"><span class="amt"><span class="yen">¥</span>4,980</span><small>税込・一回払い・デジタル資料</small></div>
+      <div class="who">「AIで何か始めたい。でも何を、どう頼めばいいか分からない」方へ。スマホだけで、打ち込みが苦手でも進められる手順にしています。</div>
+
+      <h3>中に入っているもの</h3>
+  <ul class="items">
     <li><strong>指示文(プロンプト)20本</strong>: 事業案出し/3つに絞る/利益計算/競合調査/販売ページ/特商法表記/営業メール/毎朝の自動タスク/週次レビュー/動画台本/立て直し。《 》の中を自分の内容に変えて貼るだけ</li>
     <li><strong>1晩の実録</strong>: 元手3万円・本人は作業しない条件で、AIが相場ツールの稼働、決済の設定、公開サイトまで進めた記録。失敗3件もそのまま</li>
     <li><strong>役割分担の作り方</strong>: 番頭・スカウト・プランナー・職人にAIを分けて、毎朝の報告と週次の見直しを自動で回す方法</li>
@@ -61,7 +75,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
     <li>90日計画の雛形(空欄付き)、開始前チェックリスト、用語集</li>
   </ul>
 
-  <h3>無料サンプル: プロンプト1(そのまま使えます)</h3>
+      <h3>無料サンプル: プロンプト1(そのまま使えます)</h3>
   <pre class="sample">役割: あなたはプランナー。私の番頭チームの戦略担当。
 前提: 元手《3万円》、AI課金込み。私は《日中動けない・打ち込みが苦手・スマホのみ》。
 借入なし、自動購入ボットなし、在庫を持たない、資格が要る業務はしない。
@@ -70,7 +84,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
 各案に「誰に・何を・いくらで・初売上まで何日・90日の見込み(控えめ/中位)・集客の入口」を表で。
 見込みは根拠を1行添える。「必ず」「誰でも」は使わない。
 最後に、10個の中位合計と、目標《金額》との差を正直に書く。</pre>
-  <p class="muted">本編には、この続き(絞り込み→利益計算→販売ページ→自動運転)の19本が入っています。</p>
+      <p class="muted">本編には、この続き(絞り込み→利益計算→販売ページ→自動運転)の19本が入っています。</p>
 
   <div class="honest">
     <strong>先にお伝えしておくこと</strong><br>
@@ -78,18 +92,22 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
     ご購入の方には、<strong>90日目(2027年1月)の結果と、その間に直したことを追記した改訂版を無料でお送りします</strong>。結果が良くても悪くても、そのまま書きます。
   </div>
 
-  <div class="who"><strong>向いている方</strong>: AIに任せる手順を最初から知りたい方/1人で小さく試したい方<br><strong>向いていない方</strong>: 短期間で確実な収入を求める方(この本ではお約束できません)</div>
+      <div class="who"><strong>向いている方</strong>: AIに任せる手順を最初から知りたい方/1人で小さく試したい方<br><strong>向いていない方</strong>: 短期間で確実な収入を求める方(この本ではお約束できません)</div>
 
-  <a class="btn" href="https://www.paypal.com/ncp/payment/SQQS3GWTBQ7B2">PayPalで購入(¥4,980)</a>
-  <p class="muted">お支払い後、PayPalに登録のメール宛にダウンロードのご案内をお送りします(8時〜23時はおおむね2時間以内、深夜は翌朝)。本書の本文・プロンプトはAI(Claude)を使って作成しています。</p>
+      <a class="btn" href="https://www.paypal.com/ncp/payment/SQQS3GWTBQ7B2">PayPalで購入(¥4,980)</a>
+      <p class="muted">お支払い後、PayPalに登録のメール宛にダウンロードのご案内をお送りします(8時〜23時はおおむね2時間以内、深夜は翌朝)。本書の本文・プロンプトはAI(Claude)を使って作成しています。</p>
+    </div>
+  </div>
 </section>
 
-<section class="card" id="wheel">
-  <h2>廃番ホイール 海外相場レポート 2026年10月号</h2>
-  <div class="paused"><strong>販売を一時停止しています(2026年10月23日〜)。</strong>元データ(eBayのAPI)の利用規約に、データを使った価格の提示や販売を制限する条項があることが分かったため、確認が取れるまで販売しません。</div>
+<section class="sec" id="wheel">
+  <div class="paused">
+    <h2>廃番ホイール 海外相場レポート 2026年10月号</h2>
+    <p style="margin:0"><strong>販売を一時停止しています(2026年10月23日〜)。</strong>元データ(eBayのAPI)の利用規約に、データを使った価格の提示や販売を制限する条項があることが分かったため、確認が取れるまで販売しません。</p>
+  </div>
 </section>
 
-<section class="card faq" id="faq">
+<section class="sec faq" id="faq">
   <h2>よくある質問</h2>
   <details>
     <summary>支払ってから、いつ届きますか?</summary>
@@ -122,11 +140,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
 </section>
 
 </main>
-<footer>
-  ZEROICHI WORKS(個人事業)<br>
-  お問い合わせ: <a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a><br>
-  <a href="tokushoho.html">特定商取引法に基づく表記</a> ・ <a href="privacy.html">プライバシーポリシー</a><br>
-  当ストアのページと資料はAI(Claude)を使って作成しています。
+<footer class="zw-foot">
+  <div class="in">
+    <nav><a href="tokushoho.html">特定商取引法に基づく表記</a><a href="privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <p>ZEROICHI WORKS(個人事業)</p>
+    <p>お問い合わせ: <a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>
+    <p>当ストアのページと資料はAI(Claude)を使って作成しています。</p>
+  </div>
 </footer>
 </body>
 </html>
