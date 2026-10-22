@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ヒトフデ — 毎日1問の一筆書きパズル</title>
+<meta name="description" content="1から順に数字をたどって、全部のマスを1本の線で埋める。毎日0時に新しい1問。登録なし・無料で遊べるブラウザパズル。">
+<meta property="og:title" content="ヒトフデ — 毎日1問の一筆書きパズル">
+<meta property="og:description" content="1から順に数字をたどって、全部のマスを1本の線で埋める。毎日0時に新しい1問。">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/game/hitofude/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#13203d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="ai">
+<div id="app">
+
+  <!-- HOME -->
+  <section id="home" class="screen on" aria-label="ホーム">
+    <header class="top">
+      <h1 class="logo"><span class="logo-jp">ヒトフデ</span></h1>
+      <div class="top-r">
+        <button class="chip" id="langBtn" aria-label="Language">EN</button>
+        <button class="icon-btn" id="soundBtn" aria-label="音" data-i18n-aria="sound"><svg viewBox="0 0 24 24" width="22" height="22"><path id="soundIcon" d="M4 9h4l5-4v14l-5-4H4z M16 8.5a5 5 0 0 1 0 7 M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <canvas id="demo" width="300" height="300" aria-hidden="true"></canvas>
+      <p class="tagline" data-i18n="tagline">1から順に、全部のマスを<br>1本の線で。</p>
+    </div>
+
+    <div class="today">
+      <div class="today-head">
+        <span class="today-no" id="todayNo">No.1</span>
+        <span class="today-size" id="todaySize">6×6</span>
+        <span class="streak" id="streakChip" title=""><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 2.8 2 3 0-3-1-6 .5-9z" fill="currentColor"/></svg><b id="streakN">0</b><span data-i18n="days">日連続</span></span>
+      </div>
+      <button class="btn primary big" id="playDaily"><span id="playDailyLabel" data-i18n="playToday">今日の1問をはじめる</span></button>
+      <p class="today-sub" id="todaySub"></p>
+    </div>
+
+    <nav class="modes" aria-label="モード">
+      <button class="mode" id="modeTutorial"><span class="m-t" data-i18n="howto">遊び方</span><span class="m-s" data-i18n="howtoSub">3問・30秒</span></button>
+      <button class="mode" id="modeEndless"><span class="m-t" data-i18n="endless">エンドレス</span><span class="m-s" id="endlessSub">5×5〜8×8</span></button>
+      <button class="mode" id="modeArchive"><span class="m-t" data-i18n="archive">過去の問題</span><span class="m-s" id="archiveSub"></span></button>
+      <button class="mode" id="modeTheme"><span class="m-t" data-i18n="themes">色テーマ</span><span class="m-s" id="themeSub"></span></button>
+    </nav>
+
+    <button class="supporter-cta" id="supporterBtn">
+      <span class="sc-t" id="supporterTitle" data-i18n="supporterPack">サポーターパック</span>
+      <span class="sc-s" id="supporterSub" data-i18n="supporterPitch">エンドレス・過去問・ヒント・色テーマ<br>¥480(買い切り)</span>
+    </button>
+
+    <footer class="foot">
+      <span>ZEROICHI WORKS</span>
+      <a href="../../tokushoho.html" data-i18n="tokushoho">特定商取引法に基づく表記</a>
+      <a href="../../privacy.html" data-i18n="privacy">プライバシー</a>
+      <a href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%83%92%E3%83%88%E3%83%95%E3%83%87%20%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B" data-i18n="contact">お問い合わせ</a>
+    </footer>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen" aria-label="パズル">
+    <header class="top">
+      <button class="icon-btn" id="backBtn" aria-label="ホームへ" data-i18n-aria="back"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="g-title"><b id="gTitle">No.1</b><span id="gSub">6×6</span></div>
+      <div class="timer" id="timer">0:00</div>
+    </header>
+    <p class="coach" id="coach" aria-live="polite"></p>
+    <div class="board-wrap" id="boardWrap">
+      <canvas id="board" aria-label="パズル盤面" role="img"></canvas>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="progBar"></i></div>
+    <div class="controls">
+      <button class="ctl" id="undoBtn"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 14L4 9l5-5 M4 9h10a6 6 0 0 1 0 12h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="undo">戻す</span></button>
+      <button class="ctl" id="resetBtn"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 12a8 8 0 1 0 2.5-5.8 M4 4v5h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="reset">最初から</span></button>
+      <button class="ctl" id="hintBtn"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M9 18h6 M10 21h4 M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="hint">ヒント</span></button>
+    </div>
+  </section>
+
+  <!-- RESULT SHEET -->
+  <div class="sheet" id="resultSheet" role="dialog" aria-modal="true" aria-labelledby="rTitle" hidden>
+    <div class="sheet-in">
+      <p class="r-kicker" id="rKicker"></p>
+      <h2 class="r-time" id="rTitle">0:42</h2>
+      <div class="r-stats">
+        <div><b id="rStreak">1</b><span data-i18n="streakLabel">連続日数</span></div>
+        <div><b id="rBest">0:42</b><span data-i18n="bestLabel">自己ベスト</span></div>
+        <div><b id="rPlayed">1</b><span data-i18n="playedLabel">クリア数</span></div>
+      </div>
+      <div class="r-actions" id="rDailyActions">
+        <button class="btn primary" id="shareBtn" data-i18n="share">結果をシェア</button>
+        <button class="btn ghost" id="imgBtn" data-i18n="saveImg">画像で保存</button>
+      </div>
+      <div class="r-actions" id="rNextActions">
+        <button class="btn primary" id="nextBtn" data-i18n="next">次の問題</button>
+      </div>
+      <p class="r-next" id="rNext"></p>
+      <button class="r-more" id="rMore"></button>
+      <button class="btn text" id="rClose" data-i18n="toHome">ホームへ</button>
+    </div>
+  </div>
+
+  <!-- SUPPORTER SHEET -->
+  <div class="sheet" id="supSheet" role="dialog" aria-modal="true" aria-labelledby="supTitle" hidden>
+    <div class="sheet-in">
+      <button class="sheet-x" data-close aria-label="閉じる">×</button>
+      <h2 id="supTitle" data-i18n="supporterPack">サポーターパック</h2>
+      <p class="sup-price"><b>¥480</b> <span data-i18n="oneTime">税込・買い切り(月額ではありません)</span></p>
+      <ul class="sup-list">
+        <li data-i18n="f1">エンドレス:5×5〜8×8の問題を無限に</li>
+        <li data-i18n="f2">過去の日替わり問題をすべて</li>
+        <li data-i18n="f3">ヒント(詰まったら次の3マスを表示)</li>
+        <li data-i18n="f4">色テーマ4種(桜・抹茶・墨・夜光)</li>
+      </ul>
+      <p class="sup-note" data-i18n="freeNote">今日の1問・連続記録・シェアはずっと無料です。</p>
+      <a class="btn primary" id="buyMail" href="#" data-i18n="buy">メールで申し込む</a>
+      <p class="sup-flow" data-i18n="flow">お申し込み後、PayPalの請求書をお送りします。お支払いを確認したら、利用キーをメールでお送りします(当日〜翌日)。デジタル商品のため、キー送付後の返金はできません。</p>
+      <div class="key-row">
+        <input id="keyInput" placeholder="HF-XXXXXXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="利用キー">
+        <button class="btn ghost" id="keyApply" data-i18n="apply">登録</button>
+      </div>
+      <p class="key-msg" id="keyMsg" aria-live="polite"></p>
+      <p class="sup-legal"><a href="../../tokushoho.html" data-i18n="tokushoho">特定商取引法に基づく表記</a> ・ <a href="../../privacy.html" data-i18n="privacy">プライバシー</a></p>
+    </div>
+  </div>
+
+  <!-- LIST SHEET (archive / endless size / themes) -->
+  <div class="sheet" id="listSheet" role="dialog" aria-modal="true" aria-labelledby="listTitle" hidden>
+    <div class="sheet-in">
+      <button class="sheet-x" data-close aria-label="閉じる">×</button>
+      <h2 id="listTitle"></h2>
+      <p class="list-note" id="listNote"></p>
+      <div class="list-grid" id="listGrid"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<script src="app.js"></script>
+</body>
+</html>
