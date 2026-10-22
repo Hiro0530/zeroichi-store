@@ -375,14 +375,16 @@ VIEWS.labels = () => {
 /* ledger */
 const IN_KINDS = ["買受け", "交換", "委託"];
 const OUT_KINDS = ["売却", "交換", "委託に基づく引渡し", "返還"];
-const CATS = ["一般の品物", "美術品", "時計・宝飾品", "自動車(部分品を含む)", "オートバイ・原付(部分品を含む)", "ゲームソフト", "CD・DVD・BD", "書籍", "その他の部分品(ねじ等を除く)"];
+const CATS = ["一般の品物", "美術品", "時計・宝飾品", "自動車(部分品を含む)", "オートバイ・原付(部分品を含む)", "ゲームソフト", "CD・DVD・BD", "書籍", "その他の部分品(ねじ等を除く)", "エアコン室外機・給湯器のヒートポンプ", "電線", "金属製のグレーチング"];
 /* 記帳の要否の目安(古物営業法第16条・施行規則。最終判断は管轄の警察署へ) */
 function needRecord(o) {
   const p = num(o.price), cat = o.cat || CATS[0], small = o.price !== "" && o.price != null && p < 10000;
   const car = /自動車|オートバイ/.test(cat), media = /ゲーム|CD|書籍/.test(cat), parts = /部分品/.test(cat) && !car;
+  const metal = /室外機|電線|グレーチング/.test(cat); // 2025年10月1日の施行規則改正で追加
   if (o.dir === "in") {
     if (!small) return ["need", "記録が必要です(対価の総額が1万円以上)。"];
     if (car || media || parts) return ["need", `「${cat}」は1万円未満でも記録と本人確認が必要です。`];
+    if (metal) return ["need", `「${cat}」は2025年10月1日から、1万円未満でも記録と本人確認が必要になりました。`];
     return ["opt", "対価の総額が1万円未満のため、記録と本人確認は省略できる取引です。残しておいても問題ありません。"];
   }
   if (car) return ["need", "自動車・オートバイは、売ったとき(払出し)も記録が必要です。"];
@@ -400,8 +402,8 @@ VIEWS.ledger = () => {
   ${limitLine("ledger")}
   <details class="note"><summary>台帳の記載事項について</summary>
   <p>古物営業法 第16条と施行規則 第17条により、古物を受け取ったり引き渡したりしたときは、その都度「取引の年月日」「品目と数量」「特徴」「相手方の住所・氏名・職業・年齢」「相手方の確認の方法」を記録します。電磁的な記録でもよく、最後に記録した日から3年間は営業所に備え付けておく必要があります。</p>
-  <p>1万円未満の取引など、記録が要らない場合もあります(自動車・オートバイ・部分品・ゲームソフト・CD/DVD・書籍などは例外あり)。扱う品目ごとの細かな取扱いは、管轄の警察署に確認してください。このアプリは記録の道具で、法律の判断はしません。</p>
-  <p class="src">参考: 警視庁「帳簿の様式」/ 和歌山県警察「古物営業の手引き」/ 古物営業法(e-Gov 法令検索)</p></details>`;
+  <p>1万円未満の取引など、記録が要らない場合もあります(自動車・オートバイ・部分品・ゲームソフト・CD/DVD・書籍などは例外あり。2025年10月1日からは、エアコン室外機・給湯器のヒートポンプ・電線・金属製のグレーチングも1万円未満で確認と記録が必要です)。扱う品目ごとの細かな取扱いは、管轄の警察署に確認してください。このアプリは記録の道具で、法律の判断はしません。</p>
+  <p class="src">参考: 警視庁「帳簿の様式」/ 和歌山県警察「古物営業の手引き」/ 長野県警察「古物営業法施行規則の一部改正(令和7年10月1日施行)」/ 古物営業法</p></details>`;
 };
 VIEWS.entry = id => {
   const o = find("ledger", id); if (!o) return notFound();
@@ -646,10 +648,11 @@ function reportDoc(o, c) {
   ${o.note ? `<p class="dnote">${esc(o.note).replace(/\n/g, "<br>")}</p>` : ""}</article>`;
 }
 function albumDoc(o, c) {
-  const ps = o.photos || []; if (!ps.length) return `<article class="doc"><header class="dh"><h1>写真台帳</h1></header><p>この作業には写真がありません。</p></article>`;
-  const pages = []; for (let i = 0; i < ps.length; i += 3) pages.push(ps.slice(i, i + 3));
+  const ps = o.photos || [];
+  const pages = []; for (let i = 0; i < Math.max(ps.length, 1); i += 3) pages.push([0, 1, 2].map(k => ps[i + k] || null));
+  const info = (n, p) => `<dl class="ainfo"><dt>No.</dt><dd>${p ? n : ""}</dd><dt>工事名</dt><dd>${p ? esc(o.title || "") : ""}</dd><dt>日付</dt><dd>${p ? jdate(o.date) : ""}</dd><dt>場所</dt><dd>${p ? esc(o.place || c.addr || "") : ""}</dd><dt>施主</dt><dd>${p && c.name ? esc(sama(c.name)) + " 様" : ""}</dd><dt>備考</dt><dd class="blank"></dd></dl>`;
   return pages.map((pg, pi) => `<article class="doc album"><header class="dh"><h1>写真台帳</h1><p class="dno">${esc(o.title || "")}<br>${pi + 1} / ${pages.length}</p></header>
-  ${pg.map((p, j) => `<div class="arow"><div class="aimg"><img data-pid="${p}" alt=""></div><dl class="ainfo"><dt>No.</dt><dd>${pi * 3 + j + 1}</dd><dt>工事名</dt><dd>${esc(o.title || "")}</dd><dt>日付</dt><dd>${jdate(o.date)}</dd><dt>場所</dt><dd>${esc(o.place || c.addr || "")}</dd><dt>施主</dt><dd>${esc(sama(c.name))} 様</dd><dt>備考</dt><dd class="blank"></dd></dl></div>`).join("")}
+  <div class="arows">${pg.map((p, j) => `<div class="arow"><div class="aimg">${p ? `<img data-pid="${p}" alt="">` : ""}</div>${info(pi * 3 + j + 1, p)}</div>`).join("")}</div>
   <footer class="afoot">${esc(S.settings.shop || "")}</footer></article>`).join("");
 }
 function qrSVG(text) {
@@ -685,7 +688,7 @@ function printLedger() {
   const rows = ledgerRows(from, to);
   PA.innerHTML = `<article class="doc ledger"><header class="dh"><h1>古物台帳</h1><p class="dno">${jdate(from)} 〜 ${jdate(to)}<br>${esc(s.shop)}　${esc(s.kobutsuIssuer)} ${esc(s.kobutsuNo)}</p></header>
   <table class="dt lg"><thead><tr><th>受/払</th><th>年月日</th><th>区分</th><th>品目</th><th>数量</th><th>特徴</th><th>金額</th><th>相手方 住所・氏名</th><th>職業</th><th>年齢</th><th>確認の方法</th></tr></thead><tbody>
-  ${rows.map(o => `<tr><td>${o.dir === "in" ? "受入れ" : "払出し"}</td><td>${esc(o.date)}</td><td>${esc(o.kind)}</td><td>${esc(o.item)}</td><td class="r">${esc(o.qty)}</td><td>${esc(o.features)}</td><td class="r">${o.price ? yen(o.price) : ""}</td><td>${esc(o.party?.addr)}<br>${esc(o.party?.name)}</td><td>${esc(o.party?.job)}</td><td>${esc(o.party?.age)}</td><td>${o.dir === "in" ? esc(o.verify) : ""}</td></tr>`).join("") || `<tr><td colspan="11">この期間の記録はありません</td></tr>`}
+  ${rows.map(o => `<tr><td>${o.dir === "in" ? "受入れ" : "払出し"}</td><td>${jdate(o.date)}</td><td>${esc(o.kind)}</td><td>${esc(o.item)}</td><td class="r">${esc(o.qty)}</td><td>${esc(o.features)}</td><td class="r">${o.price ? yen(o.price) : ""}</td><td>${esc(o.party?.addr)}<br>${esc(o.party?.name)}</td><td>${esc(o.party?.job)}</td><td>${esc(o.party?.age)}</td><td>${o.dir === "in" ? esc(o.verify) : ""}</td></tr>`).join("") || `<tr><td colspan="11">この期間の記録はありません</td></tr>`}
   </tbody></table></article>`;
   PA.classList.add("landscape"); closeSheet(); doPrint();
 }

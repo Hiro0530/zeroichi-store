@@ -104,6 +104,24 @@ table.cmp th{background:#EEF1F6;font-weight:700}
 .faq dt{font-weight:700;margin-top:18px}
 .faq dd{margin:4px 0 0;color:#3A4254;max-width:44em}
 .legalnote{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font-size:14px;color:#3A4254}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}
+.tabs button{flex:none;border:0;background:none;padding:12px 14px;font:700 15px var(--sans);color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected=true]{color:var(--carbon);border-bottom-color:var(--carbon)}
+.tp{display:grid;gap:24px;align-items:center}
+.tp[hidden]{display:none}
+@media(min-width:760px){.tp{grid-template-columns:300px 1fr;gap:48px}}
+.tp h3{font:700 21px var(--mincho);margin:0 0 8px}
+.tp ul{margin:0;padding-left:1.2em}
+.tp li{margin:6px 0}
+.tp .phone{margin:0 auto}
+.outs{display:grid;gap:18px;grid-template-columns:1fr 1fr}
+.outs figure{margin:0;min-width:0}
+.outs .wide{grid-column:1/-1}
+.outs img{width:100%;height:auto;border:1px solid var(--line);box-shadow:0 10px 26px -18px rgba(27,34,50,.45);background:#fff}
+.outs figcaption{font-size:14px;color:var(--sub);margin-top:8px}
+.terms{margin:14px 0 0;font-size:13.5px;border-top:1px solid var(--line);padding-top:10px}
+.terms dt{font-weight:700;margin-top:8px}
+.terms dd{margin:2px 0 0;color:#3A4254}
 footer{padding:30px 0 50px;border-top:1px solid var(--line);font-size:13.5px;color:var(--sub);line-height:2.1}
 footer a{margin-right:14px}
 </style>
@@ -140,10 +158,22 @@ footer a{margin-right:14px}
 <section id="who"><div class="w">
   <h2>こんな人のために作りました</h2>
   <p class="sub">共通しているのは「物と写真と情報を残して、あとで見つけたい」ということです。</p>
-  <div class="who">
-    <div><h3>外構・リフォーム・設備の職人さん</h3><p>現場ごとの写真に工事名と日付を入れて残す。寸法と使った材料を控える。その場で見積を出して、A4の書類やPDFで渡す。</p></div>
-    <div><h3>美容室・サロン</h3><p>お客さまごとに、施術の写真と薬剤の配合を残す。次に来たときに、前回と同じ色をすぐ出せます。</p></div>
-    <div><h3>古物商・せどり・中古パーツ</h3><p>箱ごとに写真を撮って置き場所を登録し、QRラベルを貼る。買い取りと販売は古物台帳に記録して、CSVで書き出せます。</p></div>
+  <div class="tabs" role="tablist" aria-label="使う人">
+    <button role="tab" id="t1" aria-controls="p1" aria-selected="true">職人・外構</button>
+    <button role="tab" id="t2" aria-controls="p2" aria-selected="false" tabindex="-1">美容・サロン</button>
+    <button role="tab" id="t3" aria-controls="p3" aria-selected="false" tabindex="-1">古物商・せどり</button>
+  </div>
+  <div class="tp" role="tabpanel" id="p1" aria-labelledby="t1">
+    <div class="phone"><img src="img/demo-board.jpg" alt="工事名・日付・場所が左下に入った現場写真" width="780" height="1560" style="object-position:bottom"></div>
+    <div><h3>外構・リフォーム・設備の職人さん</h3><ul><li>現場写真の左下に、工事名・日付・場所・メモを入れて保存</li><li>寸法と使った材料を、お客さまごとに控える</li><li>その場で見積を作って、A4の御見積書やPDFで渡す</li><li>A4に3枚ずつの写真台帳で、工事の報告もすぐ</li></ul></div>
+  </div>
+  <div class="tp" role="tabpanel" id="p2" aria-labelledby="t2" hidden>
+    <div class="phone"><img src="img/demo-salon.jpg" alt="お客さまのカルテ。前回の色と注意点が残っている" width="780" height="1560"></div>
+    <div><h3>美容室・サロン</h3><ul><li>お客さまごとに、前回の色・薬剤の配合・注意点を残す</li><li>施術の写真を、お客さまの記録と一緒に保存</li><li>カラー剤の在庫は「箱」で、どこに何本あるかを控える</li><li>名前の読みでもすぐ見つかる</li></ul></div>
+  </div>
+  <div class="tp" role="tabpanel" id="p3" aria-labelledby="t3" hidden>
+    <div class="phone"><img src="img/demo-daicho.jpg" alt="古物台帳の受入れ画面。記録が必要かどうかの目安が出ている" width="780" height="1560"></div>
+    <div><h3>古物商・せどり・中古パーツ</h3><ul><li>買い取り(受入れ)と売り(払出し)を、帳簿の記載事項どおりに記録</li><li>金額と品物の種類から「記録が必要な取引か」の目安を表示(2025年10月の改正に対応)</li><li>CSV(Excel)とA4横の帳簿で出力</li><li>品物を入れた箱にQRラベルを貼って、置き場所もすぐわかる</li></ul></div>
   </div>
 </div></section>
 
@@ -157,6 +187,17 @@ footer a{margin-right:14px}
       <figcaption><b>写真に黒板を入れる</b><span>工事名・日付・場所・メモを、写真の左下に入れて保存します。A4に3枚ずつの写真台帳も作れます。</span></figcaption></figure>
     <figure class="demo"><div class="phone"><img src="img/demo-search.jpg" alt="「ビス」で検索すると、ビスが入っている箱が出てくる画面" loading="lazy" width="780" height="1560"></div>
       <figcaption><b>「あれ、どこだっけ」をすぐ解決</b><span>箱の中身・置き場所・メモ・台帳の特徴まで、まとめて探します。カタカナでもひらがなでも見つかります。</span></figcaption></figure>
+  </div>
+</div></section>
+
+<section id="out"><div class="w">
+  <h2>印刷するとこうなります</h2>
+  <p class="sub">どれもA4です。印刷の画面で「PDFに保存」を選べば、そのままメールやLINEで送れます。</p>
+  <div class="outs">
+    <figure><img src="img/out-est.jpg" alt="御見積書の見本" loading="lazy" width="900" height="1272"><figcaption>御見積書</figcaption></figure>
+    <figure><img src="img/out-album.jpg" alt="写真台帳の見本。A4に3枚、それぞれ横に工事名や日付の欄" loading="lazy" width="900" height="1272"><figcaption>写真台帳(A4に3枚)</figcaption></figure>
+    <figure class="wide"><img src="img/out-labels.jpg" alt="箱に貼るQRラベルの見本" loading="lazy" width="858" height="209"><figcaption>箱のQRラベル(A4に8枚または24枚)</figcaption></figure>
+    <figure class="wide"><img src="img/out-ledger.jpg" alt="古物台帳の見本(A4横)" loading="lazy" width="900" height="147"><figcaption>古物台帳(A4横)。CSVでも書き出せます</figcaption></figure>
   </div>
 </div></section>
 
@@ -175,7 +216,7 @@ footer a{margin-right:14px}
 
 <section id="price"><div class="w">
   <h2>料金</h2>
-  <p class="sub">月額ではなく、1回払いの買い切りです。</p>
+  <p class="sub">買い切り ¥2,980・月額なし。まず無料版で試せます。</p>
   <div class="price">
     <div class="plan">
       <h3>無料版</h3>
@@ -186,19 +227,18 @@ footer a{margin-right:14px}
     <div class="plan paid">
       <h3>先行予約版(買い切り)</h3>
       <p class="yen">¥2,980<small>税込・1回だけ</small></p>
-      <ul><li>件数の制限がなくなります</li><li>今後の機能追加もそのまま使えます</li><li>月額料金はかかりません</li></ul>
+      <ul><li>件数の制限がなくなります</li><li>アプリが更新されても、同じキーでそのまま使えます</li><li>月額料金はかかりません</li></ul>
       <a class="btn" href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%B2%E3%81%8B%E3%81%88%20%E5%85%88%E8%A1%8C%E4%BA%88%E7%B4%84&amp;body=%E3%81%B2%E3%81%8B%E3%81%88%E3%81%AE%E5%85%88%E8%A1%8C%E4%BA%88%E7%B4%84%E3%82%92%E5%B8%8C%E6%9C%9B%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%3A%0A%E3%81%8A%E4%BB%95%E4%BA%8B%E3%81%AE%E7%A8%AE%E9%A1%9E%28%E4%BE%8B%3A%20%E5%A4%96%E6%A7%8B%E3%80%81%E7%BE%8E%E5%AE%B9%E5%AE%A4%E3%80%81%E5%8F%A4%E7%89%A9%E5%95%86%29%3A%0A%E4%B8%BB%E3%81%AB%E4%BD%BF%E3%81%84%E3%81%9F%E3%81%84%E6%A9%9F%E8%83%BD%28%E4%BB%BB%E6%84%8F%29%3A%0A">先行予約をメールで申し込む</a>
-      <p class="note">予約の時点ではお金はかかりません。お支払い方法(PayPal)は、予約順にメールでご案内します。お支払いを確認したら、利用キーをメールでお送りします。アプリの「設定」に貼り付けると、すぐに制限がなくなります。宛先: zeroichi.works.jp@gmail.com</p>
+      <p class="note">予約の時点ではお金はかかりません。お支払い方法(PayPal)は、予約順にメールでご案内します。宛先: zeroichi.works.jp@gmail.com</p>
+      <dl class="terms">
+        <dt>キーが届くまで</dt><dd>お支払いを確認してから、原則12時間以内に利用キーをメールでお送りします。アプリの「設定」に貼り付けると、すぐに制限がなくなります。</dd>
+        <dt>キーをなくしたら</dt><dd>お申し込みと同じメールアドレスからご連絡ください。同じキーを再発行します。</dd>
+        <dt>返金</dt><dd>デジタル商品のため、キーをお送りした後の返金は原則お受けしていません。無料版でひととおり試してからお申し込みください。キーが使えないなど当方の不備の場合は返金します。</dd>
+        <dt>販売事業者</dt><dd>ZEROICHI WORKS(<a href="../tokushoho.html">特定商取引法に基づく表記</a>)</dd>
+      </dl>
     </div>
   </div>
-  <div class="tw"><table class="cmp">
-    <caption style="text-align:left;font-size:13.5px;color:var(--sub);padding-bottom:6px">似たサービスの料金の例(2026年10月に各社の公開情報で確認)</caption>
-    <tr><th>種類</th><th>料金の例</th></tr>
-    <tr><td>施工管理アプリ(写真・工程・報告)</td><td>月額 9,800円〜 など、月額制が中心</td></tr>
-    <tr><td>古物台帳つきPOS</td><td>月額 16,500円〜22,000円 など</td></tr>
-    <tr><td>在庫・置き場所アプリ(海外製)</td><td>無料プランのあと、月額 49ドル〜</td></tr>
-    <tr><td>ひかえ</td><td>3つをまとめて、買い切り 2,980円</td></tr>
-  </table></div>
+  <p class="note" style="margin-top:18px">同じような用途のサービスは、月額制のものが多くあります。ひかえは買い切り ¥2,980・月額なしです。</p>
 </div></section>
 
 <section id="faq"><div class="w">
@@ -217,14 +257,19 @@ footer a{margin-right:14px}
     <dt>無料版のデータは、利用キーを入れたあとも使えますか?</dt>
     <dd>はい、そのまま使えます。キーを入れると、件数の制限がなくなるだけです。</dd>
     <dt>返金はできますか?</dt>
-    <dd>無料版でひととおり試してから、ご予約ください。デジタル商品のため、お支払い後の返金は原則お受けしていません。詳しくは特定商取引法に基づく表記をご覧ください。</dd>
+    <dd>デジタル商品のため、キーをお送りした後の返金は原則お受けしていません。キーが使えないなど当方の不備の場合は返金します。無料版でひととおり試してからご予約ください。詳しくは<a href="../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください。</dd>
   </dl>
-  <div class="legalnote" style="margin-top:26px">古物台帳の記載事項の出典: 古物営業法 第16条・第18条、古物営業法施行規則 第17条(帳簿の様式)。参考: 警視庁「帳簿の様式」、和歌山県警察「古物営業の手引き」。</div>
+  <div class="legalnote" style="margin-top:26px">古物台帳の記載事項の出典: 古物営業法 第16条・第18条、古物営業法施行規則 第17条(帳簿の様式)。参考: 警視庁「帳簿の様式」、和歌山県警察「古物営業の手引き」。2025年10月1日施行の施行規則改正(エアコン室外機・給湯器のヒートポンプ・電線・金属製グレーチングは1万円未満でも確認・記録が必要)にも対応しています: <a href="https://www.pref.nagano.lg.jp/police/shinsei/seian/seianki/kobutsusekoukaisei251001.html" rel="noopener">長野県警察「古物営業法施行規則の一部改正」</a>。</div>
 </div></section>
 
 <div class="w"><footer>
   <a href="app.html">アプリを開く</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a><br>
   ひかえ / ZEROICHI WORKS
 </footer></div>
+<script>
+(function(){var tabs=[].slice.call(document.querySelectorAll('[role=tab]'));
+function sel(t){tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;document.getElementById(x.getAttribute('aria-controls')).hidden=!on;});}
+tabs.forEach(function(t,i){t.addEventListener('click',function(){sel(t)});t.addEventListener('keydown',function(e){var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){var n=tabs[(i+d+tabs.length)%tabs.length];sel(n);n.focus();}});});})();
+</script>
 </body>
 </html>
