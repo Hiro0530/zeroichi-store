@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ZEROICHI WORKS ストア</title>
-<meta name="description" content="eBay輸出セラーとAI副業向けの実データ資料。廃番ホイール海外相場レポート、AI番頭パッケージ。">
+<meta name="description" content="AIに小さな事業を立ち上げさせる手順書と指示文20本(AI番頭パッケージ)。売上0円の時点も含めて、実際に起きたことを書いた実録付き。">
 <style>
 :root{--navy:#1a2a6c;--ink:#1a2238;--muted:#5b6478;--bg:#f6f7fb;--card:#fff;--accent:#e0a100}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;overflow-wrap:break-word}
@@ -13,12 +13,15 @@ header h1{margin:0;font-size:20px}header p{margin:6px 0 0;opacity:.85;font-size:
 main{max-width:720px;margin:0 auto;padding:16px}
 .card{background:var(--card);border-radius:14px;padding:20px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .card img{width:100%;max-width:260px;border:1px solid #e3e6ef;border-radius:8px;display:block;margin:0 auto 14px}
-h2{font-size:18px;margin:0 0 6px}.price{font-size:26px;font-weight:700;color:var(--navy);margin:8px 0}
+h2{font-size:18px;margin:0 0 6px}h3{font-size:15px;margin:16px 0 6px}.price{font-size:26px;font-weight:700;color:var(--navy);margin:8px 0}
 .price small{font-size:13px;color:var(--muted);font-weight:400}
 ul{padding-left:20px;margin:8px 0}li{margin:4px 0}
 .btn{display:block;text-align:center;background:var(--accent);color:#1a1a1a;text-decoration:none;padding:14px;border-radius:10px;font-weight:700;font-size:16px;margin-top:14px}
 .muted{color:var(--muted);font-size:13px}
 .who{background:#eef1f8;border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0}
+.honest{border-left:4px solid var(--accent);background:#fff8e6;padding:10px 12px;border-radius:0 8px 8px 0;font-size:14px;margin:12px 0}
+pre.sample{background:#1a2238;color:#eef1f8;border-radius:8px;padding:12px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+.paused{background:#f1f2f6;border-radius:8px;padding:10px 12px;font-size:14px;margin-top:12px}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}footer a{color:var(--navy)}
 .faq details{border-top:1px solid #e3e6ef;padding:10px 0}.faq details:last-child{border-bottom:1px solid #e3e6ef}
 .faq summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;padding-right:24px;position:relative}
@@ -29,43 +32,51 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
 <body>
 <header>
   <h1>ZEROICHI WORKS ストア</h1>
-  <p>実データと実録だけを売る、小さな資料店です。</p>
+  <p>AIに事業を任せたら何が起きるか。うまくいかなかったことも含めて記録して売っている、小さな資料店です。</p>
 </header>
 <main>
 
-<section class="card" id="wheel">
-  <img src="cover-wheel.png" alt="廃番ホイール 海外相場レポート 表紙">
-  <h2>廃番ホイール 海外相場レポート 2026年10月号(PDF・18ページ)</h2>
-  <div class="price">¥1,980 <small>税込・一回払い</small></div>
-  <div class="who">こんな方に: eBayで自動車パーツを輸出している/これから始める方、ホイール・旧車部品を扱う業者の方</div>
-  <ul>
-    <li>eBayに出ている<strong>日本発</strong>の廃番ホイール出品を集計(2026年10月21日時点)</li>
-    <li>OZ Futura / BBS RS / Work Meister / Work Equip / Weds Kranze / MAE / SSR / Rays Volk / Advan / Hayashi / RS Watanabe の11銘柄+汎用検索「その他」の12区分</li>
-    <li>銘柄ごとに出品件数・最小/中央値/最高価格・代表出品5件(サイズ・PCD・状態)</li>
-    <li>eBay手数料13.25%+国際手数料1.3%+換金3%+為替安全幅3%+国際送料(45kg≒6.25万円)を引いた、<strong>利益率30%で買える国内仕入れ上限(4本・1本売り)</strong></li>
-    <li>総合ランキング表(仕入れ上限順)、前日比の出品消滅数(回転の目安)、用語・免責、利益計算の前提</li>
-  </ul>
-  <img src="sample-wheel.png" alt="OZ Futuraページのサンプル" style="max-width:100%">
-  <p class="muted">※出品価格ベースの参考資料です。成約価格ではありません。投資助言ではなく、売買の判断はご自身でお願いします。</p>
-  <a class="btn" href="https://www.paypal.com/ncp/payment/XLNDCY5HVDJV6">PayPalで購入(¥1,980)</a>
-  <p class="muted">お支払い後、PayPalに登録のメール宛にPDFをお送りします(当日〜翌営業日)。届かない場合は下記メールへ。</p>
-</section>
-
 <section class="card" id="bantou">
   <img src="cover-bantou.png" alt="AI番頭パッケージ 表紙">
-  <h2>AI番頭パッケージ ― AIに事業を立ち上げさせる手順書+プロンプト20本(PDF・35ページ)</h2>
-  <div class="price">¥4,980 <small>税込・一回払い</small></div>
-  <div class="who">こんな方に: AIで副業・小さな事業を始めたいが、何をどう指示すればいいか分からない方。PC不要、スマホだけで再現できます</div>
+  <h2>AI番頭パッケージ ― AIに小さな事業を立ち上げさせる手順書+指示文20本(PDF・35ページ)</h2>
+  <div class="price">¥4,980 <small>税込・一回払い・デジタル資料</small></div>
+  <div class="who">「AIで何か始めたい。でも何を、どう頼めばいいか分からない」方へ。スマホだけで、打ち込みが苦手でも進められる手順にしています。</div>
+
+  <h3>中に入っているもの</h3>
   <ul>
-    <li>元手3万円・本人は作業しない条件で、AIが1晩で「相場ツール本番稼働→PayPal課金→公開サイト→自動運転」まで到達した<strong>実録タイムライン</strong>(失敗3件もそのまま)</li>
-    <li>そのままコピペで使える<strong>指示文(プロンプト)20本</strong>: 事業案出し/利益計算/競合調査/販売ページ/特商法/営業メール/毎朝の自動タスク/週次レビュー/台本/立て直し</li>
-    <li>番頭・スカウト・プランナー・職人の役割分担と、毎朝ブリーフ・週次レビューの組み方</li>
-    <li>法律・規約で踏んではいけない線(自動購入ボット、行政書士の独占業務、特定電子メール法、AI生成の開示)</li>
-    <li>90日計画の雛形(空欄付き)、チェックリスト、用語集</li>
+    <li><strong>指示文(プロンプト)20本</strong>: 事業案出し/3つに絞る/利益計算/競合調査/販売ページ/特商法表記/営業メール/毎朝の自動タスク/週次レビュー/動画台本/立て直し。《 》の中を自分の内容に変えて貼るだけ</li>
+    <li><strong>1晩の実録</strong>: 元手3万円・本人は作業しない条件で、AIが相場ツールの稼働、決済の設定、公開サイトまで進めた記録。失敗3件もそのまま</li>
+    <li><strong>役割分担の作り方</strong>: 番頭・スカウト・プランナー・職人にAIを分けて、毎朝の報告と週次の見直しを自動で回す方法</li>
+    <li><strong>踏んではいけない線</strong>: 自動購入ボット、資格が要る業務、特定電子メール法、AI生成の開示</li>
+    <li>90日計画の雛形(空欄付き)、開始前チェックリスト、用語集</li>
   </ul>
-  <p class="muted">※「必ず儲かる」「誰でも月○万円」という内容ではありません。手順と、実際に起きたことを書いています。</p>
+
+  <h3>無料サンプル: プロンプト1(そのまま使えます)</h3>
+  <pre class="sample">役割: あなたはプランナー。私の番頭チームの戦略担当。
+前提: 元手《3万円》、AI課金込み。私は《日中動けない・打ち込みが苦手・スマホのみ》。
+借入なし、自動購入ボットなし、在庫を持たない、資格が要る業務はしない。
+私の持ち物: 《これまでの仕事の経験、持っているアカウントや資格》。
+やること: 私が作業しなくてもAIが作って運用できる事業案を10個。
+各案に「誰に・何を・いくらで・初売上まで何日・90日の見込み(控えめ/中位)・集客の入口」を表で。
+見込みは根拠を1行添える。「必ず」「誰でも」は使わない。
+最後に、10個の中位合計と、目標《金額》との差を正直に書く。</pre>
+  <p class="muted">本編には、この続き(絞り込み→利益計算→販売ページ→自動運転)の19本が入っています。</p>
+
+  <div class="honest">
+    <strong>先にお伝えしておくこと</strong><br>
+    実録の事業は、執筆時点(2026年10月22日)で<strong>売上0円</strong>です。この本は「稼げる方法」ではなく、「AIにどこまで任せられるか」の手順と記録です。<br>
+    ご購入の方には、<strong>90日目(2027年1月)の結果と、その間に直したことを追記した改訂版を無料でお送りします</strong>。結果が良くても悪くても、そのまま書きます。
+  </div>
+
+  <div class="who"><strong>向いている方</strong>: AIに任せる手順を最初から知りたい方/1人で小さく試したい方<br><strong>向いていない方</strong>: 短期間で確実な収入を求める方(この本ではお約束できません)</div>
+
   <a class="btn" href="https://www.paypal.com/ncp/payment/SQQS3GWTBQ7B2">PayPalで購入(¥4,980)</a>
-  <p class="muted">お支払い後、PayPalに登録のメール宛にPDFをお送りします(当日〜翌営業日)。</p>
+  <p class="muted">お支払い後、PayPalに登録のメール宛にダウンロードのご案内をお送りします(8時〜23時はおおむね2時間以内、深夜は翌朝)。本書の本文・プロンプトはAI(Claude)を使って作成しています。</p>
+</section>
+
+<section class="card" id="wheel">
+  <h2>廃番ホイール 海外相場レポート 2026年10月号</h2>
+  <div class="paused"><strong>販売を一時停止しています(2026年10月23日〜)。</strong>元データ(eBayのAPI)の利用規約に、データを使った価格の提示や販売を制限する条項があることが分かったため、確認が取れるまで販売しません。</div>
 </section>
 
 <section class="card faq" id="faq">
@@ -87,12 +98,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
     <p>デジタル資料の性質上、お送り後の返品・返金はお受けしていません。ファイルが開けないなどの不具合は、メールでご連絡いただければ再送または別形式でお送りします。</p>
   </details>
   <details>
-    <summary>相場レポートの数字は何を元にしていますか? 毎月出ますか?</summary>
-    <p>eBayに日本から出品中の廃番ホイールを2026年10月21日時点で集計した「出品価格」ベースです。成約価格ではなく、利益を保証するものでもありません。次号の発行時期は未定です。毎朝の最新値が必要な方は、ページ下部のKAIGAI SCOUT(メール配信)をご覧ください。</p>
+    <summary>パソコンがなくても使えますか? どのAIで使えますか?</summary>
+    <p>スマホのブラウザだけで進められる手順にしています。実録はClaudeで行いましたが、指示文は日本語の平文なので、ChatGPTなど他のAIにもそのまま貼り付けて使えます。定期実行など一部の機能はAIごとに名前や有無が違います。</p>
   </details>
   <details>
-    <summary>AI番頭パッケージは、どのAIで使えますか?</summary>
-    <p>実録はClaudeで行ったものですが、指示文(プロンプト)は日本語の平文です。ChatGPTなど他のAIにそのまま貼り付けても使えます。スマホのブラウザだけで再現できる手順にしています。</p>
+    <summary>改訂版はいつ、どうやって届きますか?</summary>
+    <p>2027年1月下旬を予定しています。ご購入時のメールアドレス宛に、追加料金なしでお送りします。</p>
   </details>
   <details>
     <summary>領収書は出ますか?</summary>
@@ -100,16 +111,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
   </details>
 </section>
 
-<section class="card">
-  <h2>毎朝届く版をお探しの方へ</h2>
-  <p>ホイールに限らず、ご自身のキーワード(10個まで)で毎朝「仕入れ上限価格」が届くメール配信 <a href="https://hiro0530.github.io/kaigai-scout/">KAIGAI SCOUT</a>(月額2,980円・初月¥0)もあります。</p>
-</section>
-
 </main>
 <footer>
   ZEROICHI WORKS(個人事業主・代表 古林浩敬)<br>
   お問い合わせ: <a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a><br>
-  <a href="tokushoho.html">特定商取引法に基づく表記</a> ・ <a href="privacy.html">プライバシーポリシー</a>
+  <a href="tokushoho.html">特定商取引法に基づく表記</a> ・ <a href="privacy.html">プライバシーポリシー</a><br>
+  当ストアのページと資料はAI(Claude)を使って作成しています。
 </footer>
 </body>
 </html>
