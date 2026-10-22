@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect x=%272%27 y=%276%27 width=%2728%27 height=%2720%27 rx=%273%27 fill=%27%23F3EBDF%27 stroke=%27%231E2621%27 stroke-width=%273%27/%3E%3Cpath d=%27M7 14h18M7 20h18%27 stroke=%27%231E2621%27 stroke-width=%273%27/%3E%3C/svg%3E">
+<title>ラベル帳 アプリ｜食品表示ラベルを作って印刷</title>
+<meta name="description" content="食品表示ラベル(一括表示)をブラウザで作り、A4ラベル用紙に印刷するアプリ。登録不要、データは端末の中だけに保存。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="label.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="site-head no-print">
+  <div class="in">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>ラベル帳</a>
+    <span id="planBadge" class="plan-badge">無料版(3商品まで)</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="画面の切り替え">
+    <button role="tab" data-tab="products" aria-selected="true">商品</button>
+    <button role="tab" data-tab="ingredients" aria-selected="false">原材料</button>
+    <button role="tab" data-tab="print" aria-selected="false">印刷</button>
+    <button role="tab" data-tab="matrix" aria-selected="false">アレルゲン一覧表</button>
+    <button role="tab" data-tab="settings" aria-selected="false">設定</button>
+  </nav>
+</header>
+
+<div id="storageWarn" class="banner warn no-print" hidden>この端末のブラウザではデータを保存できません(プライベートモード等)。閉じる前に「設定」からバックアップを書き出してください。</div>
+
+<main class="app no-print">
+
+  <!-- 商品 -->
+  <section id="tab-products" class="tab" role="tabpanel">
+    <div class="split">
+      <aside class="plist">
+        <div class="plist-head">
+          <h2>商品</h2>
+          <button id="addProduct" class="btn small">商品を追加</button>
+        </div>
+        <ul id="productList"></ul>
+        <p id="limitNote" class="limit-note" hidden>無料版は3商品までです。<a href="./#price">先行予約(¥1,980・買い切り)</a>で無制限になります。</p>
+      </aside>
+
+      <div class="editor" id="productEditor"></div>
+
+      <div class="preview-col">
+        <div class="sticky">
+          <h3 class="pv-title">ラベルの見本 <span class="muted" id="pvSize"></span></h3>
+          <div class="label-stage"><div id="labelPreview"></div></div>
+          <p id="fitNote" class="muted"></p>
+          <ul id="warnings" class="warnings"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 原材料 -->
+  <section id="tab-ingredients" class="tab" role="tabpanel" hidden>
+    <div class="split two">
+      <aside class="plist">
+        <div class="plist-head">
+          <h2>原材料</h2>
+          <button id="addIngredient" class="btn small">原材料を追加</button>
+        </div>
+        <input id="ingSearch" class="search" type="search" placeholder="名前で絞り込み" aria-label="原材料を名前で絞り込み">
+        <ul id="ingredientList"></ul>
+      </aside>
+      <div class="editor" id="ingredientEditor"></div>
+    </div>
+  </section>
+
+  <!-- 印刷 -->
+  <section id="tab-print" class="tab" role="tabpanel" hidden>
+    <div class="split two">
+      <div class="editor">
+        <h2>印刷</h2>
+        <div class="grid2">
+          <label>商品<select id="prProduct"></select></label>
+          <label>製造日<input id="prDate" type="date"></label>
+          <label>ラベル用紙<select id="prSheet"></select></label>
+          <label>枚数(ラベルの数)<input id="prCount" type="number" min="1" max="500" value="12"></label>
+          <label>何枚目から貼るか<input id="prStart" type="number" min="1" value="1"><small>使いかけの用紙は、空いている最初の位置を入れます(左上から横へ数えます)</small></label>
+          <label>期限の日付<output id="prLimit" class="out"></output></label>
+        </div>
+        <details class="adjust">
+          <summary>用紙の寸法と位置の調整</summary>
+          <div class="grid3">
+            <label>ラベル幅 mm<input id="prW" type="number" step="0.1"></label>
+            <label>ラベル高さ mm<input id="prH" type="number" step="0.1"></label>
+            <label>列 × 行<span class="pair"><input id="prCols" type="number" min="1" max="6"><input id="prRows" type="number" min="1" max="20"></span></label>
+            <label>上の余白 mm<input id="prTop" type="number" step="0.1"></label>
+            <label>左の余白 mm<input id="prLeft" type="number" step="0.1"></label>
+            <label>すき間 横/縦 mm<span class="pair"><input id="prGapX" type="number" step="0.1"><input id="prGapY" type="number" step="0.1"></span></label>
+          </div>
+          <p class="muted">お使いの用紙のパッケージに書かれた寸法を入れてください。最初は普通紙に「枠線あり」で試し刷りし、用紙と重ねて位置を確かめるのがおすすめです。</p>
+        </details>
+        <label class="check"><input id="prBorder" type="checkbox"> 枠線を印刷する(試し刷り用)</label>
+        <div class="actions">
+          <button id="doPrint" class="btn">印刷する</button>
+        </div>
+        <p class="muted">ブラウザの印刷画面で「用紙: A4」「倍率: 100%(実際のサイズ)」「余白: なし」を選んでください。</p>
+      </div>
+      <div class="preview-col">
+        <h3 class="pv-title">用紙の見本</h3>
+        <div id="sheetPreview" class="sheet-preview"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- アレルゲン一覧表 -->
+  <section id="tab-matrix" class="tab" role="tabpanel" hidden>
+    <div class="editor wide">
+      <div class="row-between">
+        <h2>店頭用アレルゲン一覧表</h2>
+        <button id="printMatrix" class="btn small">一覧表を印刷</button>
+      </div>
+      <p class="muted">登録した商品ごとに、特定原材料9品目と、それに準ずる20品目を一覧にします。お客様からの質問への回答や、店頭の掲示に使えます。</p>
+      <div id="matrixWrap"></div>
+    </div>
+  </section>
+
+  <!-- 設定 -->
+  <section id="tab-settings" class="tab" role="tabpanel" hidden>
+    <div class="editor wide">
+      <h2>表示者(ラベルの最後の欄)</h2>
+      <div class="grid2">
+        <label>欄の名前<select id="stRole"><option>製造者</option><option>販売者</option><option>加工者</option></select></label>
+        <label>氏名または名称<input id="stName" placeholder="例: 焼き菓子 こむぎ堂 山田花子"></label>
+        <label class="span2">住所<input id="stAddr" placeholder="例: 愛知県名古屋市中区〇〇1-2-3"></label>
+      </div>
+
+      <h2>バックアップ</h2>
+      <p class="muted">データはこのブラウザの中だけに保存されています。機種変更やブラウザの掃除で消えることがあるので、時々書き出して保管してください。</p>
+      <div class="actions">
+        <button id="exportData" class="btn ghost">バックアップを書き出す</button>
+        <label class="btn ghost file-btn">バックアップを読み込む<input id="importData" type="file" accept="application/json,.json"></label>
+      </div>
+
+      <h2>先行予約の利用キー</h2>
+      <p class="muted">先行予約の方にメールでお送りするキーを入れると、商品数が無制限になり、アレルゲン一覧表と栄養成分の自動計算が使えます。</p>
+      <div class="key-row">
+        <input id="stKey" placeholder="LC-XXXXXXXX-XXXX" autocomplete="off" aria-label="利用キー">
+        <button id="applyKey" class="btn small">キーを登録</button>
+      </div>
+      <p id="keyMsg" class="muted" role="status"></p>
+
+      <h2>データの消去</h2>
+      <button id="resetAll" class="btn danger small">すべてのデータを消す</button>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="printArea" class="print-only"></div>
+
+<footer class="site-foot no-print">
+  <div class="in">
+    <span>ラベル帳 / ZEROICHI WORKS</span>
+    <span><a href="./">使い方と料金</a>　<a href="tokushoho.html">特定商取引法に基づく表記</a>　<a href="privacy.html">プライバシー</a></span>
+    <span class="ai-note">このアプリはAI(Claude)が作成し、運営者が公開しています。表示内容の最終確認と責任は、表示をする事業者にあります。</span>
+  </div>
+</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

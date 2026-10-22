@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect x=%272%27 y=%276%27 width=%2728%27 height=%2720%27 rx=%273%27 fill=%27%23F3EBDF%27 stroke=%27%231E2621%27 stroke-width=%273%27/%3E%3Cpath d=%27M7 14h18M7 20h18%27 stroke=%27%231E2621%27 stroke-width=%273%27/%3E%3C/svg%3E">
+<title>ラベル帳｜食品表示ラベルをブラウザで作って印刷</title>
+<meta name="description" content="焼き菓子・パン・そうざいの食品表示ラベル(一括表示)を、ブラウザで作ってA4ラベル用紙に印刷。原材料の重さ順・添加物の区切り・アレルゲンのまとめ書き・期限の日付を自動で。登録不要、データは端末の中だけ。">
+<meta property="og:title" content="ラベル帳 — 食品表示ラベルをブラウザで">
+<meta property="og:description" content="原材料と重さを入れると、表示の形に整えてA4ラベル用紙に印刷。登録不要・3商品まで無料。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="label.css">
+<style>
+  .hero{background:var(--surface);border-bottom:1px solid var(--line)}
+  .hero .in{max-width:1080px;margin:0 auto;padding:48px 16px 56px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:center}
+  .hero h1{font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.35;margin:0 0 .5em;font-weight:700;letter-spacing:.01em}
+  .hero p.lead{font-size:1.05rem;color:var(--muted);max-width:34em;margin:0 0 1.5em}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero .fine{font-size:.85rem;color:var(--muted);margin-top:14px}
+  /* the sticker: real 86.4x42.3mm proportions, shown larger */
+  .bag{position:relative;background:linear-gradient(160deg,#C79A64,#B08048);border-radius:6px 6px 14px 14px;padding:56px 28px 36px;max-width:440px;margin:0 auto;box-shadow:inset 0 10px 0 rgba(0,0,0,.06)}
+  .bag::before{content:"";position:absolute;left:0;right:0;top:20px;height:2px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 6px,transparent 6px 10px)}
+  .sticker{background:#fff;padding:8px;border-radius:3px;transform:rotate(-1.5deg);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+  .sticker .fl{font-size:10.5pt}
+  .sticker .date{background:#FFF59D}
+  .bag .tag{position:absolute;right:14px;bottom:10px;font-size:.78rem;color:#4a3216}
+  section.blk{max-width:1080px;margin:0 auto;padding:56px 16px 8px}
+  section.blk h2{font-size:1.45rem;margin:0 0 .8em;line-height:1.4}
+  .does{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;list-style:none;padding:0;margin:0}
+  .does li{padding:16px 0;border-top:1px solid var(--line)}
+  .does b{display:block;font-size:1.02rem;margin-bottom:2px}
+  .does span{color:var(--muted);font-size:.93rem}
+  .flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;counter-reset:f;padding:0;list-style:none}
+  .flow li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);padding:18px;counter-increment:f}
+  .flow li::before{content:counter(f);display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--kraft);color:#fff;font-weight:700;margin-bottom:8px}
+  .flow b{display:block}
+  .flow span{color:var(--muted);font-size:.92rem}
+  .news{background:var(--alert-soft);border:1px solid #EBB8B3;border-radius:var(--radius-m);padding:20px 22px}
+  .news h2{color:var(--alert);font-size:1.15rem!important;margin-bottom:.4em!important}
+  .news p{margin:.3em 0}
+  .price{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);padding:22px}
+  .plan.pre{border:2px solid var(--leaf)}
+  .plan h3{margin:0;font-size:1.1rem}
+  .plan .amt{font-size:2rem;font-weight:700;margin:.2em 0;font-family:var(--label)}
+  .plan .amt small{font-size:.9rem;font-weight:400;color:var(--muted)}
+  .plan ul{padding-left:1.2em;margin:.6em 0 1em}
+  .plan li{margin:.25em 0}
+  .faq dt{font-weight:700;margin-top:1.2em}
+  .faq dd{margin:.3em 0 0;color:var(--muted)}
+  .note{font-size:.9rem;color:var(--muted);border-left:4px solid var(--line-strong);padding:4px 0 4px 14px;margin-top:24px}
+  .end{padding-bottom:64px}
+  @media (max-width:820px){
+    .hero .in{grid-template-columns:1fr;padding-top:32px}
+    .does,.price,.flow{grid-template-columns:1fr}
+    .bag{padding:44px 14px 32px}
+    .sticker .fl{font-size:9pt}
+  }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="in">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>ラベル帳</a>
+    <a class="btn small" href="app.html">アプリを開く</a>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="in">
+    <div>
+      <h1>食品表示ラベルを、<br>ブラウザで作って、<br>A4ラベル用紙に印刷。</h1>
+      <p class="lead">焼き菓子・パン・そうざいを袋に入れて売るお店のための、表示ラベル作りの道具です。レシピの原材料と重さを入れるだけで、重い順の並べ替え、添加物の区切り、アレルゲンのまとめ書き、期限の日付まで整えます。</p>
+      <div class="cta">
+        <a class="btn" href="app.html">無料で使ってみる</a>
+        <a class="btn ghost" href="#price">先行予約(¥1,980)</a>
+      </div>
+      <p class="fine">会員登録はいりません。入れたデータは、お使いの端末のブラウザの中だけに保存され、運営者には届きません。</p>
+    </div>
+    <div class="bag" aria-label="ラベルを貼った袋の見本">
+      <div class="sticker">
+        <div class="fl"><table>
+          <tr><th>名称</th><td>焼菓子</td></tr>
+          <tr><th>原材料名</th><td>バター（国内製造）、砂糖、卵白、アーモンドパウダー、小麦粉、はちみつ／膨張剤、（一部に小麦・卵・乳成分・アーモンドを含む）</td></tr>
+          <tr><th>内容量</th><td>1個</td></tr>
+          <tr><th>賞味期限</th><td><span class="date">2026.11.02</span></td></tr>
+          <tr><th>保存方法</th><td>直射日光・高温多湿を避けて保存してください</td></tr>
+          <tr><th>製造者</th><td>焼き菓子 こむぎ堂<br>愛知県名古屋市中区〇〇1-2-3</td></tr>
+        </table></div>
+      </div>
+      <span class="tag">見本(架空の店)</span>
+    </div>
+  </div>
+</div>
+
+<section class="blk">
+  <h2>毎回の「ラベルどう書く?」を、道具に任せる</h2>
+  <ul class="does">
+    <li><b>原材料を重い順に並べる</b><span>レシピの重さのまま入れれば、表示の順番に並べ替えます。レシピを変えても、ラベルがすぐ追いつきます。</span></li>
+    <li><b>添加物は「／」の後ろへ</b><span>ベーキングパウダーは「膨張剤」のように、よく使う添加物は表示名の候補を出し、原材料と区切って並べます。</span></li>
+    <li><b>アレルゲンをまとめて書く</b><span>原材料ごとに登録したアレルゲン(表示義務9品目+推奨20品目)から「（一部に〜を含む）」を作ります。名前から推定した物は「未確認」と出ます。</span></li>
+    <li><b>期限の日付は製造日から自動</b><span>製造日を選ぶと、決めておいた日数を足した日付で印刷します。毎朝の印刷は、製造日と枚数を選ぶだけ。</span></li>
+    <li><b>家のプリンターとA4ラベル用紙で</b><span>12面・10面・24面などの用紙に対応。寸法と位置は1mm単位で調整でき、使いかけの用紙の途中からも刷れます。</span></li>
+    <li><b>書き忘れに気づける</b><span>名称・内容量・保存方法・表示者・重さ1位の原産地が抜けていると、ラベルの横に注意を出します。</span></li>
+  </ul>
+</section>
+
+<section class="blk">
+  <h2>使い方</h2>
+  <ol class="flow">
+    <li><b>レシピを入れる</b><span>原材料の名前と重さ(g)を入れます。新しい名前は自動で原材料に登録されます。</span></li>
+    <li><b>アレルゲンと原産地を確かめる</b><span>原料の袋の表示を見ながら、推定されたアレルゲンにチェックを入れ直します。最初の1回だけです。</span></li>
+    <li><b>製造日を選んで印刷</b><span>用紙と枚数を選んで、ブラウザから印刷します。最初は普通紙で位置を試してください。</span></li>
+  </ol>
+</section>
+
+<section class="blk">
+  <div class="news">
+    <h2>2026年4月から、カシューナッツが表示義務になりました</h2>
+    <p>特定原材料(表示義務)は、えび・かに・くるみ・小麦・そば・卵・乳・落花生に、カシューナッツが加わって9品目になりました(2026年4月1日施行、経過措置は2028年3月31日まで)。ナッツを使う商品は、ラベルを見直す時期です。ラベル帳は9品目に対応しています。</p>
+    <p class="muted">出典: <a href="https://www.city.nagoya.jp/kenkofukushi/eisei/1014927/1015056/1015091.html" rel="noopener">名古屋市 食品表示(カシューナッツの特定原材料への追加)</a></p>
+  </div>
+</section>
+
+<section class="blk" id="price">
+  <h2>料金</h2>
+  <div class="price">
+    <div class="plan">
+      <h3>無料版</h3>
+      <div class="amt">¥0</div>
+      <ul>
+        <li>3商品まで登録</li>
+        <li>ラベルの作成と印刷(枚数の制限なし)</li>
+        <li>アレルゲン・原産地・書き忘れのチェック</li>
+        <li>栄養成分表示(値を手で入れる場合)</li>
+        <li>バックアップの書き出し・読み込み</li>
+      </ul>
+      <a class="btn ghost" href="app.html">無料で使ってみる</a>
+    </div>
+    <div class="plan pre">
+      <h3>先行予約版(買い切り)</h3>
+      <div class="amt">¥1,980 <small>税込・一度だけ</small></div>
+      <ul>
+        <li>商品数の制限なし</li>
+        <li>店頭用アレルゲン一覧表(全商品×29品目)の印刷</li>
+        <li>栄養成分の自動計算(原材料の100g当たりの値から)</li>
+        <li>今後の機能追加も追加料金なし</li>
+      </ul>
+      <a class="btn" href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%83%A9%E3%83%99%E3%83%AB%E5%B8%B3%20%E5%85%88%E8%A1%8C%E4%BA%88%E7%B4%84&amp;body=%E3%83%A9%E3%83%99%E3%83%AB%E5%B8%B3%E3%81%AE%E5%85%88%E8%A1%8C%E4%BA%88%E7%B4%84%E3%82%92%E5%B8%8C%E6%9C%9B%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%3A%0A%E3%81%8A%E5%BA%97%E3%81%AE%E7%A8%AE%E9%A1%9E%28%E4%BE%8B%3A%20%E7%84%BC%E3%81%8D%E8%8F%93%E5%AD%90%E3%80%81%E3%83%91%E3%83%B3%E3%80%81%E3%81%9D%E3%81%86%E3%81%96%E3%81%84%29%3A%0A%E3%83%A9%E3%83%99%E3%83%AB%E3%82%92%E4%BD%9C%E3%82%8B%E5%95%86%E5%93%81%E3%81%AE%E6%95%B0%28%E3%81%8A%E3%81%8A%E3%82%88%E3%81%9D%29%3A%0A%E3%81%82%E3%82%8B%E3%81%A8%E5%AC%89%E3%81%97%E3%81%84%E6%A9%9F%E8%83%BD%28%E4%BB%BB%E6%84%8F%29%3A%0A">先行予約をメールで申し込む</a>
+      <p class="muted" style="margin-top:10px">予約の時点ではお金はかかりません。お支払い方法(PayPal)は、予約順にメールでご案内します。お支払いを確認したら、利用キーをメールでお送りします。宛先: zeroichi.works.jp@gmail.com</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
+  <h2>よくある質問</h2>
+  <dl class="faq">
+    <dt>入れたレシピは、どこかに送られますか?</dt>
+    <dd>送られません。データはお使いのブラウザの中(この端末)だけに保存されます。そのぶん、機種変更やブラウザの掃除で消えることがあるので、「設定」からバックアップを書き出してください。</dd>
+    <dt>スマホでも使えますか?</dt>
+    <dd>入力と確認はスマホでもできます。印刷は、パソコンからA4のプリンターで行うのが確実です。</dd>
+    <dt>ラベルプリンター(ロール紙)には対応していますか?</dt>
+    <dd>今はA4のラベル用紙と普通紙に対応しています。ロール紙への対応は、予約の方のご要望を見て決めます。</dd>
+    <dt>このラベルのとおりに書けば、法令に合っていますか?</dt>
+    <dd>ラベル帳は表示の形を整え、書き忘れに気づくための道具です。アレルゲン・原産地・期限・名称が正しいかは、原料の表示やレシピをもとに、表示をする事業者ご自身で確認していただく必要があります。迷ったときは、お店の所在地の保健所や、消費者庁の食品表示の資料で確かめてください。</dd>
+    <dt>栄養成分表示は必要ですか?</dt>
+    <dd>袋に入れて売る食品には原則必要ですが、消費税の免税事業者など小規模な事業者が自分で販売する場合は、省略できることがあります(栄養の強調表示をしない場合)。くわしくは保健所でご確認ください。</dd>
+  </dl>
+  <p class="note">ラベル帳は、AI(Claude)が設計・作成し、ZEROICHI WORKS が公開しています。見本の店名・住所・日付は架空です。</p>
+</section>
+<div class="end"></div>
+
+<footer class="site-foot">
+  <div class="in">
+    <span>ラベル帳 / ZEROICHI WORKS</span>
+    <span><a href="tokushoho.html">特定商取引法に基づく表記</a>　<a href="privacy.html">プライバシーポリシー</a>　<a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></span>
+  </div>
+</footer>
+</body>
+</html>
