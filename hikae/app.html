@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ひかえ｜アプリ</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2D4A9A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Old+Mincho:wght@600;700&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="side" aria-label="メニュー">
+    <a class="brand" href="./"><span class="seal" aria-hidden="true">控</span><span>ひかえ</span></a>
+    <a class="nav" data-tab="search" href="#search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>さがす</span></a>
+    <a class="nav" data-tab="customers" href="#customers"><svg viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>カルテ</span></a>
+    <a class="nav" data-tab="boxes" href="#boxes"><svg viewBox="0 0 24 24"><path d="M3.5 8l8.5-4 8.5 4v9l-8.5 4-8.5-4z"/><path d="M3.5 8l8.5 4 8.5-4M12 12v9"/></svg><span>箱</span></a>
+    <a class="nav" data-tab="ledger" href="#ledger"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h4"/></svg><span>台帳</span></a>
+    <a class="nav" data-tab="settings" href="#settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span>設定</span></a>
+    <p class="plan" id="planBadge"></p>
+  </nav>
+  <main id="view" class="view" tabindex="-1"></main>
+</div>
+<div id="sheet" class="sheet-wrap" hidden></div>
+<div id="printArea" class="print-area"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input type="file" id="photoInput" accept="image/*" multiple hidden>
+<input type="file" id="restoreInput" accept="application/json,.json" hidden>
+<script src="qrcode.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

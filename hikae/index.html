@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ひかえ｜現場カルテと、箱の在庫・古物台帳をスマホ1つで</title>
+<meta name="description" content="お客さまごとの作業記録・写真・見積と、箱ごとの在庫、古物台帳をまとめて残せるアプリ。インストール不要、オフラインで動き、データはその端末の中だけに保存します。">
+<meta name="theme-color" content="#2D4A9A">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta property="og:title" content="ひかえ｜現場カルテと、箱の在庫・古物台帳">
+<meta property="og:description" content="写真と情報を残して、あとで探せる。インストール不要・オフラインで動く・データは端末の中だけ。">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/hikae/img/demo-karte.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Old+Mincho:wght@600;700;900&display=swap">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ひかえ","applicationCategory":"BusinessApplication","operatingSystem":"Web browser","url":"https://hiro0530.github.io/zeroichi-store/hikae/","offers":[{"@type":"Offer","price":"0","priceCurrency":"JPY","description":"無料版(件数に上限あり)"},{"@type":"Offer","price":"2980","priceCurrency":"JPY","description":"先行予約版(買い切り)"}],"publisher":{"@type":"Organization","name":"ZEROICHI WORKS"}}</script>
+<style>
+:root{--paper:#F4F6F9;--surface:#fff;--ink:#1B2232;--sub:#5B6478;--line:#DCE1EA;--carbon:#2D4A9A;--carbon-d:#22397A;--carbon-t:#E8EDF8;--seal:#BF3A30;
+--sans:"BIZ UDPGothic","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;--mincho:"Zen Old Mincho","Hiragino Mincho ProN","Noto Serif JP",serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.8 var(--sans);overflow-x:hidden}
+a{color:var(--carbon)}
+:focus-visible{outline:2px solid var(--carbon);outline-offset:2px}
+img{max-width:100%;display:block}
+.w{max-width:1040px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.logo{display:flex;align-items:center;gap:10px;font:700 21px var(--mincho);color:var(--ink);text-decoration:none}
+.seal{display:inline-grid;place-items:center;width:34px;height:34px;border:2px solid var(--seal);color:var(--seal);border-radius:7px;font:700 19px/1 var(--mincho);transform:rotate(-4deg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:7px;background:var(--carbon);color:#fff;font-weight:700;text-decoration:none;border:1px solid var(--carbon)}
+.btn:hover{background:var(--carbon-d)}
+.btn.ghost{background:transparent;color:var(--carbon);border-color:#BFC9E0}
+.btn.ghost:hover{background:var(--carbon-t)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px}
+
+/* hero: a carbon-copy slip */
+.hero{display:grid;gap:36px;padding:28px 0 56px;align-items:center}
+@media(min-width:880px){.hero{grid-template-columns:1.05fr .95fr;padding:48px 0 80px}}
+.hero h1{font:900 clamp(34px,7.4vw,58px)/1.25 var(--mincho);margin:0 0 18px;letter-spacing:.02em}
+.hero p.lead{font-size:17px;color:#333B4D;margin:0 0 24px;max-width:30em}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin:22px 0 0;padding:0;list-style:none;font-size:14px;color:var(--sub)}
+.facts li::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--carbon);margin-right:8px;vertical-align:2px}
+.slip{position:relative;max-width:440px;margin:0 auto;width:calc(100% - 14px)}
+@media(max-width:879px){.slip{margin-left:0}}
+.slip .sheet{background:#fff;border:1px solid #CBD3E2;border-radius:4px;padding:22px 22px 20px;position:relative;z-index:2;box-shadow:0 18px 40px -22px rgba(27,34,50,.35)}
+.slip .copy{position:absolute;inset:0;transform:translate(12px,12px) rotate(1.4deg);background:#DCE4F4;border:1px solid #BAC6E0;border-radius:4px;z-index:1}
+.slip .copy::after{content:"控";position:absolute;right:16px;bottom:10px;font:700 34px var(--mincho);color:rgba(45,74,154,.32)}
+.sh{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:14px}
+.sh b{font:700 22px var(--mincho);letter-spacing:.3em}
+.sh span{font-size:12px;color:var(--sub);text-align:right;line-height:1.5}
+.sl-row{display:grid;grid-template-columns:72px 1fr;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px dashed #D5DBE6}
+.sl-row dt{color:var(--sub)}
+.sl-row dd{margin:0;font-weight:700}
+.sl-ph{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.sl-ph i{aspect-ratio:4/3;border-radius:3px;background:linear-gradient(160deg,#C7D3DE 0 40%,#7E8579 40% 52%,#A9A69E 52%)}
+.sl-ph i:nth-child(2){background:linear-gradient(160deg,#DED8CB 0 30%,#B48E5C 30% 70%,#7A6046 70%)}
+.sl-ph i:nth-child(3){background:linear-gradient(160deg,#E7E5E1 0 25%,#C8C8CD 25% 75%,#3C3C41 75%)}
+.sl-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-size:14px}
+.sl-total b{font-size:24px;border-bottom:3px double var(--ink)}
+.stamp{position:absolute;right:20px;top:58px;width:58px;height:58px;border:2px solid var(--seal);border-radius:50%;display:grid;place-items:center;color:var(--seal);font:700 15px/1.1 var(--mincho);text-align:center;transform:rotate(-12deg);opacity:.85;z-index:3}
+
+section{padding:56px 0;border-top:1px solid var(--line)}
+h2{font:700 clamp(24px,4.6vw,32px)/1.4 var(--mincho);margin:0 0 10px}
+.sub{color:var(--sub);margin:0 0 30px;max-width:40em}
+.who{display:grid;gap:14px}
+@media(min-width:760px){.who{grid-template-columns:repeat(3,1fr)}}
+.who div{background:var(--surface);border-left:3px solid var(--carbon);padding:18px 18px 16px}
+.who h3{font:700 18px var(--mincho);margin:0 0 6px}
+.who p{margin:0;font-size:15px;color:#3A4254}
+
+.demos{display:grid;gap:28px}
+@media(min-width:760px){.demos{grid-template-columns:repeat(3,1fr);gap:22px}}
+.demo figure{margin:0}
+.phone{border:8px solid #1B2232;border-radius:28px;overflow:hidden;background:#fff;max-width:300px;margin:0 auto}
+.phone img{width:100%;height:auto;aspect-ratio:390/780;object-fit:cover;object-position:top}
+.demo figcaption{max-width:300px;margin:14px auto 0}
+.demo figcaption b{display:block;font:700 18px var(--mincho);margin-bottom:4px}
+.demo figcaption span{font-size:15px;color:#3A4254}
+
+.feat{display:grid;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media(min-width:760px){.feat{grid-template-columns:1fr 1fr}}
+.feat div{padding:18px 20px;border-top:1px solid var(--line)}
+.feat div:first-child{border-top:0}
+@media(min-width:760px){.feat div:nth-child(2){border-top:0}.feat div:nth-child(odd){border-right:1px solid var(--line)}}
+.feat h3{font-size:16px;margin:0 0 4px}
+.feat p{margin:0;font-size:14.5px;color:#3A4254}
+
+.price{display:grid;gap:16px}
+@media(min-width:760px){.price{grid-template-columns:1fr 1.25fr}}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:24px}
+.plan.paid{border:2px solid var(--carbon)}
+.plan h3{font:700 19px var(--mincho);margin:0}
+.plan .yen{font:700 40px/1.2 var(--sans);margin:8px 0 2px}
+.plan .yen small{font-size:15px;font-weight:400;color:var(--sub);margin-left:6px}
+.plan ul{padding-left:1.2em;margin:12px 0 18px;font-size:15px}
+.plan li{margin:3px 0}
+.note{font-size:13.5px;color:var(--sub);margin:10px 0 0}
+table.cmp{width:100%;border-collapse:collapse;font-size:14px;margin-top:22px;background:var(--surface)}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.cmp th{background:#EEF1F6;font-weight:700}
+.tw{overflow-x:auto}
+
+.faq dt{font-weight:700;margin-top:18px}
+.faq dd{margin:4px 0 0;color:#3A4254;max-width:44em}
+.legalnote{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font-size:14px;color:#3A4254}
+footer{padding:30px 0 50px;border-top:1px solid var(--line);font-size:13.5px;color:var(--sub);line-height:2.1}
+footer a{margin-right:14px}
+</style>
+</head>
+<body>
+<div class="w">
+  <header class="top"><a class="logo" href="./"><span class="seal" aria-hidden="true">控</span>ひかえ</a><a class="btn sm ghost" href="app.html">アプリを開く</a></header>
+
+  <div class="hero">
+    <div>
+      <h1>写真を撮って、<br>書いて、<br>あとで探せる。</h1>
+      <p class="lead">お客さまごとの作業の記録と見積。どの箱に何を入れたか。古物の仕入れと売り。紙の控えに書いていたことを、スマホ1つにまとめます。</p>
+      <div class="cta"><a class="btn" href="app.html">無料で使ってみる</a><a class="btn ghost" href="#price">先行予約 ¥2,980(買い切り)</a></div>
+      <ul class="facts"><li>インストール不要</li><li>オフラインで動く</li><li>データはこの端末だけに保存</li><li>バックアップは1タップ</li></ul>
+    </div>
+    <div class="slip" aria-hidden="true">
+      <div class="copy"></div>
+      <div class="sheet">
+        <div class="sh"><b>作業控</b><span>2026年10月23日<br>見積中</span></div>
+        <dl style="margin:0">
+          <div class="sl-row"><dt>お客さま</dt><dd>中村 様</dd></div>
+          <div class="sl-row"><dt>作業</dt><dd>駐車場 土間コンクリート</dd></div>
+          <div class="sl-row"><dt>寸法</dt><dd>間口 5,400 × 奥行 6,000mm</dd></div>
+          <div class="sl-row"><dt>保管</dt><dd>B-001 倉庫 右棚 上段</dd></div>
+        </dl>
+        <div class="sl-ph"><i></i><i></i><i></i></div>
+        <div class="sl-total"><span>御見積金額(税込)</span><b>¥371,580</b></div>
+      </div>
+      <div class="stamp">写真<br>3枚</div>
+    </div>
+  </div>
+</div>
+
+<section id="who"><div class="w">
+  <h2>こんな人のために作りました</h2>
+  <p class="sub">共通しているのは「物と写真と情報を残して、あとで見つけたい」ということです。</p>
+  <div class="who">
+    <div><h3>外構・リフォーム・設備の職人さん</h3><p>現場ごとの写真に工事名と日付を入れて残す。寸法と使った材料を控える。その場で見積を出して、A4の書類やPDFで渡す。</p></div>
+    <div><h3>美容室・サロン</h3><p>お客さまごとに、施術の写真と薬剤の配合を残す。次に来たときに、前回と同じ色をすぐ出せます。</p></div>
+    <div><h3>古物商・せどり・中古パーツ</h3><p>箱ごとに写真を撮って置き場所を登録し、QRラベルを貼る。買い取りと販売は古物台帳に記録して、CSVで書き出せます。</p></div>
+  </div>
+</div></section>
+
+<section id="demo"><div class="w">
+  <h2>こんな画面です</h2>
+  <p class="sub">文字は大きめ、ボタンは押しやすく。入れたそばから自動で保存されます。</p>
+  <div class="demos">
+    <figure class="demo"><div class="phone"><img src="img/demo-karte.jpg" alt="見積の画面。品名・数量・単価を入れると合計が出る" loading="lazy" width="780" height="1560"></div>
+      <figcaption><b>見積は、入れたらすぐ合計</b><span>数量と単価を入れると、小計・値引き・消費税・合計が出ます。そのまま御見積書として印刷・PDFにできます。</span></figcaption></figure>
+    <figure class="demo"><div class="phone"><img src="img/demo-board.jpg" alt="写真の左下に工事名・日付・場所が入った画面" loading="lazy" width="780" height="1560" style="object-position:bottom"></div>
+      <figcaption><b>写真に黒板を入れる</b><span>工事名・日付・場所・メモを、写真の左下に入れて保存します。A4に3枚ずつの写真台帳も作れます。</span></figcaption></figure>
+    <figure class="demo"><div class="phone"><img src="img/demo-search.jpg" alt="「ビス」で検索すると、ビスが入っている箱が出てくる画面" loading="lazy" width="780" height="1560"></div>
+      <figcaption><b>「あれ、どこだっけ」をすぐ解決</b><span>箱の中身・置き場所・メモ・台帳の特徴まで、まとめて探します。カタカナでもひらがなでも見つかります。</span></figcaption></figure>
+  </div>
+</div></section>
+
+<section id="feat"><div class="w">
+  <h2>できること</h2>
+  <p class="sub">機能は多くしすぎず、毎日使うものだけにしました。</p>
+  <div class="feat">
+    <div><h3>現場カルテ</h3><p>お客さまごとに作業を記録。写真、寸法・メモ、使った材料、状態(見積中・作業中・完了)。</p></div>
+    <div><h3>見積書・作業報告書・写真台帳</h3><p>A4で印刷、またはPDFに保存。屋号・連絡先・インボイスの登録番号も入ります。</p></div>
+    <div><h3>箱ごとの在庫</h3><p>品物を1つずつ登録しなくて大丈夫。箱や棚の写真と、中身をざっと書くだけ。</p></div>
+    <div><h3>QRラベル</h3><p>A4に8枚または24枚。スマホのカメラで読むと、その箱のページが開きます。</p></div>
+    <div><h3>古物台帳</h3><p>受入れ・払出しを法律の記載事項どおりに記録。「記録が必要な取引か」の目安も表示。CSVとA4横の帳簿で出力。</p></div>
+    <div><h3>バックアップ</h3><p>写真ごと1つのファイルに書き出し。7日たつとお知らせします。機種変更のときもこのファイルで戻せます。</p></div>
+  </div>
+</div></section>
+
+<section id="price"><div class="w">
+  <h2>料金</h2>
+  <p class="sub">月額ではなく、1回払いの買い切りです。</p>
+  <div class="price">
+    <div class="plan">
+      <h3>無料版</h3>
+      <p class="yen">¥0</p>
+      <ul><li>お客さま 3人・作業 10件</li><li>箱 10個</li><li>古物台帳 20行</li><li>印刷・PDF・CSV・バックアップは制限なし</li></ul>
+      <a class="btn ghost" href="app.html">無料で使ってみる</a>
+    </div>
+    <div class="plan paid">
+      <h3>先行予約版(買い切り)</h3>
+      <p class="yen">¥2,980<small>税込・1回だけ</small></p>
+      <ul><li>件数の制限がなくなります</li><li>今後の機能追加もそのまま使えます</li><li>月額料金はかかりません</li></ul>
+      <a class="btn" href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%B2%E3%81%8B%E3%81%88%20%E5%85%88%E8%A1%8C%E4%BA%88%E7%B4%84&amp;body=%E3%81%B2%E3%81%8B%E3%81%88%E3%81%AE%E5%85%88%E8%A1%8C%E4%BA%88%E7%B4%84%E3%82%92%E5%B8%8C%E6%9C%9B%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%3A%0A%E3%81%8A%E4%BB%95%E4%BA%8B%E3%81%AE%E7%A8%AE%E9%A1%9E%28%E4%BE%8B%3A%20%E5%A4%96%E6%A7%8B%E3%80%81%E7%BE%8E%E5%AE%B9%E5%AE%A4%E3%80%81%E5%8F%A4%E7%89%A9%E5%95%86%29%3A%0A%E4%B8%BB%E3%81%AB%E4%BD%BF%E3%81%84%E3%81%9F%E3%81%84%E6%A9%9F%E8%83%BD%28%E4%BB%BB%E6%84%8F%29%3A%0A">先行予約をメールで申し込む</a>
+      <p class="note">予約の時点ではお金はかかりません。お支払い方法(PayPal)は、予約順にメールでご案内します。お支払いを確認したら、利用キーをメールでお送りします。アプリの「設定」に貼り付けると、すぐに制限がなくなります。宛先: zeroichi.works.jp@gmail.com</p>
+    </div>
+  </div>
+  <div class="tw"><table class="cmp">
+    <caption style="text-align:left;font-size:13.5px;color:var(--sub);padding-bottom:6px">似たサービスの料金の例(2026年10月に各社の公開情報で確認)</caption>
+    <tr><th>種類</th><th>料金の例</th></tr>
+    <tr><td>施工管理アプリ(写真・工程・報告)</td><td>月額 9,800円〜 など、月額制が中心</td></tr>
+    <tr><td>古物台帳つきPOS</td><td>月額 16,500円〜22,000円 など</td></tr>
+    <tr><td>在庫・置き場所アプリ(海外製)</td><td>無料プランのあと、月額 49ドル〜</td></tr>
+    <tr><td>ひかえ</td><td>3つをまとめて、買い切り 2,980円</td></tr>
+  </table></div>
+</div></section>
+
+<section id="faq"><div class="w">
+  <h2>よくある質問</h2>
+  <dl class="faq">
+    <dt>インストールは必要ですか?</dt>
+    <dd>要りません。スマホやパソコンのブラウザで開くだけです。ホーム画面に追加すると、アプリのように1タップで開けます。一度開けば、電波のない現場でも動きます。</dd>
+    <dt>データはどこに保存されますか?</dt>
+    <dd>使っている端末(スマホやパソコン)の中だけです。私たちのサーバーには送られません。そのぶん、端末が壊れると消えてしまうので、「設定」からときどきバックアップを書き出してください。写真ごと1つのファイルになります。</dd>
+    <dt>スマホとパソコンで同じデータを見られますか?</dt>
+    <dd>自動では同期しません。バックアップのファイルを、もう一方の端末で読み込むと同じ内容になります。</dd>
+    <dt>古物台帳は、これだけで法律の要件を満たしますか?</dt>
+    <dd>記録する項目は、古物営業法の帳簿の記載事項(取引の年月日、品目と数量、特徴、相手方の住所・氏名・職業・年齢、確認の方法)に合わせています。電磁的な記録も認められています。ただし、扱う品目ごとの取扱いは、管轄の警察署に確認してください。このアプリは記録の道具で、法律の判断はしません。</dd>
+    <dt>写真の黒板は、公共工事の電子小黒板として使えますか?</dt>
+    <dd>いいえ。改ざん検知(信憑性確認)の機能はないため、公共工事の電子納品には使えません。民間工事やお客さまへの報告用です。</dd>
+    <dt>無料版のデータは、利用キーを入れたあとも使えますか?</dt>
+    <dd>はい、そのまま使えます。キーを入れると、件数の制限がなくなるだけです。</dd>
+    <dt>返金はできますか?</dt>
+    <dd>無料版でひととおり試してから、ご予約ください。デジタル商品のため、お支払い後の返金は原則お受けしていません。詳しくは特定商取引法に基づく表記をご覧ください。</dd>
+  </dl>
+  <div class="legalnote" style="margin-top:26px">古物台帳の記載事項の出典: 古物営業法 第16条・第18条、古物営業法施行規則 第17条(帳簿の様式)。参考: 警視庁「帳簿の様式」、和歌山県警察「古物営業の手引き」。</div>
+</div></section>
+
+<div class="w"><footer>
+  <a href="app.html">アプリを開く</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a><br>
+  ひかえ / ZEROICHI WORKS
+</footer></div>
+</body>
+</html>
