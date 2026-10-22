@@ -20,6 +20,10 @@ ul{padding-left:20px;margin:8px 0}li{margin:4px 0}
 .muted{color:var(--muted);font-size:13px}
 .who{background:#eef1f8;border-radius:8px;padding:10px 12px;font-size:14px;margin:10px 0}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}footer a{color:var(--navy)}
+.faq details{border-top:1px solid #e3e6ef;padding:10px 0}.faq details:last-child{border-bottom:1px solid #e3e6ef}
+.faq summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;padding-right:24px;position:relative}
+.faq summary::-webkit-details-marker{display:none}.faq summary::after{content:"+";position:absolute;right:4px;top:0;color:var(--muted)}
+.faq details[open] summary::after{content:"−"}.faq p{margin:8px 0 0;font-size:14px}
 </style>
 </head>
 <body>
@@ -62,6 +66,38 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 16px}foo
   <p class="muted">※「必ず儲かる」「誰でも月○万円」という内容ではありません。手順と、実際に起きたことを書いています。</p>
   <a class="btn" href="https://www.paypal.com/ncp/payment/SQQS3GWTBQ7B2">PayPalで購入(¥4,980)</a>
   <p class="muted">お支払い後、PayPalに登録のメール宛にPDFをお送りします(当日〜翌営業日)。</p>
+</section>
+
+<section class="card faq" id="faq">
+  <h2>よくある質問</h2>
+  <details>
+    <summary>支払ってから、いつ届きますか?</summary>
+    <p>PayPalにご登録のメール宛にダウンロード用のリンクをお送りします。8時〜23時のお支払いはおおむね2時間以内、深夜のお支払いは翌朝のお届けです(遅くとも翌営業日)。</p>
+  </details>
+  <details>
+    <summary>メールが届きません</summary>
+    <p>まず迷惑メールフォルダをご確認ください。見当たらない場合は、PayPalの取引IDを添えて zeroichi.works.jp@gmail.com へご連絡ください。確認のうえ再送します。</p>
+  </details>
+  <details>
+    <summary>支払い方法は何がありますか?</summary>
+    <p>PayPal(PayPal残高、またはPayPalに登録したクレジット/デビットカード)の一回払いです。お支払い先には「ZEROICHI」または「ZEROICHI WORKS」と表示されます。</p>
+  </details>
+  <details>
+    <summary>返金はできますか?</summary>
+    <p>デジタル資料の性質上、お送り後の返品・返金はお受けしていません。ファイルが開けないなどの不具合は、メールでご連絡いただければ再送または別形式でお送りします。</p>
+  </details>
+  <details>
+    <summary>相場レポートの数字は何を元にしていますか? 毎月出ますか?</summary>
+    <p>eBayに日本から出品中の廃番ホイールを2026年10月21日時点で集計した「出品価格」ベースです。成約価格ではなく、利益を保証するものでもありません。次号の発行時期は未定です。毎朝の最新値が必要な方は、ページ下部のKAIGAI SCOUT(メール配信)をご覧ください。</p>
+  </details>
+  <details>
+    <summary>AI番頭パッケージは、どのAIで使えますか?</summary>
+    <p>実録はClaudeで行ったものですが、指示文(プロンプト)は日本語の平文です。ChatGPTなど他のAIにそのまま貼り付けても使えます。スマホのブラウザだけで再現できる手順にしています。</p>
+  </details>
+  <details>
+    <summary>領収書は出ますか?</summary>
+    <p>PayPalからの受領メールと取引明細が領収書の代わりになります。宛名入りの領収書(PDF)が必要な方は、取引IDを添えてメールでご依頼ください。</p>
+  </details>
 </section>
 
 <section class="card">
