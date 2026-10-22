@@ -1,0 +1,64 @@
+name: kyotei
+
+# AI舟券 答え合わせ帳: 公式の番組表・競走成績 → 予想と答え合わせ → gh-pages の /kyotei/ だけ更新
+on:
+  schedule:
+    - cron: "45 21 * * *"   # 06:45 JST
+  push:
+    branches: [main]
+    paths: ["kyotei/trigger.txt"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kyotei
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get install -y -q lhasa >/dev/null && pip install -q numpy
+      - name: Restore training history (not published)
+        uses: actions/cache@v4
+        with:
+          path: kyotei/hist
+          key: kyotei-hist-${{ github.run_id }}
+          restore-keys: kyotei-hist-
+      - name: Run
+        run: |
+          MODE=$(head -1 kyotei/trigger.txt 2>/dev/null || echo daily)
+          if [ "${{ github.event_name }}" = "schedule" ]; then MODE=daily; fi
+          echo "mode=$MODE"
+          python kyotei/run.py $MODE 2>&1 | tee kyotei/last_run.log
+          exit ${PIPESTATUS[0]}
+      - name: Commit record to main
+        run: |
+          git config user.name "kyotei-bot"
+          git config user.email "kyotei-bot@users.noreply.github.com"
+          git add kyotei/predictions kyotei/results kyotei/summary.json kyotei/model.json 2>/dev/null || true
+          if git commit -m "kyotei: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
+            for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
+          fi
+      - name: Update gh-pages /kyotei/ only
+        run: |
+          cp kyotei/site/index.html /tmp/kyotei_index.html
+          git fetch origin gh-pages
+          git worktree add /tmp/pages origin/gh-pages
+          cd /tmp/pages
+          git checkout -B gh-pages origin/gh-pages
+          mkdir -p kyotei
+          cp /tmp/kyotei_index.html kyotei/index.html
+          git add kyotei/index.html
+          if git commit -m "kyotei page: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
+            for i in 1 2 3; do git pull --rebase origin gh-pages && git push origin HEAD:gh-pages && break; sleep 5; done
+          fi
