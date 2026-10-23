@@ -1,0 +1,3377 @@
+{
+ "summary": {
+  "date": "2026-10-23",
+  "graded_races": 168,
+  "win_hits": 91,
+  "tri_hits": 37,
+  "near": 18,
+  "stake_win": 16800,
+  "return_win": 14810,
+  "stake_tri": 50400,
+  "return_tri": 38420,
+  "base_hits": 87,
+  "base_return": 15800
+ },
+ "races": [
+  {
+   "key": "20261023-24-01",
+   "venue_name": "大村",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "2-1-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 11160
+  },
+  {
+   "key": "20261023-24-02",
+   "venue_name": "大村",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "4-1-3",
+    "1-3-4"
+   ],
+   "actual": "2-1-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2470
+  },
+  {
+   "key": "20261023-24-03",
+   "venue_name": "大村",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "2-1-3"
+   ],
+   "actual": "1-2-5",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 250,
+   "pay_tri": 3330,
+   "base_pay": 250,
+   "lane1_won": true,
+   "trifecta_payout": 3330
+  },
+  {
+   "key": "20261023-24-04",
+   "venue_name": "大村",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-2",
+    "3-1-4"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 1650,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1650
+  },
+  {
+   "key": "20261023-24-05",
+   "venue_name": "大村",
+   "race": 5,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "1-3-2",
+    "3-1-5"
+   ],
+   "actual": "3-5-1",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4080
+  },
+  {
+   "key": "20261023-24-06",
+   "venue_name": "大村",
+   "race": 6,
+   "pick": 2,
+   "trifecta": [
+    "2-1-6",
+    "1-2-6",
+    "2-1-3"
+   ],
+   "actual": "4-3-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 22630
+  },
+  {
+   "key": "20261023-24-07",
+   "venue_name": "大村",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "3-1-2"
+   ],
+   "actual": "4-3-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5350
+  },
+  {
+   "key": "20261023-24-08",
+   "venue_name": "大村",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-6-2",
+    "1-2-6",
+    "1-6-3"
+   ],
+   "actual": "4-5-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 14910
+  },
+  {
+   "key": "20261023-24-09",
+   "venue_name": "大村",
+   "race": 9,
+   "pick": 2,
+   "trifecta": [
+    "2-1-4",
+    "1-2-4",
+    "2-4-1"
+   ],
+   "actual": "2-6-1",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 190,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 11470
+  },
+  {
+   "key": "20261023-24-10",
+   "venue_name": "大村",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-3-2",
+    "1-3-4"
+   ],
+   "actual": "1-3-5",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 610,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 610
+  },
+  {
+   "key": "20261023-24-11",
+   "venue_name": "大村",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "1-3-2"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 120,
+   "pay_tri": 680,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 680
+  },
+  {
+   "key": "20261023-24-12",
+   "venue_name": "大村",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "5-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 24300
+  },
+  {
+   "key": "20261023-23-01",
+   "venue_name": "唐津",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "3-2-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 16950
+  },
+  {
+   "key": "20261023-23-02",
+   "venue_name": "唐津",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "2-1-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 140,
+   "pay_tri": 750,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 750
+  },
+  {
+   "key": "20261023-23-03",
+   "venue_name": "唐津",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 110,
+   "pay_tri": 910,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 910
+  },
+  {
+   "key": "20261023-23-04",
+   "venue_name": "唐津",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-2",
+    "1-4-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 240,
+   "pay_tri": 0,
+   "base_pay": 240,
+   "lane1_won": true,
+   "trifecta_payout": 820
+  },
+  {
+   "key": "20261023-23-05",
+   "venue_name": "唐津",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "4-1-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 890
+  },
+  {
+   "key": "20261023-23-06",
+   "venue_name": "唐津",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-2"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 1030
+  },
+  {
+   "key": "20261023-23-07",
+   "venue_name": "唐津",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "2-1-3"
+   ],
+   "actual": "1-3-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 1160
+  },
+  {
+   "key": "20261023-23-08",
+   "venue_name": "唐津",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "1-6-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 9320
+  },
+  {
+   "key": "20261023-23-09",
+   "venue_name": "唐津",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-3",
+    "1-4-2"
+   ],
+   "actual": "1-4-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 2580
+  },
+  {
+   "key": "20261023-23-10",
+   "venue_name": "唐津",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-3",
+    "1-2-5"
+   ],
+   "actual": "1-4-2",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 2000
+  },
+  {
+   "key": "20261023-23-11",
+   "venue_name": "唐津",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "1-3-2"
+   ],
+   "actual": "1-4-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 2450
+  },
+  {
+   "key": "20261023-23-12",
+   "venue_name": "唐津",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-2",
+    "1-4-3"
+   ],
+   "actual": "1-5-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 3430
+  },
+  {
+   "key": "20261023-22-01",
+   "venue_name": "福岡",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 920
+  },
+  {
+   "key": "20261023-22-02",
+   "venue_name": "福岡",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "1-2-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 210,
+   "pay_tri": 1570,
+   "base_pay": 210,
+   "lane1_won": true,
+   "trifecta_payout": 1570
+  },
+  {
+   "key": "20261023-22-03",
+   "venue_name": "福岡",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-3-4"
+   ],
+   "actual": "3-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2030
+  },
+  {
+   "key": "20261023-22-04",
+   "venue_name": "福岡",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-4-3",
+    "4-1-2"
+   ],
+   "actual": "4-3-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6410
+  },
+  {
+   "key": "20261023-22-05",
+   "venue_name": "福岡",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-5-2",
+    "1-2-5",
+    "1-5-4"
+   ],
+   "actual": "3-5-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 9610
+  },
+  {
+   "key": "20261023-22-06",
+   "venue_name": "福岡",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "4-1-2"
+   ],
+   "actual": "4-5-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2400
+  },
+  {
+   "key": "20261023-22-07",
+   "venue_name": "福岡",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "2-1-4",
+    "1-4-2"
+   ],
+   "actual": "2-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5020
+  },
+  {
+   "key": "20261023-22-08",
+   "venue_name": "福岡",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-3",
+    "1-6-2"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 110,
+   "pay_tri": 1180,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 1180
+  },
+  {
+   "key": "20261023-22-09",
+   "venue_name": "福岡",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "3-1-2"
+   ],
+   "actual": "3-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1260
+  },
+  {
+   "key": "20261023-22-10",
+   "venue_name": "福岡",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "1-2-3"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 200,
+   "pay_tri": 620,
+   "base_pay": 200,
+   "lane1_won": true,
+   "trifecta_payout": 620
+  },
+  {
+   "key": "20261023-22-11",
+   "venue_name": "福岡",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "1-2-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 270,
+   "pay_tri": 910,
+   "base_pay": 270,
+   "lane1_won": true,
+   "trifecta_payout": 910
+  },
+  {
+   "key": "20261023-22-12",
+   "venue_name": "福岡",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "5-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 14860
+  },
+  {
+   "key": "20261023-21-01",
+   "venue_name": "芦屋",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-4-2",
+    "1-3-4"
+   ],
+   "actual": "2-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 10850
+  },
+  {
+   "key": "20261023-21-02",
+   "venue_name": "芦屋",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-4-2",
+    "1-4-3"
+   ],
+   "actual": "4-5-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 790
+  },
+  {
+   "key": "20261023-21-03",
+   "venue_name": "芦屋",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-5",
+    "1-3-4"
+   ],
+   "actual": "3-4-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 12410
+  },
+  {
+   "key": "20261023-21-04",
+   "venue_name": "芦屋",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-5-4",
+    "1-4-2"
+   ],
+   "actual": "4-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3400
+  },
+  {
+   "key": "20261023-21-05",
+   "venue_name": "芦屋",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-3",
+    "1-6-2"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 180,
+   "pay_tri": 860,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 860
+  },
+  {
+   "key": "20261023-21-06",
+   "venue_name": "芦屋",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "4-6-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 640
+  },
+  {
+   "key": "20261023-21-07",
+   "venue_name": "芦屋",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "3-5-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6390
+  },
+  {
+   "key": "20261023-21-08",
+   "venue_name": "芦屋",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "1-2-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 180,
+   "pay_tri": 510,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 510
+  },
+  {
+   "key": "20261023-21-09",
+   "venue_name": "芦屋",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-3-5"
+   ],
+   "actual": "5-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 13270
+  },
+  {
+   "key": "20261023-21-10",
+   "venue_name": "芦屋",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "1-3-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 180,
+   "pay_tri": 0,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 2310
+  },
+  {
+   "key": "20261023-21-11",
+   "venue_name": "芦屋",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "1-6-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 290,
+   "pay_tri": 0,
+   "base_pay": 290,
+   "lane1_won": true,
+   "trifecta_payout": 11920
+  },
+  {
+   "key": "20261023-21-12",
+   "venue_name": "芦屋",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-5-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 4670
+  },
+  {
+   "key": "20261023-20-01",
+   "venue_name": "若松",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "2-1-4"
+   ],
+   "actual": "2-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3630
+  },
+  {
+   "key": "20261023-20-02",
+   "venue_name": "若松",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-4-2",
+    "1-5-4"
+   ],
+   "actual": "5-1-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 12700
+  },
+  {
+   "key": "20261023-20-03",
+   "venue_name": "若松",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "2-1-4",
+    "1-4-2"
+   ],
+   "actual": "3-2-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4660
+  },
+  {
+   "key": "20261023-20-04",
+   "venue_name": "若松",
+   "race": 4,
+   "pick": 5,
+   "trifecta": [
+    "5-2-1",
+    "2-5-1",
+    "5-1-2"
+   ],
+   "actual": "2-5-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1300
+  },
+  {
+   "key": "20261023-20-05",
+   "venue_name": "若松",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "2-1-4"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 200,
+   "pay_tri": 360,
+   "base_pay": 200,
+   "lane1_won": true,
+   "trifecta_payout": 360
+  },
+  {
+   "key": "20261023-20-06",
+   "venue_name": "若松",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-6-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 300,
+   "pay_tri": 0,
+   "base_pay": 300,
+   "lane1_won": true,
+   "trifecta_payout": 10960
+  },
+  {
+   "key": "20261023-20-07",
+   "venue_name": "若松",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "actual": "1-4-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 2800
+  },
+  {
+   "key": "20261023-20-08",
+   "venue_name": "若松",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "actual": "1-2-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 3830
+  },
+  {
+   "key": "20261023-20-09",
+   "venue_name": "若松",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-5-3",
+    "1-3-5",
+    "1-5-2"
+   ],
+   "actual": "2-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5790
+  },
+  {
+   "key": "20261023-20-10",
+   "venue_name": "若松",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "2-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1460
+  },
+  {
+   "key": "20261023-20-11",
+   "venue_name": "若松",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-3-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 130,
+   "pay_tri": 970,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 970
+  },
+  {
+   "key": "20261023-20-12",
+   "venue_name": "若松",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-2",
+    "1-4-3"
+   ],
+   "actual": "3-1-4",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2220
+  },
+  {
+   "key": "20261023-18-01",
+   "venue_name": "徳山",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "actual": "3-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4330
+  },
+  {
+   "key": "20261023-18-02",
+   "venue_name": "徳山",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "1-4-3"
+   ],
+   "actual": "1-4-6",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 840
+  },
+  {
+   "key": "20261023-18-03",
+   "venue_name": "徳山",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-5-2",
+    "1-2-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 180,
+   "pay_tri": 0,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 1160
+  },
+  {
+   "key": "20261023-18-04",
+   "venue_name": "徳山",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-5-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 230,
+   "pay_tri": 0,
+   "base_pay": 230,
+   "lane1_won": true,
+   "trifecta_payout": 2020
+  },
+  {
+   "key": "20261023-18-05",
+   "venue_name": "徳山",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "1-4-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 1330
+  },
+  {
+   "key": "20261023-18-06",
+   "venue_name": "徳山",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "4-2-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6260
+  },
+  {
+   "key": "20261023-18-07",
+   "venue_name": "徳山",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "actual": "1-5-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 4900
+  },
+  {
+   "key": "20261023-18-08",
+   "venue_name": "徳山",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-4-3",
+    "1-2-4"
+   ],
+   "actual": "1-3-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 2340
+  },
+  {
+   "key": "20261023-18-09",
+   "venue_name": "徳山",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "3-2-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 11470
+  },
+  {
+   "key": "20261023-18-10",
+   "venue_name": "徳山",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "2-1-4"
+   ],
+   "actual": "2-6-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 36360
+  },
+  {
+   "key": "20261023-18-11",
+   "venue_name": "徳山",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-4-3",
+    "1-5-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 190,
+   "pay_tri": 0,
+   "base_pay": 190,
+   "lane1_won": true,
+   "trifecta_payout": 1320
+  },
+  {
+   "key": "20261023-18-12",
+   "venue_name": "徳山",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "1-2-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 120,
+   "pay_tri": 410,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 410
+  },
+  {
+   "key": "20261023-17-01",
+   "venue_name": "宮島",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "1-4-3"
+   ],
+   "actual": "1-5-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 2320
+  },
+  {
+   "key": "20261023-17-02",
+   "venue_name": "宮島",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "1-3-5"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 190,
+   "pay_tri": 410,
+   "base_pay": 190,
+   "lane1_won": true,
+   "trifecta_payout": 410
+  },
+  {
+   "key": "20261023-17-03",
+   "venue_name": "宮島",
+   "race": 3,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "3-2-1",
+    "1-3-2"
+   ],
+   "actual": "2-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1160
+  },
+  {
+   "key": "20261023-17-04",
+   "venue_name": "宮島",
+   "race": 4,
+   "pick": 4,
+   "trifecta": [
+    "4-1-2",
+    "1-4-2",
+    "4-2-1"
+   ],
+   "actual": "4-1-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 510,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1510
+  },
+  {
+   "key": "20261023-17-05",
+   "venue_name": "宮島",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-5-4",
+    "1-5-3",
+    "1-4-5"
+   ],
+   "actual": "1-3-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1300
+  },
+  {
+   "key": "20261023-17-06",
+   "venue_name": "宮島",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-5"
+   ],
+   "actual": "1-3-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 2280
+  },
+  {
+   "key": "20261023-17-07",
+   "venue_name": "宮島",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "2-1-4"
+   ],
+   "actual": "2-1-4",
+   "verdict": "的中",
+   "win_hit": false,
+   "tri_hit": true,
+   "pay_win": 0,
+   "pay_tri": 830,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 830
+  },
+  {
+   "key": "20261023-17-08",
+   "venue_name": "宮島",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "1-4-3"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 140,
+   "pay_tri": 670,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 670
+  },
+  {
+   "key": "20261023-17-09",
+   "venue_name": "宮島",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-5-4",
+    "1-5-2",
+    "1-4-5"
+   ],
+   "actual": "2-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5660
+  },
+  {
+   "key": "20261023-17-10",
+   "venue_name": "宮島",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-2-3"
+   ],
+   "actual": "3-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2070
+  },
+  {
+   "key": "20261023-17-11",
+   "venue_name": "宮島",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-4-3",
+    "1-2-4"
+   ],
+   "actual": "1-5-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 3310
+  },
+  {
+   "key": "20261023-17-12",
+   "venue_name": "宮島",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-6"
+   ],
+   "actual": "3-1-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 13500
+  },
+  {
+   "key": "20261023-14-01",
+   "venue_name": "鳴門",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "actual": "3-1-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4970
+  },
+  {
+   "key": "20261023-14-02",
+   "venue_name": "鳴門",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "4-1-2"
+   ],
+   "actual": "1-6-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 24960
+  },
+  {
+   "key": "20261023-14-03",
+   "venue_name": "鳴門",
+   "race": 3,
+   "pick": 2,
+   "trifecta": [
+    "2-1-4",
+    "1-2-4",
+    "2-4-1"
+   ],
+   "actual": "2-1-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 300
+  },
+  {
+   "key": "20261023-14-04",
+   "venue_name": "鳴門",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-2-3"
+   ],
+   "actual": "5-1-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 23750
+  },
+  {
+   "key": "20261023-14-05",
+   "venue_name": "鳴門",
+   "race": 5,
+   "pick": 4,
+   "trifecta": [
+    "4-1-2",
+    "1-4-2",
+    "4-1-3"
+   ],
+   "actual": "1-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 590,
+   "lane1_won": true,
+   "trifecta_payout": 4340
+  },
+  {
+   "key": "20261023-14-06",
+   "venue_name": "鳴門",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "2-1-3",
+    "1-3-2"
+   ],
+   "actual": "2-1-3",
+   "verdict": "的中",
+   "win_hit": false,
+   "tri_hit": true,
+   "pay_win": 0,
+   "pay_tri": 560,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 560
+  },
+  {
+   "key": "20261023-14-07",
+   "venue_name": "鳴門",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-2"
+   ],
+   "actual": "3-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3920
+  },
+  {
+   "key": "20261023-14-08",
+   "venue_name": "鳴門",
+   "race": 8,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "3-2-1",
+    "3-1-5"
+   ],
+   "actual": "2-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 10020
+  },
+  {
+   "key": "20261023-14-09",
+   "venue_name": "鳴門",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-3-5"
+   ],
+   "actual": "2-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2340
+  },
+  {
+   "key": "20261023-14-10",
+   "venue_name": "鳴門",
+   "race": 10,
+   "pick": 4,
+   "trifecta": [
+    "4-1-5",
+    "1-4-5",
+    "4-1-3"
+   ],
+   "actual": "2-5-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 22770
+  },
+  {
+   "key": "20261023-14-11",
+   "venue_name": "鳴門",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "4-1-3",
+    "1-3-4"
+   ],
+   "actual": "4-5-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 9070
+  },
+  {
+   "key": "20261023-14-12",
+   "venue_name": "鳴門",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-5",
+    "1-2-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 1210,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1210
+  },
+  {
+   "key": "20261023-13-01",
+   "venue_name": "尼崎",
+   "race": 1,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "3-1-4",
+    "1-3-2"
+   ],
+   "actual": "3-5-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2640
+  },
+  {
+   "key": "20261023-13-02",
+   "venue_name": "尼崎",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "4-1-2",
+    "1-4-5"
+   ],
+   "actual": "2-5-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 7280
+  },
+  {
+   "key": "20261023-13-03",
+   "venue_name": "尼崎",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "actual": "5-1-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4370
+  },
+  {
+   "key": "20261023-13-04",
+   "venue_name": "尼崎",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "2-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2280
+  },
+  {
+   "key": "20261023-13-05",
+   "venue_name": "尼崎",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "1-2-3"
+   ],
+   "actual": "1-4-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 580
+  },
+  {
+   "key": "20261023-13-06",
+   "venue_name": "尼崎",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "1-4-5"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 130,
+   "pay_tri": 490,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 490
+  },
+  {
+   "key": "20261023-13-07",
+   "venue_name": "尼崎",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 130,
+   "pay_tri": 500,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 500
+  },
+  {
+   "key": "20261023-13-08",
+   "venue_name": "尼崎",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-5-2",
+    "1-5-3",
+    "1-2-5"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1160
+  },
+  {
+   "key": "20261023-13-09",
+   "venue_name": "尼崎",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "2-1-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 310,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 310
+  },
+  {
+   "key": "20261023-13-10",
+   "venue_name": "尼崎",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-2"
+   ],
+   "actual": "4-2-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 34990
+  },
+  {
+   "key": "20261023-13-11",
+   "venue_name": "尼崎",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-5"
+   ],
+   "actual": "1-4-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 110,
+   "pay_tri": 1520,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 1520
+  },
+  {
+   "key": "20261023-13-12",
+   "venue_name": "尼崎",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "3-1-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 110,
+   "pay_tri": 540,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 540
+  },
+  {
+   "key": "20261023-12-01",
+   "venue_name": "住之江",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "1-2-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 1030
+  },
+  {
+   "key": "20261023-12-02",
+   "venue_name": "住之江",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-2"
+   ],
+   "actual": "6-2-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 55770
+  },
+  {
+   "key": "20261023-12-03",
+   "venue_name": "住之江",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-4-5",
+    "1-2-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 1600
+  },
+  {
+   "key": "20261023-12-04",
+   "venue_name": "住之江",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-3-6",
+    "1-3-2",
+    "3-1-6"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 120,
+   "pay_tri": 750,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 750
+  },
+  {
+   "key": "20261023-12-05",
+   "venue_name": "住之江",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-6"
+   ],
+   "actual": "1-6-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 860
+  },
+  {
+   "key": "20261023-12-06",
+   "venue_name": "住之江",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "actual": "1-6-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 1360
+  },
+  {
+   "key": "20261023-12-07",
+   "venue_name": "住之江",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-5-3",
+    "5-1-3",
+    "1-3-5"
+   ],
+   "actual": "1-2-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 200,
+   "pay_tri": 0,
+   "base_pay": 200,
+   "lane1_won": true,
+   "trifecta_payout": 11290
+  },
+  {
+   "key": "20261023-12-08",
+   "venue_name": "住之江",
+   "race": 8,
+   "pick": 2,
+   "trifecta": [
+    "2-1-5",
+    "1-2-5",
+    "2-1-4"
+   ],
+   "actual": "1-2-5",
+   "verdict": "的中",
+   "win_hit": false,
+   "tri_hit": true,
+   "pay_win": 0,
+   "pay_tri": 770,
+   "base_pay": 220,
+   "lane1_won": true,
+   "trifecta_payout": 770
+  },
+  {
+   "key": "20261023-12-09",
+   "venue_name": "住之江",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "1-2-3"
+   ],
+   "actual": "2-4-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 8320
+  },
+  {
+   "key": "20261023-12-10",
+   "venue_name": "住之江",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "2-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5060
+  },
+  {
+   "key": "20261023-12-11",
+   "venue_name": "住之江",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-2-3"
+   ],
+   "actual": "2-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1660
+  },
+  {
+   "key": "20261023-12-12",
+   "venue_name": "住之江",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 120,
+   "pay_tri": 770,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 770
+  },
+  {
+   "key": "20261023-11-01",
+   "venue_name": "びわこ",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "1-2-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 200,
+   "pay_tri": 0,
+   "base_pay": 200,
+   "lane1_won": true,
+   "trifecta_payout": 1490
+  },
+  {
+   "key": "20261023-11-02",
+   "venue_name": "びわこ",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "2-1-4",
+    "1-4-2"
+   ],
+   "actual": "5-2-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 14930
+  },
+  {
+   "key": "20261023-11-03",
+   "venue_name": "びわこ",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "3-1-4",
+    "1-4-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 260,
+   "pay_tri": 0,
+   "base_pay": 260,
+   "lane1_won": true,
+   "trifecta_payout": 1420
+  },
+  {
+   "key": "20261023-11-04",
+   "venue_name": "びわこ",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "3-2-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 11020
+  },
+  {
+   "key": "20261023-11-05",
+   "venue_name": "びわこ",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "3-1-2",
+    "1-2-3"
+   ],
+   "actual": "1-2-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 240,
+   "pay_tri": 0,
+   "base_pay": 240,
+   "lane1_won": true,
+   "trifecta_payout": 2450
+  },
+  {
+   "key": "20261023-11-06",
+   "venue_name": "びわこ",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-5-3",
+    "1-3-2"
+   ],
+   "actual": "1-5-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 200,
+   "pay_tri": 2230,
+   "base_pay": 200,
+   "lane1_won": true,
+   "trifecta_payout": 2230
+  },
+  {
+   "key": "20261023-11-07",
+   "venue_name": "びわこ",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "2-1-4",
+    "1-4-2"
+   ],
+   "actual": "2-4-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 960
+  },
+  {
+   "key": "20261023-11-08",
+   "venue_name": "びわこ",
+   "race": 8,
+   "pick": 4,
+   "trifecta": [
+    "4-1-3",
+    "4-1-2",
+    "4-1-5"
+   ],
+   "actual": "4-5-1",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 230,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1050
+  },
+  {
+   "key": "20261023-11-09",
+   "venue_name": "びわこ",
+   "race": 9,
+   "pick": 4,
+   "trifecta": [
+    "4-1-2",
+    "4-2-1",
+    "1-4-2"
+   ],
+   "actual": "1-4-2",
+   "verdict": "的中",
+   "win_hit": false,
+   "tri_hit": true,
+   "pay_win": 0,
+   "pay_tri": 3250,
+   "base_pay": 1530,
+   "lane1_won": true,
+   "trifecta_payout": 3250
+  },
+  {
+   "key": "20261023-11-10",
+   "venue_name": "びわこ",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-5",
+    "1-3-2"
+   ],
+   "actual": "1-2-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 7580
+  },
+  {
+   "key": "20261023-11-11",
+   "venue_name": "びわこ",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 1070,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1070
+  },
+  {
+   "key": "20261023-11-12",
+   "venue_name": "びわこ",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 1920
+  },
+  {
+   "key": "20261023-06-01",
+   "venue_name": "浜名湖",
+   "race": 1,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "1-3-2",
+    "3-1-5"
+   ],
+   "actual": "1-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 9440
+  },
+  {
+   "key": "20261023-06-02",
+   "venue_name": "浜名湖",
+   "race": 2,
+   "pick": 4,
+   "trifecta": [
+    "4-3-1",
+    "4-1-3",
+    "3-4-1"
+   ],
+   "actual": "4-1-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 230,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 8160
+  },
+  {
+   "key": "20261023-06-03",
+   "venue_name": "浜名湖",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-2"
+   ],
+   "actual": "2-1-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4740
+  },
+  {
+   "key": "20261023-06-04",
+   "venue_name": "浜名湖",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-5-2",
+    "1-2-5",
+    "1-5-4"
+   ],
+   "actual": "2-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 12090
+  },
+  {
+   "key": "20261023-06-05",
+   "venue_name": "浜名湖",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "1-5-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 2550
+  },
+  {
+   "key": "20261023-06-06",
+   "venue_name": "浜名湖",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-5-3",
+    "1-3-4"
+   ],
+   "actual": "1-5-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 250,
+   "pay_tri": 0,
+   "base_pay": 250,
+   "lane1_won": true,
+   "trifecta_payout": 2540
+  },
+  {
+   "key": "20261023-06-07",
+   "venue_name": "浜名湖",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "2-1-4",
+    "1-4-2"
+   ],
+   "actual": "5-2-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5420
+  },
+  {
+   "key": "20261023-06-08",
+   "venue_name": "浜名湖",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-3-6",
+    "1-3-5",
+    "1-3-4"
+   ],
+   "actual": "3-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3660
+  },
+  {
+   "key": "20261023-06-09",
+   "venue_name": "浜名湖",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-4-2",
+    "1-3-4"
+   ],
+   "actual": "1-4-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 150,
+   "pay_tri": 760,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 760
+  },
+  {
+   "key": "20261023-06-10",
+   "venue_name": "浜名湖",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-4-5",
+    "1-4-6"
+   ],
+   "actual": "3-1-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 16070
+  },
+  {
+   "key": "20261023-06-11",
+   "venue_name": "浜名湖",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "6-4-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 15990
+  },
+  {
+   "key": "20261023-06-12",
+   "venue_name": "浜名湖",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-3-5"
+   ],
+   "actual": "1-4-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1680
+  },
+  {
+   "key": "20261023-05-01",
+   "venue_name": "多摩川",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "2-1-3"
+   ],
+   "actual": "3-1-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3260
+  },
+  {
+   "key": "20261023-05-02",
+   "venue_name": "多摩川",
+   "race": 2,
+   "pick": 4,
+   "trifecta": [
+    "4-1-2",
+    "1-4-2",
+    "4-2-1"
+   ],
+   "actual": "5-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 17030
+  },
+  {
+   "key": "20261023-05-03",
+   "venue_name": "多摩川",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "4-1-3",
+    "1-4-5"
+   ],
+   "actual": "1-2-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 210,
+   "pay_tri": 0,
+   "base_pay": 210,
+   "lane1_won": true,
+   "trifecta_payout": 2080
+  },
+  {
+   "key": "20261023-05-04",
+   "venue_name": "多摩川",
+   "race": 4,
+   "pick": 1,
+   "trifecta": [
+    "1-5-3",
+    "1-3-5",
+    "1-5-2"
+   ],
+   "actual": "4-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2120
+  },
+  {
+   "key": "20261023-05-05",
+   "venue_name": "多摩川",
+   "race": 5,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "1-3-2",
+    "3-1-4"
+   ],
+   "actual": "3-4-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 830
+  },
+  {
+   "key": "20261023-05-06",
+   "venue_name": "多摩川",
+   "race": 6,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-6",
+    "1-3-4"
+   ],
+   "actual": "3-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2190
+  },
+  {
+   "key": "20261023-05-07",
+   "venue_name": "多摩川",
+   "race": 7,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "1-4-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 1950
+  },
+  {
+   "key": "20261023-05-08",
+   "venue_name": "多摩川",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-6-5",
+    "1-5-6",
+    "1-6-3"
+   ],
+   "actual": "1-5-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 880
+  },
+  {
+   "key": "20261023-05-09",
+   "venue_name": "多摩川",
+   "race": 9,
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-4-3",
+    "4-1-2"
+   ],
+   "actual": "4-6-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4190
+  },
+  {
+   "key": "20261023-05-10",
+   "venue_name": "多摩川",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "1-2-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 1280
+  },
+  {
+   "key": "20261023-05-11",
+   "venue_name": "多摩川",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "1-4-2"
+   ],
+   "actual": "5-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 24610
+  },
+  {
+   "key": "20261023-05-12",
+   "venue_name": "多摩川",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "1-3-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 120,
+   "pay_tri": 990,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 990
+  },
+  {
+   "key": "20261023-04-01",
+   "venue_name": "平和島",
+   "race": 1,
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "4-1-5",
+    "1-5-4"
+   ],
+   "actual": "3-2-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4320
+  },
+  {
+   "key": "20261023-04-02",
+   "venue_name": "平和島",
+   "race": 2,
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-5-2",
+    "2-1-5"
+   ],
+   "actual": "1-5-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 360,
+   "pay_tri": 1970,
+   "base_pay": 360,
+   "lane1_won": true,
+   "trifecta_payout": 1970
+  },
+  {
+   "key": "20261023-04-03",
+   "venue_name": "平和島",
+   "race": 3,
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "4-1-5",
+    "1-5-4"
+   ],
+   "actual": "1-4-2",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 680,
+   "pay_tri": 0,
+   "base_pay": 680,
+   "lane1_won": true,
+   "trifecta_payout": 4280
+  },
+  {
+   "key": "20261023-04-04",
+   "venue_name": "平和島",
+   "race": 4,
+   "pick": 5,
+   "trifecta": [
+    "5-4-1",
+    "5-1-4",
+    "4-5-1"
+   ],
+   "actual": "2-4-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5830
+  },
+  {
+   "key": "20261023-04-05",
+   "venue_name": "平和島",
+   "race": 5,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 130,
+   "pay_tri": 670,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 670
+  },
+  {
+   "key": "20261023-04-06",
+   "venue_name": "平和島",
+   "race": 6,
+   "pick": 3,
+   "trifecta": [
+    "3-1-2",
+    "1-3-2",
+    "3-2-1"
+   ],
+   "actual": "3-2-1",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 150,
+   "pay_tri": 2220,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2220
+  },
+  {
+   "key": "20261023-04-07",
+   "venue_name": "平和島",
+   "race": 7,
+   "pick": 4,
+   "trifecta": [
+    "4-1-3",
+    "4-3-1",
+    "1-4-3"
+   ],
+   "actual": "5-6-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 21250
+  },
+  {
+   "key": "20261023-04-08",
+   "venue_name": "平和島",
+   "race": 8,
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-4-2",
+    "1-3-4"
+   ],
+   "actual": "4-5-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5710
+  },
+  {
+   "key": "20261023-04-09",
+   "venue_name": "平和島",
+   "race": 9,
+   "pick": 2,
+   "trifecta": [
+    "2-1-3",
+    "2-3-1",
+    "1-2-3"
+   ],
+   "actual": "1-2-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 300,
+   "lane1_won": true,
+   "trifecta_payout": 3430
+  },
+  {
+   "key": "20261023-04-10",
+   "venue_name": "平和島",
+   "race": 10,
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "actual": "1-2-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 230,
+   "pay_tri": 0,
+   "base_pay": 230,
+   "lane1_won": true,
+   "trifecta_payout": 1120
+  },
+  {
+   "key": "20261023-04-11",
+   "venue_name": "平和島",
+   "race": 11,
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-6",
+    "3-1-2"
+   ],
+   "actual": "1-2-3",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 1060
+  },
+  {
+   "key": "20261023-04-12",
+   "venue_name": "平和島",
+   "race": 12,
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-2-4",
+    "1-2-3"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 610,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 610
+  }
+ ]
+}
