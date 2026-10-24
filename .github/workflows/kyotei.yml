@@ -76,7 +76,7 @@ jobs:
           git config user.email "kyotei-bot@users.noreply.github.com"
           git add -A kyotei   # hist/ などは kyotei/.gitignore で除外
           if git commit -m "kyotei: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
-            for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
+            for i in 1 2 3; do git pull --rebase -X theirs origin main && git push origin HEAD:main && break; git rebase --abort 2>/dev/null; sleep 5; done
           fi
       - name: Update gh-pages /kyotei/ only
         run: |
@@ -91,5 +91,5 @@ jobs:
           cp /tmp/kyotei_img/*.jpg kyotei/ 2>/dev/null || true
           git add kyotei/index.html kyotei/*.jpg 2>/dev/null || git add kyotei/index.html
           if git commit -m "kyotei page: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
-            for i in 1 2 3; do git pull --rebase origin gh-pages && git push origin HEAD:gh-pages && break; sleep 5; done
+            for i in 1 2 3; do git pull --rebase -X theirs origin gh-pages && git push origin HEAD:gh-pages && break; git rebase --abort 2>/dev/null; sleep 5; done
           fi
