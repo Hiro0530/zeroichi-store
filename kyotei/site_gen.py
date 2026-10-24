@@ -168,11 +168,28 @@ footer p{margin:0 0 6px;max-width:60em}
  .res .sub>.combos{display:grid;grid-template-columns:9.5em 10.5em;gap:0;text-align:right;white-space:nowrap}
  details.venue>summary{padding:10px 20px}
 }
+/* v3: 今日の注目・収支 */
+.notice{margin:14px 0 0;font-size:13px;color:var(--muted)}
+.proof{font-size:13.5px;color:var(--muted);margin:4px 0 12px}.proof a{color:var(--ai)}
+.picks{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pc{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--ai);border-radius:12px;padding:12px 14px}
+.pc.past{opacity:.5}
+.pc .hd{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px}
+.pc .hd .tier{margin-left:auto}
+.pc .tm{font-size:12.5px;color:var(--muted);margin:2px 0 8px;font-family:var(--num);letter-spacing:.02em}
+.pc .hon{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.pc .hon b{font:600 26px/1 var(--num);color:var(--ink)}
+.pc .combos{margin-top:8px}
+.pnl{font-family:var(--num);font-weight:600}.pnl.pos{color:var(--hit)}.pnl.neg{color:var(--near)}
+.tot{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:10px 0}
+.tot>div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.tot b{display:block;font:600 24px/1.15 var(--num);color:var(--ink)}
+.hl{background:var(--hit-soft);border-radius:10px;padding:10px 14px;font-size:14px;margin:8px 0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 """
 
 JS = """
-(function(){var now=Date.now();document.querySelectorAll('details.venue[data-pred]').forEach(function(d){var next=null;
+(function(){var now=Date.now();document.querySelectorAll('.pc[data-close]').forEach(function(c){if(Date.parse(c.dataset.close)<now)c.classList.add('past')});document.querySelectorAll('details.venue[data-pred]').forEach(function(d){var next=null;
 d.querySelectorAll('.race[data-close]').forEach(function(r){var t=Date.parse(r.dataset.close);if(t<now){r.classList.add('past')}else if(!next){next=r}});
 var m=d.querySelector('.vnext');if(!m)return;if(next){m.textContent='次は '+next.dataset.r+'R '+next.dataset.close.slice(11,16)+' 締切'}else{m.textContent='本日の締切は終了'}});})();
 """
@@ -307,6 +324,166 @@ def model_section(model: dict, summ: dict | None = None) -> str:
     return "".join(o)
 
 
+COMMITS = "https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei/predictions/"
+
+
+def yen(v: int, sign: bool = False) -> str:
+    if sign:
+        cls = "pos" if v > 0 else ("neg" if v < 0 else "")
+        return f"<span class='pnl {cls}'>{'+' if v > 0 else ('−' if v < 0 else '±')}{abs(int(v)):,}円</span>"
+    return f"{int(v):,}円"
+
+
+def warn_html() -> str:
+    return ("<section class=warn aria-labelledby=w-h><h2 id=w-h>ご利用の前に</h2><ul>"
+            "<li>ここの予想は<b>無料の参考情報</b>です。的中や利益を<b>保証するものではありません</b>。</li>"
+            "<li><b>過去の成績は、将来の成績を約束するものではありません。</b></li>"
+            "<li><b>20歳未満の方は舟券を購入(投票)できません。</b></li>"
+            "<li>ボートレースの払戻率は75%で、平均すると賭け金の25%が失われます。舟券は余裕のある範囲で、ご自身の判断で。</li>"
+            "<li>のめり込みが心配なときは、各都道府県の精神保健福祉センターなどの相談窓口へ。</li>"
+            "<li>当サイトは投票の受付・代行、有料の予想販売を行っていません。</li></ul></section>")
+
+
+def today_html(p: dict) -> str:
+    pub = p["published_at"].replace("T", " ")[:16]
+    pub_hm = pub[11:16]
+    proof = f"{COMMITS}{esc(p['date'])}.json"
+    h = [f"<section aria-labelledby=p-h><h2 id=p-h>今日の予想 {esc(p['date'])}</h2>"
+         f"<p class=proof>予想公開 <b>{esc(pub)}</b>(全レースの締切より前)。公開した記録は Git に残り、あとから書き換えると履歴に残ります: "
+         f"<a href='{proof}'>この日の予想ファイルの履歴</a>。締切が公開時刻より前のレースは採点しません。</p>"]
+    cand = [x for x in p["races"] if x.get("scored", True)]
+    top = sorted(cand, key=lambda x: -max(x["probs"]))[:6]
+    top.sort(key=lambda x: x["close"])
+    if top:
+        h.append("<h3>AIの確率が高いレース(締切順)</h3><div class=picks>")
+        for x in top:
+            tier = x.get("tier") or ""
+            tri = "".join(f"<span>{combo(c)}<span class=p>{pr*100:.1f}%</span></span>" for c, pr in x["trifecta"])
+            h.append(f"<div class=pc data-close='{esc(x['close'])}'><div class=hd>{esc(x['venue_name'])} {x['race']}R"
+                     + (f"<span class='tier t-{esc(tier)}' title='自信度'>{esc(tier)}</span>" if tier else "") + "</div>"
+                     f"<div class=tm>予想公開 {pub_hm}(締切 {x['close'][11:16]})</div>"
+                     f"<div class=hon>本命 {lane(x['pick'])}<b>{max(x['probs'])*100:.0f}%</b>1着の確率</div>"
+                     f"<div class=combos>3連単 {tri}</div></div>")
+        h.append("</div><p class=note>確率はAIの見積もりで、外れることもあります。自信度(S:70%以上 A:55%以上 B:40%以上 C:それ未満)ごとの過去の成績は「モデルについて」にあります。</p>")
+    h.append("<h3>全レース</h3><p class=note>色の帯は、AIが見積もった1着になる確率です(左から1〜6号艇の枠色、数字は%)。その横は3連単の予想3点と、その確率です。</p><div class=venues>")
+    for vn, xs in by_venue(p["races"]).items():
+        first, last = xs[0]["close"][11:16], xs[-1]["close"][11:16]
+        h.append(f"<details class=venue data-pred><summary><span class=vn>{esc(vn)}</span><span class=vm>{len(xs)}レース・締切 {first}〜{last}"
+                 "<br><span class=vnext></span></span></summary>")
+        for x in xs:
+            probs = x["probs"]
+            segs = "".join(f"<span class='l{i+1}' style='width:{v*100:.2f}%'>{f'{v*100:.0f}' if v >= 0.09 else ''}</span>" for i, v in enumerate(probs))
+            aria = "、".join(f"{i+1}号艇 {v*100:.0f}%" for i, v in enumerate(probs))
+            tri = "".join(f"<span>{combo(c)}<span class=p>{pr*100:.1f}%</span></span>" for c, pr in x["trifecta"])
+            tag = "" if x.get("scored", True) else "<span class=tag>採点外</span>"
+            tr = f"<span class='tier t-{esc(x['tier'])}' title='自信度'>{esc(x['tier'])}</span>" if x.get("tier") else ""
+            h.append(f"<div class=race data-close='{esc(x['close'])}' data-r='{x['race']}'><span class=r>{x['race']}R<small>{x['close'][11:16]}</small></span>"
+                     f"<span class=main><span class=pick>本命 {lane(x['pick'])}{tr}</span><span class=prob role=img aria-label='1着の確率: {aria}'>{segs}</span></span>"
+                     f"<span class=combos>{tri}{tag}</span></div>")
+        h.append("</details>")
+    h.append("</div></section>")
+    return "".join(h)
+
+
+def yesterday_html(r: dict) -> str:
+    s = r["summary"]
+    n = s["graded_races"]
+    xs = r["races"]
+    pnl_w = s["return_win"] - s["stake_win"]
+    pnl_t = s["return_tri"] - s["stake_tri"]
+    pnl_b = s["base_return"] - 100 * n
+    h = [f"<section aria-labelledby=r-h><h2 id=r-h>昨日の答え合わせ {esc(s['date'])}(採点 {n}レース)</h2>"
+         f"<p class=proof>この日の予想は前日の朝に公開済み(<a href='{COMMITS}{esc(s['date'])}.json'>予想ファイルの履歴</a>)。払戻金は公式の競走成績ファイルの確定払戻金(100円あたり)です。</p>"
+         "<div class=tot>"
+         f"<div>本命の単勝を毎回100円<b>{s['win_hits']}<small>/{n} 的中</small></b>{yen(s['stake_win'])} → {yen(s['return_win'])}(収支 {yen(pnl_w, True)})</div>"
+         f"<div>3連単3点を毎回(300円)<b>{s['tri_hits']}<small>/{n} 的中</small></b>{yen(s['stake_tri'])} → {yen(s['return_tri'])}(収支 {yen(pnl_t, True)})</div>"
+         f"<div>比較: 1号艇の単勝を毎回100円<b>{s['base_hits']}<small>/{n} 的中</small></b>{yen(100 * n)} → {yen(s['base_return'])}(収支 {yen(pnl_b, True)})</div>"
+         "</div>"]
+    hits = sorted([x for x in xs if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
+    if hits:
+        best = hits[0]
+        h.append(f"<p class=hl>この日の3連単の的中 {len(hits)}レース。いちばん高い払戻: <b>{esc(best['venue_name'])} {best['race']}R</b> "
+                 f"{combo(best['actual'], False)} <b class=num>{int(best['pay_tri']):,}円</b>(100円あたり)</p>")
+    else:
+        h.append("<p class=hl>この日は3連単の的中がありませんでした。</p>")
+    h.append("<p class=note>判定: 的中=3連単の予想3点のどれかが当たり/惜しい=予想1点目の1・2着が当たり、または3艇の顔ぶれが同じ/1着的中=本命の1着だけ当たり/外れ。"
+             "収支は「本命の単勝100円+3連単3点300円」を買ったと仮定した、そのレースの増減です。</p><div class=venues>")
+    for vn, ys in by_venue(xs).items():
+        wins = sum(1 for x in ys if x.get("win_hit"))
+        base = sum(1 for x in ys if x.get("lane1_won"))
+        pv = sum((x.get("pay_win") or 0) + (x.get("pay_tri") or 0) - 400 for x in ys)
+        h.append(f"<details class=venue><summary><span class=vn>{esc(vn)}</span><span class=vm>{len(ys)}レース・収支 {yen(pv, True)}<br>"
+                 f"AIの本命の1着 <span class=vtally>{wins}</span>/1号艇の1着 <span class=vtally>{base}</span></span></summary>")
+        for x in ys:
+            pay = f"{int(x['trifecta_payout']):,}円" if x.get("trifecta_payout") else "—"
+            tri = "".join(combo(c) for c in x["trifecta"])
+            tw = x.get("tansho_payout")
+            tws = f"単勝 {int(tw):,}円" if tw else ""
+            rp = (x.get("pay_win") or 0) + (x.get("pay_tri") or 0) - 400
+            h.append(f"<div class=res><span class=r>{x['race']}R</span>"
+                     f"<span class=got>結果 {combo(x['actual'], False)}<span class=gp>本命 {lane(x['pick'], True)}</span></span>"
+                     f"<span class='vd v-{esc(x['verdict'])}'>{esc(x['verdict'])}</span>"
+                     f"<span class=sub><span>予想 {tri} 収支 {yen(rp, True)}</span>"
+                     f"<span class=combos><span>1号艇 <b>{'1着' if x['lane1_won'] else '外れ'}</b> {tws}</span><span>3連単払戻 <b class=num>{pay}</b></span></span></span></div>")
+        h.append("</details>")
+    h.append("</div></section>")
+    return "".join(h)
+
+
+def record_html(t: dict, summ: dict, model: dict) -> str:
+    ev = model.get("eval", {}) if model else {}
+    ho = {"races": ev["full"]["races"], "top1": ev["full"]["top1"], "lane1_rate": ev["lane1"]["top1"]} if ev.get("full") else {}
+    rows = []
+    if t.get("graded_races"):
+        rows += [("1着の的中率(採点した全レース)", t["win_rate"], t["base_win_rate"], False),
+                 ("仮の回収率 単勝(毎回100円)", t["roi_win"], t["roi_base"], True),
+                 ("3連単(3点)的中率", t["tri_rate"], None, False),
+                 ("仮の回収率 3連単(3点×100円)", t["roi_tri"], None, True)]
+    if ho:
+        rows.append((f"参考: 学習に使っていない直近{ev.get('test_days', 0)}日の1着的中率({ho.get('races', 0):,}レース・事後の検証)", ho.get("top1", 0), ho.get("lane1_rate", 0), False))
+    if not rows:
+        return ""
+    cap = f"採点したレース: {t['graded_races']:,}(公開 {t['days']} 日分)" if t.get("graded_races") else "答え合わせは公開の翌朝から始まります"
+    h = ["<section aria-labelledby=c-h><h2 id=c-h>これまでの成績:AIの本命 と 1号艇を毎回</h2>", f"<p class=note>{cap}</p>"]
+    if t.get("graded_races"):
+        n = t["graded_races"]
+        h.append("<div class=tot>"
+                 f"<div>本命の単勝を毎回100円(累計)<b>{yen(t['return_win'] - t['stake_win'], True)}</b>{yen(t['stake_win'])} → {yen(t['return_win'])}</div>"
+                 f"<div>3連単3点を毎回(累計)<b>{yen(t['return_tri'] - t['stake_tri'], True)}</b>{yen(t['stake_tri'])} → {yen(t['return_tri'])}</div>"
+                 f"<div>比較: 1号艇の単勝を毎回100円(累計)<b>{yen(t['base_return'] - 100 * n, True)}</b>{yen(100 * n)} → {yen(t['base_return'])}</div></div>")
+    else:
+        h.append("<p class=empty>まだ答え合わせをしたレースはありません。それまでは、学習に使っていない期間で試した参考の数字だけを載せています。</p>")
+    h.append("<div class=legend><span>AIの本命</span><span class=k-base>1号艇を毎回</span></div><div class=cmp>")
+    any_roi = False
+    for label, a, b, roi in rows:
+        vals = [v for v in (a, b) if v is not None] or [0]
+        scale = max(1.25, max(vals) * 1.1) if roi else 1.0
+        any_roi |= roi
+        h.append(f"<div class=cmp-row><h3>{esc(label)}</h3>{bar('AIの本命', a, 'ai', scale, roi)}{bar('1号艇を毎回', b, 'base', scale, roi)}</div>")
+    h.append("</div>")
+    if any_roi:
+        h.append("<p class=evenkey>回収率の点線は100%(賭けた額がそのまま戻る線)です。</p>")
+    h.append("<p class=note>回収率・収支は確定払戻金から機械的に計算しています。100%を下回る・マイナスは損をしたという意味です。"
+             "AIの本命が1号艇を上回らない期間は、そのまま表示します。</p>")
+    daily = [d for d in summ.get("daily", []) if d.get("graded_races")][-14:]
+    if len(daily) >= 2:
+        pts = [(d, d["win_hits"] / d["graded_races"], d["base_hits"] / d["graded_races"]) for d in daily]
+        lo = max(0.0, min(min(a, b) for _, a, b in pts) - 0.05)
+        hi = min(1.0, max(max(a, b) for _, a, b in pts) + 0.05)
+        pos = lambda v: (v - lo) / max(hi - lo, 1e-9) * 100  # noqa: E731
+        h.append("<h3 class=dh>日ごとの1着の的中率(直近14日)</h3>"
+                 f"<div class=dscale aria-hidden=true><span><span>{lo*100:.0f}%</span><span>{hi*100:.0f}%</span></span></div><ul class=days>")
+        for d, a, b in reversed(pts):
+            h.append(f"<li><span class=dd>{esc(d['date'][5:].replace('-', '/'))}</span>"
+                     f"<span class=dtrack role=img aria-label='AIの本命 {pct(a)}、1号艇を毎回 {pct(b)}'>"
+                     f"<i class=dl style='left:{min(pos(a), pos(b)):.1f}%;width:{abs(pos(a)-pos(b)):.1f}%'></i>"
+                     f"<i class='dot base' style='left:{pos(b):.1f}%'></i><i class='dot ai' style='left:{pos(a):.1f}%'></i></span>"
+                     f"<span class=dv><b>{pct(a)}</b><span>{pct(b)}</span></span></li>")
+        h.append("</ul><p class=note>青の点がAIの本命、灰色の点が1号艇を毎回の、その日の1着の的中率です。</p>")
+    h.append("</section>")
+    return "".join(h)
+
+
 def build():
     SITE.mkdir(exist_ok=True)
     summ = json.loads((ROOT / "summary.json").read_text(encoding="utf-8")) if (ROOT / "summary.json").exists() else {"total": {}, "daily": []}
@@ -316,127 +493,30 @@ def build():
     model = json.loads((ROOT / "model.json").read_text()) if (ROOT / "model.json").exists() else {}
     p = json.loads(preds[-1].read_text(encoding="utf-8")) if preds else None
     r = json.loads(results[-1].read_text(encoding="utf-8")) if results else None
-    h = []
-    h.append("<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-             "<title>AI舟券 答え合わせ帳</title><meta name=description content='統計モデルのボートレース予想をレース前に公開し、翌日に全レースを答え合わせする記録。的中も外れも全部載せます。'>"
-             "<meta name=theme-color content='#0b2540'>"
-             f"{FONTS}<style>{CSS}</style></head><body>")
-
-    # 見出し
+    h = ["<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+         "<title>AI舟券 答え合わせ帳</title><meta name=description content='統計モデルのボートレース予想をレース前に公開し、翌朝に全レースの当たり外れと払戻金を答え合わせする記録。的中も外れも全部載せます。'>"
+         "<meta name=theme-color content='#0b2540'>"
+         f"{FONTS}<style>{CSS}</style></head><body>"]
     h.append("<header class=top><div class=wrap><a class=brand href='../'><i>01</i>ZEROICHI WORKS</a>"
-             "<h1>AI舟券 答え合わせ帳</h1><p class=lead>統計モデルの予想をレースの前に公開し、翌日に全レースを答え合わせします。的中も外れも全部載せます。"
+             "<h1>AI舟券 答え合わせ帳</h1><p class=lead>レースの前に予想を公開し、翌朝に全レースの当たり外れと払戻金を答え合わせします。的中も外れも、損も全部載せます。"
              "すべての数字は「1号艇を毎回」という単純な選び方と並べて出します。</p><ul class=facts>")
     if p:
         nv = len(by_venue(p["races"]))
-        h.append(f"<li>{esc(p['date'][5:7].lstrip('0'))}月{esc(p['date'][8:10].lstrip('0'))}日の予想<b>{len(p['races'])}<small>レース・{nv}場</small></b></li>")
-    h.append(f"<li>これまでに答え合わせ<b>{t.get('graded_races', 0):,}<small>レース</small></b></li>")
+        h.append(f"<li>{esc(p['date'][5:7].lstrip('0'))}月{esc(p['date'][8:10].lstrip('0'))}日の予想<b>{len(p['races'])}<small>レース・{nv}場</small></b></li>"
+                 f"<li>予想公開<b>{esc(p['published_at'][11:16])}<small>締切より前</small></b></li>")
+    if r:
+        s = r["summary"]
+        h.append(f"<li>昨日の3連単の的中<b>{s['tri_hits']}<small>/{s['graded_races']}レース</small></b></li>")
     if t.get("graded_races"):
         h.append(f"<li>1着の的中率(AI / 1号艇)<b>{pct(t['win_rate'])}<small>/ {pct(t['base_win_rate'])}</small></b></li>")
     h.append("</ul></div><div class=lanes aria-hidden=true><span></span><span></span><span></span><span></span><span></span><span></span></div></header>")
-
-    h.append("<main class=wrap>")
-    h.append("<section class=warn aria-labelledby=w-h><h2 id=w-h>ご利用の前に</h2><ul>"
-             "<li>ここの予想は<b>無料の参考情報</b>です。的中や利益を<b>保証するものではありません</b>。</li>"
-             "<li><b>過去の成績は、将来の成績を約束するものではありません。</b></li>"
-             "<li><b>20歳未満の方は舟券を購入(投票)できません。</b></li>"
-             "<li>ボートレースの払戻率は75%で、平均すると賭け金の25%が失われます。舟券は余裕のある範囲で、ご自身の判断で。</li>"
-             "<li>のめり込みが心配なときは、各都道府県の精神保健福祉センターなどの相談窓口へ。</li>"
-             "<li>当サイトは投票の受付・代行、有料の予想販売を行っていません。</li></ul></section>")
-
-    # 成績の比較(AIの本命 と 1号艇を毎回 を必ず並べる)
-    ev = model.get("eval", {}) if model else {}
-    ho = {"races": ev["full"]["races"], "top1": ev["full"]["top1"], "lane1_rate": ev["lane1"]["top1"]} if ev.get("full") else {}
-    rows = []  # (label, ai, base, is_roi)
-    if t.get("graded_races"):
-        rows += [("1着の的中率(採点した全レース)", t["win_rate"], t["base_win_rate"], False),
-                 ("仮の回収率 単勝(毎回100円)", t["roi_win"], t["roi_base"], True),
-                 ("3連単(3点)的中率", t["tri_rate"], None, False),
-                 ("仮の回収率 3連単(3点×100円)", t["roi_tri"], None, True)]
-    if ho:
-        rows.append((f"参考: 学習に使っていない直近{ev.get('test_days', 0)}日の1着的中率({ho.get('races', 0):,}レース・事後の検証)", ho.get("top1", 0), ho.get("lane1_rate", 0), False))
-    if rows:
-        cap = f"採点したレース: {t['graded_races']:,}(公開 {t['days']} 日分)" if t.get("graded_races") else "答え合わせは公開の翌朝から始まります"
-        h.append("<section aria-labelledby=c-h><h2 id=c-h>成績:AIの本命 と 1号艇を毎回 の比較</h2>"
-                 f"<p class=note>{cap}</p>")
-        if not t.get("graded_races"):
-            h.append("<p class=empty>まだ答え合わせをしたレースはありません。それまでは、学習に使っていない期間で試した参考の数字だけを載せています。</p>")
-        h.append("<div class=legend><span>AIの本命</span><span class=k-base>1号艇を毎回</span></div><div class=cmp>")
-        any_roi = False
-        for label, a, b, roi in rows:
-            vals = [v for v in (a, b) if v is not None] or [0]
-            scale = max(1.25, max(vals) * 1.1) if roi else 1.0  # 的中率は0〜100%、回収率は100%の線が見える幅
-            any_roi |= roi
-            h.append(f"<div class=cmp-row><h3>{esc(label)}</h3>{bar('AIの本命', a, 'ai', scale, roi)}{bar('1号艇を毎回', b, 'base', scale, roi)}</div>")
-        h.append("</div>")
-        if any_roi:
-            h.append("<p class=evenkey>回収率の点線は100%(賭けた額がそのまま戻る線)です。</p>")
-        h.append("<p class=note>回収率は確定払戻金から機械的に計算しています。100%を下回るのは損をしたという意味です。"
-                 "AIの本命が1号艇を上回らない期間は、そのまま表示します。</p>")
-        daily = [d for d in summ.get("daily", []) if d.get("graded_races")][-14:]
-        if len(daily) >= 2:
-            pts = [(d, d["win_hits"] / d["graded_races"], d["base_hits"] / d["graded_races"]) for d in daily]
-            lo = max(0.0, min(min(a, b) for _, a, b in pts) - 0.05)
-            hi = min(1.0, max(max(a, b) for _, a, b in pts) + 0.05)
-            pos = lambda v: (v - lo) / max(hi - lo, 1e-9) * 100  # noqa: E731
-            h.append("<h3 class=dh>日ごとの1着の的中率(直近14日)</h3>"
-                     f"<div class=dscale aria-hidden=true><span><span>{lo*100:.0f}%</span><span>{hi*100:.0f}%</span></span></div><ul class=days>")
-            for d, a, b in reversed(pts):
-                diff = (a - b) * 100
-                h.append(f"<li><span class=dd>{esc(d['date'][5:].replace('-', '/'))}</span>"
-                         f"<span class=dtrack role=img aria-label='AIの本命 {pct(a)}、1号艇を毎回 {pct(b)}'>"
-                         f"<i class=dl style='left:{min(pos(a), pos(b)):.1f}%;width:{abs(pos(a)-pos(b)):.1f}%'></i>"
-                         f"<i class='dot base' style='left:{pos(b):.1f}%'></i><i class='dot ai' style='left:{pos(a):.1f}%'></i></span>"
-                         f"<span class=dv><b>{pct(a)}</b><span>{pct(b)}</span></span></li>")
-            h.append("</ul><p class=note>青の点がAIの本命、灰色の点が1号艇を毎回の、その日の1着の的中率です。</p>")
-        h.append("</section>")
-
-    # 答え合わせ(前日分)
-    if r:
-        s = r["summary"]
-        h.append(f"<section aria-labelledby=r-h><h2 id=r-h>答え合わせ {esc(s['date'])}(採点 {s['graded_races']}レース)</h2>"
-                 f"<p class=dayline><span>この日: AIの本命の1着<b>{s['win_hits']}</b></span><span>1号艇の1着<b>{s['base_hits']}</b></span></p>"
-                 "<p class=note>判定: 的中=3連単の予想3点のどれかが当たり/惜しい=予想1点目の1・2着が当たり、または3艇の顔ぶれが同じ/1着的中=本命の1着だけ当たり/外れ</p>"
-                 "<div class=venues>")
-        for vn, xs in by_venue(r["races"]).items():
-            wins = sum(1 for x in xs if x.get("win_hit"))
-            base = sum(1 for x in xs if x.get("lane1_won"))
-            h.append(f"<details class=venue><summary><span class=vn>{esc(vn)}</span><span class=vm>{len(xs)}レース<br>"
-                     f"AIの本命の1着 <span class=vtally>{wins}</span>/1号艇の1着 <span class=vtally>{base}</span></span></summary>")
-            for x in xs:
-                pay = f"{int(x['trifecta_payout']):,}円" if x.get("trifecta_payout") else "—"
-                tri = "".join(combo(c) for c in x["trifecta"])
-                h.append(f"<div class=res><span class=r>{x['race']}R</span>"
-                         f"<span class=got>結果 {combo(x['actual'], False)}<span class=gp>本命 {lane(x['pick'], True)}</span></span>"
-                         f"<span class='vd v-{esc(x['verdict'])}'>{esc(x['verdict'])}</span>"
-                         f"<span class=sub><span>予想 {tri}</span>"
-                         f"<span class=combos><span>1号艇を毎回 <b>{'1着' if x['lane1_won'] else '外れ'}</b></span><span>3連単払戻 <b class=num>{pay}</b></span></span></span></div>")
-            h.append("</details>")
-        h.append("</div></section>")
-
-    # 今日の予想
+    h.append("<main class=wrap><p class=notice>無料の参考情報です。的中や利益を保証しません。過去の成績は将来を約束しません。<b>20歳未満は舟券を購入できません。</b>(くわしくは下の「ご利用の前に」)</p>")
     if p:
-        pub = p["published_at"].replace("T", " ")[:16]
-        h.append(f"<section aria-labelledby=p-h><h2 id=p-h>予想 {esc(p['date'])}</h2><p class=note>公開時刻: {esc(pub)}。締切がこの時刻より前のレースは採点しません(後出しを防ぐため)。"
-                 "記録はGitの履歴に残り、後から書き換えると履歴に残ります。</p>"
-                 "<p class=note>本命の横の S/A/B/C は自信度(本命の1着確率 S:70%以上 A:55%以上 B:40%以上 C:それ未満)。自信度ごとの過去の成績は、下の「モデルについて」にあります。</p>"
-                 "<p class=note>色の帯は、AIが見積もった1着になる確率です(左から1〜6号艇の枠色、数字は%)。その下は3連単の予想3点と、その確率です。</p><div class=venues>")
-        for vn, xs in by_venue(p["races"]).items():
-            first, last = xs[0]["close"][11:16], xs[-1]["close"][11:16]
-            h.append(f"<details class=venue data-pred><summary><span class=vn>{esc(vn)}</span><span class=vm>{len(xs)}レース・締切 {first}〜{last}"
-                     "<br><span class=vnext></span></span></summary>")
-            for x in xs:
-                probs = x["probs"]
-                segs = "".join(f"<span class='l{i+1}' style='width:{v*100:.2f}%'>{f'{v*100:.0f}' if v >= 0.09 else ''}</span>" for i, v in enumerate(probs))
-                aria = "、".join(f"{i+1}号艇 {v*100:.0f}%" for i, v in enumerate(probs))
-                tri = "".join(f"<span>{combo(c)}<span class=p>{pr*100:.1f}%</span></span>" for c, pr in x["trifecta"])
-                tag = "" if x.get("scored", True) else "<span class=tag>採点外</span>"
-                tr = f"<span class='tier t-{esc(x['tier'])}' title='自信度'>{esc(x['tier'])}</span>" if x.get("tier") else ""
-                h.append(f"<div class=race data-close='{esc(x['close'])}' data-r='{x['race']}'><span class=r>{x['race']}R<small>{x['close'][11:16]}</small></span>"
-                         f"<span class=main><span class=pick>本命 {lane(x['pick'])}{tr}</span><span class=prob role=img aria-label='1着の確率: {aria}'>{segs}</span></span>"
-                         f"<span class=combos>{tri}{tag}</span></div>")
-            h.append("</details>")
-        h.append("</div></section>")
-
+        h.append(today_html(p))
+    if r:
+        h.append(yesterday_html(r))
+    h.append(record_html(t, summ, model))
+    h.append(warn_html())
     if model:
         h.append(model_section(model, summ))
     h.append("</main><footer><div class=wrap><p>データ出典: BOAT RACE 公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは再配布していません。内容は主催者発行のものと照合してください。</p>"

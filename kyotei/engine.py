@@ -197,7 +197,8 @@ def grade(d: date) -> dict | None:
                      "pick": r["pick"], "trifecta": [c for c, _ in r["trifecta"]], "actual": actual,
                      "verdict": verdict, "win_hit": win_hit, "tri_hit": tri_hit,
                      "pay_win": pay_win, "pay_tri": pay_tri, "base_pay": base_pay,
-                     "lane1_won": o[0] == 1, "trifecta_payout": x["trifecta"].get(actual)})
+                     "lane1_won": o[0] == 1, "trifecta_payout": x["trifecta"].get(actual),
+                     "tansho_payout": x["tansho"].get(str(o[0]))})
     n = len(rows)
     summ = {"date": d.isoformat(), "graded_races": n,
             "win_hits": sum(r["win_hit"] for r in rows),
