@@ -1,0 +1,74 @@
+{
+ "feats": [
+  "nat_win",
+  "nat_2",
+  "loc_win",
+  "motor_2",
+  "boat_2",
+  "A1",
+  "A2",
+  "B1",
+  "weight",
+  "rel_nat",
+  "rel_loc",
+  "rel_motor",
+  "ks_avg",
+  "ks_F",
+  "ks_bad",
+  "h_lane_win",
+  "h_lane_t2",
+  "h_lane_n",
+  "h_win_ewma",
+  "h_t3_ewma",
+  "h_course_win",
+  "h_st",
+  "h_st_rel",
+  "h_F180",
+  "h_inner",
+  "h_outer",
+  "fan_c_win",
+  "fan_c_q2",
+  "fan_c_st",
+  "fan_c_sr",
+  "fan_ability",
+  "fan_has",
+  "wxp_wind_l1",
+  "wxp_wave_l1",
+  "wxp_wind_out",
+  "f_rv",
+  "e_racer_exh",
+  "e_motor_exh"
+ ],
+ "vx": [],
+ "train_days": 365,
+ "tiers": [
+  [
+   "S",
+   0.676
+  ],
+  [
+   "A",
+   0.47
+  ],
+  [
+   "B",
+   0.4
+  ],
+  [
+   "C",
+   0.0
+  ]
+ ],
+ "ensemble": [
+  [
+   365,
+   30.0
+  ]
+ ],
+ "selected_at": "2026-10-25T04:44+09:00",
+ "select_window": [
+  "2026-07-05",
+  "2026-08-29",
+  8860
+ ]
+}
