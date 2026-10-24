@@ -361,7 +361,7 @@ def star_answer_html(r: dict, prev: dict | None, label: str) -> str:
         return ""
     n = len(rows)
     return (f"<section class=ans-s aria-labelledby=h-ans><h2 id=h-ans>{esc(label)}の自信あり、結果</h2>"
-            f"<p class=score>{n}レース中 ◎の1着<b>{win}</b>本。3連単も<b>{tri}</b>本。</p>"
+            f"<p class=score>{n}レース中 ◎が<b>{win}</b>勝。3連単も<b>{tri}</b>本的中。</p>"
             f"<p class=cap>{esc(jday(prev['published_at'], False))} {esc(hm(prev['published_at']))}に出した{n}レースです。</p>"
             f"<div class=star>{''.join(rows)}</div></section>")
 
@@ -378,10 +378,10 @@ def hook_html(p, r, prev) -> str:
     st = [res[x["key"]] for x in stars(prev) if x["key"] in res]
     o = [f"<div class=hook><p><span class=when>{esc(jday(s['date']))}の答え合わせ</span>"]
     if st:
-        o.append(f"{when}の自信ありは{len(st)}レース中<b>{sum(1 for y in st if y.get('win_hit'))}</b>本的中。")
+        o.append(f"{when}の自信ありは{len(st)}レース中、◎が<b>{sum(1 for y in st if y.get('win_hit'))}</b>勝。")
     if hits:
         b = hits[0]
-        o.append(f"3連単は全体で<b>{len(hits)}</b>本、最高は{esc(b['venue_name'])}{b['race']}Rの<b>{int(b['pay_tri']):,}</b>円。")
+        o.append(f"3連単は全体で<b>{len(hits)}</b>本的中、最高は{esc(b['venue_name'])}{b['race']}Rの<b>{int(b['pay_tri']):,}</b>円。")
         man = sum(1 for x in hits if (x.get("pay_tri") or 0) >= MANSHU)
         if man:
             o.append(f"万舟も{man}本取っています。")
@@ -462,16 +462,16 @@ def results_html(r: dict, prev: dict | None = None) -> str:
     o = [f"<section id=kotae aria-labelledby=h-kotae><h2 id=h-kotae>答え合わせ<small>{esc(jday(s['date']))}・全{n}R</small></h2>"
          f"<p class=cap>予想は{esc(jday(prev['published_at'], False)) + ' ' + esc(hm(prev['published_at'])) if prev else 'レース当日の朝'}に出したものです(<a href='{COMMITS}{esc(s['date'])}.json'>記録の履歴</a>)。"
          f"外れも全部そのまま。この日の万舟は全体で{man_all}本でした。</p>"
-         "<h3>100円ずつ買っていたら(仮の計算)</h3><div class=tw><table class=rec><thead><tr><th></th><th class=r>的中</th><th class=r>買った額</th><th class=r>戻り</th><th class=r>差</th></tr></thead><tbody>"
+         "<h3>100円ずつ買っていたら(仮の計算)</h3><div class=tw><table class=rec><thead><tr><th></th><th class=r>的中</th><th class=r>購入額</th><th class=r>払戻</th><th class=r>収支</th></tr></thead><tbody>"
          f"<tr><td>◎の単勝</td><td class='r n'>{s['win_hits']}</td><td class='r yen'>{yen(s['stake_win'])}</td><td class='r yen'>{yen(s['return_win'])}</td><td class=r>{signed(pw)}</td></tr>"
          f"<tr><td>3連単 3点</td><td class='r n'>{s['tri_hits']}</td><td class='r yen'>{yen(s['stake_tri'])}</td><td class='r yen'>{yen(s['return_tri'])}</td><td class=r>{signed(pt)}</td></tr>"
-         f"<tr><td class=base>くらべ用:1号艇の単勝</td><td class='r n base'>{s['base_hits']}</td><td class='r yen base'>{yen(100 * n)}</td><td class='r yen base'>{yen(s['base_return'])}</td><td class='r base'>{signed(pb)}</td></tr>"
+         f"<tr><td class=base>比較用:1号艇の単勝</td><td class='r n base'>{s['base_hits']}</td><td class='r yen base'>{yen(100 * n)}</td><td class='r yen base'>{yen(s['base_return'])}</td><td class='r base'>{signed(pb)}</td></tr>"
          "</tbody></table></div>"
-         "<h3>場ごとの全レース</h3><p class=cap>的中=3連単3点のどれかが当たり。惜しい=1点目の1・2着が合っていた、または3艇の顔ぶれは合っていた。◎1着=◎の1着だけ当たり。</p><div class=vlist>"]
+         "<h3>場ごとの全レース</h3><p class=cap>的中=3連単3点のどれかが当たり。惜しい=1点目の1・2着が合っていた、または1〜3着の3艇は合っていた(並びが違った)。◎1着=◎の1着だけ当たり。</p><div class=vlist>"]
     for vn, ys in group(xs).items():
         th = sum(1 for x in ys if x.get("tri_hit"))
         wh = sum(1 for x in ys if x.get("win_hit"))
-        o.append(f"<details class=v><summary><span class=v-name>{esc(vn)}</span><span class=v-meta>{len(ys)}R・3連単 <b>{th}</b>本・◎1着 {wh}本</span></summary>"
+        o.append(f"<details class=v><summary><span class=v-name>{esc(vn)}</span><span class=v-meta>全{len(ys)}R・3連単的中 <b>{th}</b>・◎1着 {wh}</span></summary>"
                  "<div class=tw><table><thead><tr><th>R</th><th>結果</th><th>予想</th><th></th><th class=r>3連単</th></tr></thead><tbody>")
         for x in sorted(ys, key=lambda x: x["race"]):
             pay = x.get("trifecta_payout")
@@ -495,7 +495,7 @@ def record_html(t: dict, summ: dict, model: dict) -> str:
         n = t["graded_races"]
         o.append(f"<p class=cap>公開を始めてから{t['days']}日・{n:,}レース。毎回「1号艇を買う」だけの場合と並べています。</p>"
                  "<div class=tw><table class=rec><thead><tr><th></th><th class=r>◎</th><th class=r>1号艇を毎回</th></tr></thead><tbody>"
-                 f"<tr><td>1着の的中率</td><td class='r n'>{pct(t['win_rate'])}</td><td class='r n base'>{pct(t['base_win_rate'])}</td></tr>"
+                 f"<tr><td>1着率</td><td class='r n'>{pct(t['win_rate'])}</td><td class='r n base'>{pct(t['base_win_rate'])}</td></tr>"
                  f"<tr><td>単勝の回収率(100円ずつ)</td><td class='r n'>{pct(t['roi_win'])}</td><td class='r n base'>{pct(t['roi_base'])}</td></tr>"
                  f"<tr><td>単勝の収支</td><td class=r>{signed(t['return_win'] - t['stake_win'])}</td><td class='r base'>{signed(t['base_return'] - 100 * n)}</td></tr>"
                  f"<tr><td>3連単3点の的中率</td><td class='r n'>{pct(t['tri_rate'])}</td><td class='r base'>—</td></tr>"
@@ -515,7 +515,7 @@ def record_html(t: dict, summ: dict, model: dict) -> str:
     if ev.get("full"):
         f, l1 = ev["full"], ev["lane1"]
         o.append(f"<p class=cap>公開前の検証(学習に使っていない{esc(sday(ev['test_from']))}〜{esc(sday(ev['test_to']))}の{f['races']:,}レース)では、"
-                 f"◎の1着率{pct(f['top1'])}、1号艇を毎回{pct(l1['top1'])}でした。</p>")
+                 f"◎の1着率は{pct(f['top1'])}、毎回1号艇を買った場合は{pct(l1['top1'])}でした。</p>")
     o.append("</section>")
     return "".join(o)
 
@@ -538,12 +538,12 @@ def how_html(model: dict, summ: dict) -> str:
          "<p>BOAT RACE公式が公開している番組表・競走成績・レーサー期別成績から、各艇の1着の確率を出す統計モデルです。"
          f"学習は{model.get('n_races', 0):,}レース分({esc(model.get('train_from', ''))}〜{esc(model.get('train_to', ''))})。毎週月曜に学習し直しています。</p>"
          "<h3>見ている数字(どれもレース前に分かるもの)</h3><ul>" + used + "</ul>"
-         "<p>当日の展示タイム・直前の気象・オッズは使っていません(朝の時点ではまだ出ていないため)。</p>"]
+         "<p>当日の直前情報(展示タイム・風・波)とオッズは使っていません(朝の時点ではまだ出ていないため)。</p>"]
     if ev.get("full"):
         f, l1 = ev["full"], ev["lane1"]
         dv = ev.get("diff_vs_lane1", {})
         o.append(f"<h3>公開前の検証</h3><p>{esc(ev['test_from'])}〜{esc(ev['test_to'])}の{f['races']:,}レースを、その週より前のデータだけで学習して1週ずつ予想した結果です。</p>"
-                 "<div class=tw><table><thead><tr><th></th><th class=r>1着の的中率</th><th class=r>単勝の回収率</th><th class=r>3連単3点</th></tr></thead><tbody>"
+                 "<div class=tw><table><thead><tr><th></th><th class=r>◎の1着率</th><th class=r>単勝の回収率</th><th class=r>3連単3点</th></tr></thead><tbody>"
                  f"<tr><td>◎(このモデル)</td><td class='r n'>{pct(f['top1'])}</td><td class='r n'>{pct(f.get('roi_win', 0))}</td><td class='r n'>{pct(f.get('tri3_hit', 0))}</td></tr>"
                  f"<tr><td>1号艇を毎回</td><td class='r n'>{pct(l1['top1'])}</td><td class='r n'>{pct(l1.get('roi_win', 0))}</td><td class=r>—</td></tr></tbody></table></div>"
                  f"<p>1号艇との差は{dv.get('diff', 0)*100:+.1f}ポイント(95%の幅 {dv.get('lo', 0)*100:+.1f}〜{dv.get('hi', 0)*100:+.1f})。"
