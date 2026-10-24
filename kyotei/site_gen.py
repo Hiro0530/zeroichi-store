@@ -230,19 +230,6 @@ def by_venue(rows):
     return groups
 
 
-GROUP_TEXT = [
-    (("f_form30", "f_form90"), "選手の最近30日・90日の成績(枠ごとの平均との差)"),
-    (("f_rv",), "選手のその場での成績(枠ごとの平均との差)"),
-    (("f_rlv",), "選手×枠×場の1着率(場×枠 → 選手×枠 の順に寄せて推定)"),
-    (("m_res_all", "m_res30"), "モーター番号ごとの最近の成績(乗った選手の力を差し引いた2連対)、モーター入れ替え直後かどうか"),
-    (("e_racer_exh",), "選手の最近の展示タイム(前のレースまでの、同じレース内の平均との差)"),
-    (("e_motor_exh",), "モーター番号ごとの最近の展示タイム(回り足の目安)"),
-    (("e_draw_exh", "e_draw_res"), "モーターの平均より良い展示・成績を出せているか(整備・調整の力の目安)"),
-    (("t_lvl_l1",), "潮位(気象庁の潮位表。締切時刻の潮の高さと満ち引き。海水・汽水の場だけ)"),
-    (("w_u_l1",), "前日の同じ場の風の向きと強さ(場ごとの向きの効き方を学習)"),
-]
-
-
 def tier_section(model: dict, summ: dict) -> str:
     ev = model.get("eval", {})
     tiers = ev.get("tiers")
@@ -260,7 +247,7 @@ def tier_section(model: dict, summ: dict) -> str:
                  f"<td class=num>{pct(t['hit'])}({pct(t['hit_lo'])}〜{pct(t['hit_hi'])})</td><td class=num>{pct(t['lane1'])}</td>"
                  f"<td class=num>{pct(t['roi_win'])}</td></tr>")
     o.append("</tbody></table></div>")
-    live = summ.get("tiers") or {}
+    live = summ.get("tiers_live") or {}
     if live:
         o.append("<p class=note>公開してからの実際の成績(答え合わせ済み): " + " / ".join(
             f"{esc(k)}: {v['races']}レース中 本命の1着 {v['win_hits']}・1号艇の1着 {v['base_hits']}"
@@ -270,17 +257,12 @@ def tier_section(model: dict, summ: dict) -> str:
 
 def model_section(model: dict, summ: dict | None = None) -> str:
     ev = model.get("eval", {})
-    feats = set((model.get("config") or {}).get("feats") or model.get("feats") or [])
-    extra = "".join(f"<li>{t}</li>" for keys, t in GROUP_TEXT if any(k in feats for k in keys))
+    used = "".join(f"<li>{esc(t)}</li>" for t in model.get("features_used") or [])
     o = ["<section class=about aria-labelledby=m-h><h2 id=m-h>モデルについて</h2>"
          "<p>公式に公開されているダウンロードデータ(番組表・競走成績・レーサー期別成績)だけを使い、各艇が1着になる確率を推定する統計モデル(条件付きロジット)です。"
          f"学習したレース数: {model.get('n_races', 0):,}({esc(model.get('train_from', ''))}〜{esc(model.get('train_to', ''))})。毎週月曜に自動で学習し直します。</p>"
-         "<h3>使っている数字(すべてレースの前に分かるもの)</h3><ul>"
-         "<li>番組表: 全国・当地の勝率と2連対率、級別、体重、モーターとボートの2連対率、今節のここまでの着順</li>"
-         "<li>過去の競走成績(前日まで): 選手ごとの<b>枠別</b>の1着率・2連対率、実際の<b>進入コース別</b>の1着率、平均スタートタイミング、フライング回数、前付け・コースを取られる傾向、最近の調子</li>"
-         "<li>レーサー期別成績(公開済みの期のもの): コース別の1着率・2連対率・平均スタートタイミング・平均スタート順位</li>"
-         "<li>場ごとの枠の有利不利、前日の同じ場の風速・波高</li>" + extra + "</ul>"
-         "<p>使っていないもの: 当日の展示タイム・直前の気象・部品交換やプロペラの情報(直前情報のページにしか無く、朝の公開時点では分からないため。取得もしていません)、オッズ(取得していません)。"
+         "<h3>使っている数字(すべてレースの前に分かるもの)</h3><ul>" + used + "</ul>"
+         f"<p>使っていないもの: {esc(model.get('not_used', ''))}。"
          "当日の気象は結果ファイルにしか無いので、予想には使いません。</p>"]
     if ev.get("full"):
         f, b, pr, l1 = ev["full"], ev.get("base", {}), ev.get("prior", {}), ev["lane1"]
@@ -334,14 +316,9 @@ def yen(v: int, sign: bool = False) -> str:
     return f"{int(v):,}円"
 
 
-def warn_html() -> str:
+def warn_html(items: list) -> str:
     return ("<section class=warn aria-labelledby=w-h><h2 id=w-h>ご利用の前に</h2><ul>"
-            "<li>ここの予想は<b>無料の参考情報</b>です。的中や利益を<b>保証するものではありません</b>。</li>"
-            "<li><b>過去の成績は、将来の成績を約束するものではありません。</b></li>"
-            "<li><b>20歳未満の方は舟券を購入(投票)できません。</b></li>"
-            "<li>ボートレースの払戻率は75%で、平均すると賭け金の25%が失われます。舟券は余裕のある範囲で、ご自身の判断で。</li>"
-            "<li>のめり込みが心配なときは、各都道府県の精神保健福祉センターなどの相談窓口へ。</li>"
-            "<li>当サイトは投票の受付・代行、有料の予想販売を行っていません。</li></ul></section>")
+            + "".join(f"<li>{esc(x)}</li>" for x in items) + "</ul></section>")
 
 
 def today_html(p: dict) -> str:
@@ -485,14 +462,14 @@ def record_html(t: dict, summ: dict, model: dict) -> str:
 
 
 def build():
+    """site_data.py が作る site_data.json(数字)を読んで、見た目だけをここで作る。"""
+    import site_data
     SITE.mkdir(exist_ok=True)
-    summ = json.loads((ROOT / "summary.json").read_text(encoding="utf-8")) if (ROOT / "summary.json").exists() else {"total": {}, "daily": []}
-    t = summ["total"]
-    preds = sorted((ROOT / "predictions").glob("*.json"))
-    results = sorted((ROOT / "results").glob("*.json"))
-    model = json.loads((ROOT / "model.json").read_text()) if (ROOT / "model.json").exists() else {}
-    p = json.loads(preds[-1].read_text(encoding="utf-8")) if preds else None
-    r = json.loads(results[-1].read_text(encoding="utf-8")) if results else None
+    data = site_data.build()
+    rec = data["record"]
+    t = rec["total"]
+    model = data["model"] or {}
+    p, r = data["today"], data["yesterday"]
     h = ["<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
          "<title>AI舟券 答え合わせ帳</title><meta name=description content='統計モデルのボートレース予想をレース前に公開し、翌朝に全レースの当たり外れと払戻金を答え合わせする記録。的中も外れも全部載せます。'>"
          "<meta name=theme-color content='#0b2540'>"
@@ -515,14 +492,12 @@ def build():
         h.append(today_html(p))
     if r:
         h.append(yesterday_html(r))
-    h.append(record_html(t, summ, model))
-    h.append(warn_html())
+    h.append(record_html(t, rec, model))
+    h.append(warn_html(data["disclaimers"]))
     if model:
-        h.append(model_section(model, summ))
-    h.append("</main><footer><div class=wrap><p>データ出典: BOAT RACE 公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは再配布していません。内容は主催者発行のものと照合してください。</p>"
-             + ("<p>潮位: 気象庁ホームページ「潮位表」のデータを加工して作成(締切時刻の潮位と満ち引きを計算)。</p>"
-                if "t_lvl_l1" in ((model.get("config") or {}).get("feats") or []) else "") +
-             "<p>予想は無料の参考情報で、的中・利益を保証しません。過去の成績は将来の成績を約束しません。20歳未満の方は投票できません。</p>"
+        h.append(model_section(model, rec))
+    h.append("</main><footer><div class=wrap>" + "".join(f"<p>データ出典: {esc(x)}</p>" if i == 0 else f"<p>{esc(x)}</p>" for i, x in enumerate(data["sources"]))
+             + "<p>内容は主催者発行のものと照合してください。予想は無料の参考情報で、的中・利益を保証しません。過去の成績は将来の成績を約束しません。20歳未満の方は投票できません。</p>"
              "<p>運営: ZEROICHI WORKS(AIが運用する個人事業)。このページはAIが自動で作成しています。"
              "記録の履歴: <a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>GitHub</a></p></div></footer>"
              f"<script>{JS}</script></body></html>")

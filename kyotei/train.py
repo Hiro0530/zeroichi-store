@@ -129,8 +129,9 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
     rep["diff_vs_base"] = M.paired_diff(hit_full, P["base"].argmax(1) == y)
     rep["beats_lane1"] = bool(rep["diff_vs_lane1"]["lo"] > 0)
     rep["better_logloss_than_base"] = bool(rep["full"]["logloss"] < rep["base"]["logloss"])
-    rep["tiers"] = M.tier_table(P["full"], y, pay)
-    rep["config"] = {k: cfg[k] for k in ("feats", "vx", "train_days", "ensemble")}
+    rep["tiers"] = M.tier_table(P["full"], y, pay, cfg.get("tiers"), days=rep["test_days"])
+    rep["tiers_def"] = cfg.get("tiers") or M.TIERS
+    rep["config"] = {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers")}
     return rep
 
 
@@ -146,7 +147,7 @@ def train_all(hist: Path, weeks: int = 6) -> tuple[dict, dict]:
     comps = fit_components(data, np.ones(len(data["y"]), bool), cfg)
     lam = rep.get("lambda", [1.0, 1.0])
     model = {**comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
-             "config": {k: cfg[k] for k in ("feats", "vx", "train_days", "ensemble")},
+             "config": {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers", "select_window")},
              "train_from": days[0][0].isoformat(), "train_to": days[-1][0].isoformat(),
              "fitted_at": datetime.now(JST).isoformat(timespec="minutes"),
              "n_v2_days": sum(1 for _, _, res in days if any("boats" in v for v in list(res.values())[:3])),

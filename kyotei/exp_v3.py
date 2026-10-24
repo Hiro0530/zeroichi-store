@@ -155,7 +155,10 @@ def main(hist: Path, weeks: int = 8):
     rep["oracle_racetime_wind_select"] = summarize(P_or, data, idx_s, best["P"])
     final_sel = P_ens if use_ens else best["P"]
     rep["final_select"] = summarize(final_sel, data, idx_s, P_v2)
-    cfg = {"feats": best["feats"], "vx": best["vx"], "train_days": best["train_days"],
+    tiers = M.choose_tiers(final_sel, ys)   # 自信度のしきい値も「選ぶ期間」だけで決める
+    rep["tiers_chosen_on_select"] = tiers
+    rep["tiers_select"] = M.tier_table(final_sel, ys, data["pay"][idx_s], tiers, days=len(np.unique(D[idx_s])))
+    cfg = {"feats": best["feats"], "vx": best["vx"], "train_days": best["train_days"], "tiers": tiers,
            "ensemble": [[c[2], c[3]] for c in comps] if use_ens else [[best["train_days"], 30.0]],
            "selected_at": rep["generated_at"], "select_window": rep["select_window"]}
     rep["config"] = cfg
@@ -175,8 +178,9 @@ def main(hist: Path, weeks: int = 8):
                   "roi_win": round(float(np.where(yc == 0, payc, 0).sum() / (100 * len(yc))), 5)},
         "final_vs_lane1_top1": {k: round(v, 5) for k, v in M.paired_diff(P_fc.argmax(1) == yc, yc == 0).items()},
         "v2_vs_lane1_top1": {k: round(v, 5) for k, v in M.paired_diff(P_v2c.argmax(1) == yc, yc == 0).items()},
-        "tiers_final": M.tier_table(P_fc, yc, payc),
-        "tiers_v2": M.tier_table(P_v2c, yc, payc),
+        "tiers_final": M.tier_table(P_fc, yc, payc, cfg["tiers"], days=len(np.unique(D[idx_c]))),
+        "tiers_v2": M.tier_table(P_v2c, yc, payc, cfg["tiers"], days=len(np.unique(D[idx_c]))),
+        "tiers_S_or_A_final": M.tier_table(P_fc, yc, payc, [("S+A", cfg["tiers"][1][1]), ("rest", 0.0)], days=len(np.unique(D[idx_c]))),
         "calibration_final": M.metrics(P_fc, yc)["calibration"],
     }
     # 場ごとの当たり具合(確かめる期間)

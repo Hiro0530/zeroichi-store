@@ -215,11 +215,12 @@ def paired_diff(a_hit: np.ndarray, b_hit: np.ndarray, B: int = 2000, seed: int =
     return {"diff": float(d.mean()), "lo": float(np.percentile(bs, 2.5)), "hi": float(np.percentile(bs, 97.5))}
 
 
-TIERS = [("S", 0.70), ("A", 0.55), ("B", 0.40), ("C", 0.0)]   # 本命の1着確率での「自信度」
+TIERS = [("S", 0.70), ("A", 0.55), ("B", 0.40), ("C", 0.0)]   # 本命の1着確率での「自信度」(既定。exp_v3 が選ぶ期間で決め直す)
+TIER_TARGET = {"S": 0.75, "A": 0.65}                           # しきい値を決めるときの目標の的中率
 
 
-def tier_of(p_top: float) -> str:
-    for name, lo in TIERS:
+def tier_of(p_top: float, tiers=None) -> str:
+    for name, lo in (tiers or TIERS):
         if p_top >= lo:
             return name
     return "C"
@@ -235,22 +236,47 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return c - h, c + h
 
 
-def tier_table(P, y, pay) -> list:
-    """自信度ごとの、学習外の1着的中率(95%区間)・同じレースでの1号艇・単勝の仮の回収率。"""
+def choose_tiers(P, y, min_races: int = 200) -> list:
+    """しきい値を「選ぶ期間」の予想だけで決める: 本命の確率が t 以上のレースの的中率が目標以上になる、いちばん低い t
+    (広く拾えるように)。決めたしきい値は、そのあとの期間(確かめる期間・公開後)で評価する。"""
+    top, hit = P.max(1), (P.argmax(1) == y)
+    order = np.argsort(-top)
+    cum = np.cumsum(hit[order]) / np.arange(1, len(order) + 1)
+    out = []
+    for name in ("S", "A"):
+        ok = [i for i in range(min_races - 1, len(order)) if cum[i] >= TIER_TARGET[name]]
+        t = float(top[order[max(ok)]]) if ok else 0.99
+        out.append((name, round(t, 3)))
+    if out[1][1] >= out[0][1]:
+        out[1] = ("A", round(out[0][1] - 0.05, 3))
+    out.append(("B", round(min(0.40, out[1][1] - 0.05), 3)))
+    out.append(("C", 0.0))
+    return out
+
+
+def tier_table(P, y, pay, tiers=None, days: int | None = None, B: int = 1000) -> list:
+    """自信度ごとの、学習外の1着的中率(95%区間)・1日あたりのレース数・同じレースでの1号艇・単勝の仮の回収率(95%区間)。"""
+    tiers = list(tiers or TIERS)
     top = P.max(1)
     pick = P.argmax(1)
+    ret = np.where(pick == y, pay, 0) / 100.0
+    rng = np.random.default_rng(0)
     out = []
-    for name, lo in TIERS:
-        hi = next((l for nm, l in TIERS if l > lo and TIERS.index((nm, l)) == TIERS.index((name, lo)) - 1), 1.01)
+    for i, (name, lo) in enumerate(tiers):
+        hi = tiers[i - 1][1] if i > 0 else 1.01
         m = (top >= lo) & (top < hi)
         n = int(m.sum())
         k = int((pick[m] == y[m]).sum())
         lo_ci, hi_ci = wilson(k, n)
+        r = ret[m]
+        bs = [r[rng.integers(0, n, n)].mean() for _ in range(B)] if n else [0.0]
         out.append({"tier": name, "p_from": lo, "p_to": min(hi, 1.0), "races": n, "share": n / max(len(y), 1),
+                    "per_day": round(n / days, 2) if days else None,
                     "hit": k / max(n, 1), "hit_lo": lo_ci, "hit_hi": hi_ci, "mean_p": float(top[m].mean()) if n else 0.0,
                     "lane1": float((y[m] == 0).mean()) if n else 0.0,
                     "pick_lane1": float((pick[m] == 0).mean()) if n else 0.0,
-                    "roi_win": float(np.where(pick[m] == y[m], pay[m], 0).sum() / (100 * max(n, 1)))})
+                    "roi_win": float(r.mean()) if n else 0.0,
+                    "roi_lo": float(np.percentile(bs, 2.5)), "roi_hi": float(np.percentile(bs, 97.5))})
     return out
 
 

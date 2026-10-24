@@ -43,6 +43,26 @@
 - `train.py`: 直近6週について、1週ずつ「その週より前だけで学習 → その週を予想」(ウォークフォワード)。比較: 1号艇を毎回/場×枠の率だけ/番組表の数字だけのモデル(旧モデル相当)。1着的中率・単勝の仮の回収率・3連単3点の的中率・対数損失・Brier・確率の当たり具合(10区分)、1号艇との差のブートストラップ95%区間。結果は `model.json` の `eval`(読み取りの点検は `data_check`)に入り、ページに出る。
 - 手元での検証: `python kyotei/train.py <histのフォルダ> [週数]`
 
+## site_data.json の形(ページとXが使う数字。schema 1)
+
+`site_data.py` が毎朝作り、`site_gen.py`(見た目だけ)はこれを読んでページを作る。見た目を変えるときは `site_gen.py` だけを直せばよい。金額はすべて円、確率は0〜1、時刻は日本時間の ISO 8601。
+
+- `schema`, `generated_at`, `page_url`
+- `today`(当日の予想。無ければ null): `date`, `published_at`(予想を公開した時刻。締切より前であることの証拠), `proof_url`(その日の予想ファイルの Git 履歴), `model_fitted_at`,
+  `races[]`: `key`, `venue`(01〜24), `venue_name`, `race`, `close`(締切), `scored`(false=公開時刻より前に締切で採点しない), `tier`(自信度 S/A/B/C), `pick`(本命の枠), `p_pick`(本命の1着確率), `probs[6]`(1〜6号艇の1着確率), `trifecta[3]`(`[組番, 確率]`),
+  `featured[]`(確率の高い6レースの key、締切順)
+- `yesterday`(直近の答え合わせ): `date`, `proof_url`, `summary`(`graded_races`, `win_hits`, `tri_hits`, `near`, `base_hits`, `stake_win`/`return_win`/`pnl_win`(本命の単勝100円ずつ), `stake_tri`/`return_tri`/`pnl_tri`(3連単3点×100円), `stake_base`/`base_return`/`pnl_base`(1号艇の単勝100円ずつ)), `best_tri_hit`(その日の3連単の的中でいちばん高い払戻。無ければ null),
+  `races[]`: `key`, `venue_name`, `race`, `tier`, `pick`, `trifecta[3]`, `actual`(結果 1-2-3着), `verdict`(的中/惜しい/1着的中/外れ), `win_hit`, `tri_hit`, `lane1_won`, `tansho_payout`(1着の単勝の払戻・100円あたり。古い記録には無い), `trifecta_payout`(3連単の払戻・100円あたり), `pay_win`, `pay_tri`, `base_pay`, `pnl_win`, `pnl_tri`, `pnl_base`, `pnl_race`(本命の単勝100円+3連単3点の増減)
+- `record`: `total`(公開してからの累計: `days`, `graded_races`, `win_rate`, `base_win_rate`, `tri_rate`, `roi_win`, `roi_tri`, `roi_base`, 金額と `pnl_*`), `daily[]`(日ごとの summary、直近60日), `tiers_live`(自信度ごとの公開後の実績 `races`, `win_hits`, `base_hits`, `return_win`)
+- `model`: `version`, `n_races`, `train_from`, `train_to`, `fitted_at`, `lambda`, `config`(`feats`, `tiers`=自信度のしきい値 `[名前, 本命の確率の下限]`), `features_used[]`, `not_used`, `uses_tide`,
+  `eval`(学習外の検証): `test_from`, `test_to`, `test_days`, `full`/`base`/`prior`/`oracle`(`top1`, `logloss`, `roi_win`, `tri3_hit` など。`full.calibration` は `[平均の確率, 実際の1着率, 艇数]`), `lane1`, `diff_vs_lane1`(的中率の差と95%区間), `beats_lane1`, `tiers[]`(`tier`, `p_from`, `p_to`, `races`, `per_day`, `hit`, `hit_lo`, `hit_hi`, `lane1`, `roi_win`, `roi_lo`, `roi_hi`)
+- `disclaimers[]`(必ずページに出す注意書き), `sources[]`(出典)
+
+## 自信度(しきい値は学習外で決める)
+
+- `exp_v3.py` が「選ぶ期間」の予想だけで、本命の確率が t 以上のレースの1着的中率が 75%(S)/65%(S+A)以上になるいちばん低い t を決め、`model_config.json` の `tiers` に書く。その後の「確かめる期間」と公開後の実績で評価する(しきい値を決めた期間の成績はページに出さない)。
+- ページ・`site_data.json` には自信度ごとに、レース数・1日あたりのレース数・1着的中率(95%区間)・同じレースで1号艇を毎回選んだ場合・単勝の仮の回収率(95%区間)を出す。自信度が高いレースは1号艇の本命が多く、払戻が低いので、的中率が高くても回収率は100%を下回るのがふつう。
+
 ## v3 の改良候補と検証(`exp_v3.py`)
 
 - 候補: 選手の最近30/90日の成績(枠ごとの期待との差)/選手×場/選手×枠×場(場×枠 → 選手×枠 → 選手×枠×場 と階層的に寄せる)/モーター番号ごとの最近の成績(乗った選手の力を差し引いた2連対。番組表の2連率が一斉に0になった日を入れ替えとみなす)/展示タイム(競走成績ファイルに載る。**前のレースまで**の値だけ使う): 選手の最近の展示、モーター番号ごとの展示(回り足の目安)、モーターの平均より良い展示・成績を出せているか(整備・ペラ調整の力の目安)/潮位(締切時刻の潮位と1時間の変化、場ごとに効き方を変える)/前日の風の向き(東西・南北の成分を場ごとの係数で。場ごとの水面の向きはデータから学ぶ)/場ごとの係数/アンサンブル(正則化の強さ・学習期間の違うモデルの対数確率の平均)。

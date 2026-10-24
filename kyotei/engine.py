@@ -159,7 +159,7 @@ def make_predictions(d: date, model: dict) -> dict | None:
         scored = datetime.fromisoformat(r["close"]) > now + timedelta(minutes=5)
         preds.append({"key": r["key"], "venue": r["venue"], "venue_name": VENUES[r["venue"]],
                       "race": r["race"], "close": r["close"], "scored": scored,
-                      "probs": [round(x, 4) for x in p], "pick": top + 1, "tier": M.tier_of(max(p)),
+                      "probs": [round(x, 4) for x in p], "pick": top + 1, "tier": M.tier_of(max(p), (model.get("config") or {}).get("tiers")),
                       "trifecta": [[c, round(x, 4)] for c, x in tri]})
     out = {"date": d.isoformat(), "published_at": now.isoformat(timespec="seconds"),
            "model_fitted_at": model.get("fitted_at"), "model_version": model.get("version", 1), "races": preds}
