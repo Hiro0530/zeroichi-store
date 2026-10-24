@@ -1,0 +1,38 @@
+name: hoshiyomi-daily
+
+# ほしよみ日和: 毎日0時すぎ(日本時間)に「今日のランキング」と星座ページの「今日」を作り直す。gh-pages の hoshiyomi/ だけを更新する
+on:
+  schedule:
+    - cron: "3 15 * * *"   # 00:03 JST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hoshiyomi-daily
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build today pages
+        run: TZ=Asia/Tokyo node hoshiyomi/tools/build.mjs today
+      - name: Commit (hoshiyomi/ only)
+        run: |
+          git config user.name "hoshiyomi-bot"
+          git config user.email "hoshiyomi-bot@users.noreply.github.com"
+          git add hoshiyomi/today hoshiyomi/seiza
+          if git commit -m "hoshiyomi: $(TZ=Asia/Tokyo date +'%F') の運勢"; then
+            for i in 1 2 3; do git pull --rebase origin gh-pages && git push origin HEAD:gh-pages && break; sleep 5; done
+          else
+            echo "no changes"
+          fi
