@@ -1,505 +1,610 @@
 """公開用の静的ページ(kyotei/site/index.html)を作る。毎朝のワークフローがこのファイルで作り直すので、
-見た目を変えるときは出力ではなくここ(テンプレート)を直すこと。"""
+見た目や文言を変えるときは出力ではなくここ(テンプレート)を直すこと。
+
+デザインの決めごと(崩さないこと)
+- 紙の出走表・予想紙の作法: 白い紙・黒い文字・枠番は公式の枠色(1白 2黒 3赤 4青 5黄 6緑)・印は ◎○▲。
+- 赤(朱)は「的中」と払戻金のためだけに使う。万舟(3連単1万円以上)は黄色のマーカー。
+- カードを並べない。表と罫線で詰めて見せる。グラデーション・影・絵文字・英語の見出しは使わない。
+- 文言は競艇ファンの話し言葉で短く。「〜しましょう」「ぜひ」「徹底」「圧倒的」などの売り文句は書かない。
+  当たる保証・買い方の指南(「万舟が出たらやめる」等)は書かない。注意書きは消さず、落ち着いた場所に普通の言葉で置く。
+
+データ: kyotei/site_data.json があればそれを優先し、無い項目は predictions/ results/ summary.json model.json から読む。
+"""
 from __future__ import annotations
 
 import html
 import json
+from urllib.parse import quote
+from datetime import date, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "site"
+HERO = SITE / "hero.jpg"  # 見出し写真(生成画像)。gh-pages の kyotei/ にも同じものを置く
+PAGE_URL = "https://hiro0530.github.io/zeroichi-store/kyotei/"
+COMMITS = "https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei/predictions/"
+HELP_URL = "https://www.gaprsc.or.jp/"
 
+VENUES = ["桐生", "戸田", "江戸川", "平和島", "多摩川", "浜名湖", "蒲郡", "常滑", "津", "三国", "びわこ", "住之江",
+          "尼崎", "鳴門", "丸亀", "児島", "宮島", "徳山", "下関", "若松", "芦屋", "福岡", "唐津", "大村"]
+VORDER = {n: i for i, n in enumerate(VENUES)}
+WD = "月火水木金土日"
+MANSHU = 10000
+
+TITLE = "AI舟券 答え合わせ帳"
+# 見出しの書体は使う文字だけ読み込む(軽くするため)
 FONTS = ("<link rel=preconnect href='https://fonts.googleapis.com'><link rel=preconnect href='https://fonts.gstatic.com' crossorigin>"
-         "<link rel=stylesheet href='https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700"
-         "&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap'>")
+         "<link rel=stylesheet href='https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700"
+         "&display=swap'>"
+         "<link rel=stylesheet href='https://fonts.googleapis.com/css2?family=Dela+Gothic+One"
+         "&text=" + quote("AI舟券答え合わせ帳") + "&display=swap'>")
 
-# ZEROICHI WORKS 共通の土台 + この帳面の色(水面の紺と、6艇の枠色)
 CSS = """
-:root{--bg:#edf2f6;--surface:#fff;--sunk:#f5f8fa;--ink:#102030;--muted:#4f6071;--line:#d3dde6;--line2:#b9c7d3;
---ai:#0a5cc2;--ai-soft:#e3eefb;--base:#8794a1;--hit:#137a46;--hit-soft:#e1f3e9;--near:#9a5b00;--near-soft:#fdf0d9;--miss:#6f7b87;
---deep:#0b2540;--deep-ink:#f2f7fb;--deep-muted:#bccbd9;
---l1:#ffffff;--l1t:#111;--l2:#1b1b1b;--l2t:#fff;--l3:#e0262c;--l3t:#fff;--l4:#1167c8;--l4t:#fff;--l5:#ffd60a;--l5t:#111;--l6:#0f8a43;--l6t:#fff;
---chipline:#7f8b96;--jp:"Zen Kaku Gothic New",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;
---num:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0a1520;--surface:#101e2b;--sunk:#0d1924;--ink:#e5edf4;--muted:#9eb0c0;--line:#1f3244;--line2:#2c4358;
---ai:#62adff;--ai-soft:#12304f;--base:#8c9aa8;--hit:#52cc8e;--hit-soft:#123826;--near:#f2b552;--near-soft:#3a2a0f;--miss:#8a98a5;--deep:#061320;--chipline:#5d6e7d;color-scheme:dark}}
-:root[data-theme=dark]{--bg:#0a1520;--surface:#101e2b;--sunk:#0d1924;--ink:#e5edf4;--muted:#9eb0c0;--line:#1f3244;--line2:#2c4358;
---ai:#62adff;--ai-soft:#12304f;--base:#8c9aa8;--hit:#52cc8e;--hit-soft:#123826;--near:#f2b552;--near-soft:#3a2a0f;--miss:#8a98a5;--deep:#061320;--chipline:#5d6e7d;color-scheme:dark}
+:root{--paper:#fff;--ink:#222426;--sub:#62676d;--rule:#d9dcdf;--rule2:#9aa0a6;--head:#f2f3f1;
+--shu:#c8161d;--shu-soft:#fdeceb;--navy:#17407e;--mark:#ffe55c;--past:#9aa0a6;
+--l1:#fff;--l1t:#222;--l2:#222;--l2t:#fff;--l3:#e2262c;--l3t:#fff;--l4:#1662c4;--l4t:#fff;--l5:#f6d200;--l5t:#222;--l6:#11884a;--l6t:#fff;
+--jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Noto Sans JP","Noto Sans CJK JP",Meiryo,sans-serif;
+--num:"Saira Condensed","Arial Narrow",var(--jp);--disp:"Dela Gothic One",var(--jp);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--paper:#17191c;--ink:#e9e9e6;--sub:#a3a8ad;--rule:#33373c;--rule2:#5b6168;--head:#202327;
+--shu:#ff5d55;--shu-soft:#3a1d1c;--navy:#93b8ff;--mark:#6b5a00;--past:#6c7278;--l1:#f4f4f4;--l2:#000;color-scheme:dark}}
+:root[data-theme=dark]{--paper:#17191c;--ink:#e9e9e6;--sub:#a3a8ad;--rule:#33373c;--rule2:#5b6168;--head:#202327;
+--shu:#ff5d55;--shu-soft:#3a1d1c;--navy:#93b8ff;--mark:#6b5a00;--past:#6c7278;--l1:#f4f4f4;--l2:#000;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .l2{box-shadow:inset 0 0 0 1px #5b6168}}
+:root[data-theme=dark] .l2{box-shadow:inset 0 0 0 1px #5b6168}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.75 var(--jp);overflow-wrap:break-word}
-a{color:var(--ai)}:focus-visible{outline:3px solid var(--ai);outline-offset:2px;border-radius:4px}
-.wrap{max-width:920px;margin:0 auto;padding:0 16px}
-.num{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.7 var(--jp);overflow-wrap:break-word}
+a{color:var(--navy);text-underline-offset:3px}:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.n{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:600;letter-spacing:.01em}
+p{margin:0}
 
-/* 見出しの帯: 水面の紺 + 枠色のストライプ */
-.top{background:var(--deep);color:var(--deep-ink)}
-.top .wrap{padding-top:18px;padding-bottom:44px}
-.brand{display:inline-flex;align-items:center;gap:8px;color:var(--deep-muted);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:.08em;min-height:32px}
-.brand i{font-style:normal;font-family:var(--num);font-weight:700;font-size:12px;line-height:1;border:1.5px solid currentColor;border-radius:3px;padding:3px 3px 2px;letter-spacing:0}
-.top h1{margin:18px 0 10px;font-weight:900;font-size:clamp(32px,8.6vw,52px);line-height:1.2;letter-spacing:.02em}
-.top .lead{margin:0;max-width:36em;color:var(--deep-muted);font-size:15px}
-.lanes{display:grid;grid-template-columns:repeat(6,1fr);height:8px}
-.lanes span:nth-child(1){background:#fff}.lanes span:nth-child(2){background:#1b1b1b;box-shadow:inset 0 0 0 1px #3b4b5a}.lanes span:nth-child(3){background:var(--l3)}
-.lanes span:nth-child(4){background:var(--l4)}.lanes span:nth-child(5){background:var(--l5)}.lanes span:nth-child(6){background:var(--l6)}
-.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin:22px 0 0;padding:0;list-style:none;font-size:13px;color:var(--deep-muted)}
-.facts b{display:block;color:var(--deep-ink);font-family:var(--num);font-weight:600;font-size:30px;line-height:1.1;letter-spacing:.01em}
-.facts b small{font-family:var(--jp);font-size:13px;font-weight:500;margin-left:4px;color:var(--deep-muted)}
+/* 題字 */
+.mast{padding:14px 0 0}
+.mast .by{font-size:12px;color:var(--sub);text-decoration:none}
+.mast h1{font:400 clamp(30px,8.4vw,46px)/1.15 var(--disp);margin:6px 0 0;letter-spacing:.02em}
+.mast .lead{margin:10px 0 0;font-size:14.5px;max-width:34em}
+.waku{display:flex;height:5px;margin-top:14px}.waku i{flex:1}
+.waku i:nth-child(1){background:var(--l1);box-shadow:inset 0 0 0 1px var(--rule2)}.waku i:nth-child(2){background:var(--l2)}.waku i:nth-child(3){background:var(--l3)}
+.waku i:nth-child(4){background:var(--l4)}.waku i:nth-child(5){background:var(--l5)}.waku i:nth-child(6){background:var(--l6)}
 
-main{padding-bottom:16px}
-section{margin-top:44px}
-h2{font-size:21px;line-height:1.45;margin:0 0 4px;font-weight:700}
-.note{color:var(--muted);font-size:13.5px;margin:4px 0 0}
+/* 見出し写真 */
+.hero{position:relative;background:#0d1b26;color:#fff;overflow:hidden}
+.hero img{display:block;width:100%;height:clamp(250px,62vw,420px);object-fit:cover;object-position:45% 60%}
+.hero .over{position:absolute;inset:auto 0 0 0;padding:60px 0 16px;background:linear-gradient(to top,rgba(5,14,22,.82),rgba(5,14,22,0))}
+.hero .by{color:#d5dde3}
+.hero h1{color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.35)}
+.hero .lead{color:#e4eaee;margin-top:6px}
+.hero .credit{position:absolute;top:8px;right:10px;font-size:10px;color:rgba(255,255,255,.7)}
+.mast.hero{padding:0}
 
-/* ご利用の前に */
-.warn{margin-top:22px;position:relative;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--near);border-radius:12px;padding:16px 18px 14px;font-size:14.5px}
-.warn h2{font-size:16px;margin:0 0 6px}
-.warn ul{margin:0;padding-left:1.2em}.warn li{margin:3px 0}
+/* 自信あり(このページの主役) */
+.star{border-top:3px solid var(--ink)}
+.srow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:14px 0 13px;border-bottom:1px solid var(--rule)}
+.srow .big{grid-row:span 2}
+.srow .big .ln{width:46px;height:46px;font-size:32px;border-radius:3px}
+.srow .where{font-weight:700;font-size:19px;line-height:1.2;white-space:nowrap}
+.srow .where .n{font-size:24px;margin-left:3px}
+.srow .when{font-size:12.5px;color:var(--sub);white-space:nowrap}
+.srow .when .n{font-size:17px;color:var(--ink)}
+.srow .p{grid-row:span 2;text-align:right;font:700 38px/1 var(--num)}
+.srow .p small{font-size:16px}
+.srow .p span{display:block;font:500 11px/1.3 var(--jp);color:var(--sub);margin-top:3px}
+.srow .tri3{grid-column:2/4;font-size:15px}
+.srow.past{opacity:.5}
+.srow .closedtag{display:none;font-size:11px;font-weight:700;border:1px solid var(--rule2);padding:1px 4px;margin-left:6px;color:var(--sub)}
+.srow.past .closedtag{display:inline-block}
+.pub{display:inline-block;background:var(--ink);color:var(--paper);font-size:12.5px;padding:3px 8px;margin-top:10px}
+.pub .n{font-size:15px;margin:0 2px}
+.ans{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--rule)}
+.ans .where{font-weight:700;white-space:nowrap}.ans .where .n{font-size:19px;margin-left:2px}
+.ans .what{font-size:12.5px;color:var(--sub);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ans .vd{grid-row:span 2;text-align:right}
+.ans .vd b{display:inline-block;font-size:15px;font-weight:900;padding:4px 9px;border:2px solid currentColor;line-height:1}
+.ans .vd b.ok{color:var(--shu)}.ans .vd b.ng{color:var(--past);border-width:1px;font-weight:700}
+.ans .vd small{display:block;font:600 15px/1.3 var(--num);color:var(--shu);margin-top:4px}
+.score{font-size:15px;margin:10px 0 2px}.score b{font:700 30px/1 var(--num);color:var(--shu);margin:0 2px}
 
-/* 比較 */
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 10px;font-size:13.5px;color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:7px}
-.legend span::before{content:"";width:14px;height:10px;border-radius:2px;background:var(--ai)}
-.legend .k-base::before{background:var(--base)}
-.cmp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 18px}
-.cmp-row{padding:14px 0 16px;border-top:1px solid var(--line)}.cmp-row:first-child{border-top:0}
-.cmp-row h3{margin:0 0 10px;font-size:14.5px;font-weight:500}
-.bar{display:grid;grid-template-columns:6.6em minmax(0,1fr) 4.4em;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
-.bar+.bar{margin-top:8px}
-.track{position:relative;height:12px;background:var(--sunk);border-radius:3px;box-shadow:inset 0 0 0 1px var(--line)}
-.fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ai)}
-.bar.base .fill{background:var(--base)}
-.even{position:absolute;top:-5px;bottom:-5px;width:0;border-left:2px dashed var(--ink);opacity:.55}
-.bar .v{text-align:right;font-family:var(--num);font-weight:600;font-size:22px;color:var(--ink);line-height:1}
-.bar.base .v{color:var(--muted);font-weight:500}
-.bar .na{font-family:var(--jp);font-size:14px}
-.evenkey{font-size:12.5px;color:var(--muted);margin:8px 0 0}
-.empty{background:var(--ai-soft);border-radius:10px;padding:12px 14px;font-size:14px;margin:12px 0 4px}
+/* 前日の一行(題字のすぐ下) */
+.hook{border-bottom:2px solid var(--ink);padding:14px 0 12px}
+.hook p{font-size:16px;line-height:1.6}
+.hook b{font:700 30px/1 var(--num);margin:0 2px;color:var(--shu)}
+.hook .when{display:block;font-size:12.5px;color:var(--sub);margin-bottom:2px}
+.hook .tiny{font-size:12px;color:var(--sub);margin-top:6px}
 
-/* 日ごと(点の並び) */
-.dh{font-size:15px;margin:26px 0 4px}
-.dscale{display:grid;gap:0 10px;grid-template-columns:54px minmax(0,1fr) 104px;font:500 12px/1 var(--num);color:var(--muted)}
-.dscale>span{grid-column:2;display:flex;justify-content:space-between}
-.days{list-style:none;margin:4px 0 0;padding:0}
-.days li{display:grid;grid-template-columns:54px minmax(0,1fr) 104px;gap:0 10px;align-items:center;min-height:30px;border-top:1px solid var(--line)}
-.dd{font:600 15px/1 var(--num)}
-.dtrack{position:relative;height:14px;background:linear-gradient(var(--line),var(--line)) center/100% 1px no-repeat}
-.dtrack i{position:absolute;top:50%}
-.dtrack .dl{height:4px;margin-top:-2px;background:var(--line2);border-radius:2px}
-.dot{width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--ai);box-shadow:0 0 0 2px var(--surface)}
-.dot.base{background:var(--base)}
-.dv{display:flex;justify-content:flex-end;gap:8px;font:500 15px/1 var(--num);color:var(--muted)}
-.dv b{color:var(--ai);font-weight:600}
-/* 枠番チップ(公式の枠色) */
-.ln{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:4px;font:700 15px/1 var(--num);vertical-align:middle;flex:none}
-.ln.s{width:19px;height:19px;font-size:13px;border-radius:3px}
-.l1{background:var(--l1);color:var(--l1t);box-shadow:inset 0 0 0 1.5px var(--chipline)}.l2{background:var(--l2);color:var(--l2t);box-shadow:inset 0 0 0 1px var(--chipline)}
+section{padding:26px 0 6px}
+h2{font:900 23px/1.3 var(--jp);margin:0;letter-spacing:.03em}
+h2 small{font:700 15px/1 var(--jp);margin-left:10px;color:var(--sub);letter-spacing:0}
+h3{font-size:15.5px;margin:22px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--ink)}
+.cap{font-size:13px;color:var(--sub);margin:6px 0 0}
+.cap b{color:var(--ink)}
+
+/* 枠番 */
+.ln{display:inline-grid;place-items:center;width:22px;height:22px;font:700 15px/1 var(--num);flex:none;border-radius:2px}
+.ln.s{width:18px;height:18px;font-size:13px}
+.l1{background:var(--l1);color:var(--l1t);box-shadow:inset 0 0 0 1px var(--rule2)}.l2{background:var(--l2);color:var(--l2t)}
 .l3{background:var(--l3);color:var(--l3t)}.l4{background:var(--l4);color:var(--l4t)}.l5{background:var(--l5);color:var(--l5t)}.l6{background:var(--l6);color:var(--l6t)}
-.combo{display:inline-flex;gap:2px;align-items:center;white-space:nowrap;vertical-align:middle}
-.combos{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:12.5px;color:var(--muted)}
-.combos .p{font-size:13px;margin-left:4px;font-family:var(--num);font-weight:500}
+.cb{display:inline-flex;gap:1px;vertical-align:middle;white-space:nowrap}
+.mk{display:inline-flex;align-items:center;gap:2px;white-space:nowrap;margin-right:4px;font-size:12px}
+td.mks{white-space:nowrap}
+.mk:last-child{margin-right:0}
 
-/* 場ごとの折りたたみ */
-.venues{display:grid;gap:8px;margin-top:14px}
-details.venue{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-details.venue>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px 16px;min-height:56px}
-details.venue>summary::-webkit-details-marker{display:none}
-details.venue>summary:hover{background:var(--sunk)}
-summary .vn{font-weight:700;font-size:17px;min-width:4.2em}
-summary .vm{color:var(--muted);font-size:12.5px;margin-left:auto;text-align:right;line-height:1.5}
-summary .vnext{color:var(--ai);font-weight:500}
-summary::after{content:"";flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0 2px;transition:transform .15s}
-details[open]>summary::after{transform:rotate(225deg);margin-top:4px}
-details[open]>summary{border-bottom:1px solid var(--line)}
-.vtally{font-family:var(--num);font-weight:600;font-size:16px;color:var(--ink)}
+/* 表(出走表ふう) */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%}
+th{font-weight:500;font-size:12px;color:var(--sub);background:var(--head);text-align:left;padding:5px 6px;white-space:nowrap}
+td{padding:7px 5px;border-bottom:1px solid var(--rule);vertical-align:middle}
+td.r,th.r{text-align:right}
+.t-time{font:600 17px/1 var(--num);white-space:nowrap}
+.t-race{white-space:nowrap;font-weight:700}
+.t-race .n{font-size:18px;margin-left:2px}
+.pr{font:700 21px/1 var(--num);white-space:nowrap}
+.pr small{font-size:13px;margin-left:1px}
+.tier{display:inline-block;font:700 12px/1 var(--num);padding:2px 4px 1px;margin-left:4px;border:1px solid currentColor;border-radius:2px;vertical-align:2px;color:var(--sub)}
+.tier.S{color:var(--shu)}
+.tri{display:grid;gap:2px}
+.tri3{font:500 15px/1.35 var(--num);color:var(--sub);white-space:nowrap}
+.tri3 span{margin-right:8px}
+td.tri3 span{display:block;margin:0;line-height:1.25}
+@media (min-width:600px){td.tri3 span{display:inline;margin-right:8px}}.tri3 span:first-child{color:var(--ink);font-weight:600}
+tr.past td{color:var(--past)}tr.past .ln{opacity:.45}tr.past .pr{color:var(--past)}
+.closed{display:none;font-size:11px;color:var(--past)}tr.past .closed{display:block}
 
-/* 予想の行 */
-.race{display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:6px 12px;padding:11px 16px;border-top:1px solid var(--line)}
-.race:first-of-type{border-top:0}
-.race .r{grid-row:span 2;font-family:var(--num);font-weight:700;font-size:20px;line-height:1.15}
-.race .r small{display:block;font-weight:500;font-size:14px;color:var(--muted)}
-.race .main{display:flex;align-items:center;gap:10px;min-width:0}
-.race .pick{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
-.race.past{opacity:.5}
-.tier{display:inline-grid;place-items:center;min-width:1.7em;height:20px;border-radius:4px;font:700 13px/1 var(--num);border:1px solid var(--line2);color:var(--muted)}
-.tier.t-S{background:var(--ai);border-color:var(--ai);color:#fff}.tier.t-A{background:var(--ai-soft);border-color:var(--ai);color:var(--ai)}
-.tag{display:inline-block;font-size:11.5px;border:1px solid var(--line2);color:var(--muted);border-radius:999px;padding:0 8px;line-height:1.7}
-.prob{flex:1;display:flex;height:24px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line2);min-width:0}
-.prob span{display:grid;place-items:center;font:600 13px/1 var(--num);overflow:hidden;min-width:0}
-.prob .l1{box-shadow:inset 0 0 0 1px var(--chipline)}
+/* 場ごと */
+details.v{border-bottom:1px solid var(--rule)}
+details.v>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:5em 1fr auto;align-items:center;gap:8px;padding:11px 2px;min-height:48px}
+details.v>summary::-webkit-details-marker{display:none}
+details.v>summary::after{content:"＋";color:var(--sub);font-size:15px;width:1.2em;text-align:center}
+details.v[open]>summary::after{content:"－"}
+.v-name{font-weight:700;font-size:17px}
+.v-meta{font-size:12.5px;color:var(--sub);line-height:1.45}
+.v-meta .next{color:var(--ink);font-weight:700}
+details.v table{margin-bottom:12px}
+.vlist{border-top:2px solid var(--ink);margin-top:10px}
 
-/* 答え合わせの行 */
-.res{display:grid;grid-template-columns:2.6em minmax(0,1fr) auto;gap:6px 12px;padding:11px 16px;border-top:1px solid var(--line);align-items:center}
-.res:first-of-type{border-top:0}
-.res .r{font-family:var(--num);font-weight:700;font-size:20px;line-height:1.15}
-.res .got{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
-.res .sub{grid-column:2/4;display:grid;gap:4px;font-size:12.5px;color:var(--muted)}
-.res .sub .combo{margin-left:7px}
-.res .gp{margin-left:8px;display:inline-flex;align-items:center;gap:6px}
-.res .sub b{color:var(--ink);font-weight:500}
-.vd{font-size:13px;font-weight:700;border-radius:999px;padding:2px 11px;white-space:nowrap;justify-self:end}
-.v-的中{background:var(--hit);color:#fff}.v-惜しい{background:var(--near-soft);color:var(--near);box-shadow:inset 0 0 0 1px var(--near)}
-.v-1着的中{background:var(--hit-soft);color:var(--hit)}.v-外れ{color:var(--miss);box-shadow:inset 0 0 0 1px var(--line2)}
-.dayline{display:flex;flex-wrap:wrap;gap:4px 22px;margin:10px 0 0;font-size:14px}
-.dayline b{font-family:var(--num);font-size:24px;font-weight:600;margin:0 3px}
+/* 答え合わせ */
+.sum{display:flex;flex-wrap:wrap;gap:10px 28px;margin:12px 0 4px;padding:0;list-style:none}
+.sum li{font-size:12.5px;color:var(--sub);line-height:1.3}
+.sum b{display:block;font:700 30px/1.05 var(--num);color:var(--ink)}
+.sum b.hit{color:var(--shu)}
+.sum b small{font:500 13px var(--jp);color:var(--sub);margin-left:3px}
+.pay{font:700 20px/1 var(--num);white-space:nowrap}
+.pay.hit{color:var(--shu)}
+.pay.big{font-size:24px}
+.man{background:linear-gradient(transparent 55%,var(--mark) 55%)}
+.tag{display:inline-block;font-size:11px;font-weight:700;line-height:1;padding:3px 4px 2px;border:1px solid var(--ink);margin-left:6px;vertical-align:2px;border-radius:2px}
+.stamp{display:inline-grid;place-items:center;width:38px;height:38px;border:2px solid var(--shu);border-radius:50%;color:var(--shu);font-weight:900;font-size:12px;line-height:1;transform:rotate(-8deg)}
+.near{font-size:12px;color:var(--ink);border:1px solid var(--rule2);padding:2px 5px;border-radius:2px;white-space:nowrap}
+.won{font-size:12px;color:var(--ink);white-space:nowrap}
+.miss{color:var(--past)}
+tr.hit td{background:var(--shu-soft)}
+.more>summary{cursor:pointer;color:var(--navy);font-size:13.5px;padding:10px 0;list-style:none}
+.more>summary::-webkit-details-marker{display:none}
+.pnl{font:600 16px/1 var(--num);white-space:nowrap}
+.pnl.pos{color:var(--shu)}
+.yen{font:600 16px/1 var(--num);white-space:nowrap}
 
-.about{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:14.5px;color:var(--muted)}
-.about h2{color:var(--ink);font-size:17px;margin-bottom:6px}
-.about h3{color:var(--ink);font-size:15px;margin:14px 0 4px}
-.about p{margin:6px 0}
-.tw{overflow-x:auto;margin:6px 0}
-table.ev{border-collapse:collapse;width:100%;min-width:300px;font-size:13.5px;color:var(--ink)}
-table.ev th,table.ev td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right;white-space:nowrap}
-table.ev th:first-child,table.ev td:first-child{text-align:left;white-space:normal}
-table.ev thead th{color:var(--muted);font-weight:500}
-table.ev .num{font-family:var(--num);font-size:15px}
-.verdict{border-left:4px solid var(--line2);background:var(--sunk);padding:8px 12px;border-radius:6px;color:var(--ink);margin:8px 0}
-footer{border-top:1px solid var(--line);margin-top:48px;padding:22px 0 40px;font-size:12.5px;color:var(--muted)}
-footer p{margin:0 0 6px;max-width:60em}
-@media (min-width:760px){
- .top .wrap{padding-top:22px;padding-bottom:52px}
- .warn{padding:18px 24px}.cmp{padding:6px 24px}
- .bar{grid-template-columns:7.4em minmax(0,1fr) 5em}
- .race{grid-template-columns:3em minmax(0,1.25fr) minmax(0,1fr);align-items:center;padding:9px 20px}
- .race .r{grid-row:auto}
- .res{grid-template-columns:3em auto auto minmax(0,1fr);padding:9px 20px}
- .res .vd{justify-self:start}
- .res .sub{grid-column:auto;display:grid;grid-template-columns:auto 20em;justify-content:end;align-items:center;gap:18px}
- .res .sub>.combos{display:grid;grid-template-columns:9.5em 10.5em;gap:0;text-align:right;white-space:nowrap}
- details.venue>summary{padding:10px 20px}
+/* 成績 */
+.rec td:first-child{font-size:13.5px}
+.rec .n{font-size:19px}
+.rec td.base{color:var(--sub)}
+
+/* 注意・作り方 */
+.calm{font-size:13px;color:var(--sub);border-top:1px solid var(--rule);margin-top:30px;padding-top:16px}
+.calm h2{font:700 14px/1.5 var(--jp);color:var(--ink);margin-bottom:6px}
+.calm p+p{margin-top:6px}
+.how{margin-top:18px;border-top:1px solid var(--rule)}
+.how>summary{cursor:pointer;padding:12px 0;font-weight:700;font-size:14px;list-style:none}
+.how>summary::-webkit-details-marker{display:none}
+.how>summary::after{content:" ＋";color:var(--sub);font-weight:400}.how[open]>summary::after{content:" －"}
+.how .in{font-size:13.5px;color:var(--sub);padding-bottom:10px}
+.how .in h3{color:var(--ink);font-size:14px;border-bottom-width:1px;margin-top:16px}
+.how .in p,.how .in ul{margin:6px 0}
+.how table{font-size:13px;color:var(--ink);min-width:300px}
+.how td,.how th{white-space:nowrap}.how td:first-child{white-space:normal}
+footer{margin-top:26px;border-top:2px solid var(--ink);padding:14px 0 36px;font-size:12px;color:var(--sub)}
+footer p+p{margin-top:5px}
+
+@media (min-width:980px){
+ body{font-size:15.5px}
+ .mast{padding-top:22px}
+ .top2{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-areas:"st ans" "all hits";gap:0 56px;align-items:start}
+ .top2>.st{grid-area:st}.top2>.ans-s{grid-area:ans}.top2>.all{grid-area:all}.top2>.hits{grid-area:hits}
+ .hook p{font-size:18px}
+ #kotae,.recs,.calm,.how{max-width:760px}
+ h2{font-size:26px}
 }
-/* v3: 今日の注目・収支 */
-.notice{margin:14px 0 0;font-size:13px;color:var(--muted)}
-.proof{font-size:13.5px;color:var(--muted);margin:4px 0 12px}.proof a{color:var(--ai)}
-.picks{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.pc{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--ai);border-radius:12px;padding:12px 14px}
-.pc.past{opacity:.5}
-.pc .hd{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px}
-.pc .hd .tier{margin-left:auto}
-.pc .tm{font-size:12.5px;color:var(--muted);margin:2px 0 8px;font-family:var(--num);letter-spacing:.02em}
-.pc .hon{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
-.pc .hon b{font:600 26px/1 var(--num);color:var(--ink)}
-.pc .combos{margin-top:8px}
-.pnl{font-family:var(--num);font-weight:600}.pnl.pos{color:var(--hit)}.pnl.neg{color:var(--near)}
-.tot{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:10px 0}
-.tot>div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
-.tot b{display:block;font:600 24px/1.15 var(--num);color:var(--ink)}
-.hl{background:var(--hit-soft);border-radius:10px;padding:10px 14px;font-size:14px;margin:8px 0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 """
 
 JS = """
-(function(){var now=Date.now();document.querySelectorAll('.pc[data-close]').forEach(function(c){if(Date.parse(c.dataset.close)<now)c.classList.add('past')});document.querySelectorAll('details.venue[data-pred]').forEach(function(d){var next=null;
-d.querySelectorAll('.race[data-close]').forEach(function(r){var t=Date.parse(r.dataset.close);if(t<now){r.classList.add('past')}else if(!next){next=r}});
-var m=d.querySelector('.vnext');if(!m)return;if(next){m.textContent='次は '+next.dataset.r+'R '+next.dataset.close.slice(11,16)+' 締切'}else{m.textContent='本日の締切は終了'}});})();
+(function(){var now=Date.now();
+document.querySelectorAll('tr[data-close],.srow[data-close]').forEach(function(r){if(Date.parse(r.dataset.close)<now)r.classList.add('past')});
+document.querySelectorAll('details.v[data-pred]').forEach(function(d){var nx=null;d.querySelectorAll('tr[data-close]').forEach(function(r){if(!nx&&Date.parse(r.dataset.close)>=now)nx=r});
+var m=d.querySelector('.next');if(!m)return;m.textContent=nx?('次 '+nx.dataset.r+'R '+nx.dataset.close.slice(11,16).replace(/^0/,'')):'本日終了'});})();
 """
 
 
-def pct(x: float) -> str:
-    return f"{x*100:.1f}%"
-
-
+# ---------- 小さな部品 ----------
 def esc(s) -> str:
     return html.escape(str(s))
+
+
+def pct(x: float, nd: int = 1) -> str:
+    return f"{x*100:.{nd}f}%"
+
+
+def hm(iso: str) -> str:
+    """'2026-10-25T09:05:00+09:00' -> '9:05'"""
+    t = iso[11:16]
+    return t[1:] if t.startswith("0") else t
+
+
+def jday(d: str, wd: bool = True) -> str:
+    x = date.fromisoformat(d[:10])
+    return f"{x.month}月{x.day}日" + (f"({WD[x.weekday()]})" if wd else "")
+
+
+def sday(d: str) -> str:
+    x = date.fromisoformat(d[:10])
+    return f"{x.month}/{x.day}"
 
 
 def lane(n, small: bool = False) -> str:
     return f"<span class='ln l{int(n)}{' s' if small else ''}'>{int(n)}</span>"
 
 
-def combo(c: str, small: bool = True) -> str:
+def combo(c, small: bool = True) -> str:
     parts = [p for p in str(c).split("-") if p.strip().isdigit()]
     if len(parts) != 3:
         return esc(c)
-    return f"<span class=combo role=img aria-label='{esc(c)}'>" + "".join(lane(p, small) for p in parts) + "</span>"
+    return f"<span class=cb role=img aria-label='{esc(c)}'>" + "".join(lane(p, small) for p in parts) + "</span>"
 
 
-def bar(label: str, v, cls: str, scale: float, even: bool) -> str:
-    if v is None:
-        return f"<div class='bar {cls}'><span>{label}</span><span class=track></span><span class='v na'>—</span></div>"
-    w = max(0.0, min(v / scale, 1.0)) * 100
-    mark = f"<span class=even style='left:{100/scale:.2f}%'></span>" if even else ""
-    return (f"<div class='bar {cls}'><span>{label}</span><span class=track><span class=fill style='width:{w:.2f}%'></span>{mark}</span>"
-            f"<span class=v>{pct(v)}</span></div>")
+def yen(v) -> str:
+    return f"{int(v):,}円"
 
 
-def by_venue(rows):
-    groups: dict[str, list] = {}
+def signed(v: int) -> str:
+    cls = "pos" if v > 0 else ""
+    s = "+" if v > 0 else ("−" if v < 0 else "±")
+    return f"<span class='pnl {cls}'>{s}{abs(int(v)):,}円</span>"
+
+
+def marks(probs) -> str:
+    """確率の高い順に ◎○▲(予想紙の印)"""
+    order = sorted(range(len(probs)), key=lambda i: -probs[i])[:3]
+    return "".join(f"<span class=mk>{m}{lane(i + 1, True)}</span>" for m, i in zip("◎○▲", order))
+
+
+def vkey(name: str) -> int:
+    return VORDER.get(name, 99)
+
+
+def group(rows):
+    g: dict[str, list] = {}
     for x in rows:
-        groups.setdefault(x["venue_name"], []).append(x)
-    return groups
+        g.setdefault(x["venue_name"], []).append(x)
+    return dict(sorted(g.items(), key=lambda kv: vkey(kv[0])))
 
 
-def tier_section(model: dict, summ: dict) -> str:
-    ev = model.get("eval", {})
-    tiers = ev.get("tiers")
-    if not tiers:
+def tier_mark(t) -> str:
+    return f"<span class='tier {esc(t)}' title='自信度'>{esc(t)}</span>" if t in ("S", "A") else ""
+
+
+# ---------- データ ----------
+def load():
+    """数字は site_data.py(予想側)がまとめる site_data.json から。ここは見た目と文言だけ。"""
+    import site_data  # type: ignore
+    data = site_data.build()
+    rec = data.get("record") or {}
+    summ = {"total": rec.get("total") or {}, "daily": rec.get("daily") or [], "tiers": rec.get("tiers_live") or {}}
+    return data, data.get("today"), data.get("yesterday"), summ, data.get("model") or {}
+
+
+STAR_N = 5  # 自信あり = 採点対象のうち◎の1着率が高い順に5レース(前日の答え合わせも同じ決め方で選ぶ)
+
+
+def stars(pred: dict | None) -> list:
+    if not pred:
+        return []
+    xs = [x for x in pred["races"] if x.get("scored", True)]
+    top = sorted(xs, key=lambda x: (-max(x["probs"]), x["close"]))[:STAR_N]
+    return sorted(top, key=lambda x: x["close"])
+
+
+def load_pred(d: str):
+    f = ROOT / "predictions" / f"{d}.json"
+    return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
+
+
+def star_today_html(p: dict) -> str:
+    xs = stars(p)
+    if not xs:
         return ""
-    o = ["<h3>自信度(本命の1着確率)ごとの成績</h3><p class=note>自信度は、AIの本命の1着確率で分けています: "
-         "<span class='tier t-S'>S</span> 70%以上 / <span class='tier t-A'>A</span> 55〜70% / <span class=tier>B</span> 40〜55% / <span class=tier>C</span> 40%未満。"
-         f"下の表は学習に使っていない期間({esc(ev.get('test_from', ''))}〜{esc(ev.get('test_to', ''))})での結果で、同じレースで1号艇を毎回選んだ場合と並べています。"
-         "自信度が高くても外れることはあり、回収率が100%を超える保証もありません。</p>"
-         "<div class=tw><table class=ev><thead><tr><th>自信度</th><th>レース数</th><th>本命の1着的中率(95%の幅)</th><th>1号艇を毎回</th><th>単勝の回収率</th></tr></thead><tbody>"]
-    for t in tiers:
-        if not t["races"]:
-            continue
-        o.append(f"<tr><td><span class='tier t-{esc(t['tier'])}'>{esc(t['tier'])}</span></td><td class=num>{t['races']:,}</td>"
-                 f"<td class=num>{pct(t['hit'])}({pct(t['hit_lo'])}〜{pct(t['hit_hi'])})</td><td class=num>{pct(t['lane1'])}</td>"
-                 f"<td class=num>{pct(t['roi_win'])}</td></tr>")
-    o.append("</tbody></table></div>")
-    live = summ.get("tiers_live") or {}
-    if live:
-        o.append("<p class=note>公開してからの実際の成績(答え合わせ済み): " + " / ".join(
-            f"{esc(k)}: {v['races']}レース中 本命の1着 {v['win_hits']}・1号艇の1着 {v['base_hits']}"
-            for k, v in sorted(live.items()) if v["races"]) + "</p>")
+    pub = p["published_at"]
+    first = min(x["close"] for x in p["races"])
+    o = [f"<section class=st aria-labelledby=h-star><h2 id=h-star>今日の自信あり<small>{esc(jday(p['date']))}</small></h2>"
+         f"<p class=pub>公開 <span class=n>{esc(jday(pub, False))} {esc(hm(pub))}</span>/最初の締切 <span class=n>{esc(hm(first))}</span></p>"
+         f"<p class=cap>◎の1着率が高い順に{len(xs)}レース。並びは締切順。明日の朝、このまま答え合わせします。</p><div class=star>"]
+    for x in xs:
+        tri = "".join(f"<span>{esc(c)}</span>" for c, _ in x["trifecta"])
+        o.append(f"<div class=srow data-close='{esc(x['close'])}'><span class=big>{lane(x['pick'])}</span>"
+                 f"<span class=where>{esc(x['venue_name'])}<span class=n>{x['race']}R</span><span class=closedtag>締切済</span></span>"
+                 f"<span class=p>{max(x['probs'])*100:.0f}<small>%</small><span>1着率</span></span>"
+                 f"<span class=when><span class=n>{esc(hm(x['close']))}</span> 締切</span>"
+                 f"<span class=tri3>3連単 {tri}</span></div>")
+    o.append("</div></section>")
     return "".join(o)
 
 
-def model_section(model: dict, summ: dict | None = None) -> str:
-    ev = model.get("eval", {})
-    used = "".join(f"<li>{esc(t)}</li>" for t in model.get("features_used") or [])
-    o = ["<section class=about aria-labelledby=m-h><h2 id=m-h>モデルについて</h2>"
-         "<p>公式に公開されているダウンロードデータ(番組表・競走成績・レーサー期別成績)だけを使い、各艇が1着になる確率を推定する統計モデル(条件付きロジット)です。"
-         f"学習したレース数: {model.get('n_races', 0):,}({esc(model.get('train_from', ''))}〜{esc(model.get('train_to', ''))})。毎週月曜に自動で学習し直します。</p>"
-         "<h3>使っている数字(すべてレースの前に分かるもの)</h3><ul>" + used + "</ul>"
-         f"<p>使っていないもの: {esc(model.get('not_used', ''))}。"
-         "当日の気象は結果ファイルにしか無いので、予想には使いません。</p>"]
-    if ev.get("full"):
-        f, b, pr, l1 = ev["full"], ev.get("base", {}), ev.get("prior", {}), ev["lane1"]
-        dv = ev.get("diff_vs_lane1", {})
-        o.append(f"<h3>学習に使っていない期間での成績(事後の検証)</h3><p class=note>{esc(ev['test_from'])}〜{esc(ev['test_to'])}の{f['races']:,}レース。"
-                 "1週ずつ「その週より前のデータだけで学習 → その週を予想」を繰り返した結果です(この記録帳の公開前の期間を含みます)。</p>")
-        o.append("<div class=tw><table class=ev><thead><tr><th></th><th>1着の的中率</th><th>単勝の回収率</th><th>3連単3点の的中率</th></tr></thead><tbody>")
-        o.append(f"<tr><td>AIの本命(このモデル)</td><td class=num>{pct(f['top1'])}</td><td class=num>{pct(f.get('roi_win', 0))}</td><td class=num>{pct(f.get('tri3_hit', 0))}</td></tr>")
-        if b:
-            o.append(f"<tr><td>番組表の数字だけのモデル(以前のモデル相当)</td><td class=num>{pct(b['top1'])}</td><td class=num>{pct(b.get('roi_win', 0))}</td><td class=num>{pct(b.get('tri3_hit', 0))}</td></tr>")
-        o.append(f"<tr><td>1号艇を毎回</td><td class=num>{pct(l1['top1'])}</td><td class=num>{pct(l1.get('roi_win', 0))}</td><td>—</td></tr></tbody></table></div>")
-        diff = dv.get("diff", 0) * 100
-        rng = f"95%の幅 {dv.get('lo', 0)*100:+.1f}〜{dv.get('hi', 0)*100:+.1f}ポイント"
-        if ev.get("beats_lane1"):
-            o.append(f"<p class=verdict>この期間では、AIの本命の1着的中率が1号艇を毎回を<b>{diff:+.1f}ポイント</b>上回りました({rng})。今後も上回る保証はありません。</p>")
+def star_answer_html(r: dict, prev: dict | None, label: str) -> str:
+    xs = stars(prev)
+    if not xs:
+        return ""
+    res = {x["key"]: x for x in r["races"]}
+    rows, win, tri = [], 0, 0
+    for x in xs:
+        y = res.get(x["key"])
+        if not y:
+            continue
+        win += bool(y.get("win_hit"))
+        tri += bool(y.get("tri_hit"))
+        if y.get("win_hit"):
+            vd = f"<b class=ok>当たり</b><small>単勝 {int(y.get('pay_win') or 0):,}円</small>"
+            if y.get("tri_hit"):
+                vd += f"<small>3連単 {int(y['pay_tri']):,}円</small>"
         else:
-            o.append(f"<p class=verdict>この期間では、AIの本命は1号艇を毎回を<b>はっきりとは上回れていません</b>(差 {diff:+.1f}ポイント、{rng})。</p>")
-        if f.get("roi_win", 0) < 1:
-            o.append("<p class=note>単勝の回収率は100%を下回っています。この予想どおりに買うと、平均では損をします。</p>")
-        if b:
-            better = f["logloss"] < b["logloss"]
-            o.append(f"<p class=note>確率の精度(対数損失・小さいほど良い): このモデル {f['logloss']:.3f} / 番組表だけ {b['logloss']:.3f} / 場と枠だけ {pr.get('logloss', 0):.3f}。"
-                     + ("枠別・コース別の成績などを足したことで、確率の精度は少し良くなりました。" if better else "足した数字による確率の精度の改善は、この期間では確認できませんでした。") + "</p>")
-        cal = [c for c in f.get("calibration", []) if c[2] >= 100]
-        if cal:
-            o.append("<h3>確率の当たり具合</h3><p class=note>AIが示した1着の確率と、実際に1着になった割合です(全艇。100艇未満の区分は省略)。近いほど確率が信用できます。</p>"
-                     "<div class=tw><table class=ev><thead><tr><th>AIの確率(平均)</th><th>実際の1着率</th><th>艇数</th></tr></thead><tbody>")
-            for pm, om, n in cal:
-                o.append(f"<tr><td class=num>{pct(pm)}</td><td class=num>{pct(om)}</td><td class=num>{n:,}</td></tr>")
-            o.append("</tbody></table></div>")
-        orc = ev.get("oracle")
-        if orc and b:
-            o.append(f"<p class=note>参考: もしレース前に当日の風・波・展示タイムが分かったとしたら、確率の精度は {f['logloss']:.3f} → {orc['logloss']:.3f}"
-                     "(この数字は検証用で、予想には使っていません)。</p>")
+            vd = "<b class=ng>外れ</b>"
+        rows.append(f"<div class=ans><span class=where>{esc(x['venue_name'])}<span class=n>{x['race']}R</span></span>"
+                    f"<span class=vd>{vd}</span><span class=what>◎{lane(x['pick'], True)} 結果 {combo(y['actual'])}</span></div>")
+    if not rows:
+        return ""
+    n = len(rows)
+    return (f"<section class=ans-s aria-labelledby=h-ans><h2 id=h-ans>{esc(label)}の自信あり、結果</h2>"
+            f"<p class=score>{n}レース中 ◎の1着<b>{win}</b>本。3連単も<b>{tri}</b>本。</p>"
+            f"<p class=cap>{esc(jday(prev['published_at'], False))} {esc(hm(prev['published_at']))}に出した{n}レースです。</p>"
+            f"<div class=star>{''.join(rows)}</div></section>")
+
+
+# ---------- 各ブロック ----------
+def hook_html(p, r, prev) -> str:
+    """題字の下の一行。前日の自信ありの成績と、3連単の本数・最高払戻。毎日ここを見に来てもらう場所。"""
+    if not r:
+        return ""
+    s, xs = r["summary"], r["races"]
+    hits = sorted([x for x in xs if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
+    when = "昨日" if p and (date.fromisoformat(p["date"]) - date.fromisoformat(s["date"])).days == 1 else sday(s["date"])
+    res = {x["key"]: x for x in xs}
+    st = [res[x["key"]] for x in stars(prev) if x["key"] in res]
+    o = [f"<div class=hook><p><span class=when>{esc(jday(s['date']))}の答え合わせ</span>"]
+    if st:
+        o.append(f"{when}の自信ありは{len(st)}レース中<b>{sum(1 for y in st if y.get('win_hit'))}</b>本的中。")
+    if hits:
+        b = hits[0]
+        o.append(f"3連単は全体で<b>{len(hits)}</b>本、最高は{esc(b['venue_name'])}{b['race']}Rの<b>{int(b['pay_tri']):,}</b>円。")
+        man = sum(1 for x in hits if (x.get("pay_tri") or 0) >= MANSHU)
+        if man:
+            o.append(f"万舟も{man}本取っています。")
     else:
-        o.append("<p class=note>学習に使っていない期間での検証は、履歴がそろってから表示します。</p>")
-    o.append(tier_section(model, summ or {}))
-    lam = model.get("lambda", [1, 1])
-    o.append(f"<p class=note>3連単の確率は、1着の確率から順番に積み上げて計算し(Harville法)、2着・3着は人気側に偏りすぎないよう補正しています(補正の強さ {lam[0]:.2f} / {lam[1]:.2f}、学習外の期間で決定)。</p>")
+        o.append(f"3連単の的中はありませんでした。◎の1着は{s['win_hits']}本。")
+    o.append(f"</p><p class=tiny>外れも含めて全{s['graded_races']}レース、<a href='#kotae'>下の答え合わせ</a>に載せています。</p></div>")
+    return "".join(o)
+
+
+def today_html(p: dict) -> str:
+    races = p["races"]
+    first = min(x["close"] for x in races)
+    pub = p["published_at"]
+    proof = f"{COMMITS}{esc(p['date'])}.json"
+    nv = len(group(races))
+    o = [f"<section class=all aria-labelledby=h-today><h2 id=h-today>全レースの予想<small>{nv}場{len(races)}R</small></h2>"
+         f"<p class=cap>どれも<b>{esc(jday(pub, False))} {esc(hm(pub))}</b>に公開(いちばん早い締切は{esc(hm(first))})。"
+         f"出したあとで書き換えると<a href='{proof}'>記録の履歴</a>に残ります。</p>"]
+    o.append("<p class=cap>印は1着の確率が高い順に◎○▲。3連単は確率の高い3点です。</p><div class=vlist>")
+    for vn, xs in group(races).items():
+        o.append(f"<details class=v data-pred><summary><span class=v-name>{esc(vn)}</span>"
+                 f"<span class=v-meta>{len(xs)}R・{esc(hm(xs[0]['close']))}〜{esc(hm(xs[-1]['close']))}<br><span class=next></span></span></summary>"
+                 "<div class=tw><table><thead><tr><th>R</th><th>締切</th><th>印</th><th class=r>◎1着率</th><th>3連単</th></tr></thead><tbody>")
+        for x in xs:
+            tri = "".join(f"<span>{esc(c)}</span>" for c, _ in x["trifecta"])
+            note = "" if x.get("scored", True) else "<span class=closed style='display:block'>公開前に締切(採点外)</span>"
+            o.append(f"<tr data-close='{esc(x['close'])}' data-r='{x['race']}'><td class='t-race'><span class=n>{x['race']}</span></td>"
+                     f"<td class=t-time>{esc(hm(x['close']))}{note}</td><td class=mks>{marks(x['probs'])}</td>"
+                     f"<td class='r pr'>{max(x['probs'])*100:.0f}<small>%</small>{tier_mark(x.get('tier'))}</td><td class=tri3>{tri}</td></tr>")
+        o.append("</tbody></table></div></details>")
+    o.append("</div></section>")
+    return "".join(o)
+
+
+def hits_html(r: dict) -> str:
+    """前日の的中一覧(払戻の高い順)。サイド列に置く。"""
+    s, xs = r["summary"], r["races"]
+    n = s["graded_races"]
+    hits = sorted([x for x in xs if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
+    best = int(hits[0]["pay_tri"]) if hits else 0
+    o = [f"<section class=hits aria-labelledby=h-hits><h2 id=h-hits>当たった3連単<small>{esc(jday(s['date']))}</small></h2>"
+         "<ul class=sum>"
+         f"<li>3連単の的中<b class=hit>{s['tri_hits']}<small>/{n}R</small></b></li>"
+         f"<li>◎の1着<b>{s['win_hits']}<small>/{n}R</small></b></li>"
+         + (f"<li>最高払戻<b class=hit>{best:,}<small>円</small></b></li>" if best else "") + "</ul>"]
+    if hits:
+        o.append("<div class=tw style='margin-top:10px'><table><tbody>")
+        for i, x in enumerate(hits):
+            if i == 8 and len(hits) > 10:
+                o.append(f"</tbody></table></div><details class=more><summary>残りの{len(hits) - 8}本を見る</summary><div class=tw><table><tbody>")
+            pay = int(x["pay_tri"])
+            big = pay >= MANSHU
+            o.append(f"<tr><td class=t-race>{esc(x['venue_name'])}<span class=n>{x['race']}R</span></td><td>{combo(x['actual'])}</td>"
+                     f"<td class=r><span class='pay hit{' big' if big else ''}'><span class={'man' if big else ''}>{pay:,}</span><small>円</small></span>"
+                     + ("<span class=tag>万舟</span>" if big else "") + "</td></tr>")
+        o.append("</tbody></table></div>" + ("</details>" if len(hits) > 10 else ""))
+        o.append("<p class=cap>払戻金は100円あたり。公式の競走成績の確定値です。</p>")
     o.append("</section>")
     return "".join(o)
 
 
-COMMITS = "https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei/predictions/"
+def verdict(x) -> str:
+    v = x.get("verdict")
+    if v == "的中":
+        return "<span class=stamp>的中</span>"
+    if v == "惜しい":
+        return "<span class=near>惜しい</span>"
+    if v == "1着的中":
+        return "<span class=won>◎1着</span>"
+    return "<span class=miss>—</span>"
 
 
-def yen(v: int, sign: bool = False) -> str:
-    if sign:
-        cls = "pos" if v > 0 else ("neg" if v < 0 else "")
-        return f"<span class='pnl {cls}'>{'+' if v > 0 else ('−' if v < 0 else '±')}{abs(int(v)):,}円</span>"
-    return f"{int(v):,}円"
-
-
-def warn_html(items: list) -> str:
-    return ("<section class=warn aria-labelledby=w-h><h2 id=w-h>ご利用の前に</h2><ul>"
-            + "".join(f"<li>{esc(x)}</li>" for x in items) + "</ul></section>")
-
-
-def today_html(p: dict) -> str:
-    pub = p["published_at"].replace("T", " ")[:16]
-    pub_hm = pub[11:16]
-    proof = f"{COMMITS}{esc(p['date'])}.json"
-    h = [f"<section aria-labelledby=p-h><h2 id=p-h>今日の予想 {esc(p['date'])}</h2>"
-         f"<p class=proof>予想公開 <b>{esc(pub)}</b>(全レースの締切より前)。公開した記録は Git に残り、あとから書き換えると履歴に残ります: "
-         f"<a href='{proof}'>この日の予想ファイルの履歴</a>。締切が公開時刻より前のレースは採点しません。</p>"]
-    cand = [x for x in p["races"] if x.get("scored", True)]
-    top = sorted(cand, key=lambda x: -max(x["probs"]))[:6]
-    top.sort(key=lambda x: x["close"])
-    if top:
-        h.append("<h3>AIの確率が高いレース(締切順)</h3><div class=picks>")
-        for x in top:
-            tier = x.get("tier") or ""
-            tri = "".join(f"<span>{combo(c)}<span class=p>{pr*100:.1f}%</span></span>" for c, pr in x["trifecta"])
-            h.append(f"<div class=pc data-close='{esc(x['close'])}'><div class=hd>{esc(x['venue_name'])} {x['race']}R"
-                     + (f"<span class='tier t-{esc(tier)}' title='自信度'>{esc(tier)}</span>" if tier else "") + "</div>"
-                     f"<div class=tm>予想公開 {pub_hm}(締切 {x['close'][11:16]})</div>"
-                     f"<div class=hon>本命 {lane(x['pick'])}<b>{max(x['probs'])*100:.0f}%</b>1着の確率</div>"
-                     f"<div class=combos>3連単 {tri}</div></div>")
-        h.append("</div><p class=note>確率はAIの見積もりで、外れることもあります。自信度(S:70%以上 A:55%以上 B:40%以上 C:それ未満)ごとの過去の成績は「モデルについて」にあります。</p>")
-    h.append("<h3>全レース</h3><p class=note>色の帯は、AIが見積もった1着になる確率です(左から1〜6号艇の枠色、数字は%)。その横は3連単の予想3点と、その確率です。</p><div class=venues>")
-    for vn, xs in by_venue(p["races"]).items():
-        first, last = xs[0]["close"][11:16], xs[-1]["close"][11:16]
-        h.append(f"<details class=venue data-pred><summary><span class=vn>{esc(vn)}</span><span class=vm>{len(xs)}レース・締切 {first}〜{last}"
-                 "<br><span class=vnext></span></span></summary>")
-        for x in xs:
-            probs = x["probs"]
-            segs = "".join(f"<span class='l{i+1}' style='width:{v*100:.2f}%'>{f'{v*100:.0f}' if v >= 0.09 else ''}</span>" for i, v in enumerate(probs))
-            aria = "、".join(f"{i+1}号艇 {v*100:.0f}%" for i, v in enumerate(probs))
-            tri = "".join(f"<span>{combo(c)}<span class=p>{pr*100:.1f}%</span></span>" for c, pr in x["trifecta"])
-            tag = "" if x.get("scored", True) else "<span class=tag>採点外</span>"
-            tr = f"<span class='tier t-{esc(x['tier'])}' title='自信度'>{esc(x['tier'])}</span>" if x.get("tier") else ""
-            h.append(f"<div class=race data-close='{esc(x['close'])}' data-r='{x['race']}'><span class=r>{x['race']}R<small>{x['close'][11:16]}</small></span>"
-                     f"<span class=main><span class=pick>本命 {lane(x['pick'])}{tr}</span><span class=prob role=img aria-label='1着の確率: {aria}'>{segs}</span></span>"
-                     f"<span class=combos>{tri}{tag}</span></div>")
-        h.append("</details>")
-    h.append("</div></section>")
-    return "".join(h)
-
-
-def yesterday_html(r: dict) -> str:
-    s = r["summary"]
+def results_html(r: dict, prev: dict | None = None) -> str:
+    s, xs = r["summary"], r["races"]
     n = s["graded_races"]
-    xs = r["races"]
-    pnl_w = s["return_win"] - s["stake_win"]
-    pnl_t = s["return_tri"] - s["stake_tri"]
-    pnl_b = s["base_return"] - 100 * n
-    h = [f"<section aria-labelledby=r-h><h2 id=r-h>昨日の答え合わせ {esc(s['date'])}(採点 {n}レース)</h2>"
-         f"<p class=proof>この日の予想は前日の朝に公開済み(<a href='{COMMITS}{esc(s['date'])}.json'>予想ファイルの履歴</a>)。払戻金は公式の競走成績ファイルの確定払戻金(100円あたり)です。</p>"
-         "<div class=tot>"
-         f"<div>本命の単勝を毎回100円<b>{s['win_hits']}<small>/{n} 的中</small></b>{yen(s['stake_win'])} → {yen(s['return_win'])}(収支 {yen(pnl_w, True)})</div>"
-         f"<div>3連単3点を毎回(300円)<b>{s['tri_hits']}<small>/{n} 的中</small></b>{yen(s['stake_tri'])} → {yen(s['return_tri'])}(収支 {yen(pnl_t, True)})</div>"
-         f"<div>比較: 1号艇の単勝を毎回100円<b>{s['base_hits']}<small>/{n} 的中</small></b>{yen(100 * n)} → {yen(s['base_return'])}(収支 {yen(pnl_b, True)})</div>"
-         "</div>"]
-    hits = sorted([x for x in xs if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
-    if hits:
-        best = hits[0]
-        h.append(f"<p class=hl>この日の3連単の的中 {len(hits)}レース。いちばん高い払戻: <b>{esc(best['venue_name'])} {best['race']}R</b> "
-                 f"{combo(best['actual'], False)} <b class=num>{int(best['pay_tri']):,}円</b>(100円あたり)</p>")
-    else:
-        h.append("<p class=hl>この日は3連単の的中がありませんでした。</p>")
-    h.append("<p class=note>判定: 的中=3連単の予想3点のどれかが当たり/惜しい=予想1点目の1・2着が当たり、または3艇の顔ぶれが同じ/1着的中=本命の1着だけ当たり/外れ。"
-             "収支は「本命の単勝100円+3連単3点300円」を買ったと仮定した、そのレースの増減です。</p><div class=venues>")
-    for vn, ys in by_venue(xs).items():
-        wins = sum(1 for x in ys if x.get("win_hit"))
-        base = sum(1 for x in ys if x.get("lane1_won"))
-        pv = sum((x.get("pay_win") or 0) + (x.get("pay_tri") or 0) - 400 for x in ys)
-        h.append(f"<details class=venue><summary><span class=vn>{esc(vn)}</span><span class=vm>{len(ys)}レース・収支 {yen(pv, True)}<br>"
-                 f"AIの本命の1着 <span class=vtally>{wins}</span>/1号艇の1着 <span class=vtally>{base}</span></span></summary>")
-        for x in ys:
-            pay = f"{int(x['trifecta_payout']):,}円" if x.get("trifecta_payout") else "—"
-            tri = "".join(combo(c) for c in x["trifecta"])
-            tw = x.get("tansho_payout")
-            tws = f"単勝 {int(tw):,}円" if tw else ""
-            rp = (x.get("pay_win") or 0) + (x.get("pay_tri") or 0) - 400
-            h.append(f"<div class=res><span class=r>{x['race']}R</span>"
-                     f"<span class=got>結果 {combo(x['actual'], False)}<span class=gp>本命 {lane(x['pick'], True)}</span></span>"
-                     f"<span class='vd v-{esc(x['verdict'])}'>{esc(x['verdict'])}</span>"
-                     f"<span class=sub><span>予想 {tri} 収支 {yen(rp, True)}</span>"
-                     f"<span class=combos><span>1号艇 <b>{'1着' if x['lane1_won'] else '外れ'}</b> {tws}</span><span>3連単払戻 <b class=num>{pay}</b></span></span></span></div>")
-        h.append("</details>")
-    h.append("</div></section>")
-    return "".join(h)
+    pw, pt, pb = s["return_win"] - s["stake_win"], s["return_tri"] - s["stake_tri"], s["base_return"] - 100 * n
+    man_all = sum(1 for x in xs if (x.get("trifecta_payout") or 0) >= MANSHU)
+    o = [f"<section id=kotae aria-labelledby=h-kotae><h2 id=h-kotae>答え合わせ<small>{esc(jday(s['date']))}・全{n}R</small></h2>"
+         f"<p class=cap>予想は{esc(jday(prev['published_at'], False)) + ' ' + esc(hm(prev['published_at'])) if prev else 'レース当日の朝'}に出したものです(<a href='{COMMITS}{esc(s['date'])}.json'>記録の履歴</a>)。"
+         f"外れも全部そのまま。この日の万舟は全体で{man_all}本でした。</p>"
+         "<h3>100円ずつ買っていたら(仮の計算)</h3><div class=tw><table class=rec><thead><tr><th></th><th class=r>的中</th><th class=r>買った額</th><th class=r>戻り</th><th class=r>差</th></tr></thead><tbody>"
+         f"<tr><td>◎の単勝</td><td class='r n'>{s['win_hits']}</td><td class='r yen'>{yen(s['stake_win'])}</td><td class='r yen'>{yen(s['return_win'])}</td><td class=r>{signed(pw)}</td></tr>"
+         f"<tr><td>3連単 3点</td><td class='r n'>{s['tri_hits']}</td><td class='r yen'>{yen(s['stake_tri'])}</td><td class='r yen'>{yen(s['return_tri'])}</td><td class=r>{signed(pt)}</td></tr>"
+         f"<tr><td class=base>くらべ用:1号艇の単勝</td><td class='r n base'>{s['base_hits']}</td><td class='r yen base'>{yen(100 * n)}</td><td class='r yen base'>{yen(s['base_return'])}</td><td class='r base'>{signed(pb)}</td></tr>"
+         "</tbody></table></div>"
+         "<h3>場ごとの全レース</h3><p class=cap>的中=3連単3点のどれかが当たり。惜しい=1点目の1・2着が合っていた、または3艇の顔ぶれは合っていた。◎1着=◎の1着だけ当たり。</p><div class=vlist>"]
+    for vn, ys in group(xs).items():
+        th = sum(1 for x in ys if x.get("tri_hit"))
+        wh = sum(1 for x in ys if x.get("win_hit"))
+        o.append(f"<details class=v><summary><span class=v-name>{esc(vn)}</span><span class=v-meta>{len(ys)}R・3連単 <b>{th}</b>本・◎1着 {wh}本</span></summary>"
+                 "<div class=tw><table><thead><tr><th>R</th><th>結果</th><th>予想</th><th></th><th class=r>3連単</th></tr></thead><tbody>")
+        for x in sorted(ys, key=lambda x: x["race"]):
+            pay = x.get("trifecta_payout")
+            big = (pay or 0) >= MANSHU
+            hit = bool(x.get("tri_hit"))
+            pays = (f"<span class='pay{' hit' if hit else ''}'><span class={'man' if big else ''}>{int(pay):,}</span><small>円</small></span>" if pay else "—")
+            tri = "".join(f"<span>{esc(c)}</span>" for c in x["trifecta"])
+            o.append(f"<tr{' class=hit' if hit else ''}><td class=t-race><span class=n>{x['race']}</span></td><td>{combo(x['actual'])}</td>"
+                     f"<td class=tri3>{tri}</td><td>{verdict(x)}</td><td class=r>{pays}</td></tr>")
+        o.append("</tbody></table></div></details>")
+    o.append("</div></section>")
+    return "".join(o)
 
 
 def record_html(t: dict, summ: dict, model: dict) -> str:
-    ev = model.get("eval", {}) if model else {}
-    ho = {"races": ev["full"]["races"], "top1": ev["full"]["top1"], "lane1_rate": ev["lane1"]["top1"]} if ev.get("full") else {}
-    rows = []
-    if t.get("graded_races"):
-        rows += [("1着の的中率(採点した全レース)", t["win_rate"], t["base_win_rate"], False),
-                 ("仮の回収率 単勝(毎回100円)", t["roi_win"], t["roi_base"], True),
-                 ("3連単(3点)的中率", t["tri_rate"], None, False),
-                 ("仮の回収率 3連単(3点×100円)", t["roi_tri"], None, True)]
-    if ho:
-        rows.append((f"参考: 学習に使っていない直近{ev.get('test_days', 0)}日の1着的中率({ho.get('races', 0):,}レース・事後の検証)", ho.get("top1", 0), ho.get("lane1_rate", 0), False))
-    if not rows:
+    ev = (model or {}).get("eval", {})
+    if not t.get("graded_races") and not ev.get("full"):
         return ""
-    cap = f"採点したレース: {t['graded_races']:,}(公開 {t['days']} 日分)" if t.get("graded_races") else "答え合わせは公開の翌朝から始まります"
-    h = ["<section aria-labelledby=c-h><h2 id=c-h>これまでの成績:AIの本命 と 1号艇を毎回</h2>", f"<p class=note>{cap}</p>"]
+    o = ["<section class=recs aria-labelledby=h-rec><h2 id=h-rec>これまでの成績</h2>"]
     if t.get("graded_races"):
         n = t["graded_races"]
-        h.append("<div class=tot>"
-                 f"<div>本命の単勝を毎回100円(累計)<b>{yen(t['return_win'] - t['stake_win'], True)}</b>{yen(t['stake_win'])} → {yen(t['return_win'])}</div>"
-                 f"<div>3連単3点を毎回(累計)<b>{yen(t['return_tri'] - t['stake_tri'], True)}</b>{yen(t['stake_tri'])} → {yen(t['return_tri'])}</div>"
-                 f"<div>比較: 1号艇の単勝を毎回100円(累計)<b>{yen(t['base_return'] - 100 * n, True)}</b>{yen(100 * n)} → {yen(t['base_return'])}</div></div>")
+        o.append(f"<p class=cap>公開を始めてから{t['days']}日・{n:,}レース。毎回「1号艇を買う」だけの場合と並べています。</p>"
+                 "<div class=tw><table class=rec><thead><tr><th></th><th class=r>◎</th><th class=r>1号艇を毎回</th></tr></thead><tbody>"
+                 f"<tr><td>1着の的中率</td><td class='r n'>{pct(t['win_rate'])}</td><td class='r n base'>{pct(t['base_win_rate'])}</td></tr>"
+                 f"<tr><td>単勝の回収率(100円ずつ)</td><td class='r n'>{pct(t['roi_win'])}</td><td class='r n base'>{pct(t['roi_base'])}</td></tr>"
+                 f"<tr><td>単勝の収支</td><td class=r>{signed(t['return_win'] - t['stake_win'])}</td><td class='r base'>{signed(t['base_return'] - 100 * n)}</td></tr>"
+                 f"<tr><td>3連単3点の的中率</td><td class='r n'>{pct(t['tri_rate'])}</td><td class='r base'>—</td></tr>"
+                 f"<tr><td>3連単3点の回収率</td><td class='r n'>{pct(t['roi_tri'])}</td><td class='r base'>—</td></tr>"
+                 "</tbody></table></div>")
+        if t["roi_win"] < 1 or t["roi_tri"] < 1:
+            o.append("<p class=cap>回収率が100%を切っているものは、そのまま買うと平均では負けていたということです。</p>")
     else:
-        h.append("<p class=empty>まだ答え合わせをしたレースはありません。それまでは、学習に使っていない期間で試した参考の数字だけを載せています。</p>")
-    h.append("<div class=legend><span>AIの本命</span><span class=k-base>1号艇を毎回</span></div><div class=cmp>")
-    any_roi = False
-    for label, a, b, roi in rows:
-        vals = [v for v in (a, b) if v is not None] or [0]
-        scale = max(1.25, max(vals) * 1.1) if roi else 1.0
-        any_roi |= roi
-        h.append(f"<div class=cmp-row><h3>{esc(label)}</h3>{bar('AIの本命', a, 'ai', scale, roi)}{bar('1号艇を毎回', b, 'base', scale, roi)}</div>")
-    h.append("</div>")
-    if any_roi:
-        h.append("<p class=evenkey>回収率の点線は100%(賭けた額がそのまま戻る線)です。</p>")
-    h.append("<p class=note>回収率・収支は確定払戻金から機械的に計算しています。100%を下回る・マイナスは損をしたという意味です。"
-             "AIの本命が1号艇を上回らない期間は、そのまま表示します。</p>")
+        o.append("<p class=cap>答え合わせは公開の翌朝から始まります。</p>")
     daily = [d for d in summ.get("daily", []) if d.get("graded_races")][-14:]
     if len(daily) >= 2:
-        pts = [(d, d["win_hits"] / d["graded_races"], d["base_hits"] / d["graded_races"]) for d in daily]
-        lo = max(0.0, min(min(a, b) for _, a, b in pts) - 0.05)
-        hi = min(1.0, max(max(a, b) for _, a, b in pts) + 0.05)
-        pos = lambda v: (v - lo) / max(hi - lo, 1e-9) * 100  # noqa: E731
-        h.append("<h3 class=dh>日ごとの1着の的中率(直近14日)</h3>"
-                 f"<div class=dscale aria-hidden=true><span><span>{lo*100:.0f}%</span><span>{hi*100:.0f}%</span></span></div><ul class=days>")
-        for d, a, b in reversed(pts):
-            h.append(f"<li><span class=dd>{esc(d['date'][5:].replace('-', '/'))}</span>"
-                     f"<span class=dtrack role=img aria-label='AIの本命 {pct(a)}、1号艇を毎回 {pct(b)}'>"
-                     f"<i class=dl style='left:{min(pos(a), pos(b)):.1f}%;width:{abs(pos(a)-pos(b)):.1f}%'></i>"
-                     f"<i class='dot base' style='left:{pos(b):.1f}%'></i><i class='dot ai' style='left:{pos(a):.1f}%'></i></span>"
-                     f"<span class=dv><b>{pct(a)}</b><span>{pct(b)}</span></span></li>")
-        h.append("</ul><p class=note>青の点がAIの本命、灰色の点が1号艇を毎回の、その日の1着の的中率です。</p>")
-    h.append("</section>")
-    return "".join(h)
+        o.append("<h3>日ごと(直近14日)</h3><div class=tw><table class=rec><thead><tr><th>日付</th><th class=r>R数</th><th class=r>◎1着</th><th class=r>1号艇</th><th class=r>3連単</th><th class=r>単勝の差</th></tr></thead><tbody>")
+        for d in reversed(daily):
+            o.append(f"<tr><td class=n>{esc(sday(d['date']))}</td><td class='r n'>{d['graded_races']}</td><td class='r n'>{d['win_hits']}</td>"
+                     f"<td class='r n base'>{d['base_hits']}</td><td class='r n'>{d['tri_hits']}</td><td class=r>{signed(d['return_win'] - d['stake_win'])}</td></tr>")
+        o.append("</tbody></table></div>")
+    if ev.get("full"):
+        f, l1 = ev["full"], ev["lane1"]
+        o.append(f"<p class=cap>公開前の検証(学習に使っていない{esc(sday(ev['test_from']))}〜{esc(sday(ev['test_to']))}の{f['races']:,}レース)では、"
+                 f"◎の1着率{pct(f['top1'])}、1号艇を毎回{pct(l1['top1'])}でした。</p>")
+    o.append("</section>")
+    return "".join(o)
+
+
+def calm_html(items: list) -> str:
+    """注意書き(文言は site_data.py の DISCLAIMERS)。相談窓口の名前にリンクを付ける。"""
+    ps = []
+    for x in items:
+        t = esc(x)
+        t = t.replace("ギャンブル依存症予防回復支援センター", f"<a href='{HELP_URL}'>ギャンブル依存症予防回復支援センター</a>", 1)
+        ps.append(f"<p>{t}</p>")
+    return "<section class=calm aria-labelledby=h-calm><h2 id=h-calm>読む前に</h2>" + "".join(ps) + "</section>"
+
+
+def how_html(model: dict, summ: dict) -> str:
+    """予想の作り方。普段は閉じておく。"""
+    ev = model.get("eval", {})
+    used = "".join(f"<li>{esc(t)}</li>" for t in model.get("features_used") or [])
+    o = ["<details class=how><summary>予想の作り方と検証</summary><div class=in>"
+         "<p>BOAT RACE公式が公開している番組表・競走成績・レーサー期別成績から、各艇の1着の確率を出す統計モデルです。"
+         f"学習は{model.get('n_races', 0):,}レース分({esc(model.get('train_from', ''))}〜{esc(model.get('train_to', ''))})。毎週月曜に学習し直しています。</p>"
+         "<h3>見ている数字(どれもレース前に分かるもの)</h3><ul>" + used + "</ul>"
+         "<p>当日の展示タイム・直前の気象・オッズは使っていません(朝の時点ではまだ出ていないため)。</p>"]
+    if ev.get("full"):
+        f, l1 = ev["full"], ev["lane1"]
+        dv = ev.get("diff_vs_lane1", {})
+        o.append(f"<h3>公開前の検証</h3><p>{esc(ev['test_from'])}〜{esc(ev['test_to'])}の{f['races']:,}レースを、その週より前のデータだけで学習して1週ずつ予想した結果です。</p>"
+                 "<div class=tw><table><thead><tr><th></th><th class=r>1着の的中率</th><th class=r>単勝の回収率</th><th class=r>3連単3点</th></tr></thead><tbody>"
+                 f"<tr><td>◎(このモデル)</td><td class='r n'>{pct(f['top1'])}</td><td class='r n'>{pct(f.get('roi_win', 0))}</td><td class='r n'>{pct(f.get('tri3_hit', 0))}</td></tr>"
+                 f"<tr><td>1号艇を毎回</td><td class='r n'>{pct(l1['top1'])}</td><td class='r n'>{pct(l1.get('roi_win', 0))}</td><td class=r>—</td></tr></tbody></table></div>"
+                 f"<p>1号艇との差は{dv.get('diff', 0)*100:+.1f}ポイント(95%の幅 {dv.get('lo', 0)*100:+.1f}〜{dv.get('hi', 0)*100:+.1f})。"
+                 + ("この先も上回るとは限りません。" if ev.get("beats_lane1") else "はっきり上回れているとは言えません。") + "</p>")
+    tiers = ev.get("tiers")
+    if tiers:
+        o.append("<h3>自信度</h3><p>◎の1着率で S・A・B・C に分けています(境目は学習に使っていない期間で決めたもの)。表では S と A だけ印を付けています。"
+                 "自信度が高いレースは1号艇が◎のことが多く、払戻が安いので、当たりが多くても回収率は100%を下回るのがふつうです。</p>"
+                 "<div class=tw><table><thead><tr><th>自信度</th><th class=r>レース数</th><th class=r>◎の1着率</th><th class=r>1号艇</th><th class=r>単勝の回収率</th></tr></thead><tbody>")
+        for t in tiers:
+            if t.get("races"):
+                o.append(f"<tr><td>{esc(t['tier'])}</td><td class='r n'>{t['races']:,}</td><td class='r n'>{pct(t['hit'])}</td><td class='r n'>{pct(t['lane1'])}</td><td class='r n'>{pct(t['roi_win'])}</td></tr>")
+        o.append("</tbody></table></div>")
+    lam = model.get("lambda", [1, 1])
+    o.append(f"<p>3連単の確率は1着の確率から順に積み上げて計算し(Harville法)、2・3着が人気側に寄りすぎないよう補正しています(補正 {lam[0]:.2f}/{lam[1]:.2f})。</p></div></details>")
+    return "".join(o)
 
 
 def build():
-    """site_data.py が作る site_data.json(数字)を読んで、見た目だけをここで作る。"""
-    import site_data
     SITE.mkdir(exist_ok=True)
-    data = site_data.build()
-    rec = data["record"]
-    t = rec["total"]
-    model = data["model"] or {}
-    p, r = data["today"], data["yesterday"]
+    data, p, r, summ, model = load()
+    t = summ.get("total") or {}
+    desc = "ボートレースの全レース予想を毎朝、締切前に公開。翌朝に当たり外れと払戻金を全部答え合わせしています。"
     h = ["<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-         "<title>AI舟券 答え合わせ帳</title><meta name=description content='統計モデルのボートレース予想をレース前に公開し、翌朝に全レースの当たり外れと払戻金を答え合わせする記録。的中も外れも全部載せます。'>"
-         "<meta name=theme-color content='#0b2540'>"
+         f"<title>{TITLE}</title><meta name=description content='{desc}'>"
+         f"<meta property=og:title content='{TITLE}'><meta property=og:description content='{desc}'><meta property=og:type content=website>"
+         f"<meta property=og:url content='{PAGE_URL}'><meta name=twitter:card content=summary>"
+         "<meta name=theme-color content='#ffffff'>"
          f"{FONTS}<style>{CSS}</style></head><body>"]
-    h.append("<header class=top><div class=wrap><a class=brand href='../'><i>01</i>ZEROICHI WORKS</a>"
-             "<h1>AI舟券 答え合わせ帳</h1><p class=lead>レースの前に予想を公開し、翌朝に全レースの当たり外れと払戻金を答え合わせします。的中も外れも、損も全部載せます。"
-             "すべての数字は「1号艇を毎回」という単純な選び方と並べて出します。</p><ul class=facts>")
-    if p:
-        nv = len(by_venue(p["races"]))
-        h.append(f"<li>{esc(p['date'][5:7].lstrip('0'))}月{esc(p['date'][8:10].lstrip('0'))}日の予想<b>{len(p['races'])}<small>レース・{nv}場</small></b></li>"
-                 f"<li>予想公開<b>{esc(p['published_at'][11:16])}<small>締切より前</small></b></li>")
+    prev = load_pred(r["summary"]["date"]) if r else None
+    label = "昨日" if (p and r and (date.fromisoformat(p["date"]) - date.fromisoformat(r["summary"]["date"])).days == 1) else (sday(r["summary"]["date"]) if r else "")
+    lead = "毎朝、その日の全レースの予想を締切前に出しています。翌朝に全部答え合わせ。当たりも外れも、払戻金もそのまま載せています。"
+    if HERO.exists():
+        h.append("<header class='mast hero'><img src='hero.jpg' srcset='hero-800.jpg 800w, hero.jpg 1600w' sizes='100vw' alt='' fetchpriority=high width=1600 height=900>"
+                 "<span class=credit>写真はイメージ(生成画像)</span>"
+                 f"<div class=over><div class=wrap><a class=by href='../'>ZEROICHI WORKS</a><h1>{TITLE}</h1><p class=lead>{lead}</p></div></div></header>"
+                 "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
+                 f"<div class=wrap>{hook_html(p, r, prev)}</div><main class=wrap>")
+    else:
+        h.append("<header class=mast><div class=wrap><a class=by href='../'>ZEROICHI WORKS</a>"
+                 f"<h1>{TITLE}</h1><p class=lead>{lead}</p>"
+                 "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
+                 + hook_html(p, r, prev) + "</div></header><main class=wrap>")
+    h.append("<div class=top2>")
+    h.append(star_today_html(p) if p else "<section class=st><h2>今日の自信あり</h2><p class=cap>今日の予想はまだ出ていません。毎朝7時ごろに出ます。</p></section>")
+    h.append(star_answer_html(r, prev, label) if r else "")
+    h.append(today_html(p) if p else "")
+    h.append(hits_html(r) if r else "")
+    h.append("</div>")
     if r:
-        s = r["summary"]
-        h.append(f"<li>昨日の3連単の的中<b>{s['tri_hits']}<small>/{s['graded_races']}レース</small></b></li>")
-    if t.get("graded_races"):
-        h.append(f"<li>1着の的中率(AI / 1号艇)<b>{pct(t['win_rate'])}<small>/ {pct(t['base_win_rate'])}</small></b></li>")
-    h.append("</ul></div><div class=lanes aria-hidden=true><span></span><span></span><span></span><span></span><span></span><span></span></div></header>")
-    h.append("<main class=wrap><p class=notice>無料の参考情報です。的中や利益を保証しません。過去の成績は将来を約束しません。<b>20歳未満は舟券を購入できません。</b>(くわしくは下の「ご利用の前に」)</p>")
-    if p:
-        h.append(today_html(p))
-    if r:
-        h.append(yesterday_html(r))
-    h.append(record_html(t, rec, model))
-    h.append(warn_html(data["disclaimers"]))
+        h.append(results_html(r, prev))
+    h.append(record_html(t, summ, model))
+    h.append(calm_html(data.get("disclaimers") or []))
     if model:
-        h.append(model_section(model, rec))
-    h.append("</main><footer><div class=wrap>" + "".join(f"<p>データ出典: {esc(x)}</p>" if i == 0 else f"<p>{esc(x)}</p>" for i, x in enumerate(data["sources"]))
-             + "<p>内容は主催者発行のものと照合してください。予想は無料の参考情報で、的中・利益を保証しません。過去の成績は将来の成績を約束しません。20歳未満の方は投票できません。</p>"
-             "<p>運営: ZEROICHI WORKS(AIが運用する個人事業)。このページはAIが自動で作成しています。"
-             "記録の履歴: <a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>GitHub</a></p></div></footer>"
+        h.append(how_html(model, summ))
+    src = data.get("sources") or []
+    h.append("</main><footer><div class=wrap>" + "".join(f"<p>{'データ:' if i == 0 else ''}{esc(x)}</p>" for i, x in enumerate(src))
+             + "<p>正式な結果は主催者の発表で確認してください。</p>"
+             "<p>予想と集計は毎朝プログラムで自動更新しています。運営 ZEROICHI WORKS。"
+             "<a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>更新の記録</a>"
+             "・X <a href='https://x.com/ai_kyotei_kotae'>@ai_kyotei_kotae</a>(自動投稿)</p></div></footer>"
              f"<script>{JS}</script></body></html>")
     (SITE / "index.html").write_text("\n".join(h), encoding="utf-8")
     print("site built", SITE / "index.html")
