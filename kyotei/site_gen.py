@@ -143,6 +143,15 @@ details[open]>summary{border-bottom:1px solid var(--line)}
 
 .about{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:14.5px;color:var(--muted)}
 .about h2{color:var(--ink);font-size:17px;margin-bottom:6px}
+.about h3{color:var(--ink);font-size:15px;margin:14px 0 4px}
+.about p{margin:6px 0}
+.tw{overflow-x:auto;margin:6px 0}
+table.ev{border-collapse:collapse;width:100%;min-width:300px;font-size:13.5px;color:var(--ink)}
+table.ev th,table.ev td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right;white-space:nowrap}
+table.ev th:first-child,table.ev td:first-child{text-align:left;white-space:normal}
+table.ev thead th{color:var(--muted);font-weight:500}
+table.ev .num{font-family:var(--num);font-size:15px}
+.verdict{border-left:4px solid var(--line2);background:var(--sunk);padding:8px 12px;border-radius:6px;color:var(--ink);margin:8px 0}
 footer{border-top:1px solid var(--line);margin-top:48px;padding:22px 0 40px;font-size:12.5px;color:var(--muted)}
 footer p{margin:0 0 6px;max-width:60em}
 @media (min-width:760px){
@@ -202,6 +211,58 @@ def by_venue(rows):
     return groups
 
 
+def model_section(model: dict) -> str:
+    ev = model.get("eval", {})
+    o = ["<section class=about aria-labelledby=m-h><h2 id=m-h>モデルについて</h2>"
+         "<p>公式に公開されているダウンロードデータ(番組表・競走成績・レーサー期別成績)だけを使い、各艇が1着になる確率を推定する統計モデル(条件付きロジット)です。"
+         f"学習したレース数: {model.get('n_races', 0):,}({esc(model.get('train_from', ''))}〜{esc(model.get('train_to', ''))})。毎週月曜に自動で学習し直します。</p>"
+         "<h3>使っている数字(すべてレースの前に分かるもの)</h3><ul>"
+         "<li>番組表: 全国・当地の勝率と2連対率、級別、体重、モーターとボートの2連対率、今節のここまでの着順</li>"
+         "<li>過去の競走成績(前日まで): 選手ごとの<b>枠別</b>の1着率・2連対率、実際の<b>進入コース別</b>の1着率、平均スタートタイミング、フライング回数、前付け・コースを取られる傾向、最近の調子</li>"
+         "<li>レーサー期別成績(公開済みの期のもの): コース別の1着率・2連対率・平均スタートタイミング・平均スタート順位</li>"
+         "<li>場ごとの枠の有利不利、前日の同じ場の風速・波高</li></ul>"
+         "<p>使っていないもの: 当日の展示タイム・直前の気象・オッズ(朝の公開時点では分からないため)。当日の気象は結果ファイルにしか無いので、予想には使いません。</p>"]
+    if ev.get("full"):
+        f, b, pr, l1 = ev["full"], ev.get("base", {}), ev.get("prior", {}), ev["lane1"]
+        dv = ev.get("diff_vs_lane1", {})
+        o.append(f"<h3>学習に使っていない期間での成績(事後の検証)</h3><p class=note>{esc(ev['test_from'])}〜{esc(ev['test_to'])}の{f['races']:,}レース。"
+                 "1週ずつ「その週より前のデータだけで学習 → その週を予想」を繰り返した結果です(この記録帳の公開前の期間を含みます)。</p>")
+        o.append("<div class=tw><table class=ev><thead><tr><th></th><th>1着の的中率</th><th>単勝の回収率</th><th>3連単3点の的中率</th></tr></thead><tbody>")
+        o.append(f"<tr><td>AIの本命(このモデル)</td><td class=num>{pct(f['top1'])}</td><td class=num>{pct(f.get('roi_win', 0))}</td><td class=num>{pct(f.get('tri3_hit', 0))}</td></tr>")
+        if b:
+            o.append(f"<tr><td>番組表の数字だけのモデル(以前のモデル相当)</td><td class=num>{pct(b['top1'])}</td><td class=num>{pct(b.get('roi_win', 0))}</td><td class=num>{pct(b.get('tri3_hit', 0))}</td></tr>")
+        o.append(f"<tr><td>1号艇を毎回</td><td class=num>{pct(l1['top1'])}</td><td class=num>{pct(l1.get('roi_win', 0))}</td><td>—</td></tr></tbody></table></div>")
+        diff = dv.get("diff", 0) * 100
+        rng = f"95%の幅 {dv.get('lo', 0)*100:+.1f}〜{dv.get('hi', 0)*100:+.1f}ポイント"
+        if ev.get("beats_lane1"):
+            o.append(f"<p class=verdict>この期間では、AIの本命の1着的中率が1号艇を毎回を<b>{diff:+.1f}ポイント</b>上回りました({rng})。今後も上回る保証はありません。</p>")
+        else:
+            o.append(f"<p class=verdict>この期間では、AIの本命は1号艇を毎回を<b>はっきりとは上回れていません</b>(差 {diff:+.1f}ポイント、{rng})。</p>")
+        if f.get("roi_win", 0) < 1:
+            o.append("<p class=note>単勝の回収率は100%を下回っています。この予想どおりに買うと、平均では損をします。</p>")
+        if b:
+            better = f["logloss"] < b["logloss"]
+            o.append(f"<p class=note>確率の精度(対数損失・小さいほど良い): このモデル {f['logloss']:.3f} / 番組表だけ {b['logloss']:.3f} / 場と枠だけ {pr.get('logloss', 0):.3f}。"
+                     + ("枠別・コース別の成績などを足したことで、確率の精度は少し良くなりました。" if better else "足した数字による確率の精度の改善は、この期間では確認できませんでした。") + "</p>")
+        cal = [c for c in f.get("calibration", []) if c[2] >= 100]
+        if cal:
+            o.append("<h3>確率の当たり具合</h3><p class=note>AIが示した1着の確率と、実際に1着になった割合です(全艇。100艇未満の区分は省略)。近いほど確率が信用できます。</p>"
+                     "<div class=tw><table class=ev><thead><tr><th>AIの確率(平均)</th><th>実際の1着率</th><th>艇数</th></tr></thead><tbody>")
+            for pm, om, n in cal:
+                o.append(f"<tr><td class=num>{pct(pm)}</td><td class=num>{pct(om)}</td><td class=num>{n:,}</td></tr>")
+            o.append("</tbody></table></div>")
+        orc = ev.get("oracle")
+        if orc and b:
+            o.append(f"<p class=note>参考: もしレース前に当日の風・波・展示タイムが分かったとしたら、確率の精度は {f['logloss']:.3f} → {orc['logloss']:.3f}"
+                     "(この数字は検証用で、予想には使っていません)。</p>")
+    else:
+        o.append("<p class=note>学習に使っていない期間での検証は、履歴がそろってから表示します。</p>")
+    lam = model.get("lambda", [1, 1])
+    o.append(f"<p class=note>3連単の確率は、1着の確率から順番に積み上げて計算し(Harville法)、2着・3着は人気側に偏りすぎないよう補正しています(補正の強さ {lam[0]:.2f} / {lam[1]:.2f}、学習外の期間で決定)。</p>")
+    o.append("</section>")
+    return "".join(o)
+
+
 def build():
     SITE.mkdir(exist_ok=True)
     summ = json.loads((ROOT / "summary.json").read_text(encoding="utf-8")) if (ROOT / "summary.json").exists() else {"total": {}, "daily": []}
@@ -239,7 +300,8 @@ def build():
              "<li>当サイトは投票の受付・代行、有料の予想販売を行っていません。</li></ul></section>")
 
     # 成績の比較(AIの本命 と 1号艇を毎回 を必ず並べる)
-    ho = model.get("holdout", {}) if model else {}
+    ev = model.get("eval", {}) if model else {}
+    ho = {"races": ev["full"]["races"], "top1": ev["full"]["top1"], "lane1_rate": ev["lane1"]["top1"]} if ev.get("full") else {}
     rows = []  # (label, ai, base, is_roi)
     if t.get("graded_races"):
         rows += [("1着の的中率(採点した全レース)", t["win_rate"], t["base_win_rate"], False),
@@ -247,7 +309,7 @@ def build():
                  ("3連単(3点)的中率", t["tri_rate"], None, False),
                  ("仮の回収率 3連単(3点×100円)", t["roi_tri"], None, True)]
     if ho:
-        rows.append((f"参考: 学習に使っていない直近7日の1着的中率({ho.get('races', 0):,}レース)", ho.get("top1", 0), ho.get("lane1_rate", 0), False))
+        rows.append((f"参考: 学習に使っていない直近{ev.get('test_days', 0)}日の1着的中率({ho.get('races', 0):,}レース・事後の検証)", ho.get("top1", 0), ho.get("lane1_rate", 0), False))
     if rows:
         cap = f"採点したレース: {t['graded_races']:,}(公開 {t['days']} 日分)" if t.get("graded_races") else "答え合わせは公開の翌朝から始まります"
         h.append("<section aria-labelledby=c-h><h2 id=c-h>成績:AIの本命 と 1号艇を毎回 の比較</h2>"
@@ -330,12 +392,8 @@ def build():
         h.append("</div></section>")
 
     if model:
-        ho = model.get("holdout", {})
-        h.append("<section class=about aria-labelledby=m-h><h2 id=m-h>モデルについて</h2><p style='margin:0'>公式に公開されている番組表と競走成績(全国勝率・当地勝率・モーターとボートの2連率・級別・枠・場)から、"
-                 f"1着になる確率を推定する統計モデル(条件付きロジット)です。学習したレース数: {model.get('n_races', 0):,}。"
-                 + (f"学習に使っていない直近7日での1着的中率: {pct(ho.get('top1', 0))}(同じ期間の1号艇の1着率: {pct(ho.get('lane1_rate', 0))})。" if ho else "")
-                 + "3連単の確率は、1着の確率から順番に積み上げて計算しています(Harville法)。展示タイム・オッズ・直前の気象は使っていません。</p></section>")
-    h.append("</main><footer><div class=wrap><p>データ出典: BOAT RACE 公式サイトのダウンロードデータ(番組表・競走成績)。内容は主催者発行のものと照合してください。</p>"
+        h.append(model_section(model))
+    h.append("</main><footer><div class=wrap><p>データ出典: BOAT RACE 公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは再配布していません。内容は主催者発行のものと照合してください。</p>"
              "<p>予想は無料の参考情報で、的中・利益を保証しません。過去の成績は将来の成績を約束しません。20歳未満の方は投票できません。</p>"
              "<p>運営: ZEROICHI WORKS(AIが運用する個人事業)。このページはAIが自動で作成しています。"
              "記録の履歴: <a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>GitHub</a></p></div></footer>"

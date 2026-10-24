@@ -8,23 +8,38 @@ BASE = "https://www1.mbrace.or.jp/od2"
 UA = "kyotei-kotaeawase/0.1 (+low-frequency daily fetch)"
 
 
-def fetch(kind: str, d: date) -> str:
-    """kind: 'B'(番組表) or 'K'(競走成績). Returns decoded text ('' if missing)."""
-    url = f"{BASE}/{kind}/{d:%Y%m}/{kind.lower()}{d:%y%m%d}.lzh"
+FAN = "https://boatrace.jp/static_extra/pc_static/download/data/kibetsu"
+PAUSE = 1.0          # 1ファイルごとの待ち時間(秒)。履歴づくりのときは engine が長くする
+N_FETCH = [0]        # この実行で取得したファイル数(上限の管理用)
+
+
+def fetch_lzh(url: str) -> bytes:
+    """公式のLZHを1つ取得して、中のファイルの中身(バイト列)を返す。無ければ b''。生ファイルは保存しない。"""
     req = urllib.request.Request(url, headers={"User-Agent": UA})
+    N_FETCH[0] += 1
     try:
         data = urllib.request.urlopen(req, timeout=60).read()
     except Exception as e:  # noqa
         print(f"miss {url}: {e}")
-        return ""
-    time.sleep(1.0)
+        time.sleep(PAUSE)
+        return b""
+    time.sleep(PAUSE)
     with tempfile.TemporaryDirectory() as t:
         p = Path(t) / "x.lzh"
         p.write_bytes(data)
         subprocess.run(["lha", "-xq", str(p)], cwd=t, check=False)
-        texts = [f.read_bytes().decode("cp932", errors="replace")
-                 for f in Path(t).iterdir() if f.name != "x.lzh" and f.is_file()]
-    return "\n".join(texts)
+        return b"\n".join(f.read_bytes() for f in sorted(Path(t).iterdir()) if f.name != "x.lzh" and f.is_file())
+
+
+def fetch(kind: str, d: date) -> str:
+    """kind: 'B'(番組表) or 'K'(競走成績). Returns decoded text ('' if missing)."""
+    raw = fetch_lzh(f"{BASE}/{kind}/{d:%Y%m}/{kind.lower()}{d:%y%m%d}.lzh")
+    return raw.decode("cp932", errors="replace")
+
+
+def fetch_fan(yymm: str) -> bytes:
+    """レーサー期別成績(ファン手帳データ)。例: '2604'"""
+    return fetch_lzh(f"{FAN}/fan{yymm}.lzh")
 
 
 def mode_sample():
