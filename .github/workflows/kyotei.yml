@@ -71,7 +71,9 @@ jobs:
             for i in 1 2 3; do git pull -q --rebase origin HEAD && git push -q origin HEAD && break; sleep 5; done
           fi
       - name: Commit record to main
+        if: always()
         run: |
+          mkdir -p kyotei/experiments && tail -n 80 kyotei/last_run.log > kyotei/experiments/last_run_tail.txt 2>/dev/null || true   # 実行の要約(数字の集計と進み具合だけ)
           git config user.name "kyotei-bot"
           git config user.email "kyotei-bot@users.noreply.github.com"
           git add -A kyotei   # hist/ などは kyotei/.gitignore で除外
