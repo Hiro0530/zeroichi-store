@@ -121,6 +121,8 @@ details[open]>summary{border-bottom:1px solid var(--line)}
 .race .main{display:flex;align-items:center;gap:10px;min-width:0}
 .race .pick{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
 .race.past{opacity:.5}
+.tier{display:inline-grid;place-items:center;min-width:1.7em;height:20px;border-radius:4px;font:700 13px/1 var(--num);border:1px solid var(--line2);color:var(--muted)}
+.tier.t-S{background:var(--ai);border-color:var(--ai);color:#fff}.tier.t-A{background:var(--ai-soft);border-color:var(--ai);color:var(--ai)}
 .tag{display:inline-block;font-size:11.5px;border:1px solid var(--line2);color:var(--muted);border-radius:999px;padding:0 8px;line-height:1.7}
 .prob{flex:1;display:flex;height:24px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line2);min-width:0}
 .prob span{display:grid;place-items:center;font:600 13px/1 var(--num);overflow:hidden;min-width:0}
@@ -211,8 +213,48 @@ def by_venue(rows):
     return groups
 
 
-def model_section(model: dict) -> str:
+GROUP_TEXT = [
+    (("f_form30", "f_form90"), "選手の最近30日・90日の成績(枠ごとの平均との差)"),
+    (("f_rv",), "選手のその場での成績(枠ごとの平均との差)"),
+    (("f_rlv",), "選手×枠×場の1着率(場×枠 → 選手×枠 の順に寄せて推定)"),
+    (("m_res_all", "m_res30"), "モーター番号ごとの最近の成績(乗った選手の力を差し引いた2連対)、モーター入れ替え直後かどうか"),
+    (("e_racer_exh",), "選手の最近の展示タイム(前のレースまでの、同じレース内の平均との差)"),
+    (("e_motor_exh",), "モーター番号ごとの最近の展示タイム(回り足の目安)"),
+    (("e_draw_exh", "e_draw_res"), "モーターの平均より良い展示・成績を出せているか(整備・調整の力の目安)"),
+    (("t_lvl_l1",), "潮位(気象庁の潮位表。締切時刻の潮の高さと満ち引き。海水・汽水の場だけ)"),
+    (("w_u_l1",), "前日の同じ場の風の向きと強さ(場ごとの向きの効き方を学習)"),
+]
+
+
+def tier_section(model: dict, summ: dict) -> str:
     ev = model.get("eval", {})
+    tiers = ev.get("tiers")
+    if not tiers:
+        return ""
+    o = ["<h3>自信度(本命の1着確率)ごとの成績</h3><p class=note>自信度は、AIの本命の1着確率で分けています: "
+         "<span class='tier t-S'>S</span> 70%以上 / <span class='tier t-A'>A</span> 55〜70% / <span class=tier>B</span> 40〜55% / <span class=tier>C</span> 40%未満。"
+         f"下の表は学習に使っていない期間({esc(ev.get('test_from', ''))}〜{esc(ev.get('test_to', ''))})での結果で、同じレースで1号艇を毎回選んだ場合と並べています。"
+         "自信度が高くても外れることはあり、回収率が100%を超える保証もありません。</p>"
+         "<div class=tw><table class=ev><thead><tr><th>自信度</th><th>レース数</th><th>本命の1着的中率(95%の幅)</th><th>1号艇を毎回</th><th>単勝の回収率</th></tr></thead><tbody>"]
+    for t in tiers:
+        if not t["races"]:
+            continue
+        o.append(f"<tr><td><span class='tier t-{esc(t['tier'])}'>{esc(t['tier'])}</span></td><td class=num>{t['races']:,}</td>"
+                 f"<td class=num>{pct(t['hit'])}({pct(t['hit_lo'])}〜{pct(t['hit_hi'])})</td><td class=num>{pct(t['lane1'])}</td>"
+                 f"<td class=num>{pct(t['roi_win'])}</td></tr>")
+    o.append("</tbody></table></div>")
+    live = summ.get("tiers") or {}
+    if live:
+        o.append("<p class=note>公開してからの実際の成績(答え合わせ済み): " + " / ".join(
+            f"{esc(k)}: {v['races']}レース中 本命の1着 {v['win_hits']}・1号艇の1着 {v['base_hits']}"
+            for k, v in sorted(live.items()) if v["races"]) + "</p>")
+    return "".join(o)
+
+
+def model_section(model: dict, summ: dict | None = None) -> str:
+    ev = model.get("eval", {})
+    feats = set((model.get("config") or {}).get("feats") or model.get("feats") or [])
+    extra = "".join(f"<li>{t}</li>" for keys, t in GROUP_TEXT if any(k in feats for k in keys))
     o = ["<section class=about aria-labelledby=m-h><h2 id=m-h>モデルについて</h2>"
          "<p>公式に公開されているダウンロードデータ(番組表・競走成績・レーサー期別成績)だけを使い、各艇が1着になる確率を推定する統計モデル(条件付きロジット)です。"
          f"学習したレース数: {model.get('n_races', 0):,}({esc(model.get('train_from', ''))}〜{esc(model.get('train_to', ''))})。毎週月曜に自動で学習し直します。</p>"
@@ -220,8 +262,9 @@ def model_section(model: dict) -> str:
          "<li>番組表: 全国・当地の勝率と2連対率、級別、体重、モーターとボートの2連対率、今節のここまでの着順</li>"
          "<li>過去の競走成績(前日まで): 選手ごとの<b>枠別</b>の1着率・2連対率、実際の<b>進入コース別</b>の1着率、平均スタートタイミング、フライング回数、前付け・コースを取られる傾向、最近の調子</li>"
          "<li>レーサー期別成績(公開済みの期のもの): コース別の1着率・2連対率・平均スタートタイミング・平均スタート順位</li>"
-         "<li>場ごとの枠の有利不利、前日の同じ場の風速・波高</li></ul>"
-         "<p>使っていないもの: 当日の展示タイム・直前の気象・オッズ(朝の公開時点では分からないため)。当日の気象は結果ファイルにしか無いので、予想には使いません。</p>"]
+         "<li>場ごとの枠の有利不利、前日の同じ場の風速・波高</li>" + extra + "</ul>"
+         "<p>使っていないもの: 当日の展示タイム・直前の気象・部品交換やプロペラの情報(直前情報のページにしか無く、朝の公開時点では分からないため。取得もしていません)、オッズ(取得していません)。"
+         "当日の気象は結果ファイルにしか無いので、予想には使いません。</p>"]
     if ev.get("full"):
         f, b, pr, l1 = ev["full"], ev.get("base", {}), ev.get("prior", {}), ev["lane1"]
         dv = ev.get("diff_vs_lane1", {})
@@ -257,6 +300,7 @@ def model_section(model: dict) -> str:
                      "(この数字は検証用で、予想には使っていません)。</p>")
     else:
         o.append("<p class=note>学習に使っていない期間での検証は、履歴がそろってから表示します。</p>")
+    o.append(tier_section(model, summ or {}))
     lam = model.get("lambda", [1, 1])
     o.append(f"<p class=note>3連単の確率は、1着の確率から順番に積み上げて計算し(Harville法)、2着・3着は人気側に偏りすぎないよう補正しています(補正の強さ {lam[0]:.2f} / {lam[1]:.2f}、学習外の期間で決定)。</p>")
     o.append("</section>")
@@ -374,6 +418,7 @@ def build():
         pub = p["published_at"].replace("T", " ")[:16]
         h.append(f"<section aria-labelledby=p-h><h2 id=p-h>予想 {esc(p['date'])}</h2><p class=note>公開時刻: {esc(pub)}。締切がこの時刻より前のレースは採点しません(後出しを防ぐため)。"
                  "記録はGitの履歴に残り、後から書き換えると履歴に残ります。</p>"
+                 "<p class=note>本命の横の S/A/B/C は自信度(本命の1着確率 S:70%以上 A:55%以上 B:40%以上 C:それ未満)。自信度ごとの過去の成績は、下の「モデルについて」にあります。</p>"
                  "<p class=note>色の帯は、AIが見積もった1着になる確率です(左から1〜6号艇の枠色、数字は%)。その下は3連単の予想3点と、その確率です。</p><div class=venues>")
         for vn, xs in by_venue(p["races"]).items():
             first, last = xs[0]["close"][11:16], xs[-1]["close"][11:16]
@@ -385,15 +430,18 @@ def build():
                 aria = "、".join(f"{i+1}号艇 {v*100:.0f}%" for i, v in enumerate(probs))
                 tri = "".join(f"<span>{combo(c)}<span class=p>{pr*100:.1f}%</span></span>" for c, pr in x["trifecta"])
                 tag = "" if x.get("scored", True) else "<span class=tag>採点外</span>"
+                tr = f"<span class='tier t-{esc(x['tier'])}' title='自信度'>{esc(x['tier'])}</span>" if x.get("tier") else ""
                 h.append(f"<div class=race data-close='{esc(x['close'])}' data-r='{x['race']}'><span class=r>{x['race']}R<small>{x['close'][11:16]}</small></span>"
-                         f"<span class=main><span class=pick>本命 {lane(x['pick'])}</span><span class=prob role=img aria-label='1着の確率: {aria}'>{segs}</span></span>"
+                         f"<span class=main><span class=pick>本命 {lane(x['pick'])}{tr}</span><span class=prob role=img aria-label='1着の確率: {aria}'>{segs}</span></span>"
                          f"<span class=combos>{tri}{tag}</span></div>")
             h.append("</details>")
         h.append("</div></section>")
 
     if model:
-        h.append(model_section(model))
+        h.append(model_section(model, summ))
     h.append("</main><footer><div class=wrap><p>データ出典: BOAT RACE 公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは再配布していません。内容は主催者発行のものと照合してください。</p>"
+             + ("<p>潮位: 気象庁ホームページ「潮位表」のデータを加工して作成(締切時刻の潮位と満ち引きを計算)。</p>"
+                if "t_lvl_l1" in ((model.get("config") or {}).get("feats") or []) else "") +
              "<p>予想は無料の参考情報で、的中・利益を保証しません。過去の成績は将来の成績を約束しません。20歳未満の方は投票できません。</p>"
              "<p>運営: ZEROICHI WORKS(AIが運用する個人事業)。このページはAIが自動で作成しています。"
              "記録の履歴: <a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>GitHub</a></p></div></footer>"

@@ -36,9 +36,13 @@ def _design(X: np.ndarray, mu, sd, feats, O=None) -> np.ndarray:
     return np.concatenate(parts, axis=2)
 
 
-def fit(X, V, y, feats=None, l2: float = 30.0, l2_vl: float = 150.0, O=None, w0=None) -> dict:
-    """X は feats(既定 FEATS)の列だけを持つ (n,6,p)。"""
+def fit(X, V, y, feats=None, l2: float = 30.0, l2_vl: float = 150.0, O=None, w0=None, vx=None, l2_vx: float = 300.0,
+        maxiter: int = 500) -> dict:
+    """X は feats(既定 FEATS)の列だけを持つ (n,6,p)。vx は feats のうち「場ごとにも係数を持たせる」もの
+    (24場×係数。全体の係数に上乗せし、強めに0へ寄せる)。"""
     feats = list(feats or FEATS)
+    vx = [f for f in (vx or []) if f in feats]
+    X = np.asarray(X, dtype=np.float64)
     mu = X.reshape(-1, X.shape[2]).mean(0)
     sd = X.reshape(-1, X.shape[2]).std(0) + 1e-9
     Om = Os = None
@@ -47,16 +51,21 @@ def fit(X, V, y, feats=None, l2: float = 30.0, l2_vl: float = 150.0, O=None, w0=
         Os = O.reshape(-1, O.shape[2]).std(0) + 1e-9
         O = (O - Om) / Os
     Z = _design(X, mu, sd, feats, O)
+    xi = [feats.index(f) for f in vx]
+    Zv = ((X[:, :, xi] - mu[xi]) / sd[xi]) if xi else None
     n, _, p = Z.shape
-    nP = 6 + 24 * 6 + p
+    k = len(xi)
+    nP = 6 + 24 * 6 + p + 24 * k
     yi = np.arange(n)
 
     def unpack(w):
-        return w[:6], w[6:150].reshape(24, 6), w[150:]
+        return w[:6], w[6:150].reshape(24, 6), w[150:150 + p], w[150 + p:].reshape(24, k)
 
     def f(w):
-        lb, vl, b = unpack(w)
+        lb, vl, b, bv = unpack(w)
         u = Z @ b + lb[None, :] + vl[V]
+        if k:
+            u = u + np.einsum("nlj,nj->nl", Zv, bv[V])
         u -= u.max(1, keepdims=True)
         e = np.exp(u)
         s = e.sum(1, keepdims=True)
@@ -70,11 +79,18 @@ def fit(X, V, y, feats=None, l2: float = 30.0, l2_vl: float = 150.0, O=None, w0=
         np.add.at(g_vl, V, G)
         g_vl += l2_vl * vl
         obj = -ll + 0.5 * (l2 * (b @ b) + l2_vl * (vl * vl).sum() + 1e-3 * (lb @ lb))
-        return obj, np.concatenate([g_lb, g_vl.ravel(), g_b])
+        if k:
+            g_bv = np.zeros((24, k))
+            np.add.at(g_bv, V, np.einsum("nl,nlj->nj", G, Zv))
+            g_bv += l2_vx * bv
+            obj += 0.5 * l2_vx * (bv * bv).sum()
+        else:
+            g_bv = np.zeros((24, 0))
+        return obj, np.concatenate([g_lb, g_vl.ravel(), g_b, g_bv.ravel()])
 
-    w = np.zeros(nP) if w0 is None else np.array(w0)
+    w = np.zeros(nP) if w0 is None or len(w0) != nP else np.array(w0)
     if minimize is not None:
-        r = minimize(f, w, jac=True, method="L-BFGS-B", options={"maxiter": 500})
+        r = minimize(f, w, jac=True, method="L-BFGS-B", options={"maxiter": maxiter})
         w = r.x
     else:  # scipy が無いときの予備(Adam)
         m = v = np.zeros(nP)
@@ -86,19 +102,29 @@ def fit(X, V, y, feats=None, l2: float = 30.0, l2_vl: float = 150.0, O=None, w0=
             w = w - 0.05 * (m / (1 - 0.9 ** t)) / (np.sqrt(v / (1 - 0.999 ** t)) + 1e-8)
     return {"w": w.tolist(), "mu": mu.tolist(), "sd": sd.tolist(), "n_races": int(n),
             "oracle": O is not None, "Om": None if Om is None else Om.tolist(), "Os": None if Os is None else Os.tolist(),
-            "feats": feats}
+            "feats": feats, "vx": vx, "n_design": int(p)}
 
 
-def predict(m: dict, X, V, O=None) -> np.ndarray:
+def predict(m: dict, X, V, O=None, logits: bool = False) -> np.ndarray:
     mu, sd = np.array(m["mu"]), np.array(m["sd"])
+    feats = m.get("feats") or FEATS
+    X = np.asarray(X, dtype=np.float64)
     if m.get("oracle"):
         O = (O - np.array(m["Om"])) / np.array(m["Os"])
     else:
         O = None
-    Z = _design(X, mu, sd, m.get("feats") or FEATS, O)
+    Z = _design(X, mu, sd, feats, O)
     w = np.array(m["w"])
-    u = Z @ w[150:] + w[:6][None, :] + w[6:150].reshape(24, 6)[V]
+    p = Z.shape[2]
+    u = Z @ w[150:150 + p] + w[:6][None, :] + w[6:150].reshape(24, 6)[V]
+    vx = m.get("vx") or []
+    if vx:
+        xi = [feats.index(f) for f in vx]
+        Zv = (X[:, :, xi] - mu[xi]) / sd[xi]
+        u = u + np.einsum("nlj,nj->nl", Zv, w[150 + p:].reshape(24, len(vx))[V])
     u -= u.max(1, keepdims=True)
+    if logits:
+        return u
     P = np.exp(u)
     return P / P.sum(1, keepdims=True)
 
@@ -187,3 +213,65 @@ def paired_diff(a_hit: np.ndarray, b_hit: np.ndarray, B: int = 2000, seed: int =
     n = len(d)
     bs = [d[rng.integers(0, n, n)].mean() for _ in range(B)]
     return {"diff": float(d.mean()), "lo": float(np.percentile(bs, 2.5)), "hi": float(np.percentile(bs, 97.5))}
+
+
+TIERS = [("S", 0.70), ("A", 0.55), ("B", 0.40), ("C", 0.0)]   # 本命の1着確率での「自信度」
+
+
+def tier_of(p_top: float) -> str:
+    for name, lo in TIERS:
+        if p_top >= lo:
+            return name
+    return "C"
+
+
+def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    if n == 0:
+        return 0.0, 0.0
+    p = k / n
+    den = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / den
+    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return c - h, c + h
+
+
+def tier_table(P, y, pay) -> list:
+    """自信度ごとの、学習外の1着的中率(95%区間)・同じレースでの1号艇・単勝の仮の回収率。"""
+    top = P.max(1)
+    pick = P.argmax(1)
+    out = []
+    for name, lo in TIERS:
+        hi = next((l for nm, l in TIERS if l > lo and TIERS.index((nm, l)) == TIERS.index((name, lo)) - 1), 1.01)
+        m = (top >= lo) & (top < hi)
+        n = int(m.sum())
+        k = int((pick[m] == y[m]).sum())
+        lo_ci, hi_ci = wilson(k, n)
+        out.append({"tier": name, "p_from": lo, "p_to": min(hi, 1.0), "races": n, "share": n / max(len(y), 1),
+                    "hit": k / max(n, 1), "hit_lo": lo_ci, "hit_hi": hi_ci, "mean_p": float(top[m].mean()) if n else 0.0,
+                    "lane1": float((y[m] == 0).mean()) if n else 0.0,
+                    "pick_lane1": float((pick[m] == 0).mean()) if n else 0.0,
+                    "roi_win": float(np.where(pick[m] == y[m], pay[m], 0).sum() / (100 * max(n, 1)))})
+    return out
+
+
+def paired_ll(Pa, Pb, y, B: int = 2000, seed: int = 0) -> dict:
+    """対数損失の差(a−b、マイナスならaが良い)のブートストラップ95%区間。"""
+    yi = np.arange(len(y))
+    d = -np.log(np.clip(Pa[yi, y], 1e-9, 1)) + np.log(np.clip(Pb[yi, y], 1e-9, 1))
+    rng = np.random.default_rng(seed)
+    n = len(d)
+    bs = [d[rng.integers(0, n, n)].mean() for _ in range(B)]
+    return {"diff": float(d.mean()), "lo": float(np.percentile(bs, 2.5)), "hi": float(np.percentile(bs, 97.5))}
+
+
+def predict_model(model: dict, X_all, V, allf) -> np.ndarray:
+    """model.json(v3 は components の対数確率の平均、v2 は単体)で、ALLF 列の X から1着の確率。"""
+    comps = model.get("components") or [model]
+    U = 0
+    for m in comps:
+        ci = [allf.index(f) for f in (m.get("feats") or FEATS)]
+        U = U + predict(m, np.asarray(X_all)[:, :, ci], V, logits=True)
+    U = U / len(comps)
+    U = U - U.max(1, keepdims=True)
+    P = np.exp(U)
+    return P / P.sum(1, keepdims=True)

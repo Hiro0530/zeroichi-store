@@ -20,6 +20,9 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 300
+    env:
+      # 非公開リポジトリ(arbitrage-scout)へ履歴の控えを置くためのトークン(未設定なら控えは作らず、キャッシュだけで動く)
+      HAS_DATA_TOKEN: ${{ secrets.KYOTEI_DATA_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,6 +37,15 @@ jobs:
           path: kyotei/hist
           key: kyotei-hist-${{ github.run_id }}
           restore-keys: kyotei-hist-
+      - name: Restore durable copy from the private repo (only days missing in the cache)
+        if: env.HAS_DATA_TOKEN == 'true'
+        env:
+          DATA_TOKEN: ${{ secrets.KYOTEI_DATA_TOKEN }}
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${DATA_TOKEN}@github.com/Hiro0530/arbitrage-scout.git" /tmp/kdata
+          git -C /tmp/kdata sparse-checkout set kyotei_data
+          mkdir -p /tmp/kdata/kyotei_data
+          python kyotei/durable.py pull /tmp/kdata/kyotei_data
       - name: Run
         run: |
           MODE=$(head -1 kyotei/trigger.txt 2>/dev/null || echo daily)
@@ -47,6 +59,17 @@ jobs:
         with:
           path: kyotei/hist
           key: kyotei-hist-${{ github.run_id }}
+      - name: Push durable copy to the private repo (derived numbers only, no raw files)
+        if: always() && env.HAS_DATA_TOKEN == 'true'
+        run: |
+          python kyotei/durable.py push /tmp/kdata/kyotei_data
+          cd /tmp/kdata
+          git config user.name "kyotei-bot"
+          git config user.email "kyotei-bot@users.noreply.github.com"
+          git add kyotei_data
+          if git commit -qm "kyotei_data: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
+            for i in 1 2 3; do git pull -q --rebase origin HEAD && git push -q origin HEAD && break; sleep 5; done
+          fi
       - name: Commit record to main
         run: |
           git config user.name "kyotei-bot"

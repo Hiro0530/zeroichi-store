@@ -19,7 +19,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run as run_mod  # noqa: E402
 import model2 as M  # noqa: E402
-from features import build  # noqa: E402
+from features import ALLF, build  # noqa: E402
+import jma  # noqa: E402
 from parse import parse_b, parse_fan, parse_k  # noqa: E402
 from run import fetch, fetch_fan  # noqa: E402
 from train import coef_table, load_days, load_fan, train_all  # noqa: E402
@@ -101,6 +102,19 @@ def ensure_fan_files():
                 out.write_bytes(gzip.compress(json.dumps(recs, separators=(",", ":")).encode()))
 
 
+def ensure_jma():
+    """気象庁: 潮位表(地点×年で1回だけ)と、今朝のアメダス(1日1回、今後の検証用に貯める)。失敗しても予想は続ける。"""
+    jd = hist_dir() / "jma"
+    jd.mkdir(exist_ok=True)
+    today = datetime.now(JST).date()
+    try:
+        years = list(range((today - timedelta(days=HIST_DAYS + 7)).year, today.year + 1))
+        jma.ensure_tides(jd, years)
+        jma.amedas_snapshot(jd, today)
+    except Exception as e:  # noqa
+        print("jma skipped:", e)
+
+
 def refit():
     """時系列の検証(直近6週を1週ずつ、前のデータだけで学習して予想)→ 全期間で学習し直して保存。"""
     model, rep = train_all(hist_dir(), weeks=6)
@@ -116,10 +130,10 @@ def refit():
 
 def predict_day(d: date, races: list[dict], model: dict) -> list[dict]:
     days = load_days(hist_dir(), HIST_DAYS, before=d)
-    _, tgt = build(days, load_fan(hist_dir()), target=(d, races))
+    _, tgt = build(days, load_fan(hist_dir()), target=(d, races), tides=jma.Tides(hist_dir() / "jma"))
     if not races:
         return []
-    P = M.predict(model, tgt["X"], tgt["V"])
+    P = M.predict_model(model, tgt["X"], tgt["V"], ALLF)
     T = M.trifecta_probs(P, *model.get("lambda", [1.0, 1.0]))
     out = []
     for i, r in enumerate(races):
@@ -145,7 +159,7 @@ def make_predictions(d: date, model: dict) -> dict | None:
         scored = datetime.fromisoformat(r["close"]) > now + timedelta(minutes=5)
         preds.append({"key": r["key"], "venue": r["venue"], "venue_name": VENUES[r["venue"]],
                       "race": r["race"], "close": r["close"], "scored": scored,
-                      "probs": [round(x, 4) for x in p], "pick": top + 1,
+                      "probs": [round(x, 4) for x in p], "pick": top + 1, "tier": M.tier_of(max(p)),
                       "trifecta": [[c, round(x, 4)] for c, x in tri]})
     out = {"date": d.isoformat(), "published_at": now.isoformat(timespec="seconds"),
            "model_fitted_at": model.get("fitted_at"), "model_version": model.get("version", 1), "races": preds}
@@ -179,7 +193,7 @@ def grade(d: date) -> dict | None:
         pay_win = x["tansho"].get(str(r["pick"]), 0) if win_hit else 0
         pay_tri = x["trifecta"].get(actual, 0) if tri_hit else 0
         base_pay = x["tansho"].get("1", 0) if o[0] == 1 else 0
-        rows.append({"key": r["key"], "venue_name": r["venue_name"], "race": r["race"],
+        rows.append({"key": r["key"], "venue_name": r["venue_name"], "race": r["race"], "tier": r.get("tier"),
                      "pick": r["pick"], "trifecta": [c for c, _ in r["trifecta"]], "actual": actual,
                      "verdict": verdict, "win_hit": win_hit, "tri_hit": tri_hit,
                      "pay_win": pay_win, "pay_tri": pay_tri, "base_pay": base_pay,
@@ -220,7 +234,17 @@ def cumulative() -> dict:
     tot["roi_win"] = round(tot["return_win"] / max(tot["stake_win"], 1), 4)
     tot["roi_tri"] = round(tot["return_tri"] / max(tot["stake_tri"], 1), 4)
     tot["roi_base"] = round(tot["base_return"] / max(tot["graded_races"] * 100, 1), 4)
-    (ROOT / "summary.json").write_text(json.dumps({"total": tot, "daily": daily}, ensure_ascii=False,
+    tiers = {}
+    for f in sorted((ROOT / "results").glob("*.json")):
+        for x in json.loads(f.read_text(encoding="utf-8"))["races"]:
+            if not x.get("tier"):
+                continue
+            t = tiers.setdefault(x["tier"], {"races": 0, "win_hits": 0, "base_hits": 0, "return_win": 0})
+            t["races"] += 1
+            t["win_hits"] += bool(x["win_hit"])
+            t["base_hits"] += bool(x["lane1_won"])
+            t["return_win"] += x.get("pay_win", 0)
+    (ROOT / "summary.json").write_text(json.dumps({"total": tot, "tiers": tiers, "daily": daily}, ensure_ascii=False,
                                                   indent=1), encoding="utf-8")
     return tot
 
@@ -231,17 +255,25 @@ def main(mode: str):
         # 手動: 履歴を上限つきでさかのぼって作る(1ファイルごとに数秒あける)
         top_up_history(CAP_BACKFILL, SLOW_PAUSE)
         ensure_fan_files()
+        ensure_jma()
         refit()
     elif mode == "refit":
+        ensure_jma()
+        refit()
+    elif mode == "exp":
+        # 改良候補の検証(v3_ablation.json と model_config.json を作る)→ その構成で学習し直す
+        ensure_jma()
+        import exp_v3
+        exp_v3.main(hist_dir())
         refit()
     else:  # daily
         grade(today - timedelta(days=1))
         left = top_up_history(CAP_DAILY, SLOW_PAUSE)   # 足りない過去分を毎朝少しずつ
         ensure_fan_files()
+        ensure_jma()
         model = json.loads((ROOT / "model.json").read_text()) if (ROOT / "model.json").exists() else {}
-        growing = left > 0 or model.get("n_days", 0) < HIST_DAYS - 7
-        if today.weekday() == 0 or model.get("version") != 2 or growing:
-            refit()   # 毎週月曜(履歴がそろうまでは毎日)に学習し直す
+        if today.weekday() == 0 or model.get("version") != 3:
+            refit()   # 毎週月曜に学習し直す(採用した構成 model_config.json のまま。構成の見直しは手動の exp)
     model = json.loads((ROOT / "model.json").read_text())
     make_predictions(today, model)
     tot = cumulative()
