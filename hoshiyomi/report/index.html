@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2027年の年間運勢・ふたりの相性レポート|ほしよみ日和</title>
+<meta name="description" content="誕生日から組み立てる、2027年の年間運勢(月ごとのいい日・恋の日つき)と、ふたりの相性レポート。第1章は無料で読めます。買い切り980円、月額料金なし。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/hoshiyomi/report/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="2027年の年間運勢・ふたりの相性レポート|ほしよみ日和">
+<meta property="og:description" content="誕生日から組み立てる長いレポート。第1章は無料。">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/hoshiyomi/report/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/hoshiyomi/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#232B5C">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="mark" href="../">ほしよみ日和</a>
+  <nav class="nav" aria-label="メニュー"><a href="../">今日の運勢</a><a href="../#rank">ランキング</a><a href="../#signs">星座別</a></nav>
+</div></header>
+<main class="wrap">
+  <section style="padding-top:22px">
+    <h1 class="sec" style="font-size:26px">誕生日から組み立てる、長いレポート</h1>
+    <p class="lead">毎日の運勢と同じしくみ(本当の月の動き+数秘術)で、一人ひとりの誕生日に合わせて作ります。まずは無料の第1章で、あなたのテーマを確かめてみてください。続きは買い切り980円、月額料金はかかりません。</p>
+    <p class="note hide" id="setNote">セット(1,500円)なら、年間運勢と相性の両方が読めます。相性は相手を変えて何度でも作り直せます。</p>
+    <div class="tabs" role="tablist">
+      <button id="tabA" role="tab" type="button">2027年の年間運勢</button>
+      <button id="tabC" role="tab" type="button">ふたりの相性</button>
+    </div>
+    <div id="formA" class="ask" style="margin:0">
+      <h2>あなたの生年月日</h2>
+      <div class="row"><select id="ay" aria-label="年"></select><select id="am" aria-label="月"></select><select id="ad" aria-label="日"></select></div>
+      <div class="row" style="margin-top:8px"><input type="text" id="aname" maxlength="12" placeholder="呼び名(なくても大丈夫)" aria-label="呼び名" style="flex:1"></div>
+    </div>
+    <div id="formC" class="pair hide">
+      <fieldset><legend>あなた</legend>
+        <div class="row"><select id="cy1" aria-label="あなたの年"></select><select id="cm1" aria-label="あなたの月"></select><select id="cd1" aria-label="あなたの日"></select></div>
+        <div class="row" style="margin-top:8px"><input type="text" id="n1" maxlength="12" placeholder="呼び名(任意)" aria-label="あなたの呼び名" style="flex:1"></div>
+      </fieldset>
+      <fieldset><legend>お相手</legend>
+        <div class="row"><select id="cy2" aria-label="お相手の年"></select><select id="cm2" aria-label="お相手の月"></select><select id="cd2" aria-label="お相手の日"></select></div>
+        <div class="row" style="margin-top:8px"><input type="text" id="n2" maxlength="12" placeholder="呼び名(任意)" aria-label="お相手の呼び名" style="flex:1"></div>
+      </fieldset>
+    </div>
+    <button class="btn main wide" id="make" type="button">レポートを作る</button>
+    <p class="note" id="err" role="alert"></p>
+    <p class="note" id="status"></p>
+    <p class="note">生年月日と呼び名は、この端末の中だけで計算に使います。どこにも送信・保存しません。</p>
+  </section>
+
+  <div id="out"></div>
+
+  <div class="unlock hide" id="buy">
+    <h2 id="buyTitle">続きを読む</h2>
+    <ol>
+      <li>下のボタンから申し込みます。</li>
+      <li>お支払いが確認できたら、12時間以内に「利用キー」をメールでお送りします。</li>
+      <li>キーを下の欄に入れると、この端末で全文が読めるようになります。PDFでの保存もできます。</li>
+    </ol>
+    <div class="row" id="buyBtn"></div>
+    <label class="note" for="key" style="display:block;margin-top:16px">届いた利用キー</label>
+    <div class="keyrow"><input type="text" id="key" placeholder="HN-XXXXXXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="keyGo" type="button">登録</button></div>
+    <p class="msg" id="keyMsg" role="status"></p>
+    <p class="note">キーをなくしたときは、お支払いに使ったメールアドレスからご連絡ください。無料で再発行します。デジタル商品のため、キーをお送りしたあとの返金はお受けしていません。<a href="../../tokushoho.html">特定商取引法に基づく表記</a></p>
+  </div>
+</main>
+<footer><div class="wrap">
+  <nav aria-label="サイト情報"><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+  <p>ほしよみ日和は、占いを楽しむための読みものです。内容は娯楽として提供しており、将来の出来事を保証するものではありません。</p>
+  <p>運営: ZEROICHI WORKS</p>
+</div></footer>
+<script type="module" src="report.js"></script>
+</body>
+</html>

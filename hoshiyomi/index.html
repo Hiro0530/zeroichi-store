@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ほしよみ日和|誕生日でみる今日の運勢(無料)</title>
+<meta name="description" content="生年月日を入れるだけ。その日の本当の月の位置と数秘術から、あなたの今日の運勢を毎朝お届けします。恋愛・仕事・お金・からだ、今日やってみること、ラッキーカラーまで。登録不要・無料。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/hoshiyomi/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ほしよみ日和|誕生日でみる今日の運勢">
+<meta property="og:description" content="その日の本当の月の位置と数秘術で読む、あなただけの今日。登録不要・無料。">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/hoshiyomi/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/hoshiyomi/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#232B5C">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="mark" href="./">ほしよみ日和</a>
+  <nav class="nav" aria-label="メニュー"><a href="#rank">ランキング</a><a href="report/?p=compat">相性</a><a href="report/?p=annual">2027年</a><a href="#signs">星座別</a></nav>
+</div></header>
+
+<div class="sky">
+  <div class="dots" id="dots"></div>
+  <div class="wrap">
+    <div class="moonbox" id="moon"></div>
+    <p class="tate" id="tate"></p>
+    <p class="skyline" id="skyline"></p>
+  </div>
+</div>
+
+<main class="wrap">
+  <form class="ask" id="ask" autocomplete="off">
+    <h2 id="askTitle">生まれた日を教えてください</h2>
+    <p>あなたの星座と「数」を出して、今日の運勢を読みます。入れた日付はこの端末の中だけに保存され、どこにも送られません。</p>
+    <div class="row">
+      <select id="by" aria-label="生まれた年"></select>
+      <select id="bm" aria-label="生まれた月"></select>
+      <select id="bd" aria-label="生まれた日"></select>
+    </div>
+    <button class="btn main wide" type="submit">今日の運勢を見る</button>
+    <p class="note" id="askErr" role="alert"></p>
+  </form>
+
+  <section id="you" class="hide" aria-live="polite">
+    <div class="letter" id="letter"></div>
+    <div class="share">
+      <button class="btn" id="shareImg" type="button">画像で保存・シェア</button>
+      <a class="btn ghost" id="shareX" target="_blank" rel="noopener">Xでシェア</a>
+      <a class="btn ghost" id="shareLine" target="_blank" rel="noopener">LINEで送る</a>
+    </div>
+    <p class="note">毎日0時に新しい運勢に変わります。ホーム画面に追加しておくと、明日もすぐ開けます。 <button class="chg" id="chg" type="button">誕生日を変える</button></p>
+    <details class="prof" id="prof"></details>
+  </section>
+
+  <section id="deep">
+    <h2 class="sec">もっと深く読みたい日に</h2>
+    <p class="lead">毎日の運勢と同じしくみ(本当の月の動き+数秘術)で、あなたの誕生日だけのために組み立てる長いレポートです。買い切りで、月額料金はかかりません。</p>
+    <div class="deep">
+      <div class="offer">
+        <h3>2027年 年間運勢レポート</h3>
+        <p class="price">980円(税込)</p>
+        <p>来年の手帳に書きこめる、あなたの日付入りの一年。12か月それぞれの「いい日」「恋の日」「仕事の日」「ひと休みの日」を、誕生日から日付まで出します。</p>
+        <ul><li>転職・引っ越し・新しい習慣、動くならいつがいいか</li><li>数秘で見る2027年のテーマと合言葉</li><li>毎月の新月・満月が、あなたにとって何の日か</li></ul>
+        <p class="note">全5章 ・ 12か月の日付表つき ・ PDFで保存できます</p>
+        <a class="btn ghost" href="report/?p=annual">見本と申し込み</a>
+      </div>
+      <div class="offer">
+        <h3>ふたりの相性レポート</h3>
+        <p class="price">980円(税込)</p>
+        <p>あの人とは、どんな形のふたりなのか。星座の距離、生まれた日の月、数の組み合わせを重ねて読みます。点数だけで終わらせず、すれ違いやすい所と仲直りのしかたまで。</p>
+        <ul><li>相手から見た、あなたの魅力</li><li>これから60日のうち、ふたりの流れがそろう日</li><li>恋人・片思い・夫婦・友だち、どの関係でも</li></ul>
+        <p class="note">全8章 ・ 相手を変えて何度でも作り直せます</p>
+        <a class="btn ghost" href="report/?p=compat">見本と申し込み</a>
+      </div>
+      <div class="offer set">
+        <h3>年間運勢+相性のセット</h3>
+        <p class="price">1,500円(税込)</p>
+        <p>両方まとめて。相性は相手を変えて何度でも読み直せます。</p>
+        <a class="btn ghost" href="report/?p=set">見本と申し込み</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="rank">
+    <h2 class="sec" id="rankTitle">今日の12星座ランキング</h2>
+    <p class="lead">誕生日を入れなくても見られる、星座ごとのざっくりした流れです。月がどこにいるかで、毎日入れかわります。</p>
+    <ol class="rank" id="rankList"></ol>
+  </section>
+
+  <section id="signs">
+    <h2 class="sec">星座別の性格と今日の運勢</h2>
+    <div class="grid12" id="grid12"></div>
+    <h2 class="sec" style="margin-top:28px">誕生日別の性格</h2>
+    <p class="lead">366日、それぞれの誕生日のページがあります。</p>
+    <div class="months" id="months"></div>
+  </section>
+
+  <section class="how" id="how">
+    <h2 class="sec">ほしよみ日和の読みかた</h2>
+    <p>ここで出している運勢は、日付だけで決まる「全員に同じ文章」ではありません。その日の本当の月の位置を天文計算で出し、あなたの誕生日と重ねたうえで、私たちが書きためた文章の中から今日のあなたに合うものを選んで組み立てています。</p>
+    <dl>
+      <dt>月の位置</dt>
+      <dd>月はおよそ2日半ごとに星座を移ります。今日の月が、あなたの星座から数えて何番目の場所にいるかで、一日のテーマ(自分・お金・会話・家・恋…)が決まります。</dd>
+      <dt>数秘術</dt>
+      <dd>誕生日(月と日)と今日の日付の数字を足して、1〜9の「個人日」を出します。始まりの日、休む日、実る日。同じ星座の人でも、誕生日が違えば今日の流れが変わります。</dd>
+      <dt>月の満ち欠け</dt>
+      <dd>新月は始めること、満月は形になること。月の形も、その日の読みに少しだけ影響しています。</dd>
+    </dl>
+    <p class="note">占いは、毎日を少し楽しくするための読みものです。当たる・当たらないを約束するものではありません。体や心、お金のことで大事な判断をするときは、信頼できる人や専門家に相談してください。</p>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <nav aria-label="サイト情報"><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%BB%E3%81%97%E3%82%88%E3%81%BF%E6%97%A5%E5%92%8C%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">お問い合わせ</a></nav>
+  <p>ほしよみ日和は、占いを楽しむための読みものです。内容は娯楽として提供しており、将来の出来事を保証するものではありません。不安をあおって何かを買わせたり、お守りや開運グッズを売ったりすることはありません。</p>
+  <p>運営: ZEROICHI WORKS</p>
+</div></footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

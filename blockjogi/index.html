@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ブロック定規|マイクラの円・球・ドームを1段ずつ数で出す設計ツール</title>
+<meta name="description" content="マインクラフト(Minecraft)できれいな円・球・ドームを作るための非公式ツール。直径を入れると、ブロックの並びを「7→2→1→1」のような数と1段ずつの図で表示。必要な個数のスタック換算、段ごとの進み具合の記録、ネザー座標の変換も。スマホ対応・無料。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/blockjogi/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ブロック定規|マイクラの円・球・ドーム設計ツール(非公式)">
+<meta property="og:description" content="直径を入れるだけで、ブロックの並びを数と図で。1段ずつ進み具合も記録できます。">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/blockjogi/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/blockjogi/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F2B705">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="tape"><div class="wrap">
+  <a class="logo" href="./">ブロック定規</a>
+  <p>マイクラの円・球・ドームを、数で作る</p>
+</div></header>
+
+<main class="wrap">
+  <h1 id="title">円の設計図</h1>
+  <p class="lead" id="lead">直径を入れると、ブロックの配置図と、まっすぐ並ぶ個数が出ます。</p>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-shape="circle" aria-selected="true">円</button>
+    <button role="tab" data-shape="sphere" aria-selected="false">球</button>
+    <button role="tab" data-shape="dome" aria-selected="false">ドーム</button>
+    <button role="tab" data-shape="ellipse" aria-selected="false">楕円</button>
+    <button role="tab" data-shape="torus" aria-selected="false">ドーナツ<span class="pro">フル</span></button>
+    <button role="tab" data-shape="cone" aria-selected="false">とんがり屋根<span class="pro">フル</span></button>
+  </div>
+
+  <div class="ctrl" id="ctrl">
+    <div class="num" id="nA"><span id="lA">直径</span><button type="button" data-d="-1" aria-label="1小さく">−</button><input id="vA" type="number" inputmode="numeric" min="3" max="128" value="21" aria-labelledby="lA"><button type="button" data-d="1" aria-label="1大きく">＋</button></div>
+    <div class="num hide" id="nB"><span id="lB">縦</span><button type="button" data-d="-1" aria-label="1小さく">−</button><input id="vB" type="number" inputmode="numeric" min="1" max="128" value="13" aria-labelledby="lB"><button type="button" data-d="1" aria-label="1大きく">＋</button></div>
+    <div class="seg" id="mode" role="group" aria-label="置き方">
+      <button type="button" data-mode="line" aria-pressed="true">外枠(細)</button>
+      <button type="button" data-mode="thick" aria-pressed="false">外枠(太)</button>
+      <button type="button" data-mode="fill" aria-pressed="false">中まで埋める</button>
+    </div>
+  </div>
+
+  <div class="board" id="board"><canvas id="cv" role="img" aria-label="ブロックの配置図"></canvas></div>
+  <div class="zoom"><button type="button" id="zo" aria-label="小さく表示">−</button><button type="button" id="zi" aria-label="大きく表示">＋</button></div>
+
+  <div class="layer hide" id="layerBox">
+    <button type="button" id="lp" aria-label="1段下へ">▼</button>
+    <span class="now" id="lnow" aria-live="polite"></span>
+    <button type="button" id="ln" aria-label="1段上へ">▲</button>
+    <label><input type="checkbox" id="ldone"> この段できた</label>
+  </div>
+  <div class="bar hide" id="barBox"><i id="bar"></i></div>
+
+  <div class="facts" id="facts"></div>
+  <div class="steps" id="stepsBox"><b>円のいちばん上から時計回りに、まっすぐ並ぶ個数(4分の1周)</b><span class="seq" id="seq"></span><p id="seqNote"></p></div>
+
+  <div class="save">
+    <input type="text" id="pname" maxlength="24" placeholder="名前をつけて保存(例: 拠点の塔)" aria-label="保存する名前">
+    <button class="btn" type="button" id="psave">保存</button>
+  </div>
+  <p class="msg" id="pmsg" role="status"></p>
+  <ul class="projects" id="plist"></ul>
+  <div class="row" style="margin-top:10px"><button class="btn g" type="button" id="print">全部の段を印刷する<span class="pro" style="margin-left:6px;font-size:10px;background:var(--tape);color:var(--tape-ink);border-radius:4px;padding:1px 4px">フル</span></button></div>
+  <div id="printArea"></div>
+
+  <section id="calc">
+    <h2>スタック計算</h2>
+    <div class="calc">
+      <div class="row"><input id="sc" type="number" inputmode="numeric" min="0" value="1000" aria-label="個数"><select id="sp" aria-label="1スタックの数"><option value="64">64個で1スタック</option><option value="16">16個で1スタック(雪玉・看板など)</option></select></div>
+      <p class="out" id="sout"></p>
+    </div>
+  </section>
+
+  <section id="nether">
+    <h2>ネザーゲートの座標計算</h2>
+    <div class="calc">
+      <div class="row"><select id="nd" aria-label="変換の向き"><option value="o2n">オーバーワールド → ネザー</option><option value="n2o">ネザー → オーバーワールド</option></select></div>
+      <div class="row"><label>X <input id="nx" type="number" inputmode="numeric" value="800"></label><label>Z <input id="nz" type="number" inputmode="numeric" value="-240"></label></div>
+      <p class="out" id="nout"></p>
+      <p class="msg">オーバーワールドの8マスが、ネザーの1マスにあたります(Y座標はそのまま)。行き先側でこの座標の近くにゲートを作ると、ねらった場所どうしがつながりやすくなります。</p>
+    </div>
+  </section>
+
+  <section id="full">
+    <div class="pack">
+      <h2>フルパック 300円(買い切り)</h2>
+      <p>大きな建築を最後まで作りきるための追加機能です。一度キーを入れると、その端末のブラウザでずっと使えます。同じキーは、ほかのスマホやパソコンにも入れられます。</p>
+      <ul>
+        <li>全部の段を、1枚ずつ印刷・PDF保存</li>
+        <li>保存できる設計図の数が無制限に(無料は3つまで)</li>
+        <li>ドーナツ形(リング)・とんがり屋根(円すい)</li>
+      </ul>
+      <div id="buyBtn"></div>
+      <p class="msg">申し込み → お支払い → 利用キーをメールでお送りします(届くまで最大12時間ほどかかります)。18歳未満の人は、かならずおうちの人の許可をもらって、いっしょに申し込んでください。</p>
+      <div class="keyrow"><input type="text" id="key" placeholder="BJ-XXXXXXXX-XXXX" autocomplete="off" spellcheck="false" aria-label="利用キー"><button class="btn" type="button" id="keyGo">登録</button></div>
+      <p class="msg" id="keyMsg" role="status"></p>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>使い方のコツ</h2>
+    <dl class="faq">
+      <dt>「7→2→1→1→1→2→7」はどう読む?</dt>
+      <dd>円のてっぺんで横に7個並べ、ひとつ右下にずらして2個、また右下に1個…と置いていくと、右側の縦の7個につながります。これで4分の1周。同じ並びを残り3か所でくり返すと、1周できます。</dd>
+      <dt>直径は奇数と偶数、どっちが作りやすい?</dt>
+      <dd>奇数だと中心が1×1マス、偶数だと中心が2×2マスになります。噴水や柱を中心に置きたいときは奇数、2マス幅の通路を通したいときは偶数が合わせやすいです。</dd>
+      <dt>球やドームは?</dt>
+      <dd>いちばん下の段から1段ずつ設計図を表示します。うすい色のブロックは1つ下の段です。「この段できた」で進み具合を記録しておけば、次に開いたときも続きから作れます。</dd>
+      <dt>保存はどこに?</dt>
+      <dd>この端末のブラウザの中だけに保存します。アカウント登録はいりません。</dd>
+    </dl>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <nav aria-label="サイト情報"><a href="en/">直径別 円の作り方一覧</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF%E5%AE%9A%E8%A6%8F">お問い合わせ</a></nav>
+  <p class="disc">NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.<br>ブロック定規は、ファンが作った非公式の計算ツールです。Mojang・Microsoftとは関係ありません。Minecraft(マインクラフト)はMojang Synergies ABの商標です。ゲームの画像・ロゴ・素材は使っていません。</p>
+  <p>運営: ZEROICHI WORKS</p>
+</div></footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
