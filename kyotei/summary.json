@@ -1,22 +1,22 @@
 {
  "total": {
-  "days": 1,
-  "graded_races": 168,
-  "win_hits": 91,
-  "tri_hits": 37,
-  "near": 18,
-  "stake_win": 16800,
-  "return_win": 14810,
-  "stake_tri": 50400,
-  "return_tri": 38420,
-  "base_hits": 87,
-  "base_return": 15800,
-  "win_rate": 0.5417,
-  "base_win_rate": 0.5179,
-  "tri_rate": 0.2202,
-  "roi_win": 0.8815,
-  "roi_tri": 0.7623,
-  "roi_base": 0.9405
+  "days": 2,
+  "graded_races": 336,
+  "win_hits": 191,
+  "tri_hits": 71,
+  "near": 47,
+  "stake_win": 33600,
+  "return_win": 31040,
+  "stake_tri": 100800,
+  "return_tri": 67500,
+  "base_hits": 184,
+  "base_return": 31370,
+  "win_rate": 0.5685,
+  "base_win_rate": 0.5476,
+  "tri_rate": 0.2113,
+  "roi_win": 0.9238,
+  "roi_tri": 0.6696,
+  "roi_base": 0.9336
  },
  "tiers": {},
  "daily": [
@@ -32,6 +32,19 @@
    "return_tri": 38420,
    "base_hits": 87,
    "base_return": 15800
+  },
+  {
+   "date": "2026-10-24",
+   "graded_races": 168,
+   "win_hits": 100,
+   "tri_hits": 34,
+   "near": 29,
+   "stake_win": 16800,
+   "return_win": 16230,
+   "stake_tri": 50400,
+   "return_tri": 29080,
+   "base_hits": 97,
+   "base_return": 15570
   }
  ]
 }

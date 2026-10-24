@@ -1,0 +1,24 @@
+graded {"date": "2026-10-24", "graded_races": 168, "win_hits": 100, "tri_hits": 34, "near": 29, "stake_win": 16800, "return_win": 16230, "stake_tri": 50400, "return_tri": 29080, "base_hits": 97, "base_return": 15570}
+2024-07-06 180 races 179 results
+2024-07-05 180 races 178 results
+2024-07-04 168 races 168 results
+2024-07-03 156 races 156 results
+2024-07-02 156 races 156 results
+2024-07-01 156 races 156 results
+2024-06-30 180 races 176 results
+2024-06-29 168 races 168 results
+2024-06-28 144 races 144 results
+2024-06-27 144 races 144 results
+2024-06-26 168 races 168 results
+2024-06-25 180 races 180 results
+2024-06-24 144 races 144 results
+2024-06-23 180 races 180 results
+2024-06-22 168 races 168 results
+2024-06-21 168 races 168 results
+2024-06-20 168 races 168 results
+2024-06-19 156 races 156 results
+2024-06-18 168 races 168 results
+history: +19 days, missing 236 (files fetched this run: 40)
+predictions 2026-10-25 already published; keep as is
+cumulative {"days": 2, "graded_races": 336, "win_hits": 191, "tri_hits": 71, "near": 47, "stake_win": 33600, "return_win": 31040, "stake_tri": 100800, "return_tri": 67500, "base_hits": 184, "base_return": 31370, "win_rate": 0.5685, "base_win_rate": 0.5476, "tri_rate": 0.2113, "roi_win": 0.9238, "roi_tri": 0.6696, "roi_base": 0.9336}
+site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html
