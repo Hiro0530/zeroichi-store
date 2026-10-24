@@ -122,6 +122,12 @@ def parse_k(text: str, d: date) -> dict[str, dict]:
                     st, fl = _st(toks[4])
                     b["st"] = st
                     b["F"] = fl or code == "F"
+                if len(toks) >= 6:   # レースタイム '1.48.5' → 秒(v3から保存。古い履歴には無い)
+                    tm = re.match(r"^(\d)\.(\d\d)\.(\d)$", toks[5])
+                    if tm:
+                        b["rt"] = int(tm.group(1)) * 60 + int(tm.group(2)) + int(tm.group(3)) / 10
+                if toks and toks[0].isdigit():
+                    b["motor_no"] = int(toks[0])
             except (ValueError, IndexError):
                 pass
             if code == "F":
