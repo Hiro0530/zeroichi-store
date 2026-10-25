@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>カスハラ対策の書類づくり(顧問先さま向け)</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="従業員を守るカスハラ対策の6枚(掲示・社内方針・相談窓口・対応の流れ・記録票・周知の記録)を、店名と業種を入れて印刷できます。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='6' fill='%23234e52'/%3E%3Cpath d='M10 16l4 4 8-9' stroke='%23fff' stroke-width='3.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f4f3ef;--surface:#fff;--ink:#1d2627;--muted:#56605f;--line:#d9dcd6;--ac:#234e52;--ac-ink:#fff;--ac-soft:#e2ecea;--warn:#a5361f;--warn-soft:#f8e9e4;--r:12px;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#111615;--surface:#1a2120;--ink:#e7ecea;--muted:#a6b2af;--line:#2c3735;--ac:#6fb3a9;--ac-ink:#0b1715;--ac-soft:#1d3532;--warn:#ff9a82;--warn-soft:#3a1d16;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#111615;--surface:#1a2120;--ink:#e7ecea;--muted:#a6b2af;--line:#2c3735;--ac:#6fb3a9;--ac-ink:#0b1715;--ac-soft:#1d3532;--warn:#ff9a82;--warn-soft:#3a1d16;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.8 "Zen Kaku Gothic New",-apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;overflow-wrap:break-word}
+a{color:inherit;text-decoration-color:var(--ac);text-decoration-thickness:2px;text-underline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+header.top .wrap{display:flex;justify-content:space-between;align-items:center;min-height:56px;gap:12px}
+.logo{font-weight:900;text-decoration:none;letter-spacing:.02em}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 1.2em;border-radius:999px;background:var(--ac);color:var(--ac-ink);font-weight:700;text-decoration:none;border:0;font:inherit;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ac)}
+.btn.small{min-height:36px;font-size:.9rem}
+.hero{padding:44px 0 28px}
+.hero h1{font-size:clamp(1.7rem,4.6vw,2.6rem);line-height:1.35;margin:0 0 .4em;font-weight:900}
+.lead{color:var(--muted);max-width:40em}
+.badge{display:inline-block;background:var(--warn-soft);color:var(--warn);font-weight:700;border-radius:6px;padding:2px 10px;font-size:.88rem;margin-bottom:12px}
+section{padding:28px 0}
+h2{font-size:1.35rem;line-height:1.45;margin:0 0 .6em}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card b{display:block}
+.card span{color:var(--muted);font-size:.93rem}
+.law{background:var(--surface);border-left:5px solid var(--ac);border-radius:0 var(--r) var(--r) 0;padding:16px 18px}
+.law ol{margin:.4em 0 0;padding-left:1.3em}
+.muted{color:var(--muted)}.fine{font-size:.85rem;color:var(--muted)}
+/* generator */
+.gen{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;position:sticky;top:12px}
+label{display:block;font-weight:700;font-size:.92rem;margin:10px 0 4px}
+input,select{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+.checks label{font-weight:400;display:flex;gap:8px;align-items:flex-start;margin:4px 0}
+.checks input{width:auto;margin-top:7px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tabs button{font:inherit;font-size:.86rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ac);color:var(--ac-ink);border-color:var(--ac)}
+/* A4 sheets (always light, like paper) */
+.sheet{background:#fff;color:#111;width:100%;max-width:720px;aspect-ratio:210/297;margin:0 auto 18px;padding:7% 8%;box-shadow:0 2px 10px rgba(0,0,0,.12);position:relative;overflow:hidden;font-family:"BIZ UDPGothic","Zen Kaku Gothic New",sans-serif;font-size:clamp(9px,1.55vw,12.5px);line-height:1.7}
+.sheet h3{font-size:1.75em;margin:0 0 .5em;line-height:1.35}
+.sheet h4{font-size:1.12em;margin:1em 0 .3em;border-bottom:2px solid #234e52;padding-bottom:2px}
+.sheet .shop{font-weight:700;font-size:1.1em}
+.sheet table{width:100%;border-collapse:collapse;font-size:.95em}
+.sheet td,.sheet th{border:1px solid #888;padding:.45em .6em;vertical-align:top;text-align:left}
+.sheet th{background:#eef3f2;width:28%}
+.sheet .line{border-bottom:1px solid #777;min-height:1.9em}
+.sheet ul,.sheet ol{margin:.3em 0 .6em;padding-left:1.4em}
+.poster{display:flex;flex-direction:column;justify-content:center;text-align:center;font-size:clamp(10px,1.9vw,15px)}
+.poster h3{font-size:2.1em}
+.poster ul{text-align:left;display:inline-block;margin:0 auto}
+.poster .frame{border:4px double #234e52;padding:6% 5%}
+.sheet[hidden]{display:none!important}
+.wm::after{content:"見本";position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(60px,16vw,150px);color:rgba(165,54,31,.16);font-weight:900;transform:rotate(-24deg);pointer-events:none}
+.src{font-size:.78em;color:#555;margin-top:1em}
+.price{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.plan.main{border:2px solid var(--ac)}
+.amt{font-size:2rem;font-weight:900}
+.amt small{font-size:.9rem;font-weight:400;color:var(--muted)}
+dl.faq dt{font-weight:700;margin-top:1em}dl.faq dd{margin:.2em 0 0;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding:24px 0 48px;font-size:.88rem;color:var(--muted)}
+.offbanner{background:var(--ac-soft);border-left:5px solid var(--ac);border-radius:0 var(--r) var(--r) 0;padding:12px 16px;margin:18px 0 6px}
+.offbanner b{font-size:1.05rem}
+details.setup{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:4px 16px;margin:18px 0}
+details.setup summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+textarea{width:100%;font:inherit;font-size:.85rem;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+@media (max-width:820px){.grid,.price{grid-template-columns:1fr}.gen{grid-template-columns:1fr}.panel{position:static}}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  body>*:not(main),main>*:not(#tool),.offbanner,details.setup,#tool>*:not(.gen),.gen>.panel,.tabs,.noprint{display:none!important}
+  .sheet{box-shadow:none;margin:0;max-width:none;width:210mm;height:297mm;aspect-ratio:auto;page-break-after:always;font-size:11.5pt;padding:16mm 17mm}
+  .poster{font-size:14pt}
+  .sheet[hidden]{display:none!important}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><span class="logo">カスハラ対策の書類づくり</span><a class="btn small" href="#tool">作る</a></div></header>
+<main>
+<div class="wrap">
+  <div class="offbanner" id="offBanner" hidden><b id="offBannerName"></b> が、顧問先さま向けにご用意したページです。<br><span class="fine">店名と業種を入れると、2026年10月1日から事業主に義務づけられたカスハラ対策の書類6枚を印刷できます。入力した内容はこのブラウザの中だけで使い、どこにも送信されません。</span></div>
+  <h1 style="font-size:clamp(1.4rem,4vw,2rem);line-height:1.4;margin:22px 0 6px">店名と業種を入れて、6枚を印刷</h1>
+  <p class="fine"><b>書類を作るだけでは義務を果たしたことになりません。</b>従業員への説明と、相談・起きたときの対応を実際に行ってください。文面は一般的なひな形です。お店の実情に合わせて書き直し、迷う点は顧問の専門家にご相談ください。</p>
+</div>
+<section id="tool"><div class="wrap">
+  <div class="gen">
+    <div class="panel">
+      <label for="shop">店名・事業所名</label><input id="shop" placeholder="例: 美容室 そよかぜ" maxlength="40">
+      <label for="ind">業種</label>
+      <select id="ind"><option value="food">飲食店・カフェ</option><option value="beauty">美容室・サロン・整体</option><option value="retail">小売店・ネットショップ</option><option value="care">介護・福祉の事業所</option><option value="clinic">クリニック・歯科・薬局</option><option value="stay">宿・ゲストハウス</option><option value="other">その他のサービス業</option></select>
+      <label for="owner">相談窓口の担当(役職)</label><input id="owner" placeholder="例: 店長 / オーナー" maxlength="30">
+      <label for="contact">相談の方法</label><input id="contact" placeholder="例: 直接・LINE・電話(090-…)" maxlength="60">
+      <label for="date">方針を決めた日</label><input id="date" type="date">
+      <div class="checks"><label><input type="checkbox" id="police" checked> 暴力・脅迫などは迷わず警察へ、を入れる</label><label><input type="checkbox" id="sns" checked> 無断撮影・SNSへの書き込みの例を入れる</label></div>
+      <div id="offState" class="muted" style="font-size:.88rem;margin-top:10px" role="status"></div>
+      <p style="margin-top:12px"><button class="btn" id="print" type="button" style="width:100%">表示中の1枚を印刷</button></p>
+      <p><button class="btn ghost" id="printAll" type="button" style="width:100%">6枚まとめて印刷</button></p>
+      <p class="fine">印刷画面で「PDFに保存」を選ぶと、ファイルで残せます。</p>
+    </div>
+    <div>
+      <div class="tabs" role="group" aria-label="表示する書類"></div>
+      <div id="sheets"></div>
+    </div>
+  </div>
+
+</div></section>
+<section><div class="wrap">
+  <details class="setup"><summary>事務所の方へ: 顧問先さまに配るリンクを作る</summary>
+    <label for="oName">事務所名(全部の書類に「提供: 事務所名」と入ります)</label><input id="oName" maxlength="60" placeholder="例: そよかぜ社会保険労務士事務所">
+    <label for="oContact">相談の連絡先(任意・③相談窓口の「店の外の相談先」に入ります)</label><input id="oContact" maxlength="80" placeholder="例: 電話 000-000-0000">
+    <label for="oKey">事務所キー(お申し込み後にお送りします)</label><input id="oKey" maxlength="30" placeholder="KO-YYYYMM-XXXXXX-XXXXXX" autocomplete="off">
+    <p><button class="btn ghost" type="button" id="applyOffice">この内容で表示する</button> <button class="btn" type="button" id="mkLink">顧問先さま用のリンクを作ってコピー</button></p>
+    <textarea id="linkOut" rows="3" readonly aria-label="顧問先さま用のリンク"></textarea>
+    <p class="fine" id="linkMsg" role="status"></p>
+    <p class="fine">事務所キーがない間は「見本」の透かしが入ります。料金とお申し込みは <a href="./">顧問先向け 名入れ・一括版のご案内</a> をご覧ください。</p>
+  </details>
+</div></section>
+</main>
+<footer><div class="wrap">制作: ZEROICHI WORKS(個人事業) · <a href="../../tokushoho.html">特定商取引法に基づく表記</a> · <a href="../../privacy.html">プライバシーポリシー</a><br>この文面は国・自治体の公開資料をもとにした一般的な情報で、個別の法的な助言ではありません。出典: 厚生労働省「カスタマーハラスメント対策企業マニュアル」・業種別マニュアル、各労働局の資料。</div></footer>
+<script src="office.js"></script>
+</body>
+</html>
