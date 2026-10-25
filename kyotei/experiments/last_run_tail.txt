@@ -1,24 +1,34 @@
-graded {"date": "2026-10-24", "graded_races": 168, "win_hits": 100, "tri_hits": 34, "near": 29, "stake_win": 16800, "return_win": 16230, "stake_tri": 50400, "return_tri": 29080, "base_hits": 97, "base_return": 15570}
-2024-07-06 180 races 179 results
-2024-07-05 180 races 178 results
-2024-07-04 168 races 168 results
-2024-07-03 156 races 156 results
-2024-07-02 156 races 156 results
-2024-07-01 156 races 156 results
-2024-06-30 180 races 176 results
-2024-06-29 168 races 168 results
-2024-06-28 144 races 144 results
-2024-06-27 144 races 144 results
-2024-06-26 168 races 168 results
-2024-06-25 180 races 180 results
-2024-06-24 144 races 144 results
-2024-06-23 180 races 180 results
-2024-06-22 168 races 168 results
-2024-06-21 168 races 168 results
-2024-06-20 168 races 168 results
-2024-06-19 156 races 156 results
-2024-06-18 168 races 168 results
-history: +19 days, missing 236 (files fetched this run: 40)
-predictions 2026-10-25 already published; keep as is
-cumulative {"days": 2, "graded_races": 336, "win_hits": 191, "tri_hits": 71, "near": 47, "stake_win": 33600, "return_win": 31040, "stake_tri": 100800, "return_tri": 67500, "base_hits": 184, "base_return": 31370, "win_rate": 0.5685, "base_win_rate": 0.5476, "tri_rate": 0.2113, "roi_win": 0.9238, "roi_tri": 0.6696, "roi_base": 0.9336}
+graded {"date": "2026-10-25", "graded_races": 167, "win_hits": 95, "tri_hits": 51, "near": 30, "stake_win": 16700, "return_win": 13990, "stake_tri": 50100, "return_tri": 48030, "base_hits": 94, "base_return": 14120}
+2024-06-17 156 races 156 results
+2024-06-16 192 races 190 results
+2024-06-15 180 races 180 results
+2024-06-14 168 races 168 results
+2024-06-13 120 races 120 results
+2024-06-12 120 races 120 results
+2024-06-11 144 races 144 results
+2024-06-10 144 races 144 results
+2024-06-09 144 races 144 results
+2024-06-08 132 races 132 results
+2024-06-07 132 races 132 results
+2024-06-06 144 races 144 results
+2024-06-05 132 races 132 results
+2024-06-04 144 races 144 results
+2024-06-03 168 races 168 results
+2024-06-02 168 races 168 results
+2024-06-01 144 races 144 results
+2024-05-31 120 races 120 results
+2024-05-30 132 races 132 results
+history: +19 days, missing 216 (files fetched this run: 40)
+amedas 2026-10-26T08:30:00+09:00: 24 venues
+history: 879 days 2024-05-30..2026-10-25, fan files: ['2304', '2310', '2404', '2410', '2504', '2510', '2604']
+races: 133652
+  fold 2026-09-14: train 127139 test 1162 (19s)
+  fold 2026-09-21: train 128301 test 1045 (29s)
+  fold 2026-09-28: train 129346 test 1080 (40s)
+  fold 2026-10-05: train 130426 test 1043 (50s)
+  fold 2026-10-12: train 131469 test 1092 (61s)
+  fold 2026-10-19: train 132561 test 1091 (71s)
+model {"test_from": "2026-09-14", "test_to": "2026-10-25", "lambda": [0.65, 0.45], "diff_vs_lane1": {"diff": 0.01673575925072931, "lo": 0.008444649163212038, "hi": 0.024412713035467527}, "beats_lane1": true, "full": {"top1": 0.5675, "logloss": 1.1831, "brier": 0.5819, "pick_lane1_share": 0.8408, "ece": 0.0052, "roi_win": 0.9124, "tri3_hit": 0.232, "tri_logloss": 3.8525}, "base": {"top1": 0.5618, "logloss": 1.2182, "brier": 0.5955, "pick_lane1_share": 0.8792, "ece": 0.0048, "roi_win": 0.9041, "tri3_hit": 0.2189, "tri_logloss": 4.0313}, "prior": {"top1": 0.5507, "logloss": 1.3491, "brier": 0.6448, "pick_lane1_share": 1.0, "ece": 0.0025, "roi_win": 0.9172, "tri3_hit": 0.1721, "tri_logloss": 4.3661}, "lane1": {"top1": 0.5507, "roi_win": 0.9172}}
+predictions 2026-10-26: 144 races, scored 142
+cumulative {"days": 3, "graded_races": 503, "win_hits": 286, "tri_hits": 122, "near": 77, "stake_win": 50300, "return_win": 45030, "stake_tri": 150900, "return_tri": 115530, "base_hits": 278, "base_return": 45490, "win_rate": 0.5686, "base_win_rate": 0.5527, "tri_rate": 0.2425, "roi_win": 0.8952, "roi_tri": 0.7656, "roi_base": 0.9044}
 site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html
