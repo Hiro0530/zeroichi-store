@@ -1,0 +1,458 @@
+{
+ "generated_at": "2026-10-26T11:31+09:00",
+ "lambda": [
+  0.65,
+  0.45
+ ],
+ "discover": [
+  "2026-07-06",
+  "2026-08-30"
+ ],
+ "validate": [
+  "2026-08-31",
+  "2026-10-25"
+ ],
+ "grid_tested": 18,
+ "chosen_on_discover": {
+  "n_races_per_day": 2,
+  "points": 3,
+  "min_avg_payout": 10000,
+  "discover": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0982,
+   "hits": 11,
+   "avg_pay_when_hit": 3319.0,
+   "manshu_hits": 0,
+   "roi": 1.0866,
+   "lo": 0.421,
+   "hi": 1.8819
+  }
+ },
+ "validate_chosen": {
+  "races": 112,
+  "points": 3,
+  "hit": 0.0893,
+  "hits": 10,
+  "avg_pay_when_hit": 2210.0,
+  "manshu_hits": 0,
+  "roi": 0.6577,
+  "lo": 0.2589,
+  "hi": 1.1277,
+  "manshu_hits_per_30days": 0.0
+ },
+ "base": {
+  "discover": {
+   "manshu_rate_all": 0.1677,
+   "manshu_rate_selected": 0.2321,
+   "mean_pred_p_manshu_selected": 0.6538
+  },
+  "validate": {
+   "manshu_rate_all": 0.1597,
+   "manshu_rate_selected": 0.1488,
+   "mean_pred_p_manshu_selected": 0.6389
+  }
+ },
+ "all_validate": {
+  "n2_k3_a3000": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0714,
+   "hits": 8,
+   "avg_pay_when_hit": 1919.0,
+   "manshu_hits": 0,
+   "roi": 0.4568,
+   "lo": 0.1592,
+   "hi": 0.8319
+  },
+  "n2_k3_a5000": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0804,
+   "hits": 9,
+   "avg_pay_when_hit": 2039.0,
+   "manshu_hits": 0,
+   "roi": 0.5461,
+   "lo": 0.2092,
+   "hi": 0.9586
+  },
+  "n2_k3_a10000": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0893,
+   "hits": 10,
+   "avg_pay_when_hit": 2210.0,
+   "manshu_hits": 0,
+   "roi": 0.6577,
+   "lo": 0.2589,
+   "hi": 1.1277,
+   "manshu_hits_per_30days": 0.0
+  },
+  "n2_k5_a3000": {
+   "races": 112,
+   "points": 5,
+   "hit": 0.1071,
+   "hits": 12,
+   "avg_pay_when_hit": 2283.0,
+   "manshu_hits": 0,
+   "roi": 0.4893,
+   "lo": 0.2278,
+   "hi": 0.7781
+  },
+  "n2_k5_a5000": {
+   "races": 112,
+   "points": 5,
+   "hit": 0.0982,
+   "hits": 11,
+   "avg_pay_when_hit": 2273.0,
+   "manshu_hits": 0,
+   "roi": 0.4464,
+   "lo": 0.1946,
+   "hi": 0.7241
+  },
+  "n2_k5_a10000": {
+   "races": 112,
+   "points": 5,
+   "hit": 0.1161,
+   "hits": 13,
+   "avg_pay_when_hit": 2858.0,
+   "manshu_hits": 0,
+   "roi": 0.6636,
+   "lo": 0.2764,
+   "hi": 1.114
+  },
+  "n2_k10_a3000": {
+   "races": 112,
+   "points": 10,
+   "hit": 0.1964,
+   "hits": 22,
+   "avg_pay_when_hit": 3704.0,
+   "manshu_hits": 1,
+   "roi": 0.7276,
+   "lo": 0.3931,
+   "hi": 1.0999
+  },
+  "n2_k10_a5000": {
+   "races": 112,
+   "points": 10,
+   "hit": 0.1786,
+   "hits": 20,
+   "avg_pay_when_hit": 3794.0,
+   "manshu_hits": 1,
+   "roi": 0.6776,
+   "lo": 0.3508,
+   "hi": 1.053
+  },
+  "n2_k10_a10000": {
+   "races": 112,
+   "points": 10,
+   "hit": 0.2143,
+   "hits": 24,
+   "avg_pay_when_hit": 3955.0,
+   "manshu_hits": 0,
+   "roi": 0.8475,
+   "lo": 0.5,
+   "hi": 1.2502
+  },
+  "n3_k3_a3000": {
+   "races": 168,
+   "points": 3,
+   "hit": 0.0774,
+   "hits": 13,
+   "avg_pay_when_hit": 2228.0,
+   "manshu_hits": 0,
+   "roi": 0.5748,
+   "lo": 0.2609,
+   "hi": 0.9209
+  },
+  "n3_k3_a5000": {
+   "races": 168,
+   "points": 3,
+   "hit": 0.0774,
+   "hits": 13,
+   "avg_pay_when_hit": 2333.0,
+   "manshu_hits": 0,
+   "roi": 0.6018,
+   "lo": 0.2932,
+   "hi": 0.9723
+  },
+  "n3_k3_a10000": {
+   "races": 168,
+   "points": 3,
+   "hit": 0.0833,
+   "hits": 14,
+   "avg_pay_when_hit": 2434.0,
+   "manshu_hits": 0,
+   "roi": 0.6762,
+   "lo": 0.3402,
+   "hi": 1.0673
+  },
+  "n3_k5_a3000": {
+   "races": 168,
+   "points": 5,
+   "hit": 0.1071,
+   "hits": 18,
+   "avg_pay_when_hit": 2354.0,
+   "manshu_hits": 0,
+   "roi": 0.5045,
+   "lo": 0.2758,
+   "hi": 0.7635
+  },
+  "n3_k5_a5000": {
+   "races": 168,
+   "points": 5,
+   "hit": 0.0952,
+   "hits": 16,
+   "avg_pay_when_hit": 2396.0,
+   "manshu_hits": 0,
+   "roi": 0.4564,
+   "lo": 0.2356,
+   "hi": 0.7041
+  },
+  "n3_k5_a10000": {
+   "races": 168,
+   "points": 5,
+   "hit": 0.1131,
+   "hits": 19,
+   "avg_pay_when_hit": 3019.0,
+   "manshu_hits": 0,
+   "roi": 0.683,
+   "lo": 0.3759,
+   "hi": 1.0352
+  },
+  "n3_k10_a3000": {
+   "races": 168,
+   "points": 10,
+   "hit": 0.1845,
+   "hits": 31,
+   "avg_pay_when_hit": 3843.0,
+   "manshu_hits": 1,
+   "roi": 0.7091,
+   "lo": 0.4286,
+   "hi": 1.0012
+  },
+  "n3_k10_a5000": {
+   "races": 168,
+   "points": 10,
+   "hit": 0.1726,
+   "hits": 29,
+   "avg_pay_when_hit": 4095.0,
+   "manshu_hits": 1,
+   "roi": 0.7069,
+   "lo": 0.4223,
+   "hi": 1.0144
+  },
+  "n3_k10_a10000": {
+   "races": 168,
+   "points": 10,
+   "hit": 0.2083,
+   "hits": 35,
+   "avg_pay_when_hit": 4046.0,
+   "manshu_hits": 0,
+   "roi": 0.8429,
+   "lo": 0.5557,
+   "hi": 1.1313
+  }
+ },
+ "all_discover": {
+  "n2_k3_a3000": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0804,
+   "hits": 9,
+   "avg_pay_when_hit": 2949.0,
+   "manshu_hits": 0,
+   "roi": 0.7899,
+   "lo": 0.2755,
+   "hi": 1.5036
+  },
+  "n2_k3_a5000": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0893,
+   "hits": 10,
+   "avg_pay_when_hit": 3463.0,
+   "manshu_hits": 0,
+   "roi": 1.0307,
+   "lo": 0.4035,
+   "hi": 1.8448
+  },
+  "n2_k3_a10000": {
+   "races": 112,
+   "points": 3,
+   "hit": 0.0982,
+   "hits": 11,
+   "avg_pay_when_hit": 3319.0,
+   "manshu_hits": 0,
+   "roi": 1.0866,
+   "lo": 0.421,
+   "hi": 1.8819
+  },
+  "n2_k5_a3000": {
+   "races": 112,
+   "points": 5,
+   "hit": 0.1339,
+   "hits": 15,
+   "avg_pay_when_hit": 2953.0,
+   "manshu_hits": 0,
+   "roi": 0.7911,
+   "lo": 0.3721,
+   "hi": 1.2567
+  },
+  "n2_k5_a5000": {
+   "races": 112,
+   "points": 5,
+   "hit": 0.1518,
+   "hits": 17,
+   "avg_pay_when_hit": 3205.0,
+   "manshu_hits": 0,
+   "roi": 0.9729,
+   "lo": 0.5045,
+   "hi": 1.5183
+  },
+  "n2_k5_a10000": {
+   "races": 112,
+   "points": 5,
+   "hit": 0.1071,
+   "hits": 12,
+   "avg_pay_when_hit": 3428.0,
+   "manshu_hits": 0,
+   "roi": 0.7346,
+   "lo": 0.3055,
+   "hi": 1.2281
+  },
+  "n2_k10_a3000": {
+   "races": 112,
+   "points": 10,
+   "hit": 0.2411,
+   "hits": 27,
+   "avg_pay_when_hit": 3799.0,
+   "manshu_hits": 1,
+   "roi": 0.9157,
+   "lo": 0.5094,
+   "hi": 1.3741
+  },
+  "n2_k10_a5000": {
+   "races": 112,
+   "points": 10,
+   "hit": 0.25,
+   "hits": 28,
+   "avg_pay_when_hit": 4109.0,
+   "manshu_hits": 1,
+   "roi": 1.0272,
+   "lo": 0.6183,
+   "hi": 1.5435
+  },
+  "n2_k10_a10000": {
+   "races": 112,
+   "points": 10,
+   "hit": 0.1964,
+   "hits": 22,
+   "avg_pay_when_hit": 3968.0,
+   "manshu_hits": 0,
+   "roi": 0.7795,
+   "lo": 0.4452,
+   "hi": 1.1596
+  },
+  "n3_k3_a3000": {
+   "races": 168,
+   "points": 3,
+   "hit": 0.0655,
+   "hits": 11,
+   "avg_pay_when_hit": 2764.0,
+   "manshu_hits": 0,
+   "roi": 0.6032,
+   "lo": 0.2343,
+   "hi": 1.112
+  },
+  "n3_k3_a5000": {
+   "races": 168,
+   "points": 3,
+   "hit": 0.0714,
+   "hits": 12,
+   "avg_pay_when_hit": 3208.0,
+   "manshu_hits": 0,
+   "roi": 0.7637,
+   "lo": 0.322,
+   "hi": 1.3381
+  },
+  "n3_k3_a10000": {
+   "races": 168,
+   "points": 3,
+   "hit": 0.0774,
+   "hits": 13,
+   "avg_pay_when_hit": 3473.0,
+   "manshu_hits": 0,
+   "roi": 0.8958,
+   "lo": 0.3944,
+   "hi": 1.5156
+  },
+  "n3_k5_a3000": {
+   "races": 168,
+   "points": 5,
+   "hit": 0.125,
+   "hits": 21,
+   "avg_pay_when_hit": 2920.0,
+   "manshu_hits": 0,
+   "roi": 0.7299,
+   "lo": 0.407,
+   "hi": 1.124
+  },
+  "n3_k5_a5000": {
+   "races": 168,
+   "points": 5,
+   "hit": 0.131,
+   "hits": 22,
+   "avg_pay_when_hit": 3100.0,
+   "manshu_hits": 0,
+   "roi": 0.8118,
+   "lo": 0.4625,
+   "hi": 1.2135
+  },
+  "n3_k5_a10000": {
+   "races": 168,
+   "points": 5,
+   "hit": 0.0952,
+   "hits": 16,
+   "avg_pay_when_hit": 3412.0,
+   "manshu_hits": 0,
+   "roi": 0.6499,
+   "lo": 0.3211,
+   "hi": 1.0585
+  },
+  "n3_k10_a3000": {
+   "races": 168,
+   "points": 10,
+   "hit": 0.2202,
+   "hits": 37,
+   "avg_pay_when_hit": 4052.0,
+   "manshu_hits": 2,
+   "roi": 0.8924,
+   "lo": 0.5607,
+   "hi": 1.2512
+  },
+  "n3_k10_a5000": {
+   "races": 168,
+   "points": 10,
+   "hit": 0.2321,
+   "hits": 39,
+   "avg_pay_when_hit": 4217.0,
+   "manshu_hits": 2,
+   "roi": 0.9789,
+   "lo": 0.6336,
+   "hi": 1.3643
+  },
+  "n3_k10_a10000": {
+   "races": 168,
+   "points": 10,
+   "hit": 0.1905,
+   "hits": 32,
+   "avg_pay_when_hit": 4278.0,
+   "manshu_hits": 1,
+   "roi": 0.8148,
+   "lo": 0.5217,
+   "hi": 1.17
+  }
+ },
+ "runtime_min": 1.9
+}
