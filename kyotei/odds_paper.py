@@ -160,11 +160,11 @@ def fetch(kind: str, jcd: str, rno: int, d: date) -> str:
     return b
 
 
-def race_probs(x: dict, lam, maps=None) -> tuple[dict, dict]:
-    """(そのままの確率, 較正した確率)。券種ごとに {組番: 確率}"""
+def race_probs(x: dict, lam, maps=None, T=None) -> tuple[dict, dict]:
+    """(そのままの確率, 較正した確率)。券種ごとに {組番: 確率}。T(3連単の確率、条件付きモデル)があればそれから作る"""
     import calib
     P = np.array([x["probs"]])
-    pr, _ = exp_bets.probs_all(P, lam)
+    pr, _ = exp_bets.probs_all(P, lam, T=None if T is None else np.array([T]))
     raw, cal = {}, {}
     for bet in pr:
         lab = exp_bets.LBL[bet]
@@ -205,6 +205,11 @@ def tick(now: datetime | None = None):
     if rec.get("stopped"):
         print("stopped for today:", rec["stopped"])
         return
+    Tf = PD / f"T_{d:%Y-%m-%d}.json.gz"
+    Tmap = {}
+    if Tf.exists():
+        import gzip
+        Tmap = json.loads(gzip.decompress(Tf.read_bytes()))
     targets = [x for x in pred["races"] if x.get("tier") in TIERS and x.get("scored", True)]
     for x in targets:
         if x["key"] in rec["races"]:
@@ -212,15 +217,25 @@ def tick(now: datetime | None = None):
         mins = (datetime.fromisoformat(x["close"]) - now).total_seconds() / 60
         if not (WINDOW[0] <= mins <= WINDOW[1]):
             continue
-        later = sum(1 for y in targets if y["key"] not in rec["races"] and datetime.fromisoformat(y["close"]) > now)
         used = rec.get("requests", 0)
         if used + len(CORE) > MAX_REQ_DAY:
             print("daily request cap reached")
             return
-        kinds = list(CORE) + ([k for k in OPTIONAL] if used + len(CORE) + len(OPTIONAL) + len(CORE) * max(later - 1, 0) <= MAX_REQ_DAY else [])
-        raw, cal = race_probs(x, lam, maps)
+        # 上限が足りなくなりそうなら、残りのレースのうち◎の確率が高いものを優先する
+        rest = [y for y in targets if y["key"] not in rec["races"] and datetime.fromisoformat(y["close"]) > now + timedelta(minutes=WINDOW[0])]
+        room = (MAX_REQ_DAY - used) // len(CORE)
+        if room < len(rest):
+            keep_keys = {y["key"] for y in sorted(rest, key=lambda y: -max(y["probs"]))[:room]}
+            if x["key"] not in keep_keys:
+                rec["races"][x["key"]] = {"skipped": "cap_priority", "close": x["close"], "p_top": max(x["probs"])}
+                rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+                continue
+        kinds = list(CORE)
+        raw, cal = race_probs(x, lam, maps, Tmap.get(x["key"]))
         bets, logs, checks, pages = [], {}, {}, {}
         for kind in kinds:
+            if kind in ("3f", "3t") and not checks.get("tansho"):   # 単勝のページの読み取りが怪しいときは3連複・3連単を読まない
+                continue
             rec["requests"] = rec.get("requests", 0) + 1
             try:
                 html = fetch(kind, x["venue"], x["race"], d)
@@ -275,7 +290,7 @@ def grade(d: date, results: dict) -> dict | None:
         if not res:
             continue
         pay = res.get("pay") or {}
-        for b in r["bets"]:
+        for b in r.get("bets", []):
             ret = (pay.get(b["bet"]) or {}).get(b["combo"], 0)
             b["return"] = ret
             t = by.setdefault(b["bet"], {"bets": 0, "hits": 0, "stake": 0, "return": 0})

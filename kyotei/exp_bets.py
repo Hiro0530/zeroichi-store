@@ -58,8 +58,10 @@ BETS = [("tansho", 1), ("fukusho", 1), ("exacta", 1), ("exacta", 3), ("quinella"
 JP = {"tansho": "単勝", "fukusho": "複勝", "exacta": "2連単", "quinella": "2連複", "wide": "拡連複", "trifecta": "3連単", "trio": "3連複"}
 
 
-def probs_all(P, lam):
-    T = M.trifecta_probs(P, *lam)
+def probs_all(P, lam, T=None):
+    """券種ごとの確率。T(3連単の確率)を渡せばそれを使う(本番は2着・3着の条件付きモデル)。無ければ Harville+補正。"""
+    if T is None:
+        T = M.trifecta_probs(P, *lam)
     ex = T @ M_EX
     qu = np.stack([ex[:, EXL.index((a, b))] + ex[:, EXL.index((b, a))] for a, b in PAIRS], 1)
     return {"tansho": P, "fukusho": T @ M_TOP2, "exacta": ex, "quinella": qu, "wide": T @ M_WIDE, "trifecta": T, "trio": T @ M_TRIO}, ex

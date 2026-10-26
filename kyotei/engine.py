@@ -163,7 +163,8 @@ def predict_day(d: date, races: list[dict], model: dict) -> list[dict]:
     if not races:
         return []
     P = M.predict_model(model, tgt["X"], tgt["V"], ALLF)
-    T = M.trifecta_probs(P, *model.get("lambda", [1.0, 1.0]))
+    import cond as C   # 2着・3着は条件付きモデル(model.json に無ければ Harville+補正)
+    T = C.trifecta(model, P, tgt["X"], tgt["V"], model.get("lambda", [1.0, 1.0]))
     out = []
     for i, r in enumerate(races):
         top = np.argsort(-T[i])[:3]
@@ -197,6 +198,14 @@ def make_predictions(d: date, model: dict) -> dict | None:
                                   "loc_win": b["loc_win"], "motor_2": b["motor_2"]} for b in r["boats"]]})
     out = {"date": d.isoformat(), "published_at": now.isoformat(timespec="seconds"),
            "model_fitted_at": model.get("fitted_at"), "model_version": model.get("version", 1), "races": preds}
+    try:   # 紙の上の検証(オッズ)で使う3連単の確率(条件付きモデル)を非公開の場所に置く
+        import gzip as _gz
+        pdir = hist_dir() / "paper"
+        pdir.mkdir(exist_ok=True)
+        (pdir / f"T_{d:%Y-%m-%d}.json.gz").write_bytes(_gz.compress(json.dumps(
+            {x["key"]: [round(float(v), 7) for v in t] for x, t in zip(preds, Ts)}).encode()))
+    except Exception as e:  # noqa
+        print("T save skipped:", e)
     try:   # 券種ごとの仮の収支のため、複勝◎と3連複3点も締切前に出しておく(後から足すと後出しになるので、公開時に決める)
         import exp_bets
         Tm = np.array(Ts)

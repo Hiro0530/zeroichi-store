@@ -36,9 +36,9 @@ def hits(bet, y, y2, y3):
     return H
 
 
-def fit_maps(P, y, y2, y3, lam, max_points: int = 200) -> dict:
-    """学習外の予想 P(n,6) と着順から、券種ごとの 予想確率→実際の的中率 の対応(単調)を作る。"""
-    pr, _ = EB.probs_all(P, lam)
+def fit_maps(P, y, y2, y3, lam, max_points: int = 200, T=None) -> dict:
+    """学習外の予想 P(n,6)(と3連単の確率 T)と着順から、券種ごとの 予想確率→実際の的中率 の対応(単調)を作る。"""
+    pr, _ = EB.probs_all(P, lam, T=T)
     out = {}
     for bet in BETS:
         xs, vs = pav(pr[bet].ravel(), hits(bet, y, y2, y3).ravel())

@@ -89,6 +89,9 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
     t0 = time.time()
     w_full = w_base = None
     w_comp = None
+    w_c2 = w_c3 = None
+    keep["T"] = []
+    import cond as C
     for s in starts:
         tr = D < s
         te = (D >= s) & (D < s + 7)
@@ -103,6 +106,12 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
         mo = M.fit(_cols(X[tro], cfg["feats"]), V[tro], y[tro], cfg["feats"], O=data["O"][tro], vx=cfg.get("vx"))
         keep["idx"].append(np.where(te)[0])
         keep["full"].append(M.predict_model({"components": comps}, X[te], V[te], ALLF))
+        try:   # 2着・3着の条件付きモデル(直近365日で学習)→ 学習外の3連単の確率
+            cm = C.fit(data, tr & (D >= s - 365), w_c2, w_c3)
+            w_c2, w_c3 = np.array(cm["w2"]), np.array(cm["w3"])
+            keep["T"].append(C.trifecta(cm, keep["full"][-1], X[te], V[te]))
+        except Exception as e:  # noqa
+            print("cond skipped:", e)
         keep["base"].append(M.predict(mb, _cols(X[te], BASE_FEATS), V[te]))
         keep["prior"].append(M.lane_prior_probs(V[tr], y[tr], V[te]))
         keep["oracle"].append(M.predict(mo, _cols(X[te], cfg["feats"]), V[te], data["O"][te]))
@@ -111,6 +120,8 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
         return {}
     idx = np.concatenate(keep["idx"])
     y, y2, y3, pay = data["y"][idx], data["y2"][idx], data["y3"][idx], data["pay"][idx]
+    T_c = np.concatenate(keep.pop("T")) if keep.get("T") and len(keep["T"]) == len(keep["idx"]) else None
+    keep.pop("T", None)
     P = {k: np.concatenate(v) for k, v in keep.items() if k != "idx"}
     l2, l3 = M.fit_lambdas(P["full"], y, y2, y3)
     rep = {"test_from": date.fromordinal(int(D[idx].min())).isoformat(),
@@ -118,7 +129,10 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
            "test_days": int(len(np.unique(D[idx]))), "folds": len(keep["idx"]), "lambda": [l2, l3]}
     for k, Pk in P.items():
         T = M.trifecta_probs(Pk, *((l2, l3) if k == "full" else (1.0, 1.0)))
+        if k == "full" and T_c is not None:
+            T = T_c   # 本番と同じ: 2着・3着は条件付きモデル
         rep[k] = M.metrics(Pk, y, pay, T, y2, y3)
+    rep["trifecta_method"] = "conditional" if T_c is not None else "harville"
     rep["full_harville"] = {k: v for k, v in M.metrics(P["full"], y, pay, M.trifecta_probs(P["full"]), y2, y3).items()
                             if k in ("tri3_hit", "tri_logloss")}
     lane1 = (y == 0)
@@ -131,7 +145,7 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
     rep["better_logloss_than_base"] = bool(rep["full"]["logloss"] < rep["base"]["logloss"])
     try:   # 券種ごとの組番の確率の較正(オッズの紙の上の検証で使う。学習外の予想だけで作る)
         import calib
-        rep["_calib"] = calib.fit_maps(P["full"], y, y2, y3, [l2, l3])
+        rep["_calib"] = calib.fit_maps(P["full"], y, y2, y3, [l2, l3], T=T_c)
     except Exception as e:  # noqa
         print("calib skipped:", e)
     rep["tiers"] = M.tier_table(P["full"], y, pay, cfg.get("tiers"), days=rep["test_days"])
@@ -150,9 +164,15 @@ def train_all(hist: Path, weeks: int = 6) -> tuple[dict, dict]:
     print(f"races: {len(data['y'])}")
     rep = walk_forward(data, weeks, cfg=cfg)
     comps = fit_components(data, np.ones(len(data["y"]), bool), cfg)
+    try:
+        import cond as C
+        cond_m = C.fit(data, data["D"] >= data["D"].max() - 365)
+    except Exception as e:  # noqa
+        print("cond final fit skipped:", e)
+        cond_m = None
     lam = rep.get("lambda", [1.0, 1.0])
     cal = rep.pop("_calib", None)
-    model = {"calib": cal, **comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
+    model = {"calib": cal, "cond": cond_m, **comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
              "config": {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers", "select_window")},
              "train_from": days[0][0].isoformat(), "train_to": days[-1][0].isoformat(),
              "fitted_at": datetime.now(JST).isoformat(timespec="minutes"),
