@@ -62,6 +62,27 @@ def parse_b(text: str, d: date) -> list[dict]:
 
 
 # ---------------------------------------------------------------- 競走成績
+PAY_LAB = re.compile(r"^\s+(単勝|複勝|２連単|２連複|拡連複|３連単|３連複)\s+(.*)$")
+PAY_NAME = {"単勝": "tansho", "複勝": "fukusho", "２連単": "exacta", "２連複": "quinella", "拡連複": "wide",
+            "３連単": "trifecta", "３連複": "trio"}
+UNORDERED = {"quinella", "wide", "trio"}
+
+
+def _add_pay(cur: dict, bet: str, rest: str):
+    """'1-3        560  人気     2' や '1          110  3          130'(複勝)から 組番→払戻 を足す。"""
+    if bet in ("tansho", "fukusho"):
+        pairs = re.findall(r"(?<![\d-])([1-6])\s+(\d{2,})", rest)
+        if bet == "tansho":
+            pairs = pairs[:1]
+    else:
+        pairs = re.findall(r"([1-6](?:-[1-6]){1,2})\s+(\d{2,})", rest)
+    d = cur["pay"].setdefault(bet, {})
+    for c, amt in pairs:
+        if bet in UNORDERED:
+            c = "-".join(sorted(c.split("-")))
+        d[c] = int(amt)
+
+
 def _st(s: str):
     """スタートタイミング。'0.13' / 'F.01'(フライング) / 'L' など。"""
     s = s.strip()
@@ -96,7 +117,7 @@ def parse_k(text: str, d: date) -> dict[str, dict]:
             if h:
                 wx = {"weather": h.group(4).replace("　", ""), "wind_dir": h.group(5).replace("　", ""),
                       "wind": int(h.group(6)), "wave": int(h.group(7)), "dist": int(h.group(3))}
-            cur = {"order": {}, "tansho": {}, "trifecta": {}, "exacta": {}, "void": False,
+            cur = {"order": {}, "tansho": {}, "trifecta": {}, "exacta": {}, "void": False, "pay": {}, "_bet": None,
                    "boats": [], "wx": wx, "kimarite": ""}
             out[f"{d:%Y%m%d}-{venue}-{rno:02d}"] = cur
             continue
@@ -136,6 +157,15 @@ def parse_k(text: str, d: date) -> dict[str, dict]:
             if fin <= 6:
                 cur["order"][fin] = int(lane)
             continue
+        # v3: すべての券種の払戻(100円あたり)。拡連複は続きの行にも組番がある
+        lab = PAY_LAB.match(line)
+        if lab:
+            cur["_bet"] = PAY_NAME[lab.group(1)]
+            _add_pay(cur, cur["_bet"], lab.group(2))
+        elif cur.get("_bet") == "wide" and re.match(r"^\s+[1-6]-[1-6]\s+\d+", line):
+            _add_pay(cur, "wide", line)
+        elif line.strip():
+            cur["_bet"] = None
         m = re.match(r"^\s+単勝\s+([1-6])\s+(\d+)", line)
         if m:
             cur["tansho"][m.group(1)] = int(m.group(2))
@@ -155,7 +185,7 @@ def parse_k(text: str, d: date) -> dict[str, dict]:
         order = [v["order"].get(i) for i in (1, 2, 3)]
         if None in order or not v["trifecta"]:
             continue  # 中止・不成立などは採点しない
-        res[k] = {"order": order, "tansho": v["tansho"], "exacta": v["exacta"], "trifecta": v["trifecta"],
+        res[k] = {"order": order, "tansho": v["tansho"], "exacta": v["exacta"], "trifecta": v["trifecta"], "pay": v["pay"],
                   "void": v["void"], "boats": v["boats"], "wx": v["wx"], "kimarite": v["kimarite"]}
     return res
 

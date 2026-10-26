@@ -102,6 +102,34 @@ def ensure_fan_files():
                 out.write_bytes(gzip.compress(json.dumps(recs, separators=(",", ":")).encode()))
 
 
+def repay_history(days_back: int = 182, cap_files: int = 200):
+    """v3: 履歴の競走成績に「全券種の払戻」を足す(以前は単勝・2連単・3連単だけ保存していた)。
+    足りない日だけ K ファイルを取り直す(1ファイル3秒、上限つき)。保存するのは読み取った数字だけ。"""
+    run_mod.PAUSE = SLOW_PAUSE
+    hd = hist_dir()
+    today = datetime.now(JST).date()
+    got = 0
+    for i in range(1, days_back + 1):
+        d = today - timedelta(days=i)
+        f = hd / f"{d:%Y%m%d}.json.gz"
+        if not f.exists():
+            continue
+        j = json.loads(gzip.decompress(f.read_bytes()))
+        res = j.get("results") or {}
+        if not res or any("pay" in v for v in res.values()):
+            continue
+        if run_mod.N_FETCH[0] + 1 > cap_files:
+            break
+        new = parse_k(fetch("K", d), d)
+        for k, v in res.items():
+            if k in new:
+                v["pay"] = new[k].get("pay", {})
+        f.write_bytes(gzip.compress(json.dumps({**j, "results": res}, ensure_ascii=False, separators=(",", ":")).encode("utf-8")))
+        got += 1
+    print(f"repay: +{got} days (files fetched {run_mod.N_FETCH[0]})")
+    run_mod.PAUSE = 1.0
+
+
 def ensure_jma():
     """気象庁: 潮位表(地点×年で1回だけ)と、今朝のアメダス(1日1回、今後の検証用に貯める)。失敗しても予想は続ける。"""
     jd = hist_dir() / "jma"
@@ -265,6 +293,11 @@ def main(mode: str):
     elif mode == "refit":
         ensure_jma()
         refit()
+    elif mode == "bets":
+        # 全券種の払戻を履歴に足して(上限つき)、券種・自信度・選び方ごとの仮の回収率を検証
+        repay_history()
+        import exp_bets
+        exp_bets.main(hist_dir())
     elif mode == "roi":
         # 舟券の種類・自信度・場ごとの仮の回収率(学習外。見つける期間と確かめる期間を分ける)
         import exp_roi
