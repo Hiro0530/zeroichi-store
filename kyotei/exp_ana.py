@@ -132,6 +132,8 @@ def main(hist: Path, weeks: int = 8):
     rep["all_discover"] = {f"n{n}_k{k}_a{a}": res["discover"][(n, k, a)] for n, k, a in grid}
     rep["runtime_min"] = round((time.time() - t0) / 60, 1)
     (ROOT / "experiments").mkdir(exist_ok=True)
+    (ROOT / "ana_config.json").write_text(json.dumps({"n_races_per_day": best[0], "points": best[1], "min_avg_payout": best[2],
+                                                      "chosen_on": rep["discover"]}, ensure_ascii=False, indent=1), encoding="utf-8")
     (ROOT / "experiments" / "ana_v3.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps({k: rep[k] for k in ("chosen_on_discover", "validate_chosen", "base")}, ensure_ascii=False))
 

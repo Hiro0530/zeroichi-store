@@ -53,7 +53,8 @@ def _today(p: dict | None) -> dict | None:
     feat = sorted([x for x in races if x["scored"] is not False], key=lambda x: -x["p_pick"])[:6]
     return {"date": p["date"], "published_at": p["published_at"], "proof_url": f"{PROOF}{p['date']}.json",
             "model_fitted_at": p.get("model_fitted_at"), "races": races,
-            "featured": [x["key"] for x in sorted(feat, key=lambda x: x["close"])]}
+            "featured": [x["key"] for x in sorted(feat, key=lambda x: x["close"])],
+            "ana": p.get("ana")}   # 今日の穴(万舟ねらい): {"rule", "races": [{key, venue_name, race, close, p_manshu, combos: [[組番, 確率, 過去の平均払戻]]}]}
 
 
 def _yesterday(r: dict | None) -> dict | None:
@@ -75,7 +76,8 @@ def _yesterday(r: dict | None) -> dict | None:
         races.append(y)
     hits = sorted([x for x in races if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
     best = {k: hits[0].get(k) for k in ("key", "venue_name", "race", "actual", "pay_tri")} if hits else None
-    return {"date": s["date"], "proof_url": f"{PROOF}{s['date']}.json", "summary": s, "best_tri_hit": best, "races": races}
+    return {"date": s["date"], "proof_url": f"{PROOF}{s['date']}.json", "summary": s, "best_tri_hit": best, "races": races,
+            "ana": r.get("ana") or []}   # 前日の穴の結果: [{key, venue_name, race, combos, actual, trifecta_payout, hit, pay, stake, manshu}]
 
 
 def _model(m: dict | None) -> dict | None:

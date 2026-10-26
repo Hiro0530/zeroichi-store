@@ -166,7 +166,7 @@ def predict_day(d: date, races: list[dict], model: dict) -> list[dict]:
     out = []
     for i, r in enumerate(races):
         top = np.argsort(-T[i])[:3]
-        out.append({"probs": P[i].tolist(),
+        out.append({"probs": P[i].tolist(), "_T": T[i],
                     "trifecta": [(f"{a+1}-{b+1}-{c+1}", float(T[i, j])) for j, (a, b, c) in ((j, M.PERMS[j]) for j in top)]})
     return out
 
@@ -179,8 +179,9 @@ def make_predictions(d: date, model: dict) -> dict | None:
         return None
     races = parse_b(fetch("B", d), d)
     now = datetime.now(JST)
-    preds = []
+    preds, Ts = [], []
     for r, pr in zip(races, predict_day(d, races, model)):
+        Ts.append(pr["_T"])
         p = pr["probs"]
         top = int(np.argmax(p))
         tri = pr["trifecta"]
@@ -195,11 +196,70 @@ def make_predictions(d: date, model: dict) -> dict | None:
                                   "loc_win": b["loc_win"], "motor_2": b["motor_2"]} for b in r["boats"]]})
     out = {"date": d.isoformat(), "published_at": now.isoformat(timespec="seconds"),
            "model_fitted_at": model.get("fitted_at"), "model_version": model.get("version", 1), "races": preds}
+    try:
+        out["ana"] = ana_picks_today(d, preds, Ts)
+    except Exception as e:  # noqa  (穴が作れなくても本命の予想は公開する)
+        print("ana skipped:", e)
     pd = ROOT / "predictions"
     pd.mkdir(exist_ok=True)
     (pd / f"{d:%Y-%m-%d}.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"predictions {d}: {len(preds)} races, scored {sum(x['scored'] for x in preds)}")
     return out
+
+
+ANA_DEFAULT = {"n_races_per_day": 3, "points": 5, "min_avg_payout": 5000}
+
+
+def ana_picks_today(d: date, preds: list, Ts: list) -> dict:
+    """今日の穴(万舟ねらい): 3連単の組番ごとの過去の平均払戻(前日まで)をオッズの代わりの目安にして、
+    万舟になりそうなレースを選び、◎が1着の組番を除いた平均払戻の高い組番を確率の高い順に。決め方は exp_ana.py で検証。"""
+    import exp_ana
+    cf = ROOT / "ana_config.json"
+    rule = json.loads(cf.read_text()) if cf.exists() else dict(ANA_DEFAULT)
+    days = load_days(hist_dir(), HIST_DAYS, before=d)
+    yy, y2, y3, pt = [], [], [], []
+    for _, _, res in days:
+        for v in res.values():
+            o = v["order"]
+            yy.append(o[0] - 1); y2.append(o[1] - 1); y3.append(o[2] - 1)
+            pt.append(v["trifecta"].get(f"{o[0]}-{o[1]}-{o[2]}", 0))
+    avg, _ = exp_ana.tri_pattern_avg(np.array(yy), np.array(y2), np.array(y3), np.array(pt, dtype=float))
+    idx = [i for i, x in enumerate(preds) if x["scored"]]
+    if not idx:
+        return {"rule": rule, "races": []}
+    P = np.array([preds[i]["probs"] for i in idx])
+    T = np.array([Ts[i] for i in idx])
+    p_man, picks = exp_ana.ana_picks(P, T, avg, rule["points"], rule["min_avg_payout"])
+    order = np.argsort(-p_man)[:rule["n_races_per_day"]]
+    out = []
+    for j in sorted(order, key=lambda j: preds[idx[j]]["close"]):
+        x = preds[idx[j]]
+        combos = [[f"{a+1}-{b+1}-{c+1}", round(float(T[j, q]), 4), int(avg[q])] for q in picks[j] for a, b, c in [M.PERMS[q]]]
+        out.append({"key": x["key"], "venue_name": x["venue_name"], "race": x["race"], "close": x["close"],
+                    "p_manshu": round(float(p_man[j]), 4), "combos": combos})
+    return {"rule": rule, "races": out}
+
+
+def grade_ana(pred: dict, res: dict) -> tuple[dict | None, list]:
+    a = pred.get("ana")
+    if not a or not a.get("races"):
+        return None, []
+    rows = []
+    for x in a["races"]:
+        r = res.get(x["key"])
+        if not r:
+            continue
+        o = r["order"]
+        act = f"{o[0]}-{o[1]}-{o[2]}"
+        hit = any(c == act for c, _, _ in x["combos"])
+        pay = r["trifecta"].get(act, 0)
+        rows.append({"key": x["key"], "venue_name": x["venue_name"], "race": x["race"], "combos": [c for c, _, _ in x["combos"]],
+                     "actual": act, "trifecta_payout": pay, "hit": hit, "pay": pay if hit else 0,
+                     "stake": 100 * len(x["combos"]), "manshu": pay >= 10000})
+    s = {"races": len(rows), "hits": sum(r["hit"] for r in rows), "stake": sum(r["stake"] for r in rows),
+         "return": sum(r["pay"] for r in rows), "manshu_hits": sum(1 for r in rows if r["hit"] and r["manshu"]),
+         "manshu_races": sum(1 for r in rows if r["manshu"])}
+    return s, rows
 
 
 def grade(d: date) -> dict | None:
@@ -241,7 +301,10 @@ def grade(d: date) -> dict | None:
             "base_hits": sum(r["lane1_won"] for r in rows), "base_return": sum(r["base_pay"] for r in rows)}
     gd = ROOT / "results"
     gd.mkdir(exist_ok=True)
-    (gd / f"{d:%Y-%m-%d}.json").write_text(json.dumps({"summary": summ, "races": rows},
+    ana_s, ana_rows = grade_ana(pred, res)
+    if ana_s:
+        summ["ana"] = ana_s
+    (gd / f"{d:%Y-%m-%d}.json").write_text(json.dumps({"summary": summ, "races": rows, "ana": ana_rows},
                                                       ensure_ascii=False, indent=1), encoding="utf-8")
     print("graded", json.dumps(summ, ensure_ascii=False))
     # 学習用の履歴にも足す(読み取った数字だけ。非公開のキャッシュ)
@@ -267,6 +330,15 @@ def cumulative() -> dict:
     tot["roi_win"] = round(tot["return_win"] / max(tot["stake_win"], 1), 4)
     tot["roi_tri"] = round(tot["return_tri"] / max(tot["stake_tri"], 1), 4)
     tot["roi_base"] = round(tot["base_return"] / max(tot["graded_races"] * 100, 1), 4)
+    ana = {"days": 0, "races": 0, "hits": 0, "stake": 0, "return": 0, "manshu_hits": 0, "manshu_races": 0}
+    for s_ in daily:
+        if s_.get("ana"):
+            ana["days"] += 1
+            for k in ana:
+                if k != "days":
+                    ana[k] += s_["ana"].get(k, 0)
+    ana["roi"] = round(ana["return"] / max(ana["stake"], 1), 4)
+    tot["ana"] = ana
     tiers = {}
     for f in sorted((ROOT / "results").glob("*.json")):
         for x in json.loads(f.read_text(encoding="utf-8"))["races"]:
