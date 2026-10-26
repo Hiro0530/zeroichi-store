@@ -4,6 +4,7 @@ name: kyotei
 on:
   schedule:
     - cron: "45 21 * * *"   # 06:45 JST
+    - cron: "17 22 * * *"   # 07:17 JST 予備(06:45 が抜けたとき。答え合わせ・予想はすでにあれば何もしない)
   push:
     branches: [main]
     paths: ["kyotei/trigger.txt"]
@@ -56,7 +57,7 @@ jobs:
         run: |
           mkdir -p kyotei/hist/paper
           MODE=$(head -1 kyotei/trigger.txt 2>/dev/null || echo daily)
-          if [ "${{ github.event_name }}" = "schedule" ]; then MODE=daily; fi
+          if [ "${{ github.event_name }}" != "push" ]; then MODE=daily; fi   # 定時・手動実行は毎朝の処理。trigger.txt は push のときだけ
           echo "mode=$MODE"
           python kyotei/run.py $MODE 2>&1 | tee kyotei/last_run.log
           exit ${PIPESTATUS[0]}

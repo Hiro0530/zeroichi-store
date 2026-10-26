@@ -311,6 +311,9 @@ def grade(d: date) -> dict | None:
         return None
     pred = json.loads(pf.read_text(encoding="utf-8"))
     res = parse_k(fetch("K", d), d)
+    if not res:   # 競走成績がまだ出ていない・取れなかった: 空の答え合わせを書かない(次の実行で取り直す)
+        print(f"no results for {d} yet; grading skipped")
+        return None
     rows = []
     for r in pred["races"]:
         x = res.get(r["key"])
@@ -425,8 +428,19 @@ def cumulative() -> dict:
     return tot
 
 
+def catch_up_grading(today: date, back: int = 3):
+    """予想があって答え合わせが無い日(直近 back 日)を答え合わせする。朝の定時実行が抜けても、
+    手動・ほかの実行(どのモードでも)で取り戻せるように。競走成績がまだ出ていない日は何もしない(次の実行で再び試す)。"""
+    for i in range(back, 0, -1):
+        d = today - timedelta(days=i)
+        if (ROOT / "predictions" / f"{d:%Y-%m-%d}.json").exists() and not (ROOT / "results" / f"{d:%Y-%m-%d}.json").exists():
+            print(f"catch-up grading {d}")
+            grade(d)
+
+
 def main(mode: str):
     today = datetime.now(JST).date()
+    catch_up_grading(today)
     if mode.startswith("backfill"):
         # 手動: 履歴を上限つきでさかのぼって作る(1ファイルごとに数秒あける)
         top_up_history(CAP_BACKFILL, SLOW_PAUSE)
@@ -478,13 +492,13 @@ def main(mode: str):
         import exp_v3
         exp_v3.main(hist_dir())
         refit()
-    else:  # daily
-        grade(today - timedelta(days=1))
+    else:  # daily(前日の答え合わせは catch_up_grading で済んでいる)
         left = top_up_history(CAP_DAILY, SLOW_PAUSE)   # 足りない過去分を毎朝少しずつ
         ensure_fan_files()
         ensure_jma()
         model = json.loads((ROOT / "model.json").read_text()) if (ROOT / "model.json").exists() else {}
-        if today.weekday() == 0 or model.get("version") != 3:
+        fitted_today = str(model.get("fitted_at", ""))[:10] == today.isoformat()
+        if (today.weekday() == 0 or model.get("version") != 3) and not fitted_today:
             refit()   # 毎週月曜に学習し直す(採用した構成 model_config.json のまま。構成の見直しは手動の exp)
     model = json.loads((ROOT / "model.json").read_text())
     make_predictions(today, model)
