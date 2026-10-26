@@ -129,6 +129,11 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
     rep["diff_vs_base"] = M.paired_diff(hit_full, P["base"].argmax(1) == y)
     rep["beats_lane1"] = bool(rep["diff_vs_lane1"]["lo"] > 0)
     rep["better_logloss_than_base"] = bool(rep["full"]["logloss"] < rep["base"]["logloss"])
+    try:   # 券種ごとの組番の確率の較正(オッズの紙の上の検証で使う。学習外の予想だけで作る)
+        import calib
+        rep["_calib"] = calib.fit_maps(P["full"], y, y2, y3, [l2, l3])
+    except Exception as e:  # noqa
+        print("calib skipped:", e)
     rep["tiers"] = M.tier_table(P["full"], y, pay, cfg.get("tiers"), days=rep["test_days"])
     rep["tiers_def"] = cfg.get("tiers") or M.TIERS
     rep["config"] = {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers")}
@@ -146,7 +151,8 @@ def train_all(hist: Path, weeks: int = 6) -> tuple[dict, dict]:
     rep = walk_forward(data, weeks, cfg=cfg)
     comps = fit_components(data, np.ones(len(data["y"]), bool), cfg)
     lam = rep.get("lambda", [1.0, 1.0])
-    model = {**comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
+    cal = rep.pop("_calib", None)
+    model = {"calib": cal, **comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
              "config": {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers", "select_window")},
              "train_from": days[0][0].isoformat(), "train_to": days[-1][0].isoformat(),
              "fitted_at": datetime.now(JST).isoformat(timespec="minutes"),

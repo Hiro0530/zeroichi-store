@@ -144,8 +144,9 @@ def ensure_jma():
 
 
 def refit():
-    """時系列の検証(直近6週を1週ずつ、前のデータだけで学習して予想)→ 全期間で学習し直して保存。"""
-    model, rep = train_all(hist_dir(), weeks=6)
+    """時系列の検証(直近8週を1週ずつ、前のデータだけで学習して予想)→ 全期間で学習し直して保存。
+    8週の学習外の予想で、券種ごとの確率の較正(model.json の calib)も作り直す。"""
+    model, rep = train_all(hist_dir(), weeks=8)
     model["eval"] = rep
     model["coefs"] = coef_table(model)[:15]
     (ROOT / "model.json").write_text(json.dumps(model), encoding="utf-8")
