@@ -1,14 +1,15 @@
+amedas 2026-10-27T07:30:00+09:00: 24 venues
 history: 879 days 2024-05-30..2026-10-25, fan files: ['2304', '2310', '2404', '2410', '2504', '2510', '2604']
 races: 133652
   fold 2026-08-31: train 125040 test 1079 (31s)
-  fold 2026-09-07: train 126119 test 1020 (47s)
+  fold 2026-09-07: train 126119 test 1020 (46s)
   fold 2026-09-14: train 127139 test 1162 (63s)
-  fold 2026-09-21: train 128301 test 1045 (79s)
+  fold 2026-09-21: train 128301 test 1045 (78s)
   fold 2026-09-28: train 129346 test 1080 (95s)
-  fold 2026-10-05: train 130426 test 1043 (111s)
-  fold 2026-10-12: train 131469 test 1092 (127s)
-  fold 2026-10-19: train 132561 test 1091 (143s)
+  fold 2026-10-05: train 130426 test 1043 (110s)
+  fold 2026-10-12: train 131469 test 1092 (126s)
+  fold 2026-10-19: train 132561 test 1091 (142s)
 model {"test_from": "2026-08-31", "test_to": "2026-10-25", "lambda": [0.65, 0.45], "diff_vs_lane1": {"diff": 0.020668834184858337, "lo": 0.014282396655829076, "hi": 0.02717138875986995}, "beats_lane1": true, "full": {"top1": 0.5711, "logloss": 1.177, "brier": 0.5781, "pick_lane1_share": 0.8409, "ece": 0.0045, "roi_win": 0.909, "tri3_hit": 0.2387, "tri_logloss": 3.7874}, "base": {"top1": 0.5655, "logloss": 1.2107, "brier": 0.591, "pick_lane1_share": 0.8792, "ece": 0.005, "roi_win": 0.9055, "tri3_hit": 0.2204, "tri_logloss": 4.0229}, "prior": {"top1": 0.5504, "logloss": 1.3501, "brier": 0.6446, "pick_lane1_share": 1.0, "ece": 0.0022, "roi_win": 0.9066, "tri3_hit": 0.1703, "tri_logloss": 4.3709}, "lane1": {"top1": 0.5504, "roi_win": 0.9066}}
-predictions 2026-10-26 already published; keep as is
+predictions 2026-10-27: 168 races, scored 168
 cumulative {"days": 3, "graded_races": 503, "win_hits": 286, "tri_hits": 122, "near": 77, "stake_win": 50300, "return_win": 45030, "stake_tri": 150900, "return_tri": 115530, "base_hits": 278, "base_return": 45490, "win_rate": 0.5686, "base_win_rate": 0.5527, "tri_rate": 0.2425, "roi_win": 0.8952, "roi_tri": 0.7656, "roi_base": 0.9044, "ana": {"days": 0, "races": 0, "hits": 0, "stake": 0, "return": 0, "manshu_hits": 0, "manshu_races": 0, "roi": 0.0}, "by_bet": {}, "star_by_bet": {}}
 site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html
