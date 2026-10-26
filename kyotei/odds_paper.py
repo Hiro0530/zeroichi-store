@@ -312,8 +312,35 @@ def grade(d: date, results: dict) -> dict | None:
     return by
 
 
+BOUNDS = ((13, 50), (17, 50), (22, 0))   # 1回の実行が終わる時刻(JST)。次の実行(:53開始)と重ならないように
+
+
+def loop():
+    """1回の実行の中で60秒ごとに tick。次の区切り(13:50 / 17:50 / 22:00)で終わる。"""
+    now = datetime.now(JST)
+    ends = [now.replace(hour=h, minute=m, second=0, microsecond=0) for h, m in BOUNDS]
+    end = next((e for e in ends if e > now + timedelta(minutes=5)), None)
+    if end is None:
+        print("outside the fetching hours")
+        return
+    print(f"loop until {end:%H:%M}")
+    while datetime.now(JST) < end:
+        t0 = time.time()
+        try:
+            tick()
+        except Exception as e:  # noqa  (1回の失敗で止めない)
+            print("tick error:", e)
+        rf = PD / f"{datetime.now(JST):%Y-%m-%d}.json"
+        if rf.exists() and json.loads(rf.read_text()).get("stopped"):
+            print("stopped for today; exit loop")
+            return
+        time.sleep(max(5.0, 60 - (time.time() - t0)))
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "tick":
+    if sys.argv[1] == "loop":
+        loop()
+    elif sys.argv[1] == "tick":
         tick()
     elif sys.argv[1] == "grade":
         import gzip
