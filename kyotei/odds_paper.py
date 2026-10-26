@@ -20,6 +20,7 @@ import re
 import sys
 import time
 import urllib.request
+import urllib.error
 from datetime import date, datetime, timedelta, timezone
 from itertools import combinations
 from pathlib import Path
@@ -40,6 +41,11 @@ TIERS = ("S",)
 EV_MIN = 1.2
 MAX_PER_TYPE = 3
 PAUSE = 3.0
+MAX_REQ_DAY = 200  # 1日のリクエスト上限(安全装置)
+
+
+class StopFetch(Exception):
+    """403/429/5xx を受けたら、その日の取得をやめる"""
 
 
 def others(*xs):
@@ -101,6 +107,12 @@ def fetch(kind: str, jcd: str, rno: int, d: date) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     try:
         b = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        time.sleep(PAUSE)
+        if e.code in (403, 429) or e.code >= 500:
+            raise StopFetch(f"{e.code} {url}")
+        print("miss", url, e)
+        b = ""
     except Exception as e:  # noqa
         print("miss", url, e)
         b = ""
@@ -128,16 +140,30 @@ def tick(now: datetime | None = None):
     PD.mkdir(parents=True, exist_ok=True)
     rf = PD / f"{d:%Y-%m-%d}.json"
     rec = json.loads(rf.read_text()) if rf.exists() else {"date": d.isoformat(), "races": {}}
+    if rec.get("stopped"):
+        print("stopped for today:", rec["stopped"])
+        return
     for x in pred["races"]:
         if x.get("tier") not in TIERS or not x.get("scored", True) or x["key"] in rec["races"]:
             continue
         mins = (datetime.fromisoformat(x["close"]) - now).total_seconds() / 60
         if not (5 <= mins <= 15):
             continue
+        if rec.get("requests", 0) + len(PAGES) > MAX_REQ_DAY:
+            print("daily request cap reached")
+            return
         probs = race_probs(x, lam)
         bets, checks = [], {}
         for kind in PAGES:
-            got = parse(kind, fetch(kind, x["venue"], x["race"], d))
+            rec["requests"] = rec.get("requests", 0) + 1
+            try:
+                html = fetch(kind, x["venue"], x["race"], d)
+            except StopFetch as e:
+                rec["stopped"] = str(e)
+                rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+                print("STOP for today:", e)
+                return
+            got = parse(kind, html)
             for bet, odds in got.items():
                 if bet not in ("tansho", "fukusho", "quinella", "trio", "trifecta"):
                     continue
