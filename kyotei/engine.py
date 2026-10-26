@@ -265,6 +265,10 @@ def main(mode: str):
     elif mode == "refit":
         ensure_jma()
         refit()
+    elif mode == "roi":
+        # 舟券の種類・自信度・場ごとの仮の回収率(学習外。見つける期間と確かめる期間を分ける)
+        import exp_roi
+        exp_roi.main(hist_dir())
     elif mode == "exp":
         # 改良候補の検証(v3_ablation.json と model_config.json を作る)→ その構成で学習し直す
         ensure_jma()

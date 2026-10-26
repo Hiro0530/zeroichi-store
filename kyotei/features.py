@@ -378,7 +378,7 @@ def build(days: list[tuple[date, list, dict]], fan_store: FanStore, target: tupl
 
     各日の特徴量は、その日より前の結果だけで作る(作った後でその日の結果を足す)。"""
     h = History()
-    X, O, V, Y, Y2, Y3, D, K, PAY = [], [], [], [], [], [], [], [], []
+    X, O, V, Y, Y2, Y3, D, K, PAY, PAYT = [], [], [], [], [], [], [], [], [], []
     for d, races, results in days:
         fan = fan_store.asof(d)
         h.begin_day(d, races)
@@ -392,9 +392,12 @@ def build(days: list[tuple[date, list, dict]], fan_store: FanStore, target: tupl
             Y.append(res["order"][0] - 1); Y2.append(res["order"][1] - 1); Y3.append(res["order"][2] - 1)
             D.append(d.toordinal()); K.append(r["key"])
             PAY.append(res["tansho"].get(str(res["order"][0]), 0))
+            o3 = res["order"]
+            PAYT.append(res["trifecta"].get(f"{o3[0]}-{o3[1]}-{o3[2]}", 0))
         h.update_day(d, races, results)
     data = {"X": np.array(X, dtype=np.float32).reshape(-1, 6, len(ALLF)), "O": np.array(O), "V": np.array(V), "y": np.array(Y),
-            "y2": np.array(Y2), "y3": np.array(Y3), "D": np.array(D), "K": K, "pay": np.array(PAY, dtype=float)}
+            "y2": np.array(Y2), "y3": np.array(Y3), "D": np.array(D), "K": K, "pay": np.array(PAY, dtype=float),
+            "pay_tri": np.array(PAYT, dtype=float)}
     tgt = None
     if target is not None:
         d, races = target
