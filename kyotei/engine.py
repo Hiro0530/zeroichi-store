@@ -451,6 +451,10 @@ def main(mode: str):
         (ROOT / "experiments" / "robots_boatrace.txt").write_text(f"checked {datetime.now(JST).isoformat(timespec='minutes')}\n" + "\n\n".join(out), encoding="utf-8")
         print("\n".join(out))
         return
+    elif mode == "cond":
+        # 2着・3着を直接モデルにする検証と、3連複・3連単の区分探し(新しい取得なし)
+        import exp_cond
+        exp_cond.main(hist_dir())
     elif mode == "calib":
         # 券種ごとの組番の確率の当たり具合(新しい取得はしない)
         import exp_calib
