@@ -55,7 +55,7 @@ def others(*xs):
 # 公式のオッズのページの並び(表の左上から右へ、上から下へ)。初回の取得で順位相関のチェックを通らなければ使わない
 ORDER_3T = [(f, s, t) for r in range(20) for f in range(1, 7) for s, t in [[(s, t) for s in others(f) for t in others(f, s)][r]]]
 ORDER_2T = [(f, others(f)[r]) for r in range(5) for f in range(1, 7)]
-ORDER_2F = [(f, f + 1 + r) for r in range(5) for f in range(1, 6) if f + 1 + r <= 6]
+ORDER_2F = [(f, s) for s in range(2, 7) for f in range(1, s)]  # 2連複の三角表は「行=2着側の大きい番号、列=小さい番号」(2026-10-26 実物で確認)
 ORDER_3F = [c for c in combinations(range(1, 7), 3)]
 
 
@@ -73,6 +73,35 @@ def _num(s: str):
         return None
 
 
+def _grid3(html: str) -> dict:
+    """3連単・3連複の表を、列(1着側の艇)ごとに rowspan を追って読む。空欄は飛ばす。"""
+    out = {}
+    tb = re.findall(r"<tbody[^>]*>(.*?)</tbody>", html, re.S)
+    tb = [t for t in tb if "oddsPoint" in t]
+    if not tb:
+        return out
+    rem, sec = [0] * 6, [None] * 6
+    for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", tb[0], re.S):
+        tds = re.findall(r"<td([^>]*)>\s*(.*?)\s*</td>", tr, re.S)
+        i = 0
+        for col in range(6):
+            if rem[col] == 0:
+                if i >= len(tds):
+                    break
+                a, v = tds[i]; i += 1
+                m = re.search(r'rowspan="(\d+)"', a)
+                rem[col] = int(m.group(1)) if m else 1
+                sec[col] = re.sub("<[^>]+>", "", v).strip()
+            if i + 1 >= len(tds) + 0 and i >= len(tds):
+                break
+            third = re.sub("<[^>]+>", "", tds[i][1]).strip(); oa, ov = tds[i + 1]; i += 2
+            rem[col] -= 1
+            o = _num(re.sub("<[^>]+>", "", ov)) if "oddsPoint" in oa else None
+            if o and sec[col] and third:
+                out[(col + 1, int(sec[col]), int(third))] = o
+    return out
+
+
 def parse(kind: str, html: str) -> dict:
     c = [_num(x) for x in _cells(html)]
     out = {}
@@ -82,10 +111,12 @@ def parse(kind: str, html: str) -> dict:
     elif kind == "2tf" and len(c) >= 45:
         out["exacta"] = {f"{a}-{b}": c[i] for i, (a, b) in enumerate(ORDER_2T)}
         out["quinella"] = {f"{a}-{b}": c[30 + i] for i, (a, b) in enumerate(ORDER_2F)}
-    elif kind == "3f" and len(c) >= 20:
-        out["trio"] = {f"{a}-{b}-{e}": c[i] for i, (a, b, e) in enumerate(ORDER_3F)}
-    elif kind == "3t" and len(c) >= 120:
-        out["trifecta"] = {f"{a}-{b}-{e}": c[i] for i, (a, b, e) in enumerate(ORDER_3T)}
+    elif kind == "3f":
+        g = _grid3(html)
+        out["trio"] = {"-".join(map(str, sorted(k))): v for k, v in g.items()}
+    elif kind == "3t":
+        g = _grid3(html)
+        out["trifecta"] = {f"{a}-{b}-{e}": v for (a, b, e), v in g.items()}
     return {k: {kk: vv for kk, vv in v.items() if vv} for k, v in out.items()}
 
 
