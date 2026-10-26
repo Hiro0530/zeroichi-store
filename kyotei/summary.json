@@ -1,22 +1,22 @@
 {
  "total": {
-  "days": 3,
-  "graded_races": 503,
-  "win_hits": 286,
-  "tri_hits": 122,
-  "near": 77,
-  "stake_win": 50300,
-  "return_win": 45030,
-  "stake_tri": 150900,
-  "return_tri": 115530,
-  "base_hits": 278,
-  "base_return": 45490,
-  "win_rate": 0.5686,
-  "base_win_rate": 0.5527,
-  "tri_rate": 0.2425,
-  "roi_win": 0.8952,
-  "roi_tri": 0.7656,
-  "roi_base": 0.9044,
+  "days": 4,
+  "graded_races": 645,
+  "win_hits": 361,
+  "tri_hits": 157,
+  "near": 101,
+  "stake_win": 64500,
+  "return_win": 57200,
+  "stake_tri": 193500,
+  "return_tri": 149080,
+  "base_hits": 349,
+  "base_return": 56490,
+  "win_rate": 0.5597,
+  "base_win_rate": 0.5411,
+  "tri_rate": 0.2434,
+  "roi_win": 0.8868,
+  "roi_tri": 0.7704,
+  "roi_base": 0.8758,
   "ana": {
    "days": 0,
    "races": 0,
@@ -27,10 +27,54 @@
    "manshu_races": 0,
    "roi": 0.0
   },
-  "by_bet": {},
+  "by_bet": {
+   "tansho": {
+    "days": 1,
+    "races": 142,
+    "hits": 75,
+    "stake": 14200,
+    "return": 12170,
+    "pnl": -2030,
+    "roi": 0.857
+   },
+   "trifecta3": {
+    "days": 1,
+    "races": 142,
+    "hits": 35,
+    "stake": 42600,
+    "return": 33550,
+    "pnl": -9050,
+    "roi": 0.7876
+   }
+  },
   "star_by_bet": {}
  },
- "tiers": {},
+ "tiers": {
+  "S": {
+   "races": 43,
+   "win_hits": 31,
+   "base_hits": 31,
+   "return_win": 3770
+  },
+  "A": {
+   "races": 53,
+   "win_hits": 26,
+   "base_hits": 25,
+   "return_win": 4260
+  },
+  "C": {
+   "races": 27,
+   "win_hits": 9,
+   "base_hits": 9,
+   "return_win": 2350
+  },
+  "B": {
+   "races": 19,
+   "win_hits": 9,
+   "base_hits": 6,
+   "return_win": 1790
+  }
+ },
  "daily": [
   {
    "date": "2026-10-23",
@@ -70,6 +114,38 @@
    "return_tri": 48030,
    "base_hits": 94,
    "base_return": 14120
+  },
+  {
+   "date": "2026-10-26",
+   "graded_races": 142,
+   "win_hits": 75,
+   "tri_hits": 35,
+   "near": 24,
+   "stake_win": 14200,
+   "return_win": 12170,
+   "stake_tri": 42600,
+   "return_tri": 33550,
+   "base_hits": 71,
+   "base_return": 11000,
+   "by_bet": {
+    "tansho": {
+     "races": 142,
+     "hits": 75,
+     "stake": 14200,
+     "return": 12170,
+     "pnl": -2030,
+     "roi": 0.857
+    },
+    "trifecta3": {
+     "races": 142,
+     "hits": 35,
+     "stake": 42600,
+     "return": 33550,
+     "pnl": -9050,
+     "roi": 0.7876
+    }
+   },
+   "star_by_bet": {}
   }
  ]
 }
