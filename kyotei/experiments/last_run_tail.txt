@@ -1,4 +1,8 @@
-{"chosen_on_discover": {"n_races_per_day": 2, "points": 3, "min_avg_payout": 10000, "discover": {"races": 112, "points": 3, "hit": 0.0982, "hits": 11, "avg_pay_when_hit": 3319.0, "manshu_hits": 0, "roi": 1.0866, "lo": 0.421, "hi": 1.8819}}, "validate_chosen": {"races": 112, "points": 3, "hit": 0.0893, "hits": 10, "avg_pay_when_hit": 2210.0, "manshu_hits": 0, "roi": 0.6577, "lo": 0.2589, "hi": 1.1277, "manshu_hits_per_30days": 0.0}, "base": {"discover": {"manshu_rate_all": 0.1677, "manshu_rate_selected": 0.2321, "mean_pred_p_manshu_selected": 0.6538}, "validate": {"manshu_rate_all": 0.1597, "manshu_rate_selected": 0.1488, "mean_pred_p_manshu_selected": 0.6389}}}
-predictions 2026-10-26 already published; keep as is
-cumulative {"days": 3, "graded_races": 503, "win_hits": 286, "tri_hits": 122, "near": 77, "stake_win": 50300, "return_win": 45030, "stake_tri": 150900, "return_tri": 115530, "base_hits": 278, "base_return": 45490, "win_rate": 0.5686, "base_win_rate": 0.5527, "tri_rate": 0.2425, "roi_win": 0.8952, "roi_tri": 0.7656, "roi_base": 0.9044}
-site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html
+# https://www.boatrace.jp/robots.txt -> 200
+User-agent: *
+Disallow:
+
+# https://boatrace.jp/robots.txt -> 200
+User-agent: *
+Disallow:
+

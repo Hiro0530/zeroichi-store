@@ -1,0 +1,9 @@
+checked 2026-10-26T11:51+09:00
+# https://www.boatrace.jp/robots.txt -> 200
+User-agent: *
+Disallow:
+
+
+# https://boatrace.jp/robots.txt -> 200
+User-agent: *
+Disallow:
