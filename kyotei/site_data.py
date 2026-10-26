@@ -115,6 +115,7 @@ def build() -> dict:
         "yesterday": _yesterday(_load(results[-1]) if results else None),
         "record": {"total": t, "daily": summ.get("daily", [])[-60:], "tiers_live": summ.get("tiers") or {}},
         "model": _model(_load(ROOT / "model.json")),
+        "bet_names": {"tansho": "単勝◎", "fukusho": "複勝◎", "trio3": "3連複3点", "trifecta3": "3連単3点"},
         "disclaimers": DISCLAIMERS,
         "sources": ["BOAT RACE公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは置いていません。"],
     }

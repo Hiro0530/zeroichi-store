@@ -1,0 +1,45 @@
+name: kyotei-odds
+
+# オッズを使った「紙の上だけ」の検証(ペーパートレード)。**止めてある**。
+# BOAT RACE振興会の了承が出るまで、定時実行(schedule)はコメントのまま。動かすときは kyotei/odds_enabled.txt も必要(無ければ何も取得しない)。
+# 1回の実行: 締切の約10分前の自信度Sのレースだけ、券種ごとに1ページ(最大4ページ)を1回ずつ、3秒以上あけて読む。結果は非公開(キャッシュと控えの非公開リポジトリだけ)。
+on:
+  # schedule:
+  #   - cron: "*/10 1-12 * * *"   # 10:00〜21:50 JST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kyotei-odds
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stop here unless enabled
+        id: gate
+        run: if [ -f kyotei/odds_enabled.txt ]; then echo "on=1" >> "$GITHUB_OUTPUT"; else echo "disabled"; fi
+      - if: steps.gate.outputs.on == '1'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - if: steps.gate.outputs.on == '1'
+        run: pip install -q numpy scipy
+      - if: steps.gate.outputs.on == '1'
+        uses: actions/cache/restore@v4
+        with:
+          path: kyotei/hist/paper
+          key: kyotei-paper-${{ github.run_id }}
+          restore-keys: kyotei-paper-
+      - if: steps.gate.outputs.on == '1'
+        run: python kyotei/odds_paper.py tick
+      - if: always() && steps.gate.outputs.on == '1'
+        uses: actions/cache/save@v4
+        with:
+          path: kyotei/hist/paper
+          key: kyotei-paper-${{ github.run_id }}

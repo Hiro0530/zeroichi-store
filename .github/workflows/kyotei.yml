@@ -37,6 +37,12 @@ jobs:
           path: kyotei/hist
           key: kyotei-hist-${{ github.run_id }}
           restore-keys: kyotei-hist-
+      - name: Restore paper-trading records (not published; empty while odds are disabled)
+        uses: actions/cache/restore@v4
+        with:
+          path: kyotei/hist/paper
+          key: kyotei-paper-${{ github.run_id }}
+          restore-keys: kyotei-paper-
       - name: Restore durable copy from the private repo (only days missing in the cache)
         if: env.HAS_DATA_TOKEN == 'true'
         env:
@@ -48,6 +54,7 @@ jobs:
           python kyotei/durable.py pull /tmp/kdata/kyotei_data
       - name: Run
         run: |
+          mkdir -p kyotei/hist/paper
           MODE=$(head -1 kyotei/trigger.txt 2>/dev/null || echo daily)
           if [ "${{ github.event_name }}" = "schedule" ]; then MODE=daily; fi
           echo "mode=$MODE"
@@ -59,6 +66,12 @@ jobs:
         with:
           path: kyotei/hist
           key: kyotei-hist-${{ github.run_id }}
+      - name: Save paper-trading records
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: kyotei/hist/paper
+          key: kyotei-paper-${{ github.run_id }}
       - name: Push durable copy to the private repo (derived numbers only, no raw files)
         if: always() && env.HAS_DATA_TOKEN == 'true'
         run: |

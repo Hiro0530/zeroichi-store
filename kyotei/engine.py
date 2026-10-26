@@ -196,6 +196,19 @@ def make_predictions(d: date, model: dict) -> dict | None:
                                   "loc_win": b["loc_win"], "motor_2": b["motor_2"]} for b in r["boats"]]})
     out = {"date": d.isoformat(), "published_at": now.isoformat(timespec="seconds"),
            "model_fitted_at": model.get("fitted_at"), "model_version": model.get("version", 1), "races": preds}
+    try:   # 券種ごとの仮の収支のため、複勝◎と3連複3点も締切前に出しておく(後から足すと後出しになるので、公開時に決める)
+        import exp_bets
+        Tm = np.array(Ts)
+        top2 = Tm @ exp_bets.M_TOP2
+        trio = Tm @ exp_bets.M_TRIO
+        for i, x in enumerate(preds):
+            x["fukusho"] = int(np.argmax(top2[i])) + 1
+            x["trio"] = [[exp_bets.LBL["trio"][j], round(float(trio[i, j]), 4)] for j in np.argsort(-trio[i])[:3]]
+        sc = [x for x in preds if x["scored"]]
+        for x in sorted(sc, key=lambda x: (-max(x["probs"]), x["close"]))[:5]:
+            x["star"] = True   # 今日の自信あり(ページ・Xと同じ決め方: ◎の1着率が高い順に5つ)
+    except Exception as e:  # noqa
+        print("extra picks skipped:", e)
     try:
         out["ana"] = ana_picks_today(d, preds, Ts)
     except Exception as e:  # noqa  (穴が作れなくても本命の予想は公開する)
@@ -262,6 +275,25 @@ def grade_ana(pred: dict, res: dict) -> tuple[dict | None, list]:
     return s, rows
 
 
+BET_NAMES = {"tansho": "単勝◎", "fukusho": "複勝◎", "trio3": "3連複3点", "trifecta3": "3連単3点"}
+
+
+def by_bet(rows: list) -> dict:
+    """券種ごとの仮の収支(100円ずつ)。{券種: {races, hits, stake, return, pnl}}"""
+    out = {}
+    for r in rows:
+        for b, v in (r.get("bets") or {}).items():
+            t = out.setdefault(b, {"races": 0, "hits": 0, "stake": 0, "return": 0})
+            t["races"] += 1
+            t["hits"] += v["return"] > 0
+            t["stake"] += v["stake"]
+            t["return"] += v["return"]
+    for t in out.values():
+        t["pnl"] = t["return"] - t["stake"]
+        t["roi"] = round(t["return"] / max(t["stake"], 1), 4)
+    return out
+
+
 def grade(d: date) -> dict | None:
     pf = ROOT / "predictions" / f"{d:%Y-%m-%d}.json"
     if not pf.exists():
@@ -285,7 +317,16 @@ def grade(d: date) -> dict | None:
         pay_win = x["tansho"].get(str(r["pick"]), 0) if win_hit else 0
         pay_tri = x["trifecta"].get(actual, 0) if tri_hit else 0
         base_pay = x["tansho"].get("1", 0) if o[0] == 1 else 0
-        rows.append({"key": r["key"], "venue_name": r["venue_name"], "race": r["race"], "tier": r.get("tier"),
+        pay = x.get("pay") or {}
+        bets = {"tansho": {"stake": 100, "return": pay.get("tansho", {}).get(str(r["pick"]), 0)},
+                "trifecta3": {"stake": 300, "return": pay.get("trifecta", x["trifecta"]).get(actual, 0) if tri_hit else 0}}
+        if r.get("fukusho"):
+            bets["fukusho"] = {"stake": 100, "return": pay.get("fukusho", {}).get(str(r["fukusho"]), 0)}
+        if r.get("trio"):
+            tset = "-".join(sorted(actual.split("-")))
+            bets["trio3"] = {"stake": 300, "return": pay.get("trio", {}).get(tset, 0) if any(c == tset for c, _ in r["trio"]) else 0}
+        rows.append({"bets": bets, "star": bool(r.get("star")), "fukusho": r.get("fukusho"), "trio": [c for c, _ in r.get("trio", [])],
+                     "key": r["key"], "venue_name": r["venue_name"], "race": r["race"], "tier": r.get("tier"),
                      "pick": r["pick"], "trifecta": [c for c, _ in r["trifecta"]], "actual": actual,
                      "verdict": verdict, "win_hit": win_hit, "tri_hit": tri_hit,
                      "pay_win": pay_win, "pay_tri": pay_tri, "base_pay": base_pay,
@@ -299,6 +340,8 @@ def grade(d: date) -> dict | None:
             "stake_win": 100 * n, "return_win": sum(r["pay_win"] for r in rows),
             "stake_tri": 300 * n, "return_tri": sum(r["pay_tri"] for r in rows),
             "base_hits": sum(r["lane1_won"] for r in rows), "base_return": sum(r["base_pay"] for r in rows)}
+    summ["by_bet"] = by_bet(rows)
+    summ["star_by_bet"] = by_bet([r for r in rows if r.get("star")])
     gd = ROOT / "results"
     gd.mkdir(exist_ok=True)
     ana_s, ana_rows = grade_ana(pred, res)
@@ -307,6 +350,12 @@ def grade(d: date) -> dict | None:
     (gd / f"{d:%Y-%m-%d}.json").write_text(json.dumps({"summary": summ, "races": rows, "ana": ana_rows},
                                                       ensure_ascii=False, indent=1), encoding="utf-8")
     print("graded", json.dumps(summ, ensure_ascii=False))
+    # オッズを使った紙の上だけの検証(止めてあるときは記録が無いので何もしない。結果は非公開)
+    try:
+        import odds_paper
+        odds_paper.grade(d, res)
+    except Exception as e:  # noqa
+        print("paper grade skipped:", e)
     # 学習用の履歴にも足す(読み取った数字だけ。非公開のキャッシュ)
     save_hist(d, parse_b(fetch("B", d), d), res)
     return summ
@@ -339,6 +388,18 @@ def cumulative() -> dict:
                     ana[k] += s_["ana"].get(k, 0)
     ana["roi"] = round(ana["return"] / max(ana["stake"], 1), 4)
     tot["ana"] = ana
+    for key in ("by_bet", "star_by_bet"):
+        agg = {}
+        for s_ in daily:
+            for b, v in (s_.get(key) or {}).items():
+                t = agg.setdefault(b, {"days": 0, "races": 0, "hits": 0, "stake": 0, "return": 0})
+                t["days"] += 1
+                for k2 in ("races", "hits", "stake", "return"):
+                    t[k2] += v.get(k2, 0)
+        for t in agg.values():
+            t["pnl"] = t["return"] - t["stake"]
+            t["roi"] = round(t["return"] / max(t["stake"], 1), 4)
+        tot[key] = agg
     tiers = {}
     for f in sorted((ROOT / "results").glob("*.json")):
         for x in json.loads(f.read_text(encoding="utf-8"))["races"]:
@@ -374,6 +435,21 @@ def main(mode: str):
         # 「今日の穴(万舟ねらい)」の決め方の検証
         import exp_ana
         exp_ana.main(hist_dir())
+    elif mode == "robots":
+        # 公式サイトの robots.txt を確認するだけ(オッズは取得しない)
+        import urllib.request
+        out = []
+        for u in ("https://www.boatrace.jp/robots.txt", "https://boatrace.jp/robots.txt"):
+            try:
+                req = urllib.request.Request(u, headers={"User-Agent": run_mod.UA})
+                r = urllib.request.urlopen(req, timeout=30)
+                out.append(f"# {u} -> {r.status}\n" + r.read().decode("utf-8", "replace")[:5000])
+            except Exception as e:  # noqa
+                out.append(f"# {u} -> {e}")
+        (ROOT / "experiments").mkdir(exist_ok=True)
+        (ROOT / "experiments" / "robots_boatrace.txt").write_text(f"checked {datetime.now(JST).isoformat(timespec='minutes')}\n" + "\n\n".join(out), encoding="utf-8")
+        print("\n".join(out))
+        return
     elif mode == "roi":
         # 舟券の種類・自信度・場ごとの仮の回収率(学習外。見つける期間と確かめる期間を分ける)
         import exp_roi
