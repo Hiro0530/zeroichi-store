@@ -99,7 +99,7 @@ p{margin:0}
 .ans .where{font-weight:700;white-space:nowrap}.ans .where .n{font-size:19px;margin-left:2px}
 .ans .what{font-size:12.5px;color:var(--sub);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ans .vd{grid-row:span 2;text-align:right}
-.ans .vd b{display:inline-block;font-size:15px;font-weight:900;padding:4px 9px;border:2px solid currentColor;line-height:1}
+.ans .vd b{display:inline-block;font-size:17px;font-weight:900;padding:6px 11px;border:3px solid currentColor;line-height:1}
 .ans .vd b.ok{color:var(--shu)}.ans .vd b.ng{color:var(--past);border-width:1px;font-weight:700}
 .ans .vd small{display:block;font:600 15px/1.3 var(--num);color:var(--shu);margin-top:4px}
 .score{font-size:15px;margin:10px 0 2px}.score b{font:700 30px/1 var(--num);color:var(--shu);margin:0 2px}
@@ -172,7 +172,22 @@ details.v table{margin-bottom:12px}
 .pay.big{font-size:24px}
 .man{background:linear-gradient(transparent 55%,var(--mark) 55%)}
 .tag{display:inline-block;font-size:11px;font-weight:700;line-height:1;padding:3px 4px 2px;border:1px solid var(--ink);margin-left:6px;vertical-align:2px;border-radius:2px}
-.stamp{display:inline-grid;place-items:center;width:38px;height:38px;border:2px solid var(--shu);border-radius:50%;color:var(--shu);font-weight:900;font-size:12px;line-height:1;transform:rotate(-8deg)}
+.stamp{display:inline-grid;place-items:center;width:46px;height:46px;border:3px solid var(--shu);border-radius:50%;color:var(--shu);font-weight:900;font-size:14px;line-height:1;transform:rotate(-8deg)}
+/* 当たりの帯(題字のすぐ下) */
+.atari{padding:14px 0 6px;border-bottom:2px solid var(--ink)}
+.atari h2{font-size:18px}
+.atari h2 small{font-size:13px}
+.strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 0 8px;-webkit-overflow-scrolling:touch}
+.tile{scroll-snap-align:start;position:relative;border:2px solid var(--shu);padding:10px 10px 9px;background:var(--paper)}
+.tile .stamp{position:absolute;top:-4px;right:6px;width:40px;height:40px;font-size:12px;background:var(--paper)}
+.tile .w{font-weight:700;font-size:15px;white-space:nowrap}.tile .w .n{font-size:19px;margin-left:2px}
+.tile .cb{margin:6px 0 4px}
+.tile .pay{display:block;font-size:30px;line-height:1.05}
+.tile .pay small{font-size:14px}
+.tile .tag{margin:4px 0 0}
+.atari .more-l{font-size:13px}
+@media (min-width:980px){.strip{grid-auto-flow:row;grid-template-columns:repeat(6,1fr);overflow:visible}}
+.why{display:block;grid-column:2/4;font-size:12.5px;color:var(--sub);line-height:1.4}
 .near{font-size:12px;color:var(--ink);border:1px solid var(--rule2);padding:2px 5px;border-radius:2px;white-space:nowrap}
 .won{font-size:12px;color:var(--ink);white-space:nowrap}
 .miss{color:var(--past)}
@@ -317,6 +332,20 @@ def load_pred(d: str):
     return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
 
 
+def why_html(x: dict) -> str:
+    """◎の選手の公開データ(番組表)を一言。予想の根拠の目安で、計算そのものではない。"""
+    rs = x.get("racers") or []
+    if len(rs) != 6:
+        return ""
+    b = rs[x["pick"] - 1]
+    top = lambda k: b[k] > 0 and b[k] >= max(z[k] for z in rs)  # noqa: E731
+    t = f"{b['name']}({b['cls']}) 全国勝率{b['nat_win']:.2f}" + ("(メンバー1位)" if top("nat_win") else "")
+    if b["loc_win"] > 0:
+        t += f"・当地{b['loc_win']:.2f}"
+    t += f"・モーター2連率{b['motor_2']:.0f}%"
+    return f"<span class=why>{esc(t)}</span>"
+
+
 def star_today_html(p: dict) -> str:
     xs = stars(p)
     if not xs:
@@ -332,7 +361,7 @@ def star_today_html(p: dict) -> str:
                  f"<span class=where>{esc(x['venue_name'])}<span class=n>{x['race']}R</span><span class=closedtag>締切済</span></span>"
                  f"<span class=p>{max(x['probs'])*100:.0f}<small>%</small><span>1着率</span></span>"
                  f"<span class=when><span class=n>{esc(hm(x['close']))}</span> 締切</span>"
-                 f"<span class=tri3>3連単 {tri}</span></div>")
+                 f"<span class=tri3>3連単 {tri}</span>{why_html(x)}</div>")
     o.append("</div></section>")
     return "".join(o)
 
@@ -381,7 +410,7 @@ def hook_html(p, r, prev) -> str:
         o.append(f"{when}の自信ありは{len(st)}レース中、◎が<b>{sum(1 for y in st if y.get('win_hit'))}</b>勝。")
     if hits:
         b = hits[0]
-        o.append(f"3連単は全体で<b>{len(hits)}</b>本的中、最高は{esc(b['venue_name'])}{b['race']}Rの<b>{int(b['pay_tri']):,}</b>円。")
+        o.append(f"3連単は全体で<b>{len(hits)}</b>本的中。")
         man = sum(1 for x in hits if (x.get("pay_tri") or 0) >= MANSHU)
         if man:
             o.append(f"万舟も{man}本取っています。")
@@ -413,6 +442,24 @@ def today_html(p: dict) -> str:
                      f"<td class='r pr'>{max(x['probs'])*100:.0f}<small>%</small>{tier_mark(x.get('tier'))}</td><td class=tri3>{tri}</td></tr>")
         o.append("</tbody></table></div></details>")
     o.append("</div></section>")
+    return "".join(o)
+
+
+def atari_html(r: dict | None, label: str) -> str:
+    """題字のすぐ下の「当たり」の帯。前日の3連単の的中を払戻の高い順に6本。"""
+    if not r:
+        return ""
+    hits = sorted([x for x in r["races"] if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
+    if not hits:
+        return ""
+    o = [f"<section class=atari aria-labelledby=h-atari><h2 id=h-atari>{esc(label)}の当たり<small>3連単 {len(hits)}本・払戻の高い順</small></h2><div class=strip>"]
+    for x in hits[:6]:
+        pay = int(x["pay_tri"])
+        big = pay >= MANSHU
+        o.append(f"<div class=tile><span class=stamp>的中</span><span class=w>{esc(x['venue_name'])}<span class=n>{x['race']}R</span></span>"
+                 f"<div>{combo(x['actual'])}</div><span class='pay hit'><span class={'man' if big else ''}>{pay:,}</span><small>円</small></span>"
+                 + ("<span class=tag>万舟</span>" if big else "") + "</div>")
+    o.append("</div>" + (f"<p class=more-l><a href='#h-hits'>残りの{len(hits) - 6}本も見る</a></p>" if len(hits) > 6 else "") + "</section>")
     return "".join(o)
 
 
@@ -581,12 +628,12 @@ def build():
                  "<span class=credit>写真はイメージ(生成画像)</span>"
                  f"<div class=over><div class=wrap><a class=by href='../'>ZEROICHI WORKS</a><h1>{TITLE}</h1><p class=lead>{lead}</p></div></div></header>"
                  "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
-                 f"<div class=wrap>{hook_html(p, r, prev)}</div><main class=wrap>")
+                 f"<div class=wrap>{hook_html(p, r, prev)}{atari_html(r, label)}</div><main class=wrap>")
     else:
         h.append("<header class=mast><div class=wrap><a class=by href='../'>ZEROICHI WORKS</a>"
                  f"<h1>{TITLE}</h1><p class=lead>{lead}</p>"
                  "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
-                 + hook_html(p, r, prev) + "</div></header><main class=wrap>")
+                 + hook_html(p, r, prev) + atari_html(r, label) + "</div></header><main class=wrap>")
     h.append("<div class=top2>")
     h.append(star_today_html(p) if p else "<section class=st><h2>今日の自信あり</h2><p class=cap>今日の予想はまだ出ていません。毎朝7時ごろに出ます。</p></section>")
     h.append(star_answer_html(r, prev, label) if r else "")
