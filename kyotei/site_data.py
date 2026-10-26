@@ -48,7 +48,7 @@ def _today(p: dict | None) -> dict | None:
         return None
     races = []
     for x in p["races"]:
-        races.append({k: x.get(k) for k in ("key", "venue", "venue_name", "race", "close", "scored", "tier", "pick", "probs", "trifecta")}
+        races.append({k: x.get(k) for k in ("key", "venue", "venue_name", "race", "close", "scored", "tier", "pick", "probs", "trifecta", "title", "racers")}
                      | {"p_pick": max(x["probs"])})
     feat = sorted([x for x in races if x["scored"] is not False], key=lambda x: -x["p_pick"])[:6]
     return {"date": p["date"], "published_at": p["published_at"], "proof_url": f"{PROOF}{p['date']}.json",

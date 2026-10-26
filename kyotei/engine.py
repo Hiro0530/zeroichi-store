@@ -160,7 +160,11 @@ def make_predictions(d: date, model: dict) -> dict | None:
         preds.append({"key": r["key"], "venue": r["venue"], "venue_name": VENUES[r["venue"]],
                       "race": r["race"], "close": r["close"], "scored": scored,
                       "probs": [round(x, 4) for x in p], "pick": top + 1, "tier": M.tier_of(max(p), (model.get("config") or {}).get("tiers")),
-                      "trifecta": [[c, round(x, 4)] for c, x in tri]})
+                      "trifecta": [[c, round(x, 4)] for c, x in tri],
+                      # 番組表の公開データ(ページ・Xの「根拠の一言」用。予想の計算には使わない)
+                      "title": r.get("title", ""),
+                      "racers": [{"lane": b["lane"], "name": b["name"], "cls": b["cls"], "nat_win": b["nat_win"],
+                                  "loc_win": b["loc_win"], "motor_2": b["motor_2"]} for b in r["boats"]]})
     out = {"date": d.isoformat(), "published_at": now.isoformat(timespec="seconds"),
            "model_fitted_at": model.get("fitted_at"), "model_version": model.get("version", 1), "races": preds}
     pd = ROOT / "predictions"
