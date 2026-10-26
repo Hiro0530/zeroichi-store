@@ -450,6 +450,10 @@ def main(mode: str):
         (ROOT / "experiments" / "robots_boatrace.txt").write_text(f"checked {datetime.now(JST).isoformat(timespec='minutes')}\n" + "\n\n".join(out), encoding="utf-8")
         print("\n".join(out))
         return
+    elif mode == "calib":
+        # 券種ごとの組番の確率の当たり具合(新しい取得はしない)
+        import exp_calib
+        exp_calib.main(hist_dir())
     elif mode == "roi":
         # 舟券の種類・自信度・場ごとの仮の回収率(学習外。見つける期間と確かめる期間を分ける)
         import exp_roi
