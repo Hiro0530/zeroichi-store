@@ -1,0 +1,367 @@
+{
+ "generated_at": "2026-10-26T18:07+09:00",
+ "lambda_pl": [
+  0.65,
+  0.45
+ ],
+ "features": [
+  "rel_nat",
+  "nat_2",
+  "h_st",
+  "h_st_rel",
+  "e_racer_exh",
+  "e_motor_exh",
+  "motor_2",
+  "h_lane_t2",
+  "fan_c_q2",
+  "A1",
+  "A2",
+  "B1",
+  "h_t3_ewma",
+  "f_rv",
+  "h_inner",
+  "h_outer"
+ ],
+ "discover": [
+  "2026-07-06",
+  "2026-08-30"
+ ],
+ "validate": [
+  "2026-08-31",
+  "2026-10-25",
+  8612
+ ],
+ "loss": {
+  "pl": {
+   "ll_2nd": 1.38702,
+   "ll_3rd": 1.28713,
+   "ll_trifecta": 3.85117
+  },
+  "cond": {
+   "ll_2nd": 1.35819,
+   "ll_3rd": 1.25216,
+   "ll_trifecta": 3.78737
+  },
+  "trifecta_diff_cond_minus_pl": {
+   "diff": -0.0638,
+   "lo": -0.07326,
+   "hi": -0.05559
+  }
+ },
+ "hits": {
+  "pl": {
+   "all_trifecta_top1": 0.0891,
+   "all_trio_top1": 0.2378,
+   "all_trifecta_top3": 0.2298,
+   "all_trio_top3": 0.5308,
+   "all_trifecta_top5": 0.3329,
+   "all_trio_top5": 0.6937,
+   "tier_S_trifecta_top1": 0.1132,
+   "tier_S_trio_top1": 0.2548,
+   "tier_S_trifecta_top3": 0.2986,
+   "tier_S_trio_top3": 0.5721,
+   "tier_S_trifecta_top5": 0.432,
+   "tier_S_trio_top5": 0.7546,
+   "calibration_trifecta": [
+    [
+     "0-1%",
+     792085,
+     0.0024,
+     0.0024
+    ],
+    [
+     "1-3%",
+     165586,
+     0.0174,
+     0.0156
+    ],
+    [
+     "3-6%",
+     58581,
+     0.0415,
+     0.0426
+    ],
+    [
+     "6-10%",
+     15120,
+     0.0739,
+     0.0864
+    ],
+    [
+     "10-20%",
+     2062,
+     0.1171,
+     0.1465
+    ],
+    [
+     "20-101%",
+     6,
+     0.205,
+     0.5
+    ]
+   ]
+  },
+  "cond": {
+   "all_trifecta_top1": 0.0978,
+   "all_trio_top1": 0.2473,
+   "all_trifecta_top3": 0.2386,
+   "all_trio_top3": 0.5377,
+   "all_trifecta_top5": 0.3432,
+   "all_trio_top5": 0.7017,
+   "tier_S_trifecta_top1": 0.1311,
+   "tier_S_trio_top1": 0.2713,
+   "tier_S_trifecta_top3": 0.3095,
+   "tier_S_trio_top3": 0.5729,
+   "tier_S_trifecta_top5": 0.4361,
+   "tier_S_trio_top5": 0.7508,
+   "calibration_trifecta": [
+    [
+     "0-1%",
+     815774,
+     0.0025,
+     0.0025
+    ],
+    [
+     "1-3%",
+     147989,
+     0.0171,
+     0.0172
+    ],
+    [
+     "3-6%",
+     47115,
+     0.0417,
+     0.0431
+    ],
+    [
+     "6-10%",
+     16419,
+     0.0755,
+     0.0727
+    ],
+    [
+     "10-20%",
+     5915,
+     0.1266,
+     0.1275
+    ],
+    [
+     "20-101%",
+     228,
+     0.2271,
+     0.2193
+    ]
+   ]
+  }
+ },
+ "segment_model": "cond",
+ "segments": [
+  {
+   "bet": "3連複1点",
+   "condition": {
+    "tier": "S",
+    "H_quantile": null,
+    "wind_prevday": "windy",
+    "water": "tidal"
+   },
+   "discover": {
+    "races": 223,
+    "roi": 0.9242,
+    "lo": 0.7226,
+    "hi": 1.1149,
+    "hit": 0.3094
+   },
+   "validate": {
+    "races": 189,
+    "roi": 0.9952,
+    "lo": 0.7941,
+    "hi": 1.2117,
+    "hit": 0.3439
+   }
+  },
+  {
+   "bet": "3連複1点",
+   "condition": "baseline_all",
+   "validate": {
+    "races": 8604,
+    "roi": 0.7841,
+    "lo": 0.7525,
+    "hi": 0.8168,
+    "hit": 0.2474
+   }
+  },
+  {
+   "bet": "3連複3点",
+   "condition": {
+    "tier": "S",
+    "H_quantile": 0.25,
+    "wind_prevday": null,
+    "water": "fresh"
+   },
+   "discover": {
+    "races": 238,
+    "roi": 0.8927,
+    "lo": 0.7972,
+    "hi": 0.988,
+    "hit": 0.7563
+   },
+   "validate": {
+    "races": 199,
+    "roi": 0.7874,
+    "lo": 0.6788,
+    "hi": 0.8903,
+    "hit": 0.6633
+   }
+  },
+  {
+   "bet": "3連複3点",
+   "condition": "baseline_all",
+   "validate": {
+    "races": 8604,
+    "roi": 0.7916,
+    "lo": 0.7722,
+    "hi": 0.8106,
+    "hit": 0.538
+   }
+  },
+  {
+   "bet": "3連複5点",
+   "condition": {
+    "tier": "all",
+    "H_quantile": null,
+    "wind_prevday": "windy",
+    "water": "fresh"
+   },
+   "discover": {
+    "races": 239,
+    "roi": 0.8592,
+    "lo": 0.7565,
+    "hi": 0.9753,
+    "hit": 0.7657
+   },
+   "validate": {
+    "races": 345,
+    "roi": 0.7891,
+    "lo": 0.708,
+    "hi": 0.8641,
+    "hit": 0.713
+   }
+  },
+  {
+   "bet": "3連複5点",
+   "condition": "baseline_all",
+   "validate": {
+    "races": 8604,
+    "roi": 0.7895,
+    "lo": 0.7743,
+    "hi": 0.8068,
+    "hit": 0.7022
+   }
+  },
+  {
+   "bet": "3連単3点",
+   "condition": {
+    "tier": "all",
+    "H_quantile": null,
+    "wind_prevday": "windy",
+    "water": "fresh"
+   },
+   "discover": {
+    "races": 239,
+    "roi": 0.9795,
+    "lo": 0.7639,
+    "hi": 1.237,
+    "hit": 0.3054
+   },
+   "validate": {
+    "races": 345,
+    "roi": 0.843,
+    "lo": 0.6732,
+    "hi": 1.024,
+    "hit": 0.2493
+   }
+  },
+  {
+   "bet": "3連単3点",
+   "condition": "baseline_all",
+   "validate": {
+    "races": 8604,
+    "roi": 0.764,
+    "lo": 0.7304,
+    "hi": 0.7989,
+    "hit": 0.2387
+   }
+  },
+  {
+   "bet": "3連単5点",
+   "condition": {
+    "tier": "S",
+    "H_quantile": 0.25,
+    "wind_prevday": null,
+    "water": "fresh"
+   },
+   "discover": {
+    "races": 238,
+    "roi": 0.9327,
+    "lo": 0.8076,
+    "hi": 1.087,
+    "hit": 0.584
+   },
+   "validate": {
+    "races": 199,
+    "roi": 1.0097,
+    "lo": 0.8382,
+    "hi": 1.1842,
+    "hit": 0.5528
+   }
+  },
+  {
+   "bet": "3連単5点",
+   "condition": "baseline_all",
+   "validate": {
+    "races": 8604,
+    "roi": 0.7819,
+    "lo": 0.7548,
+    "hi": 0.8107,
+    "hit": 0.3434
+   }
+  },
+  {
+   "bet": "3連単10点",
+   "condition": {
+    "tier": "SA",
+    "H_quantile": 0.5,
+    "wind_prevday": "windy",
+    "water": "tidal"
+   },
+   "discover": {
+    "races": 280,
+    "roi": 0.854,
+    "lo": 0.7346,
+    "hi": 0.9977,
+    "hit": 0.6429
+   },
+   "validate": {
+    "races": 222,
+    "roi": 0.8808,
+    "lo": 0.7431,
+    "hi": 1.0242,
+    "hit": 0.6577
+   }
+  },
+  {
+   "bet": "3連単10点",
+   "condition": "baseline_all",
+   "validate": {
+    "races": 8604,
+    "roi": 0.7894,
+    "lo": 0.7685,
+    "hi": 0.8124,
+    "hit": 0.5188
+   }
+  }
+ ],
+ "segments_tested": 486,
+ "survivors": [],
+ "runtime_min": 1.7
+}

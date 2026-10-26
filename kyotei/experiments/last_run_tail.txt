@@ -1,14 +1,20 @@
-history: 879 days 2024-05-30..2026-10-25, fan files: ['2304', '2310', '2404', '2410', '2504', '2510', '2604']
-races: 133652
-  fold 2026-08-31: train 125040 test 1079 (18s)
-  fold 2026-09-07: train 126119 test 1020 (28s)
-  fold 2026-09-14: train 127139 test 1162 (39s)
-  fold 2026-09-21: train 128301 test 1045 (49s)
-  fold 2026-09-28: train 129346 test 1080 (60s)
-  fold 2026-10-05: train 130426 test 1043 (70s)
-  fold 2026-10-12: train 131469 test 1092 (81s)
-  fold 2026-10-19: train 132561 test 1091 (91s)
-model {"test_from": "2026-08-31", "test_to": "2026-10-25", "lambda": [0.65, 0.45], "diff_vs_lane1": {"diff": 0.020668834184858337, "lo": 0.014282396655829076, "hi": 0.02717138875986995}, "beats_lane1": true, "full": {"top1": 0.5711, "logloss": 1.177, "brier": 0.5781, "pick_lane1_share": 0.8409, "ece": 0.0045, "roi_win": 0.909, "tri3_hit": 0.2298, "tri_logloss": 3.8512}, "base": {"top1": 0.5655, "logloss": 1.2107, "brier": 0.591, "pick_lane1_share": 0.8792, "ece": 0.005, "roi_win": 0.9055, "tri3_hit": 0.2204, "tri_logloss": 4.0229}, "prior": {"top1": 0.5504, "logloss": 1.3501, "brier": 0.6446, "pick_lane1_share": 1.0, "ece": 0.0022, "roi_win": 0.9066, "tri3_hit": 0.1703, "tri_logloss": 4.3709}, "lane1": {"top1": 0.5504, "roi_win": 0.9066}}
+fold 0 2026-07-06 44s
+fold 1 2026-07-13 47s
+fold 2 2026-07-20 52s
+fold 3 2026-07-27 56s
+fold 4 2026-08-03 60s
+fold 5 2026-08-10 64s
+fold 6 2026-08-17 68s
+fold 7 2026-08-24 72s
+fold 8 2026-08-31 75s
+fold 9 2026-09-07 79s
+fold 10 2026-09-14 83s
+fold 11 2026-09-21 87s
+fold 12 2026-09-28 91s
+fold 13 2026-10-05 95s
+fold 14 2026-10-12 99s
+fold 15 2026-10-19 103s
+{"loss": {"pl": {"ll_2nd": 1.38702, "ll_3rd": 1.28713, "ll_trifecta": 3.85117}, "cond": {"ll_2nd": 1.35819, "ll_3rd": 1.25216, "ll_trifecta": 3.78737}, "trifecta_diff_cond_minus_pl": {"diff": -0.0638, "lo": -0.07326, "hi": -0.05559}}, "hits": {"pl": {"all_trifecta_top1": 0.0891, "all_trio_top1": 0.2378, "all_trifecta_top3": 0.2298, "all_trio_top3": 0.5308, "all_trifecta_top5": 0.3329, "all_trio_top5": 0.6937, "tier_S_trifecta_top1": 0.1132, "tier_S_trio_top1": 0.2548, "tier_S_trifecta_top3": 0.2986, "tier_S_trio_top3": 0.5721, "tier_S_trifecta_top5": 0.432, "tier_S_trio_top5": 0.7546, "calibration_trifecta": [["0-1%", 792085, 0.0024, 0.0024], ["1-3%", 165586, 0.0174, 0.0156], ["3-6%", 58581, 0.0415, 0.0426], ["6-10%", 15120, 0.0739, 0.0864], ["10-20%", 2062, 0.1171, 0.1465], ["20-101%", 6, 0.205, 0.5]]}, "cond": {"all_trifecta_top1": 0.0978, "all_trio_top1": 0.2473, "all_trifecta_top3": 0.2386, "all_trio_top3": 0.5377, "all_trifecta_top5": 0.3432, "all_trio_top5": 0.7017, "tier_S_trifecta_top1": 0.1311, "tier_S_trio_top1": 0.2713, "tier_S_trifecta_top3": 0.3095, "tier_S_trio_top3": 0.5729, "tier_S_trifecta_top5": 0.4361, "tier_S_trio_top5": 0.7508, "calibration_trifecta": [["0-1%", 815774, 0.0025, 0.0025], ["1-3%", 147989, 0.0171, 0.0172], ["3-6%", 47115, 0.0417, 0.0431], ["6-10%", 16419, 0.0755, 0.0727], ["10-20%", 5915, 0.1266, 0.1275], ["20-101%", 228, 0.2271, 0.2193]]}}, "segments_tested": 486, "survivors": [], "runtime_min": 1.7}
 predictions 2026-10-26 already published; keep as is
 cumulative {"days": 3, "graded_races": 503, "win_hits": 286, "tri_hits": 122, "near": 77, "stake_win": 50300, "return_win": 45030, "stake_tri": 150900, "return_tri": 115530, "base_hits": 278, "base_return": 45490, "win_rate": 0.5686, "base_win_rate": 0.5527, "tri_rate": 0.2425, "roi_win": 0.8952, "roi_tri": 0.7656, "roi_base": 0.9044, "ana": {"days": 0, "races": 0, "hits": 0, "stake": 0, "return": 0, "manshu_hits": 0, "manshu_races": 0, "roi": 0.0}, "by_bet": {}, "star_by_bet": {}}
 site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html
