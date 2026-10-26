@@ -16,7 +16,19 @@
   "tri_rate": 0.2425,
   "roi_win": 0.8952,
   "roi_tri": 0.7656,
-  "roi_base": 0.9044
+  "roi_base": 0.9044,
+  "ana": {
+   "days": 0,
+   "races": 0,
+   "hits": 0,
+   "stake": 0,
+   "return": 0,
+   "manshu_hits": 0,
+   "manshu_races": 0,
+   "roi": 0.0
+  },
+  "by_bet": {},
+  "star_by_bet": {}
  },
  "tiers": {},
  "daily": [

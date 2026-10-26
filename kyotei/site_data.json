@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_at": "2026-10-26T11:31:06+09:00",
+ "generated_at": "2026-10-26T17:56:04+09:00",
  "page_url": "https://hiro0530.github.io/zeroichi-store/kyotei/",
  "today": {
   "date": "2026-10-26",
@@ -5056,7 +5056,8 @@
    "20261026-09-11",
    "20261026-08-12",
    "20261026-24-08"
-  ]
+  ],
+  "ana": null
  },
  "yesterday": {
   "date": "2026-10-25",
@@ -9428,7 +9429,8 @@
     "pnl_base": 10,
     "pnl_race": -290
    }
-  ]
+  ],
+  "ana": []
  },
  "record": {
   "total": {
@@ -9449,6 +9451,18 @@
    "roi_win": 0.8952,
    "roi_tri": 0.7656,
    "roi_base": 0.9044,
+   "ana": {
+    "days": 0,
+    "races": 0,
+    "hits": 0,
+    "stake": 0,
+    "return": 0,
+    "manshu_hits": 0,
+    "manshu_races": 0,
+    "roi": 0.0
+   },
+   "by_bet": {},
+   "star_by_bet": {},
    "stake_base": 50300,
    "pnl_win": -5270,
    "pnl_tri": -35370,
@@ -9775,6 +9789,12 @@
     "roi_win": 0.9171963764778136
    }
   }
+ },
+ "bet_names": {
+  "tansho": "単勝◎",
+  "fukusho": "複勝◎",
+  "trio3": "3連複3点",
+  "trifecta3": "3連単3点"
  },
  "disclaimers": [
   "ここの予想は無料の参考情報です。当たる保証はありませんし、これまでの成績がこの先も続くとは限りません。舟券を買うかどうかは、ご自身で決めてください。",
