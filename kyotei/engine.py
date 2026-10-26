@@ -298,6 +298,10 @@ def main(mode: str):
         repay_history()
         import exp_bets
         exp_bets.main(hist_dir())
+    elif mode == "ana":
+        # 「今日の穴(万舟ねらい)」の決め方の検証
+        import exp_ana
+        exp_ana.main(hist_dir())
     elif mode == "roi":
         # 舟券の種類・自信度・場ごとの仮の回収率(学習外。見つける期間と確かめる期間を分ける)
         import exp_roi
