@@ -83,6 +83,7 @@ jobs:
       - name: Update gh-pages /kyotei/ only
         run: |
           cp kyotei/site/index.html /tmp/kyotei_index.html
+          mkdir -p /tmp/kyotei_html && cp kyotei/site/terms.html kyotei/site/join.html /tmp/kyotei_html/ 2>/dev/null || true   # 有料版の利用規約・会員のメール登録
           mkdir -p /tmp/kyotei_img && cp kyotei/site/*.jpg /tmp/kyotei_img/ 2>/dev/null || true   # 見出し写真
           git fetch origin gh-pages
           git worktree add /tmp/pages origin/gh-pages
@@ -91,7 +92,8 @@ jobs:
           mkdir -p kyotei
           cp /tmp/kyotei_index.html kyotei/index.html
           cp /tmp/kyotei_img/*.jpg kyotei/ 2>/dev/null || true
-          git add kyotei/index.html kyotei/*.jpg 2>/dev/null || git add kyotei/index.html
+          cp /tmp/kyotei_html/*.html kyotei/ 2>/dev/null || true
+          git add kyotei/*.html kyotei/*.jpg 2>/dev/null || git add kyotei/index.html
           if git commit -m "kyotei page: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
             for i in 1 2 3; do git pull --rebase -X theirs origin gh-pages && git push origin HEAD:gh-pages && break; git rebase --abort 2>/dev/null; sleep 5; done
           fi

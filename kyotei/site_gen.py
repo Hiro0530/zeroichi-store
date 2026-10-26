@@ -611,6 +611,7 @@ def how_html(model: dict, summ: dict) -> str:
 
 def build():
     SITE.mkdir(exist_ok=True)
+    import paid  # 有料版への入口(無料メール・有料版の中身・料金・申込み)。中身は paid.py だけで直す
     data, p, r, summ, model = load()
     t = summ.get("total") or {}
     desc = "ボートレースの全レース予想を毎朝、締切前に公開。翌朝に当たり外れと払戻金を全部答え合わせしています。"
@@ -619,7 +620,7 @@ def build():
          f"<meta property=og:title content='{TITLE}'><meta property=og:description content='{desc}'><meta property=og:type content=website>"
          f"<meta property=og:url content='{PAGE_URL}'><meta name=twitter:card content=summary>"
          "<meta name=theme-color content='#ffffff'>"
-         f"{FONTS}<style>{CSS}</style></head><body>"]
+         f"{FONTS}<style>{CSS}{paid.CSS}</style></head><body>"]
     prev = load_pred(r["summary"]["date"]) if r else None
     label = "昨日" if (p and r and (date.fromisoformat(p["date"]) - date.fromisoformat(r["summary"]["date"])).days == 1) else (sday(r["summary"]["date"]) if r else "")
     lead = "毎朝、その日の全レースの予想を締切前に出しています。翌朝に全部答え合わせ。当たりも外れも、払戻金もそのまま載せています。"
@@ -628,21 +629,23 @@ def build():
                  "<span class=credit>写真はイメージ(生成画像)</span>"
                  f"<div class=over><div class=wrap><a class=by href='../'>ZEROICHI WORKS</a><h1>{TITLE}</h1><p class=lead>{lead}</p></div></div></header>"
                  "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
-                 f"<div class=wrap>{hook_html(p, r, prev)}{atari_html(r, label)}</div><main class=wrap>")
+                 f"<div class=wrap>{hook_html(p, r, prev)}{atari_html(r, label)}{paid.slim_html()}</div><main class=wrap>")
     else:
         h.append("<header class=mast><div class=wrap><a class=by href='../'>ZEROICHI WORKS</a>"
                  f"<h1>{TITLE}</h1><p class=lead>{lead}</p>"
                  "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
-                 + hook_html(p, r, prev) + atari_html(r, label) + "</div></header><main class=wrap>")
+                 + hook_html(p, r, prev) + atari_html(r, label) + paid.slim_html() + "</div></header><main class=wrap>")
     h.append("<div class=top2>")
     h.append(star_today_html(p) if p else "<section class=st><h2>今日の自信あり</h2><p class=cap>今日の予想はまだ出ていません。毎朝7時ごろに出ます。</p></section>")
     h.append(star_answer_html(r, prev, label) if r else "")
     h.append(today_html(p) if p else "")
     h.append(hits_html(r) if r else "")
     h.append("</div>")
+    h.append(paid.mail_box_html())
     if r:
         h.append(results_html(r, prev))
     h.append(record_html(t, summ, model))
+    h.append(paid.offer_html(prev, r, model))
     h.append(calm_html(data.get("disclaimers") or []))
     if model:
         h.append(how_html(model, summ))
@@ -651,9 +654,12 @@ def build():
              + "<p>正式な結果は主催者の発表で確認してください。</p>"
              "<p>予想と集計は毎朝プログラムで自動更新しています。運営 ZEROICHI WORKS。"
              "<a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>更新の記録</a>"
-             "・X <a href='https://x.com/ai_kyotei_kotae'>@ai_kyotei_kotae</a>(自動投稿)</p></div></footer>"
+             "・X <a href='https://x.com/ai_kyotei_kotae'>@ai_kyotei_kotae</a>(自動投稿)</p>"
+             f"<p>{paid.footer_links()}・<a href='../privacy.html'>プライバシーポリシー</a></p></div></footer>"
              f"<script>{JS}</script></body></html>")
     (SITE / "index.html").write_text("\n".join(h), encoding="utf-8")
+    (SITE / "terms.html").write_text(paid.terms_page(), encoding="utf-8")
+    (SITE / "join.html").write_text(paid.join_page(), encoding="utf-8")
     print("site built", SITE / "index.html")
 
 
