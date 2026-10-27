@@ -42,7 +42,13 @@ UA = "kyotei-kotaeawase/0.4 (+low-frequency; one odds page per bet type, ~10 min
 PAGES = {"tf": "oddstf", "2tf": "odds2tf", "3f": "odds3f", "3t": "odds3t"}
 TIERS = ("S",)
 EV_MIN = 1.15             # 仮に買う条件: 較正+市場と混ぜた確率 × オッズ
-W_BLEND = 0.5             # モデルの重み(紙の上の記録が2〜3週たまったら、記録から決め直す)
+W_BLEND = 0.5             # モデルの重み(既定。券種ごとの値は W_BY_BET)
+# 券種ごとのモデルの重み(2026-10-28、exp_v4 の確定オッズとの比較から): 2連単・3連単は確定オッズの方がモデルより
+# 当たり具合がはっきり良く(対数損失 2連単 +0.04、3連単 +0.09 だけモデルが悪い)、線形に混ぜたときの最適なモデルの重みは
+# 2連単 0.25・3連単 0.10(直前版)。0.5 のままだとモデルを信じすぎ、期待値1.15以上の「見かけの割安」が増える。
+# 単勝は市場の確率の作り方(払戻率で割るだけ)に本命・大穴の偏りが残るので比較が決まらず、0.5 のまま。
+# 締切前の記録がたまったら exp_blend.py(mode blend)で決め直す。
+W_BY_BET = {"tansho": 0.5, "exacta": 0.25, "quinella": 0.25, "trio": 0.15, "trifecta": 0.10}
 BET_TYPES = ("tansho", "exacta", "trio", "trifecta")   # 仮に買う券種(2026-10-26 オーナー判断で3連複・3連単も)。複勝・2連複は記録のみ
 CORE = ("tf", "2tf", "3f", "3t")   # 毎回読むページ(単勝・複勝 / 2連単・2連複 / 3連複 / 3連単)。1日200回の上限で約50レース
 OPTIONAL = ()
@@ -254,7 +260,7 @@ def tick(now: datetime | None = None):
     PD.mkdir(parents=True, exist_ok=True)
     rf = PD / f"{d:%Y-%m-%d}.json"
     rec = json.loads(rf.read_text()) if rf.exists() else {"date": d.isoformat(), "races": {}}
-    rec["settings"] = {"window_min": WINDOW, "ev_min": EV_MIN, "w": W_BLEND, "bet_types": list(BET_TYPES), "calibrated": bool(maps)}
+    rec["settings"] = {"window_min": WINDOW, "ev_min": EV_MIN, "w": W_BY_BET, "bet_types": list(BET_TYPES), "calibrated": bool(maps)}
     if rec.get("stopped"):
         print("stopped for today:", rec["stopped"])
         return
@@ -324,7 +330,7 @@ def tick(now: datetime | None = None):
                 if bet == "fukusho":   # 複勝は当たりが2つあるので市場との混ぜ方が決まらない。較正した確率だけで記録
                     pb, pm = {k: cal[bet][k] for k in odds if k in cal[bet]}, {}
                 else:
-                    pb, pm = blend(cal[bet], odds, W_BLEND)
+                    pb, pm = blend(cal[bet], odds, W_BY_BET.get(bet, W_BLEND))
                 rows = []
                 for k, o in odds.items():
                     if k not in pb:
@@ -343,7 +349,7 @@ def tick(now: datetime | None = None):
                                          "p_blend": r["p_blend"], "ev": r["ev_blend"], "ev_raw": r["ev_raw"], "ev_cal": r["ev_cal"]})
         rec["races"][x["key"]] = {"fetched_at": now.isoformat(timespec="seconds"), "close": x["close"], "tier": x.get("tier"),
                                   "pages": pages, "checks": checks, "bets": bets, "logs": logs, "pre": pre_log,
-                                  "w": W_BLEND}
+                                  "w": W_BY_BET}
         rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
         print(x["key"], len(bets), "paper bets", checks)
 
