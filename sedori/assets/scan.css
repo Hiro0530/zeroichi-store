@@ -1,0 +1,143 @@
+/* バーコード読み取りのページ(sedori.css の上に重ねる) */
+.sc{display:grid;grid-template-columns:400px minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start;padding-top:16px}
+.sc-cam{display:flex;flex-direction:column;gap:12px;position:sticky;top:12px}
+
+/* カメラ */
+.cam{position:relative;aspect-ratio:4/3;background:#0e1620;border-radius:4px;overflow:hidden;color:#fff}
+.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}
+.cam[data-state="on"] video{opacity:1}
+.cam-band{position:absolute;left:5%;right:5%;top:27.5%;height:45%;border:2px solid rgba(255,255,255,.9);border-radius:6px;box-shadow:0 0 0 999px rgba(8,14,22,.38);display:none}
+.cam-band i{position:absolute;left:8px;right:8px;top:50%;height:2px;background:#ff5a4e;opacity:.85}
+.cam[data-state="on"] .cam-band{display:block}
+.cam-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;
+  background:repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.035) 18px 20px,transparent 20px 23px,rgba(255,255,255,.05) 23px 27px)}
+.cam[data-state="on"] .cam-idle{display:none}
+.cam-idle p{margin:0;font-size:12.5px;color:#b9c6d4;max-width:300px;line-height:1.7}
+.cam-go{height:48px;padding:0 28px;border:0;border-radius:4px;background:#fff;color:var(--hd);font-weight:700;font-size:15px;cursor:pointer}
+.cam-go:hover{background:#e9eef4}
+.cam[data-state="loading"] .cam-go{opacity:.6;pointer-events:none}
+.cam-msg{position:absolute;left:8px;right:8px;bottom:8px;margin:0;padding:6px 10px;background:rgba(14,22,32,.82);border-radius:3px;font-size:12.5px;opacity:0;transition:opacity .15s;text-align:center}
+.cam-msg.on{opacity:1}
+.cam-bar{display:flex;align-items:center;gap:8px;min-height:28px}
+.cam-bar .btn[aria-pressed="true"]{background:var(--sel);border-color:var(--sel-line)}
+.cam-opt{margin-left:auto;display:flex;gap:12px;font-size:12px;color:var(--sub)}
+.cam-opt label{display:flex;align-items:center;gap:4px;cursor:pointer}
+
+.manual label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px;font-weight:700}
+.manual-row{display:flex;gap:8px}
+.manual-row input{flex:1;min-width:0;height:36px;border:1px solid var(--line2);border-radius:3px;padding:0 10px;font-size:15px;letter-spacing:.04em}
+.manual-row .btn{height:36px}
+
+.pair{display:grid;grid-template-columns:112px 1fr;gap:12px;align-items:center;font-size:12px}
+.pair p{margin:0 0 4px}
+.qr svg{display:block;width:100%;height:auto}
+.qr{background:#fff}
+
+/* 選んだ商品 */
+.sc-now{min-width:0}
+.now-empty{border:1px dashed var(--line2);padding:16px 20px;color:var(--sub)}
+.now-empty p{margin:0 0 8px}
+.steps-mini{margin:0;padding-left:20px;font-size:12.5px}
+.steps-mini li{margin:2px 0}
+.now{border:1px solid var(--line);padding:16px;background:#fff}
+.now-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.now-k{font-size:11px;color:var(--mute);margin-right:8px}
+.now-jan{font-size:22px;letter-spacing:.06em;font-weight:700}
+.now-chk{font-size:11.5px;margin-left:8px}
+.now-chk.bad{color:var(--bad)}
+.now-at{font-size:11.5px;color:var(--mute)}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.links a{display:inline-flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--line2);border-radius:3px;text-decoration:none;color:var(--ink);font-size:12.5px;background:#fff}
+.links a::after{content:"";width:7px;height:7px;margin-left:6px;border-top:1.5px solid var(--mute);border-right:1.5px solid var(--mute);transform:rotate(45deg) translate(-1px,1px)}
+.links a:hover{border-color:var(--ac);color:var(--ac)}
+.seg.to{border-color:var(--line2);height:32px;margin-bottom:12px}
+.seg.to button{color:var(--sub);padding:0 14px;font-size:12.5px}
+.seg.to button[aria-pressed="true"]{background:var(--hd);color:#fff}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.fgrid label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--sub);min-width:0}
+.fgrid .f2{grid-column:1/-1}
+.fgrid input,.fgrid select{height:36px;border:1px solid var(--line2);border-radius:3px;padding:0 8px;background:#fff;font-size:14px;min-width:0;width:100%}
+.yenin{display:flex;align-items:center;gap:4px}
+.yenin input{text-align:right;font-weight:700;font-size:15px}
+.yenin i{font-style:normal;color:var(--mute)}
+.verdict{margin:14px 0 12px;border-top:2px solid var(--ink);padding-top:10px}
+.vd-main{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700}
+.vd-main span{font-size:13px}
+.vd-main b{font-size:28px;line-height:1.2}
+.vd-main b i{font-size:13px;font-style:normal;margin-left:2px;font-weight:400}
+.vd-main.good b,.vd-main.good span{color:var(--good)}
+.vd-main.bad b,.vd-main.bad span{color:var(--bad)}
+.vd-cells{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);margin-top:8px}
+.vd-cells div{padding:6px 8px;border-left:1px solid var(--line);display:flex;flex-direction:column}
+.vd-cells div:first-child{border-left:0}
+.vd-cells span{font-size:11px;color:var(--mute)}
+.vd-cells b{font-size:14px}
+.acts{display:grid;grid-template-columns:1fr 1.3fr;gap:8px}
+.acts .btn{height:44px;font-size:14px}
+.acts .btn.done{background:var(--good);border-color:var(--good);color:#fff}
+.acts .btn.ghost.done{background:#eef7f1;color:var(--good);border-color:#9fd0b2}
+
+/* 一覧 */
+.sc-list{min-width:0}
+.list-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.list-hd h2{font-size:15px;margin:0}
+.list-hd .n{font-size:12px;color:var(--mute);font-weight:400;margin-left:4px}
+.list-acts{display:flex;gap:6px;flex-wrap:wrap}
+.slist{width:100%;border-collapse:collapse;font-size:12.5px}
+.slist th{background:var(--th);text-align:left;font-weight:700;font-size:11.5px;color:var(--sub);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.slist td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.slist .r{text-align:right}
+.slist tr[data-jan]{cursor:pointer}
+.slist tr[data-jan]:hover td{background:var(--hover)}
+.slist tr.sel td{background:var(--sel)}
+.slist tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--sel-line)}
+.slist tr.flash td{animation:flash 1s ease-out}
+@keyframes flash{0%{background:#ffe48a}100%{background:var(--sel)}}
+.slist .jan{font-weight:700;letter-spacing:.03em;display:block}
+.slist .nm{display:block;font-size:11.5px;color:var(--sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slist b.good{color:var(--good)}.slist b.bad{color:var(--bad)}
+.tag{display:inline-block;font-size:11px;border:1px solid var(--line2);padding:0 5px;margin-right:4px;border-radius:2px;color:var(--sub);white-space:nowrap}
+.tag.ok{border-color:#9fd0b2;color:var(--good);background:#eef7f1}
+.linkbtn{border:0;background:none;color:var(--link);text-decoration:underline;cursor:pointer;padding:0;font-size:12px}
+.list-empty{border:1px dashed var(--line2);padding:12px 16px;color:var(--mute);font-size:12.5px;margin:0}
+.list-foot{text-align:right;margin:8px 0 0}
+
+/* 受け渡しのシート */
+.sheet{position:fixed;inset:0;background:rgba(14,22,32,.45);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet-in{background:#fff;width:min(520px,100%);max-height:92vh;overflow:auto;border-radius:4px;padding:16px 20px 20px}
+.sheet-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sheet-hd h2{font-size:15px;margin:0}
+.sheet .x{border:1px solid var(--line2);background:#fff;border-radius:3px;height:28px;padding:0 10px;cursor:pointer;font-size:12px}
+.sheet p{margin:0 0 10px}
+.sheet textarea{width:100%;border:1px solid var(--line2);border-radius:3px;padding:8px;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+.send-acts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.send-acts .btn{height:40px}
+.send-qr{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center;margin:8px 0}
+.r-cam{position:relative;aspect-ratio:1/1;max-width:320px;background:#0e1620;margin-top:8px;border-radius:4px;overflow:hidden}
+.r-cam video{width:100%;height:100%;object-fit:cover}
+body.noscroll{overflow:hidden}
+
+@media(max-width:1280px){
+  .sc{grid-template-columns:360px minmax(0,1fr)}
+  .sc-list{grid-column:1/-1}
+}
+@media(max-width:860px){
+  .sc{grid-template-columns:minmax(0,1fr);gap:16px;padding-top:12px}
+  .sc-cam{position:static}
+  .cam{aspect-ratio:auto;height:min(42vh,320px)}
+  .pair-box{display:none}
+  .manual-row input{font-size:16px;height:44px}
+  .manual-row .btn{height:44px}
+  .fgrid input,.fgrid select{height:44px;font-size:16px}
+  .now{padding:12px}
+  .now-jan{font-size:20px}
+  .acts .btn{height:48px}
+  .slist th:nth-child(3),.slist td:nth-child(3){display:none}
+  .slist .nm{max-width:140px}
+  .send-qr{grid-template-columns:1fr}
+  .send-qr .qr{max-width:240px}
+  .list-acts .btn{height:36px}
+}
+@media(min-width:861px){ #l-send{display:none} }
+@media(max-width:860px){ #l-recv{display:none} }
+@media (prefers-reduced-motion:reduce){.cam video,.cam-msg{transition:none}.slist tr.flash td{animation:none}}
