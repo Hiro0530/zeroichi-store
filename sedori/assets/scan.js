@@ -32,7 +32,7 @@
     var code = normalize(raw);
     if (!/^\d{8}$|^\d{13}$/.test(code)) { if (manual) U.toast('8桁か13桁の数字を入れてください'); return; }
     var now = Date.now();
-    if (!manual && code === lastCode && now - lastAt < 2500) return;   // 同じ枠で何度も読まない
+    if (!manual && code === lastCode && now - lastAt < 2500) { lastAt = now; return; }   // 映っている間は同じ商品を読まない(離して戻すまで)
     lastCode = code; lastAt = now;
     var valid = C.janValid(code);
     if (!valid && !manual) return;                              // 読み違いは黙って捨てる

@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>せどりの利益計算と古物台帳の自動記録｜ZEROICHI WORKS</title>
+<meta name="description" content="仕入れる前に、手数料・送料・ポイントを引いた利益と仕入れ値の上限。「仕入れた」で古物台帳に1行、「売れた」で売却欄まで埋まります。楽天・Yahoo!→Amazon、無在庫、メルカリ、ヤフオク、業者オークションに対応。スタンダードは14日無料。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/lp/">
+<meta property="og:title" content="せどりの利益計算と古物台帳の自動記録">
+<meta property="og:description" content="利益計算と古物台帳の自動記録が、ひと続き。5つの仕入れルート、店頭のバーコード読み取り、古物台帳の列順で書き出し。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/lp/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/lp/img/demo-3.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="./lp.css?v=20261027a">
+<script>document.documentElement.className+=" js"</script>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <nav class="top-nav" aria-label="このページの中">
+      <a href="#how">使い方</a><a href="#routes">ルート別</a><a href="#daicho">古物台帳</a><a href="#scan">店頭の読み取り</a><a href="#price">料金</a><a href="#faq">よくある質問</a>
+    </nav>
+    <a class="cta sm" data-cta="header" href="../plans/">14日無料で試す</a>
+  </div>
+</header>
+
+<main>
+<!-- ============ 最初の画面 ============ -->
+<section class="hero">
+  <div class="in hero-in">
+    <div class="hero-txt">
+      <p class="kicker">せどりの利益計算と古物台帳</p>
+      <h1><span class="nw">利益計算と</span><span class="nw">古物台帳の自動記録が、</span><br><span class="nw">ひと続き。</span></h1>
+      <p class="lead">仕入れる前に、手数料・送料・ポイントを引いた利益と、仕入れ値の上限。「仕入れた」を押せば古物台帳に1行入り、「売れた」で売却の欄まで埋まります。</p>
+      <div class="hero-cta">
+        <a class="cta" data-cta="hero" href="../plans/">14日無料で試す</a>
+        <p class="cta-note">スタンダード 月2,480円(税込)。14日間は無料で、その後は自動で月額に切り替わります。計算だけなら<a href="../">無料版</a>を登録なしで使えます。</p>
+      </div>
+    </div>
+
+    <figure class="demo" id="demo" aria-label="画面の動き(20秒)">
+      <div class="demo-frame">
+        <div class="demo-bar"><span class="demo-url">hiro0530.github.io/zeroichi-store/sedori/</span><button type="button" class="demo-pp" id="demo-pp" aria-label="一時停止">一時停止</button></div>
+        <div class="demo-stage"><div class="demo-zoom" id="demo-stage">
+          <img src="img/demo-1.jpg" alt="楽天のポイント高還元の一覧。全行に利益が出ていて、選んだ行の内訳が右に表示されている" width="1600" height="1000" class="on">
+          <img src="img/demo-2.jpg" alt="「この価格で出品」で、目標の利益を残せる売値が入った画面" width="1600" height="1000" loading="lazy">
+          <img src="img/demo-3.jpg" alt="「仕入れた」を押して「台帳に記録しました」と表示された画面" width="1600" height="1000" loading="lazy">
+          <img src="img/demo-4.jpg" alt="古物台帳に新しい行が入った画面" width="1600" height="1000" loading="lazy">
+          <img src="img/demo-5.jpg" alt="「売れた」で売却日・売値・相手が記入された古物台帳" width="1600" height="1000" loading="lazy">
+          <span class="cur" id="demo-cur" aria-hidden="true"><svg viewBox="0 0 20 24" width="20" height="24"><path d="M2 2v17l4.6-4.3 3 6.8 3-1.3-3-6.6H16z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+        </div></div>
+      </div>
+      <figcaption class="demo-cap">
+        <ol class="demo-steps" id="demo-steps">
+          <li class="on"><button type="button" data-i="0"><b>1</b>選ぶ</button></li>
+          <li><button type="button" data-i="1"><b>2</b>出品価格</button></li>
+          <li><button type="button" data-i="2"><b>3</b>仕入れた</button></li>
+          <li><button type="button" data-i="3"><b>4</b>台帳</button></li>
+          <li><button type="button" data-i="4"><b>5</b>売れた</button></li>
+        </ol>
+        <p class="demo-txt" id="demo-txt" aria-live="polite">一覧の全行に、手数料・FBA・ポイントを引いた利益が出ています。選んだ行の内訳は右に出ます。</p>
+      </figcaption>
+    </figure>
+  </div>
+  <div class="in facts">
+    <div><b>5</b><span>仕入れルートの計算<br>(業者オークションの参加費まで)</span></div>
+    <div><b>4操作</b><span>選ぶ → 出品価格 → 仕入れた<br>→ 売れた</span></div>
+    <div><b>13区分</b><span>古物台帳の品目と列の順で<br>Excel・CSVに書き出し</span></div>
+    <div><b data-feedate-short>10月27日</b><span>手数料・送料を確認した日<br>(出典つき)</span></div>
+  </div>
+</section>
+
+<!-- ============ 違い3つ ============ -->
+<section class="sec" id="why">
+  <div class="in">
+    <h2 class="h2">ほかの計算表と違う3つのこと</h2>
+    <div class="diff">
+      <article>
+        <p class="no">01</p>
+        <h3>仕入れルートごとに、手数料の決まりが違うまま計算</h3>
+        <p>楽天・Yahoo!→Amazon(ポイント込み)、無在庫のAmazon中古、メルカリ、ヤフオクのまとめ落札、業者オークションの落札手数料と参加費。ルートごとの料金表で、利益・損益分岐・仕入れ値の上限を出します。</p>
+      </article>
+      <article>
+        <p class="no">02</p>
+        <h3>記録は、操作のついでに残る</h3>
+        <p>「仕入れた」で古物台帳に1行、「売れた」で売却日・売値・相手が入ります。1万円以上の中古など、相手の確認が要る行には印。後からまとめて書く作業がなくなります。</p>
+      </article>
+      <article>
+        <p class="no">03</p>
+        <h3>店頭はスマホ、家ではパソコン</h3>
+        <p>スマホのブラウザでバーコードを読むだけ。アプリのインストールは要りません。読んだ商品はその場で目標の利益を満たすかを判定し、1タップで台帳とウォッチへ。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 使い方 4ステップ ============ -->
+<section class="sec alt" id="how">
+  <div class="in">
+    <h2 class="h2">使い方は4つの手順</h2>
+    <ol class="how">
+      <li><span class="n">1</span><h3>目標の利益を決める</h3><p>円か%で1回だけ。全ページの計算と「この価格で出品」の基準になります。</p></li>
+      <li><span class="n">2</span><h3>探す・読み取る</h3><p>楽天の検索、今日のポイント高還元、店頭のバーコード。どこから来た商品も同じ形で計算します。</p></li>
+      <li><span class="n">3</span><h3>仕入れた</h3><p>目標を満たす売値と仕入れ上限を見て判断。押すと古物台帳に1行入ります。</p></li>
+      <li><span class="n">4</span><h3>売れた</h3><p>売却欄が埋まり、月の利益に足されます。台帳はExcel・CSVで書き出せます。</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ ルート別 ============ -->
+<section class="sec" id="routes">
+  <div class="in">
+    <h2 class="h2">仕入れルート別の計算</h2>
+    <div class="routes">
+      <div class="rt-tabs" role="tablist" aria-label="仕入れルート">
+        <a role="tab" href="#rakuten" data-r="rakuten">楽天・Yahoo!→Amazon</a>
+        <a role="tab" href="#muzaiko" data-r="muzaiko">無在庫 Amazon中古</a>
+        <a role="tab" href="#mercari" data-r="mercari">メルカリ</a>
+        <a role="tab" href="#yahuoku" data-r="yahuoku">ヤフオク→メルカリ</a>
+        <a role="tab" href="#auction" data-r="auction">業者オークション</a>
+      </div>
+      <div class="rt-panels">
+        <article class="rt" id="rakuten" role="tabpanel">
+          <div class="rt-txt">
+            <h3>楽天・Yahoo!で仕入れて、Amazonで売る</h3>
+            <ul>
+              <li>ポイントは税抜価格×還元率で計算。ショップの倍率と自分の上乗せ(SPU・カード)を分けて入れられます</li>
+              <li>2026年4月改定後の販売手数料とFBA配送代行手数料。1,000円の境目の料金の段差も反映</li>
+              <li>目標の利益から、出品価格・損益分岐・仕入れ値の上限を逆算</li>
+            </ul>
+            <a class="more" href="../rakuten-amazon/">無料版で計算してみる</a>
+          </div>
+          <img src="img/demo-2.jpg" alt="楽天・Yahoo!→Amazonの計算画面" width="1600" height="1000" loading="lazy">
+        </article>
+        <article class="rt" id="muzaiko" role="tabpanel">
+          <div class="rt-txt">
+            <h3>無在庫で、Amazonに中古を出す</h3>
+            <ul>
+              <li>新品価格から何%下で出すかごとに、出品価格・利益・ヤフオクで払える上限を一覧に</li>
+              <li>ヤフオクの価格は自動で読み取らず、検索ページを開くだけ(規約に沿った作り)</li>
+              <li>古物商許可・本人確認・Amazonの方針の注意を同じ画面に</li>
+            </ul>
+            <a class="more" href="../muzaiko-amazon/">無料版で計算してみる</a>
+          </div>
+          <img src="img/route-muzaiko.jpg" alt="無在庫 Amazon中古の計算画面" width="1600" height="825" loading="lazy">
+        </article>
+        <article class="rt" id="mercari" role="tabpanel">
+          <div class="rt-txt">
+            <h3>メルカリで売る</h3>
+            <ul>
+              <li>販売手数料10%と、らくらく・ゆうゆうメルカリ便の全サイズ(専用資材込み)</li>
+              <li>配送方法ごとに「目標の利益が残る売値」を1表で</li>
+              <li>自分で発送するときは、2026年10月改定後の運送会社の料金でも計算</li>
+            </ul>
+            <a class="more" href="../mercari-calc/">無料版で計算してみる</a>
+          </div>
+          <img src="img/route-mercari.jpg" alt="メルカリの手数料・送料・利益の計算画面" width="1600" height="960" loading="lazy">
+        </article>
+        <article class="rt" id="yahuoku" role="tabpanel">
+          <div class="rt-txt">
+            <h3>ヤフオクで落として、メルカリで売る</h3>
+            <ul>
+              <li>落札額・送料・ポイントから、まとめ落札の1個あたりの原価を出します</li>
+              <li>1個ずつの売値と利益、全部売った時の合計</li>
+              <li>個人から1万円以上で買う時の本人確認の注意つき</li>
+            </ul>
+            <a class="more" href="../yahuoku-mercari/">無料版で計算してみる</a>
+          </div>
+          <img src="img/route-yahuoku.jpg" alt="ヤフオク→メルカリの計算画面" width="1600" height="825" loading="lazy">
+        </article>
+        <article class="rt" id="auction" role="tabpanel">
+          <div class="rt-txt">
+            <h3>業者オークション(古物市場)で仕入れる</h3>
+            <ul>
+              <li>市場ごとの落札手数料と、1回の参加費を落札した点数で割って原価に</li>
+              <li>税別の落札額を税込に直して計算</li>
+              <li>売り先はメルカリ・ヤフオク、または手数料率を入れて自由に</li>
+            </ul>
+            <a class="more" href="../auction-mercari/">無料版で計算してみる</a>
+          </div>
+          <img src="img/route-auction.jpg" alt="業者オークションの計算画面" width="1600" height="825" loading="lazy">
+        </article>
+      </div>
+    </div>
+    <p class="mid-cta"><a class="cta" data-cta="routes" href="../plans/">14日無料で試す</a></p>
+  </div>
+</section>
+
+<!-- ============ 古物台帳 ============ -->
+<section class="sec alt" id="daicho">
+  <div class="in two">
+    <div>
+      <h2 class="h2">続けるほど役に立つ、古物台帳</h2>
+      <p class="sub">台帳は「警察に見せる記録」であり、「自分の商売の成績表」でもあります。</p>
+      <dl class="keep">
+        <div><dt>3年分がたまる</dt><dd>古物の取引記録は3年間の保存が必要です。スタンダードはクラウドに保存し、パソコンとスマホで同じ台帳を見られます。機種を変えても消えません。</dd></div>
+        <div><dt>月ごとに集計</dt><dd>仕入れ額・売上・利益を月ごとに集計。どのルートで利益が残ったかが分かります。</dd></div>
+        <div><dt>確定申告の準備に使える</dt><dd>1年分の仕入れ・売上をExcel・CSVで書き出し。税の判断は税理士・税務署にご確認ください。</dd></div>
+      </dl>
+      <div class="honnin" id="honnin">
+        <h3>1万円の本人確認と「相手確認が未入力」の印</h3>
+        <p>個人から1万円以上の中古品を買うとき(ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず)は、その都度、決められた方法での本人確認が必要です。台帳は該当する行に印を付け、取引相手の情報は貼り付けるだけで氏名・住所・確認方法の欄に分かれます。</p>
+        <p class="src">出典: <a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁「非対面取引における本人確認」</a>。台帳は記録の入れ物で、法令上の判断はしません。</p>
+      </div>
+    </div>
+    <figure class="shot"><img src="img/daicho.jpg" alt="古物台帳の画面。状態のタブ、相手確認が未入力の印、売却の欄" width="1600" height="750" loading="lazy"><figcaption>状態は1クリックで進み、「売れた」で売却欄が埋まる</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ 店頭の読み取り ============ -->
+<section class="sec" id="scan">
+  <div class="in two scan-two">
+    <figure class="phone"><div class="phone-screen"><img src="img/scan-phone.jpg" alt="スマホでバーコードを読み取り、利益と仕入れ上限が表示された画面" width="520" height="1415" loading="lazy"></div></figure>
+    <div>
+      <h2 class="h2">店頭では、スマホでバーコードを読むだけ</h2>
+      <p class="sub">iPhoneのSafari・AndroidのChromeで動きます。アプリのインストールは要りません。</p>
+      <ul class="ticks">
+        <li><b>続けて読める</b>同じ商品は1回だけ数え、読めたら音と振動で知らせます</li>
+        <li><b>その場で判定</b>店頭の価格と売れている価格を入れると、目標の利益を満たすかと仕入れ上限</li>
+        <li><b>検索は1タップ</b>楽天・Yahoo!・Amazon・メルカリの売り切れ・ヤフオクの落札相場を開く</li>
+        <li><b>1タップで記録</b>「仕入れた」で台帳、「ウォッチ」で後で見る一覧へ</li>
+        <li><b>パソコンに送る</b>スキャン一覧を共有・コピー・QRでパソコンへ。スタンダードでは自動で同じ一覧に</li>
+      </ul>
+      <p class="mid-cta left"><a class="cta" data-cta="scan" href="../plans/">14日無料で試す</a><a class="more" href="../scan/">読み取りのページを開く</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 信用 ============ -->
+<section class="sec alt" id="trust">
+  <div class="in">
+    <h2 class="h2">計算の根拠と、データ・契約の扱い</h2>
+    <div class="trust">
+      <article>
+        <h3>計算の出典と確認日</h3>
+        <p>手数料・送料はすべて出典のURLと確認日をページに載せています。現在の確認日は <b data-feedate-long>2026年10月27日</b>。計算は手計算の例(73件)で検算しています。</p>
+        <a href="../#fees">出典の一覧を見る</a>
+      </article>
+      <article>
+        <h3>手数料の更新方針</h3>
+        <p>Amazon・メルカリ・ヤフオク・日本郵便などの料金改定を確認したら、計算に反映して確認日を書き換えます。変更は週刊のメールでもお知らせします。公式で確かめられない値は、画面にそう書きます。</p>
+      </article>
+      <article>
+        <h3>データの扱い</h3>
+        <p>無料版の入力と台帳は、お使いの端末のブラウザの中だけに保存されます。スタンダードの台帳はクラウドに保存しますが、当方が中身を見たり、ほかの目的に使ったりはしません。</p>
+        <a href="../../privacy.html">プライバシーポリシー</a>
+      </article>
+      <article>
+        <h3>解約</h3>
+        <p>解約はマイページの契約内容からいつでも手続きできます。次回の請求日の前日までに手続きすれば、次の請求はありません。</p>
+        <a href="../../tokushoho.html">特定商取引法に基づく表記</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 料金 ============ -->
+<section class="sec" id="price">
+  <div class="in">
+    <h2 class="h2">料金</h2>
+    <div class="plans">
+      <article class="plan">
+        <h3>無料</h3>
+        <p class="yen"><b>0</b>円</p>
+        <p class="cond">登録不要</p>
+        <ul>
+          <li>5つのルートの計算(回数の制限なし)</li>
+          <li>古物台帳(この端末に保存)・Excel・CSV</li>
+          <li>バーコード読み取り(この端末)</li>
+          <li>楽天の検索 1日20回</li>
+        </ul>
+        <a class="plain" href="../">そのまま使う</a>
+      </article>
+      <article class="plan main">
+        <p class="tag">14日無料</p>
+        <h3>スタンダード</h3>
+        <p class="yen">月<b>2,480</b>円<small>(税込)</small></p>
+        <p class="cond">先着100名は月1,980円(続けている間は据え置き)<br>年払い 24,800円</p>
+        <ul>
+          <li>無料版のすべて</li>
+          <li>台帳をクラウドに保存(3年分)、パソコンとスマホで同じ台帳</li>
+          <li>スキャン一覧の自動同期</li>
+          <li>月ごとの利益集計・確定申告用の書き出し</li>
+          <li>楽天の検索 制限なし・JANの一括計算</li>
+        </ul>
+        <a class="cta full" data-cta="price" href="../plans/">14日無料で試す</a>
+        <p class="fine">14日間は無料で、その後は自動で月額に切り替わります。解約はマイページの契約内容からいつでも手続きできます。次回の請求日の前日までに手続きすれば、次の請求はありません。</p>
+      </article>
+      <article class="plan">
+        <h3>業務</h3>
+        <p class="yen">月<b>4,980</b>円<small>(税込・予定)</small></p>
+        <p class="cond">準備中</p>
+        <ul>
+          <li>スタンダードのすべて</li>
+          <li>発送代行への入庫予定・出荷依頼CSV</li>
+          <li>作業する人3人まで</li>
+          <li>提出用PDF・台帳の変更の記録</li>
+        </ul>
+        <span class="plain off">準備ができたらお知らせします</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ よくある質問 ============ -->
+<section class="sec alt" id="faq">
+  <div class="in narrow">
+    <h2 class="h2">よくある質問</h2>
+    <details><summary>無料版で十分ではありませんか</summary><p>計算と台帳は無料版ですべて使えます。スタンダードは「台帳をパソコンとスマホで同じにしたい」「3年分を消さずに持ちたい」「月ごとの利益をまとめて見たい」方向けです。</p></details>
+    <details><summary>いま使っている出品・価格改定の道具はやめる必要がありますか</summary><p>やめる必要はありません。このアプリは仕入れる前の計算と古物台帳だけを受け持つので、出品・価格改定の道具と一緒に使えます。</p></details>
+    <details><summary>14日の無料期間の後はどうなりますか</summary><p>何もしなければ、15日目からスタンダードの月額(先着100名は月1,980円、それ以降は月2,480円・税込)に自動で切り替わります。終了の前にメールでお知らせします。</p></details>
+    <details><summary>解約の方法は</summary><p>解約はマイページの契約内容からいつでも手続きできます。次回の請求日の前日までに手続きすれば、次の請求はありません。解約後も台帳はCSVで書き出せます。</p></details>
+    <details><summary>計算は合っていますか</summary><p>各社の公開されている料金表で計算し、手計算の例で検算しています。出典と確認日はページに載せています。計算は目安で、利益や販売を保証するものではありません。</p></details>
+    <details><summary>メルカリやヤフオクの価格を自動で取ってくれますか</summary><p>取りません。各サイトの規約に沿って、検索ページを1回で開き、見た価格を入れる形にしています。楽天は公式の検索の仕組みを使います。</p></details>
+    <details><summary>古物商許可がなくても使えますか</summary><p>使えます。新品の仕入れ(楽天・Yahoo!→Amazon)や自分の不用品の販売は、許可が要らない形から始められます。中古品を仕入れて売る場合は許可が必要です。</p></details>
+    <details><summary>バーコードの読み取りにアプリは要りますか</summary><p>要りません。スマホのブラウザ(iPhoneはSafari、AndroidはChrome)でページを開き、カメラの使用を許可するだけです。ホーム画面に追加するとアプリのように開けます。</p></details>
+    <details><summary>入れたデータは誰かに見られますか</summary><p>無料版のデータは端末の中だけにあり、当方には送られません。スタンダードの台帳はクラウドに保存しますが、当方が中身を見たり、ほかの目的に使ったりはしません。</p></details>
+  </div>
+</section>
+
+<section class="end">
+  <div class="in end-in">
+    <p>仕入れの判断と、記録。両方をひと続きに。</p>
+    <a class="cta" data-cta="end" href="../plans/">14日無料で試す</a>
+  </div>
+</section>
+</main>
+
+<div class="sticky" id="sticky"><a class="cta" data-cta="sticky" href="../plans/">14日無料で試す</a><span>月2,480円・14日間は無料</span></div>
+
+<footer class="foot">
+  <div class="in">
+    <nav><a href="../">せどり 利益チェック</a><a href="../scan/">バーコード読み取り</a><a href="../daicho/">台帳</a><a href="../guide/">手引き</a><a href="../#fees">手数料の出典</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。掲載の画面は実際のアプリの画面で、数値は取得時点の例です。</p>
+  </div>
+</footer>
+<script src="./lp.js?v=20261027a"></script>
+</body>
+</html>
