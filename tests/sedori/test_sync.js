@@ -109,6 +109,26 @@ eq(S.firstSync('u2', 'u1', 0), 'merge', '別のアカウントでも空なら');
   const ended = S.planState({ status: 'canceled', paidThrough: now - 864e5 }, now);
   eq([ended.key, ended.paid], ['ended', false], '期間が過ぎたら解約済み');
   eq(S.planState({ status: 'expired', canceledAt: 1700000000 }, now).until, 1700000000000, 'Stripe形式の秒も読む');
+  // できることの段(ライト/総合/業務)。無料期間中はどのプランでも業務
+  eq(S.planState(null, now).tier, 'free', '契約なしは無料');
+  eq(S.planState({ status: 'trialing', planKey: 'light_month' }, now).tier, 'business', '無料期間はライトで申し込んでも業務のすべて');
+  eq(S.planState({ status: 'active', planKey: 'business_year' }, now).tier, 'business', '業務');
+  eq(S.planState({ status: 'active', planKey: 'light_year' }, now).tier, 'light', 'ライト');
+  eq(S.planState({ status: 'active', planKey: 'founder_month' }, now).tier, 'total', '先着100名は総合');
+  eq(S.planState({ status: 'active', planKey: 'total_month' }, now).tier, 'total', '総合');
+  eq(S.planState({ status: 'active' }, now).tier, 'total', 'プランが分からない時は総合(機能を減らさない)');
+  eq(S.planState({ status: 'paused', planKey: 'total_month' }, now).tier, 'free', '一時停止中は無料と同じ');
+  eq(S.planState({ status: 'canceled', planKey: 'light_month', paidThrough: now + 864e5 }, now).tier, 'light', '解約後も期間の終わりまではそのプラン');
+  // ライトの月100件: 仕入日の月で、作った順に数える
+  const mk = (i, date) => ({ id: (1e12 + i).toString(36), date });
+  const rowsL = [];
+  for (let i = 0; i < 103; i++) rowsL.push(mk(i, '2026-10-' + String(1 + (i % 28)).padStart(2, '0')));
+  rowsL.push(mk(500, '2026-09-30'));
+  const cap = S.lightCap(rowsL, '2026-10', 100);
+  eq([cap.count, cap.left, cap.blocked.length], [103, 0, 3], '10月は103件・3件が上限を超える');
+  eq(cap.blocked, [mk(100).id, mk(101).id, mk(102).id], '超えるのは後から作った3件');
+  eq(S.lightCap(rowsL.slice(0, 40), '2026-10', 100).left, 60, '残り60件');
+  eq(S.lightCap(rowsL, '2026-09', 100).blocked.length, 0, '先月の分は別に数える');
 }
 
 // ---------- 9. ヤフオクの終了日時 ----------
