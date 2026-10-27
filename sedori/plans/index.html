@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>料金とお申し込み｜ZEROICHI WORKS</title>
+<meta name="description" content="せどり 利益チェックの料金(無料/スタンダード 月2,480円・年24,800円/先着100名 月1,980円・年19,800円)、14日間の無料期間、支払いの時期と方法、解約の方法。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/plans/">
+<meta property="og:title" content="料金とお申し込み">
+<meta property="og:description" content="せどり 利益チェックの料金(無料/スタンダード 月2,480円・年24,800円/先着100名 月1,980円・年19,800円)、14日間の無料期間、支払いの時期と方法、解約の方法。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/plans/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/og.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028a">
+</head>
+<body data-base="../" data-page="plans">
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <form class="sbar" id="sbar" role="search">
+      <label class="sr" for="sb-src">探す場所</label>
+      <select id="sb-src"><option value="rakuten" selected>楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon">Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger">台帳</option></select>
+      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
+      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
+      <button type="submit">検索</button>
+    </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
+    <div class="tgt" id="tgt">
+      <span class="tgt-k">目標の利益</span>
+      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
+      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
+    </div>
+    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
+  </div>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a></div></nav>
+</header>
+<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>料金とお申し込み</span></nav><span class="feedate" data-feedate></span></div></div>
+<main class="wrap">
+<div class="pl">
+  <h1 class="pg-h">料金とお申し込み</h1>
+  <p class="pl-lead">計算と、この端末に保存する台帳は、無料・登録なしで使えます。スタンダードは、台帳をクラウドに保存してパソコンとスマホで同じ台帳を使う人向けです。<b>14日間は無料</b>で、終わると自動で有料になります。</p>
+  <div class="pl-grid">
+    <section class="pl-main pl-a" aria-label="プランを選ぶ">
+      <h2 class="sec-h">1. プランを選ぶ</h2>
+      <div class="gridwrap"><table class="grid nimg pick" id="pl-pick">
+        <thead><tr><th class="pk"></th><th>プラン</th><th class="r">価格(税込)</th><th>支払い</th></tr></thead>
+        <tbody><tr data-plan="standard_month"><td class="pk"><input type="radio" name="plan" value="standard_month" id="pl-standard_month" checked></td><td><label for="pl-standard_month"><b>スタンダード</b><span class="meta">月払い</span></label></td><td class="r"><span class="yen">2,480<i>円</i></span><span class="meta">/月(税込)</span></td><td class="note2">毎月</td></tr>
+<tr data-plan="standard_year"><td class="pk"><input type="radio" name="plan" value="standard_year" id="pl-standard_year"></td><td><label for="pl-standard_year"><b>スタンダード</b><span class="meta">年払い</span></label></td><td class="r"><span class="yen">24,800<i>円</i></span><span class="meta">/年(税込)</span></td><td class="note2">毎年。月あたり約2,067円(月払いより2か月分安い)</td></tr>
+<tr data-plan="founder_month" data-founder><td class="pk"><input type="radio" name="plan" value="founder_month" id="pl-founder_month"></td><td><label for="pl-founder_month"><b>先着100名の価格</b><span class="meta">月払い</span></label></td><td class="r"><span class="yen">1,980<i>円</i></span><span class="meta">/月(税込)</span></td><td class="note2">毎月。続けている間は上がりません</td></tr>
+<tr data-plan="founder_year" data-founder><td class="pk"><input type="radio" name="plan" value="founder_year" id="pl-founder_year"></td><td><label for="pl-founder_year"><b>先着100名の価格</b><span class="meta">年払い</span></label></td><td class="r"><span class="yen">19,800<i>円</i></span><span class="meta">/年(税込)</span></td><td class="note2">毎年。続けている間は上がりません</td></tr><tr class="off"><td class="pk"><input type="radio" disabled aria-label="業務(受付前)"></td><td><b>業務</b><span class="meta">月払い・年払い</span></td><td class="r"><span class="yen">4,980<i>円</i></span><span class="meta">/月(予定)</span></td><td class="note2">受付前。発送代行の連携・作業者3人・提出用PDF。機能ができてから販売します</td></tr></tbody>
+      </table></div>
+      <p class="hint" id="pl-founder-note">先着100名の価格は、お申し込み(無料期間の始まり)の順に100名までです。<span id="pl-founder-left"></span></p>
+    </section>
+    <section class="pl-b" aria-label="使えるようになること">
+
+      <h2 class="sec-h">2. 使えるようになること(分量)</h2>
+      <div class="gridwrap"><table class="grid nimg cmp">
+        <thead><tr><th></th><th>無料</th><th>スタンダード<span class="meta">先着100名の価格も同じ中身</span></th></tr></thead>
+        <tbody>
+          <tr><th>台帳</th><td>この端末に保存</td><td><b>クラウドに保存</b>し、パソコン・スマホ・タブレットで同じ台帳(1アカウント・端末数の制限なし・行数の制限なし)。解約後も3年間保管</td></tr>
+          <tr><th>計算ページ</th><td>5つすべて</td><td>同じ</td></tr>
+          <tr><th>楽天の検索</th><td>1日20回</td><td>制限なし</td></tr>
+          <tr><th>設定</th><td>この端末だけ</td><td>目標の利益・発送のしかた・発送代行の費用を端末間で揃える</td></tr>
+          <tr><th>無在庫の見張り</th><td>終了が近い順・60分前の通知</td><td>同じ(他の端末で入れた終了日時も届く)</td></tr>
+          <tr><th>今後の追加</th><td>—</td><td>ウォッチの再確認、JANの一括計算、ポイントの上限枠、バーコード読み取り(できたものから順に。料金は変わりません)</td></tr>
+        </tbody>
+      </table></div>
+      <p class="hint">ログインと保存の方法: メールのリンクかGoogleアカウントでログイン。台帳は Google Cloud(東京リージョン)に保存し、ログインした本人だけが読み書きできます。当方は中身を見ません(<a href="../privacy/">プライバシーポリシー</a>)。</p>
+    </section>
+
+    <aside class="pl-conf" aria-label="お申し込み内容の確認">
+      <div class="conf-in">
+        <h2 class="conf-h">お申し込み内容の確認</h2>
+        <table class="kv conf" id="pl-conf">
+          <tr><th>プラン</th><td id="cf-plan">スタンダード(月払い)</td></tr>
+          <tr><th>分量</th><td>台帳のクラウド保存と端末間の同期(1アカウント)、楽天の検索 制限なし、設定の同期。左の「2. 使えるようになること」のとおり</td></tr>
+          <tr><th>価格(税込)</th><td><b id="cf-price">月2,480円</b><span class="meta">これ以外の費用はかかりません(通信費を除く)</span></td></tr>
+          <tr><th>無料期間</th><td><b id="cf-trial">お申し込みの日から14日間</b></td></tr>
+          <tr><th>支払いの時期</th><td id="cf-when">無料期間が終わる日に1回目、以後は毎月同じ日に、自動で請求します(前払い)</td></tr>
+          <tr><th>支払いの方法</th><td>PayPal(PayPal残高・PayPalに登録したクレジットカード・デビットカード・銀行口座)。お申し込みには支払い方法の登録が必要です</td></tr>
+          <tr><th>使える時期</th><td>PayPalでの手続きが終わった時から、すぐ(無料期間中も同じ機能)</td></tr>
+          <tr><th>申込みの期間</th><td id="cf-period">期限はありません</td></tr>
+          <tr><th>契約の期間</th><td id="cf-term">1か月ごとに自動で更新。解約するまで続きます</td></tr>
+          <tr><th>解約の方法</th><td>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すると完了します(同じ画面に一時停止・プラン変更のご案内があります)。PayPalの「自動支払い」の管理画面から止めることも、メール(<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a>)でのお申し出もできます</td></tr>
+          <tr><th>解約の期限</th><td id="cf-deadline">次回の請求日の前日までに解約すれば、次回からは請求しません。無料期間中に解約すれば0円です</td></tr>
+          <tr><th>返金</th><td>支払い済みの期間の途中で解約しても、日割りの返金はありません。その期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します</td></tr>
+          <tr><th>解約後の台帳</th><td>クラウドの台帳は解約から3年間保管し、マイページから書き出せます(古物台帳は3年間の保存が必要なため)。ご自身でいつでも消せます</td></tr>
+        </table>
+        <div class="trial-box" id="cf-trialbox">
+          <p><b id="cf-t1">今日から14日間は無料です。</b></p>
+          <p id="cf-t2">無料期間が終わる日に、1回目の2,480円(税込)をPayPalで自動でお支払いいただき、以後は毎月同じ日に請求します。無料期間の終了3日前に、メールでお知らせします。</p>
+        </div>
+        <div class="pay" id="pl-pay">
+          <div data-bill="prep">
+            <p class="dlg-st">準備中</p>
+            <p class="hint">お申し込みの受付はまだ始めていません。準備ができたら、事前登録の方へメールでご案内します(登録しても料金はかかりません)。</p>
+            <a class="btn wide" data-mail="prereg" href="#">事前登録(メール1通・無料)</a>
+          </div>
+          <div data-bill="ready" hidden>
+            <div id="pl-login"><button type="button" class="btn wide" id="pl-login-btn">ログインして申し込む</button><p class="hint">申し込むアカウントを決めるため、先にログインします(メールのリンクかGoogle)。</p></div>
+            <div id="pl-buy" hidden>
+              <p class="pay-who" id="pl-who"></p>
+              <div id="pl-pp" class="pp"></div>
+              <p class="hint">上の内容と<a href="../terms/">利用規約</a>・<a href="../privacy/">プライバシーポリシー</a>をご確認のうえ、PayPalの画面で「同意して続行」を押すとお申し込みが完了します。</p>
+            </div>
+            <div id="pl-has" hidden><p class="msg" id="pl-has-t"></p><a class="btn ghost wide" href="../mypage/">マイページで契約内容を見る</a></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+</main>
+<footer class="ft">
+  <div class="ft-in">
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <details class="legal" id="legal">
+      <summary>法律と規約の注意</summary>
+      <div class="legal-body">
+        <h3>古物営業法</h3>
+        <ul>
+          <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
+          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で相手確認が未入力の行には印が付きます。</li>
+          <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
+        </ul>
+        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
+        <ul>
+          <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
+          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
+          <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
+        </ul>
+        <h3>写真と説明文</h3>
+        <ul>
+          <li>仕入れ先(ヤフオク・メルカリ等の出品者)の写真や文章を、自分の出品にそのまま使わないでください。著作権の問題になります。自分で撮った写真を使い、Amazonでは既存の商品ページに相乗りしてコンディションを文字で説明します。</li>
+        </ul>
+        <h3>自動アクセス</h3>
+        <ul>
+          <li>このアプリはメルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取りません。検索は各サイトの検索ページを新しいタブで開くだけです。楽天とKeepaは、ご自身のIDとキーで公式APIを使います。</li>
+        </ul>
+      </div>
+    </details>
+    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中に保存されます(スタンダードでログインしている時は、台帳をクラウドにも保存します)。</p>
+  </div>
+</footer>
+<script src="../assets/config.js?v=20261028a"></script>
+<script src="../assets/sync.js?v=20261028a"></script>
+<script src="../assets/calc.js?v=20261028a"></script>
+<script src="../assets/ui.js?v=20261028a"></script>
+<script src="../assets/account.js?v=20261028a"></script>
+<script src="../assets/plans.js?v=20261028a"></script>
+</body>
+</html>

@@ -136,16 +136,23 @@
     if (i >= 0) select(i); else { $('#mz-sell').value = p; detail(); }
     U.toast('出品価格を' + yen(p) + '円にしました');
   }
-  function paintBuy(done) { var b = $('[data-act="buy"]'); b.classList.toggle('done', !!done); b.innerHTML = done ? '台帳に記録済み' : '仕入れた<kbd>S</kbd>'; }
+  /** ヤフオクの終了日時が入っていれば「出品した(見張る)」、無ければ「仕入れた」 */
+  function watching() { var e = C.endMs($('#mz-yend').value); return e != null && e > Date.now(); }
+  function paintBuy(done) {
+    var b = $('[data-act="buy"]'); b.classList.toggle('done', !!done);
+    b.innerHTML = done ? '台帳に記録済み' : (watching() ? '出品した(見張る)' : '仕入れた') + '<kbd>S</kbd>';
+  }
   function buy() {
     var r = lastR;
     if (!r) { U.toast('ヤフオクの価格を入れてください'); $('#mz-yprice').focus(); return; }
     var media = $('#mz-media').checked, code = $('#mz-code').value.trim();
     var row = U.ledger.add({ ship: U.shipMode(), cond: '中古', media: media, hinmoku: U.hinmokuFor($('#mz-cat').value), name: $('#mz-name').value || $('#mz-q').value || '(名前なし)',
       feature: code ? (/^B0/i.test(code) ? 'ASIN ' : 'JAN ') + code : '', qty: 1, unit: r.cost + r.inShip, party: 'Yahoo!オークション 出品者',
-      sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, route: '無在庫 Amazon中古' });
+      sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, route: '無在庫 Amazon中古',
+      yEnd: $('#mz-yend').value || '', status: watching() ? '出品中' : '仕入れ済', wait: watching() });
     if (!row) return;
     paintBuy(true);
+    if (row.wait) { $('#party').innerHTML = '<p class="note">台帳に「出品中(仕入れ前)」で入れました。終了の2時間前から台帳で色が付き、通知をオンにすると60分前にお知らせします。売れたら台帳で「売れた(仕入れる)」を押してください。</p>'; return; }
     U.partyPanel($('#party'), row.id, { focus: true, title: '取引相手の情報' });
   }
   $('[data-act="list"]').addEventListener('click', listAt);
@@ -183,11 +190,21 @@
     var s = U.store.get('form-mz', null);
     if (s) { $('#mz-new').value = s.new || ''; $('#mz-cat').value = s.cat || 'toys'; $('#mz-carrier').value = s.carrier || 'yp60'; if (!C.findCarrier(fees, $('#mz-carrier').value)) $('#mz-carrier').value = 'yp60'; $('#mz-outship').value = s.outship || 0; $('#mz-code').value = s.code || ''; $('#mz-name').value = s.name || ''; $('#mz-q').value = s.q || ''; }
     links(); paintCarrier();
+    var ye = $('#mz-yend'), yp = $('#mz-yend-paste');
+    ye.addEventListener('input', function () { paintBuy(false); });
+    function runEnd() {
+      if (!yp.value.trim()) return;
+      var v = C.parseEndTime(yp.value);
+      if (!v) { U.toast('終了日時が読み取れませんでした。日時の欄に直接入れてください'); return; }
+      ye.value = v; yp.value = ''; ye.classList.add('got'); paintBuy(false); U.toast('終了日時を ' + v.replace('T', ' ') + ' にしました');
+    }
+    yp.addEventListener('paste', function () { setTimeout(runEnd, 0); });
+    yp.addEventListener('change', runEnd);
     $('#mz-carrier').addEventListener('change', paintCarrier);
     U.mountWh($('#wh'), fees, '');
     ['mz-q', 'mz-code'].forEach(function (id) { $('#' + id).addEventListener('input', links); });
     $$('.side input, .side select').forEach(function (el) {
-      if (el.id === 'mz-key' || el.id === 'mz-q' || el.id === 'mz-code') return;
+      if (el.id === 'mz-key' || el.id === 'mz-q' || el.id === 'mz-code' || el.id === 'mz-yend' || el.id === 'mz-yend-paste') return;
       el.addEventListener('input', function () { if (el.id === 'mz-new') manual = false; update(); });
       el.addEventListener('change', update);
     });

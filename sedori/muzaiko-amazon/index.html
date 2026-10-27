@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261027c">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028a">
 </head>
 <body data-base="../" data-route="muzaiko" data-route-label="無在庫 Amazon中古" data-page="muzaiko-amazon">
 <header class="hd">
@@ -38,6 +38,7 @@
       <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
     </div>
     <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
   </div>
   <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/" aria-current="page">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a></div></nav>
 </header>
@@ -61,6 +62,8 @@
           <label class="fr col"><span class="fk">検索する言葉</span><input id="mz-q"></label>
           <p class="row-links"><a id="mz-yh" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">出品中を見る</a><a id="mz-yh-closed" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">落札相場を見る</a></p>
           <label class="fr "><span class="fk">価格<small>即決・落札見込み</small></span><span class="fv"><input id="mz-yprice" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">送料<small>出品者→自分</small></span><span class="fv"><input id="mz-yship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="ck"><input id="mz-media" type="checkbox">ゲーム・CD・DVD・書籍・バイク等</label>
+          <label class="fr col"><span class="fk">ヤフオクの終了日時<small>入れると「出品した(見張る)」で台帳に入り、終了60分前に通知</small></span><input id="mz-yend" type="datetime-local"></label>
+          <label class="fr col"><span class="sr">終了日時の文字を貼り付け</span><input id="mz-yend-paste" type="text" autocomplete="off" placeholder="終了日時の文字を貼り付け"></label>
         </div></div>
       </details>
       <details class="sbox " open data-desk-open>
@@ -110,7 +113,7 @@
 </main>
 <footer class="ft">
   <div class="ft-in">
-    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     <details class="legal" id="legal">
       <summary>法律と規約の注意</summary>
       <div class="legal-body">
@@ -137,11 +140,14 @@
         </ul>
       </div>
     </details>
-    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中だけに保存されます。</p>
+    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中に保存されます(スタンダードでログインしている時は、台帳をクラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/calc.js?v=20261027c"></script>
-<script src="../assets/ui.js?v=20261027c"></script>
-<script src="../assets/mz.js?v=20261027c"></script>
+<script src="../assets/config.js?v=20261028a"></script>
+<script src="../assets/sync.js?v=20261028a"></script>
+<script src="../assets/calc.js?v=20261028a"></script>
+<script src="../assets/ui.js?v=20261028a"></script>
+<script src="../assets/account.js?v=20261028a"></script>
+<script src="../assets/mz.js?v=20261028a"></script>
 </body>
 </html>

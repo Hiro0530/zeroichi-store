@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>マイページ｜ZEROICHI WORKS</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="ログイン、契約内容、台帳のクラウド保存と書き出し、通知の設定。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/mypage/">
+<meta property="og:title" content="マイページ">
+<meta property="og:description" content="ログイン、契約内容、台帳のクラウド保存と書き出し、通知の設定。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/mypage/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/og.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028a">
+</head>
+<body data-base="../" data-page="mypage">
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <form class="sbar" id="sbar" role="search">
+      <label class="sr" for="sb-src">探す場所</label>
+      <select id="sb-src"><option value="rakuten">楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon">Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger" selected>台帳</option></select>
+      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
+      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
+      <button type="submit">検索</button>
+    </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
+    <div class="tgt" id="tgt">
+      <span class="tgt-k">目標の利益</span>
+      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
+      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
+    </div>
+    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
+  </div>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a></div></nav>
+</header>
+<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>マイページ</span></nav><span class="feedate" data-feedate></span></div></div>
+<main class="wrap">
+<div class="mp">
+  <h1 class="pg-h">マイページ</h1>
+  <div class="mp-grid">
+    <nav class="mp-nav" aria-label="マイページの項目">
+      <a href="#mp-account">アカウント</a><a href="#mp-plan">契約内容</a><a href="#cancel" class="sub">解約について</a><a href="#mp-data">台帳とデータ</a><a href="#mp-notify">通知</a>
+    </nav>
+    <div class="mp-main">
+      <section id="mp-account" class="mp-sec">
+        <h2 class="sec-h">アカウント</h2>
+        <div data-acct="prep"><p class="dlg-st">準備中</p><p>ログインと台帳のクラウド保存は準備中です。計算と台帳は、このままログインなしで使えます(この端末に保存)。下の「台帳とデータ」から書き出しと、「通知」の設定ができます。</p></div>
+        <div data-acct="ready" hidden>
+          <div id="mp-out"><p>ログインすると、契約内容の確認と、台帳のクラウド保存の状態が見られます。</p><button type="button" class="btn" id="mp-login">ログイン</button></div>
+          <div id="mp-in" hidden>
+            <table class="kv wide"><tr><th>メールアドレス</th><td id="mp-email"></td></tr><tr><th>ログインの方法</th><td>メールのリンク・Google(パスワードは使いません)</td></tr></table>
+            <div class="row-btns"><button type="button" class="btn sm ghost" id="mp-logout">ログアウト</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mp-plan" class="mp-sec">
+        <h2 class="sec-h">契約内容</h2>
+        <div id="mp-plan-box"><p class="muted">ログインすると表示します。</p></div>
+        <details class="mp-cancel" id="cancel">
+          <summary>解約について</summary>
+          <div class="mp-cancel-b" id="mp-cancel-b">
+            <p>いつでも解約できます。次回の請求日の前日までに解約すれば、次回からは請求しません(無料期間中なら0円)。解約の前に、次の方法もあります。</p>
+            <div class="alt" id="mp-alt"></div>
+            <h3>解約する前に: 台帳を書き出す</h3>
+            <p class="hint">古物台帳は、最後の記入から3年間の保存が必要です。解約後もクラウドの台帳は3年間保管し、ここから書き出せますが、手元にも残しておくと安心です。</p>
+            <div class="row-btns"><button type="button" class="btn sm ghost" data-exp="csv">CSVで書き出す</button><button type="button" class="btn sm ghost" data-exp="xlsx">Excelで書き出す</button></div>
+            <h3>解約する</h3>
+            <div id="mp-cancel-do"></div>
+            <h3>ほかの解約の方法</h3>
+            <ul class="steps">
+              <li>PayPalから: PayPalにログイン → 右上の歯車(設定) → 「支払い」 → 「自動支払いを管理」 → 「ZEROICHI WORKS」 → 「キャンセル」。マイページの表示にも数分で反映されます。</li>
+              <li>メールで: <a href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%9B%E3%81%A9%E3%82%8A%E3%82%A2%E3%83%97%E3%83%AA%E8%A7%A3%E7%B4%84">zeroichi.works.jp@gmail.com</a> へ、ログインに使うメールアドレスから「解約」とお送りください。受け取った日に解約の手続きをします。</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="mp-data" class="mp-sec">
+        <h2 class="sec-h">台帳とデータ</h2>
+        <table class="kv wide" id="mp-data-t"></table>
+        <div class="row-btns"><button type="button" class="btn sm" data-exp="xlsx">Excelで書き出す</button><button type="button" class="btn sm ghost" data-exp="csv">CSVで書き出す</button><button type="button" class="btn sm ghost" id="mp-cloud-exp" hidden>クラウドの台帳を書き出す</button><button type="button" class="btn sm ghost" id="mp-sync" hidden>今すぐ同期</button></div>
+        <p class="hint" id="mp-keep">保管の期間: 契約中はずっと。解約後は3年間保管し、その後に消します。ご自身で消した時は、すぐ消します。</p>
+        <details class="mp-danger" id="mp-del" hidden>
+          <summary>クラウドの台帳・アカウントを消す</summary>
+          <div class="mp-danger-b">
+            <p>クラウドの台帳を消すと元に戻せません。古物台帳は3年間の保存が必要なので、先に書き出してください。</p>
+            <label class="ck"><input type="checkbox" id="mp-del-local">この端末の台帳も消す</label>
+            <div class="row-btns"><input type="text" id="mp-del-word" placeholder="「消す」と入力" aria-label="確認のため「消す」と入力"><button type="button" class="btn sm danger" id="mp-del-cloud">クラウドの台帳を消す</button><button type="button" class="btn sm danger ghost" id="mp-del-acct">アカウントを削除</button></div>
+            <p class="hint">アカウントの削除は、解約が済んでからできます。</p>
+          </div>
+        </details>
+      </section>
+
+      <section id="mp-notify" class="mp-sec">
+        <h2 class="sec-h">通知</h2>
+        <table class="kv wide"><tr><th>ヤフオクの終了60分前</th><td><button type="button" class="btn sm ghost tg" id="lg-notify" aria-pressed="false">終了60分前の通知: オフ</button><p class="hint">台帳で「出品中」の行にヤフオクの終了日時を入れると、60分前に「Amazonの在庫を0にしてください」と通知します。このアプリのページ(どれでも)を開いている間だけ届きます。ヤフオク・Amazonへの自動アクセスはしません。</p></td></tr></table>
+      </section>
+    </div>
+  </div>
+</div>
+</main>
+<footer class="ft">
+  <div class="ft-in">
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <details class="legal" id="legal">
+      <summary>法律と規約の注意</summary>
+      <div class="legal-body">
+        <h3>古物営業法</h3>
+        <ul>
+          <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
+          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で相手確認が未入力の行には印が付きます。</li>
+          <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
+        </ul>
+        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
+        <ul>
+          <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
+          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
+          <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
+        </ul>
+        <h3>写真と説明文</h3>
+        <ul>
+          <li>仕入れ先(ヤフオク・メルカリ等の出品者)の写真や文章を、自分の出品にそのまま使わないでください。著作権の問題になります。自分で撮った写真を使い、Amazonでは既存の商品ページに相乗りしてコンディションを文字で説明します。</li>
+        </ul>
+        <h3>自動アクセス</h3>
+        <ul>
+          <li>このアプリはメルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取りません。検索は各サイトの検索ページを新しいタブで開くだけです。楽天とKeepaは、ご自身のIDとキーで公式APIを使います。</li>
+        </ul>
+      </div>
+    </details>
+    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中に保存されます(スタンダードでログインしている時は、台帳をクラウドにも保存します)。</p>
+  </div>
+</footer>
+<script src="../assets/config.js?v=20261028a"></script>
+<script src="../assets/sync.js?v=20261028a"></script>
+<script src="../assets/calc.js?v=20261028a"></script>
+<script src="../assets/ui.js?v=20261028a"></script>
+<script src="../assets/account.js?v=20261028a"></script>
+<script src="../assets/mypage.js?v=20261028a"></script>
+</body>
+</html>

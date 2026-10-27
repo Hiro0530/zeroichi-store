@@ -1,6 +1,7 @@
 /* 楽天・Yahoo!→Amazon: 検索 → 一覧(全行の利益を目標の利益で計算済み) → 行を選ぶ → この価格で出品 → 仕入れた(台帳へ自動記録) */
 (function () {
   'use strict';
+  document.addEventListener('sedori:acct', function () { if (document.getElementById('quota')) showQuota(); });
   var U = window.SedoriUI, C = window.SedoriCalc;
   var $ = U.$, $$ = U.$$, esc = U.esc, yen = U.yen, val = U.val;
   var FREE_SEARCHES_PER_DAY = 20;
@@ -28,8 +29,9 @@
 
   /* ---------- 無料版の回数 ---------- */
   function quota() { var q = U.store.get('quota', {}); if (q.d !== U.today()) q = { d: U.today(), n: 0 }; return q; }
-  function showQuota() { $('#quota').textContent = '楽天の検索 今日あと' + Math.max(0, FREE_SEARCHES_PER_DAY - quota().n) + '回'; }
-  function useQuota() { var q = quota(); if (q.n >= FREE_SEARCHES_PER_DAY) return false; q.n++; U.store.set('quota', q); showQuota(); return true; }
+  function paidPlan() { return !!(window.SedoriAccount && window.SedoriAccount.paid()); }
+  function showQuota() { $('#quota').textContent = paidPlan() ? '楽天の検索 制限なし(スタンダード)' : '楽天の検索 今日あと' + Math.max(0, FREE_SEARCHES_PER_DAY - quota().n) + '回'; }
+  function useQuota() { if (paidPlan()) return true; var q = quota(); if (q.n >= FREE_SEARCHES_PER_DAY) return false; q.n++; U.store.set('quota', q); showQuota(); return true; }
 
   /* ---------- 条件(左)と計算 ---------- */
   var COND_IDS = ['sort', 'c-cat', 'c-tier', 'c-inbound', 'c-other', 'c-pt-mine', 'c-carrier', 'c-selfship'];

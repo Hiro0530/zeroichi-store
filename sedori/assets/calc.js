@@ -222,6 +222,59 @@
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;           // 表計算ソフトで式として動かないように
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
+
+  /* ---------- ヤフオクの終了日時(無在庫の見張り) ---------- */
+  function half(s) {
+    return String(s || '').replace(/[！-～]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/　/g, ' ');
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  /** Date → datetime-local の値("2026-10-29T22:15") */
+  function toLocalInput(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+  /** datetime-local の値 → ミリ秒(端末の時刻)。読めなければ null */
+  function endMs(v) {
+    var m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime() : null;
+  }
+  /** 貼り付けた文字から終了日時を取り出す。
+      「終了日時 10月29日（水）22時15分」「2026.10.29（水）22:15」「2026年10月29日 22時15分」「10/29 22:15」「残り 2日 3時間」に対応。
+      年が無い時は now の年(半年以上前になるなら翌年)。返り値は datetime-local の値か null */
+  function parseEndTime(text, now) {
+    now = now || new Date();
+    var t = half(text).replace(/\r/g, '');
+    var lines = t.split('\n'), pick = lines.filter(function (l) { return /終了|締切|残り/.test(l); });
+    var srcs = pick.length ? [pick.join('\n'), t] : [t];
+    var DOW = '\\s*(?:[(（][^)）]{1,3}[)）])?\\s*';
+    var reY = new RegExp('(\\d{4})\\s*[年./-]\\s*(\\d{1,2})\\s*[月./-]\\s*(\\d{1,2})\\s*日?' + DOW + '(\\d{1,2})\\s*[時:：]\\s*(\\d{1,2})');
+    var reMD = new RegExp('(\\d{1,2})\\s*[月/]\\s*(\\d{1,2})\\s*日?' + DOW + '(\\d{1,2})\\s*[時:：]\\s*(\\d{1,2})');
+    for (var i = 0; i < srcs.length; i++) {
+      var s = srcs[i], m = s.match(reY), d = null;
+      if (m) d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+      else if ((m = s.match(reMD))) {
+        d = new Date(now.getFullYear(), +m[1] - 1, +m[2], +m[3], +m[4]);
+        if (d.getTime() < now.getTime() - 183 * 864e5) d.setFullYear(d.getFullYear() + 1);
+      } else {
+        var r = s.match(/残り\s*(?:時間)?\s*[:：]?\s*(?:(\d+)\s*日)?\s*(?:(\d+)\s*時間)?\s*(?:(\d+)\s*分)?/);
+        if (r && (r[1] || r[2] || r[3])) d = new Date(now.getTime() + ((+r[1] || 0) * 1440 + (+r[2] || 0) * 60 + (+r[3] || 0)) * 6e4);
+      }
+      if (d && !isNaN(d.getTime()) && (!m || (+m[m.length - 2] < 24 && +m[m.length - 1] < 60))) return toLocalInput(d);
+    }
+    return null;
+  }
+  /** 終了までの状態。ended(終了)/due(60分以内)/soon(2時間以内)/far。終了日時が無ければ null */
+  function endState(row, now) {
+    var e = endMs(row && row.yEnd); if (e == null) return null;
+    var left = e - (now == null ? Date.now() : now);
+    return { left: left, end: e, state: left <= 0 ? 'ended' : (left <= 36e5 ? 'due' : (left <= 72e5 ? 'soon' : 'far')), watch: (row.status || '') === '出品中' };
+  }
+  /** 残り時間の表示。2時間未満は秒まで */
+  function fmtLeft(ms) {
+    if (ms <= 0) return '終了';
+    var s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), mi = Math.floor(s % 3600 / 60), se = s % 60;
+    if (ms < 72e5) return 'あと' + h + ':' + pad2(mi) + ':' + pad2(se);
+    if (d) return 'あと' + d + '日' + h + '時間';
+    return 'あと' + h + '時間' + mi + '分';
+  }
+
   function toCSV(header, rows) {
     var lines = [header.map(csvCell).join(',')];
     rows.forEach(function (r) { lines.push(r.map(csvCell).join(',')); });
@@ -270,6 +323,6 @@
     findFbaTier: findFbaTier, fbaFee: fbaFee, guessFbaTier: guessFbaTier, points: points,
     amazonProfit: amazonProfit, needProfit: needProfit, amazonPriceFor: amazonPriceFor, amazonBreakEvenSell: amazonBreakEvenSell, amazonMaxCost: amazonMaxCost,
     marketFee: marketFee, findShipping: findShipping, marketProfit: marketProfit, marketPriceFor: marketPriceFor,
-    auctionUnitCost: auctionUnitCost, auctionFee: auctionFee, toCSV: toCSV, csvCell: csvCell, extractJan: extractJan, janValid: janValid
+    auctionUnitCost: auctionUnitCost, auctionFee: auctionFee, toCSV: toCSV, csvCell: csvCell, parseEndTime: parseEndTime, endState: endState, endMs: endMs, fmtLeft: fmtLeft, toLocalInput: toLocalInput, extractJan: extractJan, janValid: janValid
   };
 });

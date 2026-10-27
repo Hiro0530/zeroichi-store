@@ -6,12 +6,17 @@
   var PREFIX = 'zw-sedori:';
   var MAIL = 'zeroichi.works.jp@gmail.com';
 
+  /** 端末をまたいで揃える設定(ログイン中・有料のみクラウドへ) */
+  var SYNC_KEYS = ['target', 'ship', 'wh'];
+  function emit(name, detail) { try { document.dispatchEvent(new CustomEvent(name, { detail: detail })); } catch (e) { /* 何もしない */ } }
   var store = {
     get: function (k, d) {
       try { var v = localStorage.getItem(PREFIX + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; }
     },
     set: function (k, v) {
-      try { localStorage.setItem(PREFIX + k, JSON.stringify(v)); return true; } catch (e) { return false; }
+      try { localStorage.setItem(PREFIX + k, JSON.stringify(v)); } catch (e) { return false; }
+      if (SYNC_KEYS.indexOf(k) >= 0) emit('sedori:settings', { key: k });
+      return true;
     },
     del: function (k) { try { localStorage.removeItem(PREFIX + k); } catch (e) { /* 何もしない */ } }
   };
@@ -197,7 +202,7 @@
   var PREREG = mailto('せどりアプリ事前登録',
     'このまま送信してください(分かる所だけで大丈夫です)。\n\nお名前(ニックネーム可):\nよく使う仕入れ先:\nよく使う売り先:\nいま一番面倒な作業:\n\n' +
     'いま道具に払っている月額(だいたい):\n\n' +
-    '※有料版(スタンダード 月2,480円・先着100名は月1,980円・30日無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
+    '※有料版(スタンダード 月2,480円・先着100名は月1,980円・14日間無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
   var NEWS = mailto('せどりメルマガ登録',
     'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\nお名前(ニックネーム可):\n知りたいこと:\n\n※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
   function wireMail() {
@@ -209,7 +214,7 @@
      古物台帳
      ================================================================== */
   var HINMOKU = ['美術品類', '衣類', '時計・宝飾品類', '自動車', '自動二輪車及び原動機付自転車', '自転車類', '写真機類', '事務機器類', '機械工具類', '道具類', '皮革・ゴム製品類', '書籍', '金券類'];
-  var STATUS = ['仕入れ済', '入庫', '出品中', '売約', '発送済'];
+  var STATUS = ['仕入れ済', '入庫', '出品中', '売約', '発送済', '出品停止'];
   var NEXT_LABEL = ['入庫', '出品中', '売れた', '発送済'];
   var VERIFY = ['本人限定受取郵便で確認', '転送不要の簡易書留+本人名義口座へ振込', '対面で身分証を確認', '1万円未満のため不要', '古物商・法人から購入', 'その他(メモに記入)'];
   var VERIFY_NO_PARTY = ['1万円未満のため不要', '古物商・法人から購入'];
@@ -221,6 +226,7 @@
 
   /** 相手確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
   function checkState(r) {
+    if (r.wait) return 'na'; // 無在庫で出品中(まだ仕入れていない)
     var required = r.cond === '中古' && ((Number(r.unit) || 0) >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車');
     if (!required) return r.cond === '中古' && r.verify ? 'ok' : 'na';
     if (VERIFY_NO_PARTY.indexOf(r.verify) >= 0) return 'ok';
@@ -229,7 +235,16 @@
 
   var ledger = {
     all: function () { var r = store.get('ledger', []); return Array.isArray(r) ? r : []; },
-    save: function (rows) { var ok = store.set('ledger', rows); updateCount(); return ok; },
+    /** 保存。変わった行に時刻を付け、消えた行は墓標に残す(クラウド同期で使う) */
+    save: function (rows) {
+      var S = window.SedoriSync, changed = [];
+      if (S) { var st = S.stamp(ledger.all(), rows, store.get('ledger-del', {}), Date.now()); rows = st.rows; changed = st.changed; store.set('ledger-del', st.del); }
+      var ok = store.set('ledger', rows); updateCount();
+      if (ok && changed.length) emit('sedori:ledger', { ids: changed });
+      return ok;
+    },
+    /** クラウドから受け取った台帳をそのまま置く(時刻は付け直さない) */
+    replace: function (rows, del) { store.set('ledger', rows); store.set('ledger-del', del || {}); updateCount(); emit('sedori:remote', {}); },
     get: function (id) { return ledger.all().filter(function (r) { return r.id === id; })[0] || null; },
     update: function (id, patch) {
       var rows = ledger.all(), hit = null;
@@ -261,6 +276,7 @@
         if (i < 0) i = Math.max(0, STATUS.indexOf(r.status) - 1);
         if (i >= fl.length - 1) return;
         r.status = fl[i + 1];
+        if (r.status === '売約' && r.wait) { r.wait = false; r.date = today(); } // 無在庫: 売れてから仕入れる
         if (r.status === '売約') {
           if (!r.saleDate) r.saleDate = today();
           if (!r.salePrice && r.sellPrice) r.salePrice = r.sellPrice;
@@ -278,7 +294,7 @@
   function nextLabel(r) {
     var fl = flowOf(r), i = fl.indexOf(r.status || '仕入れ済');
     if (i < 0 || i >= fl.length - 1) return '';
-    return fl[i + 1] === '売約' ? '売れた' : fl[i + 1] + 'へ';
+    return fl[i + 1] === '売約' ? (r.wait ? '売れた(仕入れる)' : '売れた') : fl[i + 1] + 'へ';
   }
   var SHIP_LABEL = { self: '自分で発送', '3pl': '発送代行', fba: 'FBA(Amazonが発送)' };
 
@@ -290,6 +306,69 @@
     var w = $('#hd-need');
     if (!w) { w = document.createElement('span'); w.id = 'hd-need'; w.className = 'cnt warn'; w.title = '相手確認が未入力'; el.insertAdjacentElement('afterend', w); }
     w.textContent = need ? '確認' + need : ''; w.hidden = !need;
+    var soon = endingRows(rows).filter(function (x) { return x.e.state !== 'far'; }).length;
+    var e = $('#hd-end');
+    if (!e) { e = document.createElement('span'); e.id = 'hd-end'; e.className = 'cnt end'; e.title = 'ヤフオクの終了が2時間以内(出品中)'; w.insertAdjacentElement('afterend', e); }
+    e.textContent = soon ? '終了間近' + soon : ''; e.hidden = !soon;
+    var a = $('.hd-ledger'); if (a) a.href = base() + 'daicho/' + (soon ? '?tab=ending' : '');
+  }
+
+  /* ---------- 無在庫の見張り: ヤフオクの終了が近い出品中の行 ---------- */
+  /** 出品中で終了日時がある行(終了が近い順)。e は SedoriCalc.endState */
+  function endingRows(rows, now) {
+    var C = window.SedoriCalc; if (!C || !C.endState) return [];
+    return (rows || ledger.all()).map(function (r) { return { r: r, e: C.endState(r, now) }; })
+      .filter(function (x) { return x.e && x.e.watch; })
+      .sort(function (a, b) { return a.e.end - b.e.end; });
+  }
+  var NOTIFY_BEFORE = 60 * 60000;
+  function notifyOn() { return !!store.get('notify-end', false) && 'Notification' in window && Notification.permission === 'granted'; }
+  /** 通知を有効にする(ボタンを押した時だけ許可を求める) */
+  function enableNotify(on) {
+    if (!on) { store.set('notify-end', false); emit('sedori:notify', { on: false }); return Promise.resolve(false); }
+    if (!('Notification' in window)) { toast('このブラウザは通知に対応していません'); return Promise.resolve(false); }
+    var ask = Notification.permission === 'granted' ? Promise.resolve('granted') : Notification.requestPermission();
+    return Promise.resolve(ask).then(function (p) {
+      var ok = p === 'granted'; store.set('notify-end', ok); emit('sedori:notify', { on: ok });
+      if (ok) setTimeout(tickEnd, 0);
+      toast(ok ? '終了の60分前に通知します(このアプリのページを開いている間)' : '通知が許可されませんでした。ブラウザの設定で許可してください');
+      return ok;
+    });
+  }
+  function showEndNotice(r) {
+    var title = 'あと60分でヤフオクが終了します', bodyText = (r.name || '(名前なし)') + '\nAmazonの在庫を0にしてください';
+    var url = base() + 'daicho/?tab=ending&focus=' + encodeURIComponent(r.id);
+    var opt = { body: bodyText, tag: 'zw-end-' + r.id, requireInteraction: true, icon: base() + 'icon-192.png', data: { id: r.id, url: url, stopUrl: base() + 'daicho/?tab=ending&stop=' + encodeURIComponent(r.id) },
+      actions: [{ action: 'stop', title: '出品停止にした' }] };
+    var sw = 'serviceWorker' in navigator && navigator.serviceWorker.controller ? navigator.serviceWorker.ready : null;
+    if (sw) { sw.then(function (reg) { return reg.showNotification(title, opt); }).catch(function () { plain(); }); return; }
+    plain();
+    function plain() {
+      try { var n = new Notification(title, { body: bodyText, tag: opt.tag, requireInteraction: true, icon: opt.icon }); n.onclick = function () { window.focus(); location.href = url; n.close(); }; } catch (e) { /* 何もしない */ }
+    }
+  }
+  /** 出品停止にする(元に戻すつき) */
+  function stopListing(id, quiet) {
+    var before = ledger.get(id); if (!before) return null;
+    before = JSON.parse(JSON.stringify(before));
+    var r = ledger.update(id, { status: '出品停止', stoppedAt: new Date().toISOString().slice(0, 16) });
+    emit('sedori:remote', {});
+    if (!quiet) toast('出品停止にしました: ' + (r.name || ''), '元に戻す', function () { ledger.update(id, before); emit('sedori:remote', {}); });
+    return r;
+  }
+  function tickEnd() {
+    updateCount();
+    if (!notifyOn()) return;
+    var sent = store.get('end-notified', {}), dirty = false, now = Date.now();
+    endingRows(null, now).forEach(function (x) {
+      var key = x.r.yEnd;
+      if (x.e.left <= NOTIFY_BEFORE && x.e.left > -10 * 60000 && sent[x.r.id] !== key) { sent[x.r.id] = key; dirty = true; showEndNotice(x.r); }
+    });
+    if (dirty) store.set('end-notified', sent);
+  }
+  function mountEndWatch() {
+    tickEnd(); var iv = setInterval(tickEnd, 20000); if (iv && iv.unref) iv.unref();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'zw-stop' && e.data.id) stopListing(e.data.id); });
   }
 
   /* ---------- 取引相手の情報(貼り付けから取り出す) ---------- */
@@ -418,7 +497,7 @@
   var K_WIDTH = [5, 11, 7, 12, 34, 24, 6, 10, 14, 34, 10, 14, 22, 10, 8, 26, 20, 30, 11, 7, 10, 18, 9, 14, 14, 20];
   var K_NUM = { 6: 1, 7: 1, 20: 1 };
   function kobutsuRows(rows) {
-    return rows.slice().reverse().map(function (r, i) {
+    return rows.filter(function (r) { return !r.wait; }).slice().reverse().map(function (r, i) {
       var sold = !!r.saleDate;
       return [i + 1, r.date || '', '買受け', r.hinmoku || '', r.name || '', r.feature || '', Number(r.qty) || 1, Math.round((Number(r.unit) || 0) * (Number(r.qty) || 1)),
         r.pName || '', r.pAddr || '', r.pZip || '', r.pTel || '', r.pMail || '', r.pJob || '', r.pAge || '', r.verify || '',
@@ -525,7 +604,7 @@
   }
 
   function init() {
-    mountTarget(); mountShip(); mountSearch(); mountKeys(); wireMail(); mountSide(); updateCount(); registerSW();
+    mountTarget(); mountShip(); mountSearch(); mountKeys(); wireMail(); mountSide(); updateCount(); registerSW(); mountEndWatch();
     loadFees().then(showFeeDate).catch(function () {
       $$('[data-feedate]').forEach(function (el) { el.textContent = '手数料データを読み込めませんでした。再読み込みしてください'; });
     });
@@ -539,6 +618,6 @@
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
     brkRows: brkRows, profitHead: profitHead, result: result,
-    shipMode: shipMode, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS
+    shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS
   };
 })();
