@@ -2,7 +2,8 @@
    - config.js の FIREBASE_CONFIG が null のあいだは「準備中」と表示し、何も読み込まない(無料版はそのまま)。
    - 台帳はいつもこの端末(localStorage)が先。有料(無料期間を含む)の間だけ、変わった行をクラウドへ送り、他の端末の変更を受け取る。
    - お支払いは PayPal のサブスクリプション(JS SDK のボタン)。契約の状態は Worker が PayPal の Webhook を受けて users/{uid}.subscription に書く。
-   - データの形: users/{uid}(email・settings・subscription ※subscription は Worker だけが書く)、users/{uid}/ledger/{行のid}
+   - データの形: users/{uid}(email・settings・subscription ※subscription は Worker だけが書く)、users/{uid}/ledger/{行のid}、
+     users/{uid}/books/{種類~行のid}(帳簿の記録。帳簿のページで books-sync.js を読んだ時だけ。総合・業務の機能ごとに送る)
    - Firebase の部品は、ログインしたことのある端末と、マイページ・料金ページでだけ読み込む。 */
 (function () {
   'use strict';
@@ -16,7 +17,51 @@
   var billingReady = ready && !!cfg.PAYPAL_CLIENT_ID && Object.keys(plans).some(function (k) { return !!plans[k]; });
 
   var st = { phase: ready ? 'idle' : 'off', user: null, sub: null, plan: S.planState(null), sync: 'local', pending: 0, lastSync: store.get('sync-last', null), error: '' };
-  var fb = null, fbPromise = null, unsubLedger = null, unsubUser = null, flushTimer = null, settingsTimer = null, applyingSettings = false, pausedFor = null;
+  var fb = null, fbPromise = null, unsubLedger = null, unsubUser = null, flushTimer = null, settingsTimer = null, applyingSettings = false, pausedFor = null, switchedFor = null;
+
+  /* ---------- 帳簿の同期(帳簿のページだけ。books-sync.js) ----------
+     この端末の記録の時刻と墓標は、ログインの準備の前からつけておく(あとで初めて同期する時にまとめるため) */
+  var BS = window.SedoriBooksSync, books = null;
+  if (BS && BS.create) {
+    books = BS.create({
+      store: store, emit: U.emit, online: function () { return navigator.onLine !== false; },
+      confirmSwitch: function (n) {
+        if (st.user && switchedFor === st.user.uid) return true; // 台帳の切り替えで確認済み
+        return window.confirm('この端末の帳簿(' + n + '件)は、別のアカウントで同期していたものです。\n\nOK: この端末の分を消して、ログインしたアカウントの帳簿に切り替えます\nキャンセル: 帳簿は同期しません(先に仕訳帳などを書き出してください)');
+      }
+    });
+    BS.local = books;
+  }
+  /** 帳簿の同期の通信の部分(Firestore) */
+  function booksFs() {
+    var F = fb.F;
+    return {
+      listen: function (uid, since, onDocs, onErr) {
+        var col = F.collection(fb.db, 'users', uid, 'books');
+        var q = since ? F.query(col, F.where('serverAt', '>', F.Timestamp.fromMillis(since))) : col;
+        return F.onSnapshot(q, function (snap) {
+          var docs = [], max = since;
+          snap.docChanges().forEach(function (c) {
+            if (c.type === 'removed' || c.doc.metadata.hasPendingWrites) return;
+            var d = c.doc.data(), at = d.serverAt && d.serverAt.toMillis ? d.serverAt.toMillis() : 0;
+            if (at > max) max = at;
+            docs.push({ docId: c.doc.id, kind: d.kind, updatedAt: d.updatedAt, deleted: !!d.deleted, row: d.row || null });
+          });
+          onDocs(docs, max);
+        }, onErr);
+      },
+      commit: function (uid, docs) {
+        var b = F.writeBatch(fb.db);
+        docs.forEach(function (d) { b.set(F.doc(fb.db, 'users', uid, 'books', d.docId), { kind: d.kind, row: d.row, updatedAt: d.updatedAt, deleted: d.deleted, serverAt: F.serverTimestamp() }); });
+        return b.commit();
+      }
+    };
+  }
+  function startBooks(uid) {
+    if (!books || !fb) return;
+    var tier = st.plan.tier || 'free';
+    if (books.state().running && books.state().uid === uid) books.setTier(tier); else books.start(uid, tier, booksFs());
+  }
 
   function emit() { U.emit('sedori:acct', state()); paintHeader(); }
   function state() { return Object.assign({}, st, { ready: ready, billingReady: billingReady }); }
@@ -147,14 +192,14 @@
       st.sub = d.subscription || null;
       st.plan = S.planState(st.sub);
       if (d.settings && Number(d.settingsAt) > Number(store.get('settings-at', 0))) applySettings(d.settings, d.settingsAt);
-      if (st.plan.paid) startSync(user.uid); else { stopSync(); st.sync = 'local'; }
+      if (st.plan.paid) { startSync(user.uid); if (!pausedFor) startBooks(user.uid); } else { stopSync(); st.sync = 'local'; }
       emit();
     }, function () { st.error = '契約の状態を読めませんでした'; emit(); });
     emit();
   }
 
   /* ---------- 台帳の同期 ---------- */
-  function stopSync() { if (unsubLedger) { unsubLedger(); unsubLedger = null; } }
+  function stopSync() { if (unsubLedger) { unsubLedger(); unsubLedger = null; } if (books) books.stop(); }
   function startSync(uid) {
     if (unsubLedger || pausedFor === uid) return;
     var L = U.ledger, owner = store.get('sync-owner', null), local = L.all();
@@ -164,6 +209,7 @@
       if (!ok) { pausedFor = uid; st.sync = 'paused'; emit(); return; }
       L.replace([], {}); store.set('sync-pending', {});
       store.del('sync-since:' + owner);
+      switchedFor = uid; // 帳簿も同じアカウントに切り替える(もう一度は聞かない)
     }
     if (owner !== uid) {
       store.set('sync-owner', uid);
@@ -315,13 +361,15 @@
     if (!fb || !st.user) return Promise.reject(new Error('no-user'));
     var F = fb.F, uid = st.user.uid, col = F.collection(fb.db, 'users', uid, 'ledger');
     stopSync();
-    return F.getDocs(col).then(function (snap) {
-      var refs = snap.docs.map(function (d) { return d.ref; }), jobs = [];
+    // 台帳と帳簿の記録をまとめて消す
+    return Promise.all([F.getDocs(col), F.getDocs(F.collection(fb.db, 'users', uid, 'books'))]).then(function (snaps) {
+      var refs = snaps[0].docs.concat(snaps[1].docs).map(function (d) { return d.ref; }), jobs = [];
       for (var i = 0; i < refs.length; i += 400) { var b = F.writeBatch(fb.db); refs.slice(i, i + 400).forEach(function (r) { b.delete(r); }); jobs.push(b.commit()); }
       return Promise.all(jobs).then(function () { return refs.length; });
     }).then(function (n) {
       store.set('sync-pending', {}); store.del('sync-since:' + uid); store.del('sync-owner');
-      if (alsoLocal) U.ledger.replace([], {});
+      store.del('bk-sync-pending'); store.del('bk-sync-since:' + uid); store.del('bk-sync-owner');
+      if (alsoLocal) { U.ledger.replace([], {}); if (books) books.wipe(); }
       st.sync = 'paused'; emit();
       return n;
     });
@@ -349,6 +397,7 @@
   document.addEventListener('sedori:ledger', function (e) { if (ready && (store.get('sync-owner', null) || unsubLedger)) queue(e.detail.ids || []); });
   document.addEventListener('sedori:settings', pushSettings);
   window.addEventListener('online', flush);
+  window.addEventListener('online', function () { if (books) books.flush(); });
   function init() {
     paintFlags(); wireHeader(); paintHeader();
     var page = document.body.getAttribute('data-page');
@@ -364,7 +413,7 @@
     var tier = st.plan.tier;
     if (tier !== 'light' && tier !== 'total') return;
     told3pl = true;
-    setTimeout(function () { U.toast('発送代行への入庫・出荷の指示ファイルは業務で使えます' + (cfg.ACCOUNTING_READY ? '' : '(11月中に追加)'), '業務を見る', function () { location.href = U.base() + 'plans/?plan=business_month&from=3pl'; }); }, 2600);
+    setTimeout(function () { U.toast('発送代行への入庫・出荷の指示ファイルは業務で使えます' + ((cfg.FEATURES_READY || {}).threepl ? '' : '(11月中に追加)'), '業務を見る', function () { location.href = U.base() + 'plans/?plan=business_month&from=3pl'; }); }, 2600);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 

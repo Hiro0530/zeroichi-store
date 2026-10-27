@@ -67,7 +67,7 @@
     var box = $('#lg-up'); if (!box) return;
     var SA = window.SedoriAccount, tier = SA && SA.tier ? SA.tier() : 'free';
     if (tier !== 'light' && tier !== 'total') { box.innerHTML = ''; return; }
-    var cfg = window.ZW_CONFIG || {}, soon = cfg.ACCOUNTING_READY ? '' : '(11月中に追加)';
+    var FR = (window.ZW_CONFIG || {}).FEATURES_READY || {}, soon = FR.books ? '' : '(11月中に追加)', soonBiz = FR.stock && FR.tax ? '' : '(11月中に追加)';
     var d = new Date(), ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), mon = d.getMonth() + 1;
     var hide = U.store.get('up-hide', {});
     var toTotal = '../plans/?plan=total_month&from=ledger', toBiz = '../plans/?plan=business_month&from=ledger';
@@ -80,8 +80,8 @@
       else if (cap && cap.left <= 10) items.push(['cap', '', '今月のクラウド保存は、あと' + cap.left + '件です(ライトは月' + cap.limit + '件まで)。', '総合を見る', toTotal]);
       if (!hide['m-' + ym]) items.push(['m-' + ym, 'lock', '今月の利益 <b>' + yen(prof) + '円</b>。内訳・グラフ・経費は総合で' + soon + '。', '総合を見る', toTotal]);
     }
-    if (tier === 'total' && !hide['b-' + ym]) items.push(['b-' + ym, 'lock', '期末の棚卸と、確定申告用の数字・仕訳帳の書き出しは業務で' + soon + '。', '業務を見る', toBiz]);
-    if (mon <= 3 && !hide['tax-' + d.getFullYear()]) items.unshift(['tax-' + d.getFullYear(), '', '確定申告の時期です。申告用の数字(青色申告決算書・収支内訳書の科目)の書き出しは業務で使えます' + soon + '。', '業務を見る', toBiz]);
+    if (tier === 'total' && !hide['b-' + ym]) items.push(['b-' + ym, 'lock', '期末の棚卸と、確定申告用の数字・仕訳帳の書き出しは業務で' + soonBiz + '。', '業務を見る', toBiz]);
+    if (mon <= 3 && !hide['tax-' + d.getFullYear()]) items.unshift(['tax-' + d.getFullYear(), '', '確定申告の時期です。申告用の数字(青色申告決算書・収支内訳書の科目)の書き出しは業務で使えます' + soonBiz + '。', '業務を見る', toBiz]);
     box.innerHTML = items.map(function (it) {
       return '<p class="up ' + it[1] + '"><span>' + it[2] + '</span><a href="' + it[4] + '">' + it[3] + '</a>' + (it[0] !== 'cap' ? '<button type="button" class="up-x" data-up-x="' + esc(it[0]) + '" aria-label="閉じる">×</button>' : '') + '</p>';
     }).join('');

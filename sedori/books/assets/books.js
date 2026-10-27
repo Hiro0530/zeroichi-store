@@ -16,7 +16,14 @@
   var mem = {};
   var K = { sales: 'bk-sales', exp: 'bk-exp', recur: 'bk-recur', set: 'bk-set', batches: 'bk-batches', count: 'bk-count', rules: 'bk-rules', stale: 'bk-stale', tab: 'bk-tab', year: 'bk-year' };
   function get(k, d) { if (DEMO && k !== K.tab) return mem[k] !== undefined ? mem[k] : d; var v = U.store.get(k, d); return v == null ? d : v; }
-  function put(k, v) { if (DEMO && k !== K.tab) { mem[k] = v; return true; } var ok = U.store.set(k, v); if (!ok) U.toast('この端末では保存できませんでした(プライベートブラウズ等)'); return ok; }
+  function put(k, v) {
+    if (DEMO && k !== K.tab) { mem[k] = v; return true; }
+    var prev = U.store.get(k, null), ok = U.store.set(k, v);
+    if (!ok) U.toast('この端末では保存できませんでした(プライベートブラウズ等)');
+    // クラウド同期(総合・業務でログイン中): 変わった行に時刻を付けて送る順番待ちへ。画面の状態(タブ・年)は送らない
+    else if (k !== K.tab && k !== K.year && window.SedoriBooksSync && window.SedoriBooksSync.local) window.SedoriBooksSync.local.noteLocal(k, prev, v);
+    return ok;
+  }
   function ledger() { return DEMO ? mem.ledger : U.ledger.all(); }
   function saveLedger(rows) { if (DEMO) { mem.ledger = rows; return true; } return U.ledger.save(rows); }
   function sales() { var v = get(K.sales, []); return Array.isArray(v) ? v : []; }
@@ -26,24 +33,26 @@
   function rules() { return get(K.rules, {}) || {}; }
   function data() { return { ledger: ledger(), sales: sales(), expenses: expenses() }; }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-  var DEF_SET = { tax: 'exempt', incl: true, form: 'ao', points: 'discount', pointYen: {}, opening: {}, closing: {}, method: 'last', pay: '事業主借', bizDef: {} };
-  function settings() { var s = get(K.set, {}) || {}; return Object.assign({}, DEF_SET, s, { pointYen: s.pointYen || {}, opening: s.opening || {}, closing: s.closing || {}, bizDef: s.bizDef || {} }); }
+  var DEF_SET = { tax: 'exempt', incl: true, form: 'ao', points: 'discount', pointYen: {}, opening: {}, closing: {}, method: 'last', pay: '事業主借', bizDef: {}, noReg: {} };
+  function settings() { var s = get(K.set, {}) || {}; return Object.assign({}, DEF_SET, s, { pointYen: s.pointYen || {}, opening: s.opening || {}, closing: s.closing || {}, bizDef: s.bizDef || {}, noReg: s.noReg || {} }); }
   function saveSettings(patch) { put(K.set, Object.assign(settings(), patch)); }
   function counts(cutoff) { var c = get(K.count, {}) || {}; return c[cutoff] || {}; }
   function saveCounts(cutoff, v) { var c = get(K.count, {}) || {}; c[cutoff] = v; put(K.count, c); }
   function taxSet(y) {
     var s = settings();
     return { tax: s.tax, incl: s.tax === 'exempt' ? true : s.incl !== false, points: s.points, pointYen: Number(s.pointYen[y]) || 0,
-      opening: s.opening[y] === '' ? null : s.opening[y], closing: s.closing[y] === '' ? null : s.closing[y], method: s.method, pay: s.pay, counts: counts(y + '-12-31') };
+      opening: s.opening[y] === '' ? null : s.opening[y], closing: s.closing[y] === '' ? null : s.closing[y], method: s.method, pay: s.pay, counts: counts(y + '-12-31'), noReg: s.noReg };
   }
   function bizDef(acct) { var v = settings().bizDef[acct]; return v == null || v === '' ? 100 : Number(v); }
 
   /* 毎月の経費: 開いた時に、まだ無い月の分を作る */
   function runRecurring() {
-    var due = B.dueRecurring(recur(), expenses(), TODAY);
+    // id は「毎月の経費のid_年月」に決める(2台で同じ月の分を作っても1件にまとまる)。消した月の分(墓標)は作り直さない
+    var gone = DEMO ? {} : ((U.store.get('bk-meta:exp', {}) || {}).del || {});
+    var due = B.dueRecurring(recur(), expenses(), TODAY).filter(function (e) { e.id = 'rc' + e.recurId + '_' + e.date.slice(0, 7); return !gone[e.id]; });
     if (!due.length) return;
     var list = expenses();
-    due.forEach(function (e) { e.id = uid(); list.push(e); });
+    due.forEach(function (e) { list.push(e); });
     put(K.exp, list);
   }
 
@@ -106,6 +115,17 @@
       ['売れ残り', old + '<small>件</small>']
     ]);
   }
+  /* クラウド同期の状態(総合・業務でログイン中だけ表示) */
+  function paintSync() {
+    var el = $('#bk-sync'); if (!el) return;
+    var E = window.SedoriBooksSync && window.SedoriBooksSync.local, st = E ? E.state() : null;
+    if (DEMO || !st || (!st.running && st.phase !== 'paused')) { el.hidden = true; return; }
+    var light = st.tier !== 'total' && st.tier !== 'business';
+    var txt = light ? 'この端末だけに保存(総合で同期)' : ({ synced: 'クラウドに保存済み', pending: 'クラウドへ送る待ち ' + st.pending + '件', syncing: 'クラウドに保存中', error: 'クラウドに保存できていません', paused: '同期を止めています', local: '' }[st.phase] || '');
+    el.hidden = !txt; el.textContent = txt;
+    el.className = 'bk-sync ' + (light ? 'local' : st.phase);
+    el.title = st.phase === 'error' ? '通信を確かめてください。直るまで、この端末に残して何度か送り直します' + (st.error ? '(' + st.error + ')' : '') : (st.tier === 'total' ? '期末の棚卸と申告用の数字の設定は、業務でクラウドに保存されます' : '');
+  }
   function renderTabs() {
     $('#bk-tabs').innerHTML = TABS.map(function (t) {
       var locked = !can(t[0]);
@@ -115,7 +135,7 @@
     if (cur && (cur.offsetLeft + cur.offsetWidth > tb.scrollLeft + tb.clientWidth || cur.offsetLeft < tb.scrollLeft)) tb.scrollLeft = Math.max(0, cur.offsetLeft - 16);
   }
   function render() {
-    renderHead(); renderTabs();
+    renderHead(); renderTabs(); paintSync();
     var pane = $('#bk-pane');
     if (!can(tab)) { pane.innerHTML = lockHTML(tab); return; }
     ({ import: renderImport, expense: renderExpense, monthly: renderMonthly, stale: renderStale, stock: renderStock, tax: renderTax, journal: renderJournal, kobutsu: renderKobutsu })[tab](pane);
@@ -649,6 +669,7 @@
       '<div class="fld"><span>期首商品棚卸高</span><div class="pair"><input type="number" id="tx-open" min="0" value="' + esc(s.opening[year] == null ? '' : s.opening[year]) + '" placeholder="' + T.openAuto + '">円</div><span class="auto">空欄は台帳から計算(' + yen(T.openAuto) + '円)。前の年の期末と同じ額にします</span></div>' +
       '<div class="fld"><span>期末商品棚卸高</span><div class="pair"><input type="number" id="tx-close" min="0" value="' + esc(s.closing[year] == null ? '' : s.closing[year]) + '" placeholder="' + T.closeT.real + '">円</div><span class="auto">空欄は<button type="button" class="lnk" data-go="stock">期末の棚卸</button>の金額(' + yen(T.closeT.real) + '円・' + T.closeT.counted + '/' + T.closeT.total + '件を実地で確認)</span></div>' +
       '<div class="fld"><span>家事按分</span><span class="auto">経費ごとの「事業の割合」で計算します。初期値は<button type="button" class="lnk" data-go="expense">経費</button>で変えられます</span></div>' +
+      (s.tax === 'taxable' ? keikaHTML(TS) : '') +
       '</div></section></div><div><section class="bk-box"><h2>' + (s.form === 'shiro' ? '収支内訳書(一般用)' : '青色申告決算書(一般用) 損益計算書') + '<small>' + year + '年1月1日〜12月31日・円</small></h2>' +
       '<table class="form"><tbody>' + lines.map(function (l, i) {
         var cls = keyRows[l.no] ? 'key' : (calcRows[l.no] ? 'calc' : (l.sub ? 'sub' : ''));
@@ -667,11 +688,39 @@
     });
     function yearVal(id, field) { $('#' + id).addEventListener('change', function () { var s2 = settings(); s2[field][year] = this.value === '' ? '' : Math.max(0, Math.round(Number(this.value) || 0)); put(K.set, s2); render(); }); }
     yearVal('tx-pt', 'pointYen'); yearVal('tx-open', 'opening'); yearVal('tx-close', 'closing');
+    var kp = $('.kk-p', pane); if (kp) kp.addEventListener('toggle', function () { krOpen = kp.open; });
+    $$('[data-noreg]', pane).forEach(function (c) {
+      c.addEventListener('change', function () { var s2 = settings(), k = c.getAttribute('data-noreg'); if (c.checked) s2.noReg[k] = true; else delete s2.noReg[k]; put(K.set, s2); render(); });
+    });
     $$('[data-tx]', pane).forEach(function (b) { b.addEventListener('click', function () { var i = +b.getAttribute('data-tx'); taxOpen = taxOpen === i ? null : i; render(); }); });
     $$('[data-go]', pane).forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-go')); }); });
     $('#tx-csv').addEventListener('click', function () {
       U.download((s.form === 'shiro' ? 'shushi-uchiwake_' : 'aoiro-kessansho_') + year + '.csv', '﻿' + B.toCSV(lines.map(function (l) { return [l.no, l.label.trim(), l.amount]; }), ['欄', '項目', '金額(円)']));
     });
+  }
+  /* インボイスの経過措置(課税事業者だけ): 登録番号の無い相手からの仕入れの控除の目安と、仕入れ先の印 */
+  var krOpen = false;
+  function keikaHTML(TS) {
+    var K = B.transitionCredit(data(), year, TS), t = K.total;
+    var ind = K.rows.filter(function (x) { return x.why !== 'noReg'; }), kob = K.rows.filter(function (x) { return x.why === 'kobMissing'; }), nr = K.rows.filter(function (x) { return x.why === 'noReg'; });
+    var pct = function (r) { return Math.round(r * 100) + '%'; };
+    var marked = K.parties.filter(function (p) { return p.noReg; }).length;
+    return '<div class="fld kk"><span>インボイスの無い仕入れ(経過措置)</span>' +
+      '<table class="mini kk-t"><thead><tr><th>仕入れた時期</th><th class="r">控除</th><th class="r">支払額</th><th class="r">控除できる額</th></tr></thead><tbody>' +
+      K.periods.map(function (p) { return '<tr><td>' + esc(p.label) + '</td><td class="r">' + pct(p.rate) + '</td><td class="r">' + money(p.amt) + '</td><td class="r">' + money(p.credit) + '</td></tr>'; }).join('') +
+      '<tr class="tot"><td>計 ' + t.n + '件</td><td></td><td class="r">' + money(t.amt) + '</td><td class="r">' + money(t.credit) + '</td></tr></tbody></table>' +
+      '<span class="auto">支払額の10/110(' + yen(t.tax) + '円)に割合を掛けた目安。控除できない分は ' + yen(t.lost) + '円です。' +
+      (ind.length ? '個人からの仕入れ ' + ind.length + '件を含みます' + (kob.length ? '(うち中古 ' + kob.length + '件は<button type="button" class="lnk" data-go="kobutsu">古物商特例</button>の記載をそろえると全額)' : '') + '。' : '') +
+      (nr.length ? '登録番号なしにした仕入れ先・支払先の分 ' + nr.length + '件を含みます。' : '') +
+      (K.overCap ? '<b class="neg">一の相手からの仕入れが年' + (K.cap >= 1e9 ? '10億' : '1億') + '円を超えた分は対象外として計算しています。</b>' : '') + '</span>' +
+      '<details class="kk-p"' + (krOpen ? ' open' : '') + '><summary>登録番号の無い仕入れ先・支払先に印を付ける' + (marked ? '(' + marked + '件)' : '') + '</summary>' +
+      (K.parties.length ? '<div class="kk-list">' + K.parties.slice(0, 40).map(function (p) {
+        return '<label class="ck"><input type="checkbox" data-noreg="' + esc(p.key) + '"' + (p.noReg ? ' checked' : '') + '><span>' + esc(p.name) + '</span><small>' + p.n + '件・' + yen(p.amt) + '円</small></label>';
+      }).join('') + '</div>' : '<p class="auto">' + year + '年の仕入れ先(店舗・ショップ)と経費の支払先がまだありません。</p>') +
+      '<span class="auto">インボイス(登録番号の入ったレシート・請求書)を出していない店舗に印を付けます。個人からの仕入れは印なしで計算します。</span></details>' +
+      '<details class="kk-p"><summary>割合と要件</summary><span class="auto">割合は品物を受け取った日で決まります。2023年10月〜2026年9月 80%、2026年10月〜2028年9月 70%、2028年10月〜2030年9月 50%、2030年10月〜2031年9月 30%。' +
+      '帳簿に経過措置の旨を書き(仕訳帳の書き出しの摘要に「経過措置70%控除対象」のように入れます)、請求書等を保存するのが要件です。一の相手からの仕入れは年1億円まで(2026年分は10億円)。軽減税率(8%)の品も10%で計算しています。' +
+      '出典: <a href="' + esc(K.src.url) + '" target="_blank" rel="noopener">' + esc(K.src.label) + '</a>(' + esc(K.src.checked.replace(/-/g, '/')) + ' 確認)</span></details></div>';
   }
   function drillTax(l) {
     var D = data(), byL = {}, byS = {}, byE = {};
@@ -748,7 +797,7 @@
       (list.length ? list.map(function (x) {
         var r = x.r, st = ST[x.state];
         return '<tr><td data-k="仕入日" class="nw">' + esc(r.date) + '</td><td class="wide nmw" title="' + esc(r.name) + '">' + esc(r.name || '(名前なし)') + '</td><td data-k="仕入れ先" class="nmw">' + esc(r.party || '—') + (r.pName ? '<div class="meta">' + esc(r.pName) + '</div>' : '') + '</td>' +
-          '<td data-k="対価" class="r">' + money(x.amt) + '</td><td data-k="売り手の確認">' + (x.state === 'ok' || x.state === 'missing' ? (x.idReq ? '要る' : '<span class="muted">不要(1万円未満)</span>') : '<span class="muted">—</span>') + '</td>' +
+          '<td data-k="対価" class="r">' + money(x.amt) + '</td><td data-k="売り手の確認">' + (x.state === 'ok' || x.state === 'missing' ? (x.idReq ? '要る<div class="meta">' + esc(x.why) + '</div>' : '<span class="muted">不要(1万円未満)</span>') : '<span class="muted">—</span>') + '</td>' +
           '<td data-k="状態"><span class="tag ' + st[1] + '">' + st[0] + '</span></td><td data-k="足りない項目">' + (x.need.length ? '<b class="neg">' + esc(x.need.join('・')) + '</b>' : '') + '</td>' +
           '<td class="ops">' + (x.state === 'missing' ? daichoLink(r.id, '台帳で入れる') : '') + '</td></tr>';
       }).join('') : '<tr><td colspan="8" class="empty">' + ({ missing: '記載が足りない仕入れはありません。', ok: '記載がそろった仕入れはまだありません。', biz: '事業者からの中古の仕入れはありません。' }[kbFilter] || 'この年の仕入れはありません。') + '</td></tr>') +
@@ -850,6 +899,8 @@
   $('#bk-tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) go(b.getAttribute('data-tab')); });
   window.addEventListener('hashchange', function () { var t = location.hash.slice(1); if (t && t !== tab && TABS.some(function (x) { return x[0] === t; })) { tab = t; render(); } });
   document.addEventListener('sedori:remote', function () { if (!DEMO) render(); });
+  document.addEventListener('sedori:books-remote', function () { if (!DEMO) { runRecurring(); render(); } });
+  document.addEventListener('sedori:books-sync', function () { if (!DEMO) paintSync(); });
   document.addEventListener('sedori:acct', function () { render(); });
   U.api.onSearch = function (src, text) { if (src !== 'ledger') return false; location.href = '../daicho/?q=' + encodeURIComponent(text); return true; };
   history.replaceState(null, '', location.pathname + location.search + '#' + tab);

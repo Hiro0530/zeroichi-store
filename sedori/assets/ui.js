@@ -219,26 +219,27 @@
   var STATUS = ['仕入れ済', '入庫', '出品中', '売約', '発送済', '出品停止'];
   var NEXT_LABEL = ['入庫', '出品中', '売れた', '発送済'];
   var VERIFY = ['本人限定受取郵便で確認', '転送不要の簡易書留+本人名義口座へ振込', '対面で身分証を確認', '1万円未満のため不要', '古物商・法人から購入', 'その他(メモに記入)'];
-  var VERIFY_NO_PARTY = ['1万円未満のため不要', '古物商・法人から購入'];
   // Amazonのカテゴリー → 古物の13区分(目安)
   var CAT_HINMOKU = { clothes: '衣類', shoes: '皮革・ゴム製品類', bags: '皮革・ゴム製品類', watch: '時計・宝飾品類', jewelry: '時計・宝飾品類', eyewear: '道具類',
     electronics: '機械工具類', small_appliance: '機械工具類', large_appliance: '機械工具類', home_appliance: '機械工具類', elec_acc: '機械工具類', diy: '機械工具類', industrial: '機械工具類',
     pc: '事務機器類', stationery: '事務機器類', car: '道具類', instruments: '道具類', game_console: '道具類' };
   function hinmokuFor(catId) { return CAT_HINMOKU[catId] || '道具類'; }
 
-  /** 金額を問わず売り手の確認が要る品(2025年10月1日から エアコンの室外機・電気温水機器のヒートポンプ・電線・金属製グレーチング が追加)。品名から見分ける */
-  var ANY_PRICE = /(室外機|ヒートポンプ|エコキュート|電線|グレーチング)/;
-  function anyPriceItem(r) { return ANY_PRICE.test(String(r.name || '') + ' ' + String(r.feature || '')); }
-  /** 売り手の確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
-  function checkState(r) {
-    if (r.wait) return 'na'; // 無在庫で出品中(まだ仕入れていない)
-    // 1万円は1回の取引の対価の総額で見る(1個あたりではない。まとめ買いは 単価×個数)
-    var total = (Number(r.unit) || 0) * Math.max(1, Number(r.qty) || 1);
-    var required = r.cond === '中古' && (total >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || anyPriceItem(r));
-    if (!required) return r.cond === '中古' && r.verify ? 'ok' : 'na';
-    if (VERIFY_NO_PARTY.indexOf(r.verify) >= 0) return 'ok';
-    return r.pName && r.pAddr && r.verify ? 'ok' : 'need';
+  /* 売り手の確認が要る品か(金額を問わない品・1回の取引の合計1万円以上)の判定は seller-check.js(帳簿の古物商特例と共通) */
+  function SC() { return window.SedoriSellerCheck; }
+  function anyPriceItem(r) { return SC() ? !!SC().anyPriceItem(r) : false; }
+  // 同じ日に同じ売り手から買った行は1回の取引として合計する。台帳が変わるたびに作り直す
+  var txMemo = null;
+  function txTotal(r) {
+    if (!SC() || !r || !r.id) return null;
+    if (!txMemo) txMemo = SC().txTotals(ledger.all());
+    return txMemo[r.id] == null ? null : Math.max(txMemo[r.id], SC().rowTotal(r));
   }
+  /** 売り手の確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
+  function checkState(r) { return SC() ? SC().state(r, txTotal(r)) : 'na'; }
+  /** 確認が要る理由(要らなければ '') */
+  function checkReason(r) { return SC() ? SC().reason(r, txTotal(r)) : ''; }
+  window.addEventListener && window.addEventListener('storage', function () { txMemo = null; });
 
   var ledger = {
     all: function () { var r = store.get('ledger', []); return Array.isArray(r) ? r : []; },
@@ -246,12 +247,12 @@
     save: function (rows) {
       var S = window.SedoriSync, changed = [];
       if (S) { var st = S.stamp(ledger.all(), rows, store.get('ledger-del', {}), Date.now()); rows = st.rows; changed = st.changed; store.set('ledger-del', st.del); }
-      var ok = store.set('ledger', rows); updateCount();
+      var ok = store.set('ledger', rows); txMemo = null; updateCount();
       if (ok && changed.length) emit('sedori:ledger', { ids: changed });
       return ok;
     },
     /** クラウドから受け取った台帳をそのまま置く(時刻は付け直さない) */
-    replace: function (rows, del) { store.set('ledger', rows); store.set('ledger-del', del || {}); updateCount(); emit('sedori:remote', {}); },
+    replace: function (rows, del) { store.set('ledger', rows); txMemo = null; store.set('ledger-del', del || {}); updateCount(); emit('sedori:remote', {}); },
     get: function (id) { return ledger.all().filter(function (r) { return r.id === id; })[0] || null; },
     update: function (id, patch) {
       var rows = ledger.all(), hit = null;
@@ -451,7 +452,7 @@
   var P_FIELDS = [['pName', '氏名'], ['pZip', '〒'], ['pAddr', '住所'], ['pTel', '電話'], ['pMail', 'メール'], ['pJob', '職業'], ['pAge', '年齢'], ['ref', 'URL']];
   function badgeHTML(r) {
     var s = checkState(r);
-    if (s === 'need') return '<span class="badge" data-badge>売り手の確認が未入力</span>';
+    if (s === 'need') return '<span class="badge" data-badge title="' + esc('確認が要る理由: ' + checkReason(r)) + '">売り手の確認が未入力</span>';
     if (s === 'ok') return '<span class="badge ok" data-badge>売り手の確認 済</span>';
     return '<span class="badge na" data-badge>確認不要</span>';
   }
@@ -635,7 +636,7 @@
   window.SedoriUI = {
     store: store, $: $, $$: $$, esc: esc, yen: yen, pct: pct, val: val, today: today, narrow: narrow, loadFees: loadFees,
     toast: toast, download: download, target: target, targetLabel: targetLabel, api: api, extUrl: extUrl,
-    STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState, anyPriceItem: anyPriceItem,
+    STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState, checkReason: checkReason, anyPriceItem: anyPriceItem,
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
     brkRows: brkRows, profitHead: profitHead, result: result,

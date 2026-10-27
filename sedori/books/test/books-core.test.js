@@ -425,3 +425,91 @@ test('プランと機能', () => {
   assert.ok(B.allowed('kobutsu', 'biz'));
   assert.ok(!B.allowed('monthly', 'light'));
 });
+
+/* ---------- 売り手の確認の判定は台帳と同じ(seller-check.js) ---------- */
+test('古物商特例: 売り手の確認が要る理由は台帳と同じ判定(2025年10月の追加の品・1回の取引の合計)', () => {
+  const SC = require('../../assets/seller-check.js');
+  const L = [
+    { id: 'a', date: '2026-10-05', name: 'ダイキン 室外機', cond: '中古', qty: 1, unit: 3000, party: 'ジモティー 個人' },
+    { id: 'b', date: '2026-10-06', name: '中古 ゲーム', cond: '中古', qty: 1, unit: 6000, party: 'ジモティー 個人', pName: '鈴木 一郎' },
+    { id: 'c', date: '2026-10-06', name: '中古 本', cond: '中古', qty: 1, unit: 5000, party: 'ジモティー 個人', pName: '鈴木一郎' },
+    { id: 'd', date: '2026-10-07', name: '延長コード 電線', cond: '中古', qty: 1, unit: 900, party: 'メルカリ 出品者' }
+  ];
+  const k = B.kobutsuCheck(L, 2026), by = Object.fromEntries(k.rows.map((x) => [x.r.id, x]));
+  assert.equal(by.a.why, 'エアコンの室外機');
+  assert.equal(by.b.why, '同じ取引の合計が1万円以上');
+  assert.deepEqual(by.b.need, ['売り手の住所'], '氏名はあり、住所が足りない');
+  assert.equal(by.d.idReq, false, '延長コードは電線の対象外');
+  // 台帳の判定と同じ
+  const tx = SC.txTotals(L);
+  for (const r of L) assert.equal(by[r.id].idReq, SC.required(r, tx[r.id]), r.id);
+});
+
+/* ---------- インボイスの経過措置 ---------- */
+test('経過措置の割合: 課税仕入れの日で 80% → 70% → 50% → 30% → 0(令和8年度改正後)', () => {
+  assert.equal(B.transitionRate('2023-09-30'), 1);
+  assert.equal(B.transitionRate('2023-10-01'), 0.8);
+  assert.equal(B.transitionRate('2026-09-30'), 0.8);
+  assert.equal(B.transitionRate('2026-10-01'), 0.7);
+  assert.equal(B.transitionRate('2028-09-30'), 0.7);
+  assert.equal(B.transitionRate('2028-10-01'), 0.5);
+  assert.equal(B.transitionRate('2030-09-30'), 0.5);
+  assert.equal(B.transitionRate('2030-10-01'), 0.3);
+  assert.equal(B.transitionRate('2031-10-01'), 0);
+  assert.equal(B.transitionCap(2026), 1e9, '2026年分(1月1日に始まる課税期間)は10億円');
+  assert.equal(B.transitionCap(2027), 1e8, '2027年分からは1億円');
+  assert.match(B.TRANSITION_SRC.url, /nta\.go\.jp/);
+});
+
+test('経過措置の控除の目安: 個人からの仕入れ・登録番号なしの仕入れ先と経費、古物商特例は除く', () => {
+  const ledger = [
+    // 9月: 個人から新品(経過措置 80%)
+    { id: 'n1', date: '2026-09-20', name: '新品 ゲーム機', cond: '新品', qty: 1, unit: 11000, party: 'メルカリ 出品者' },
+    // 10月: 個人から中古・記載そろい(古物商特例 → 全額なので除く)
+    { id: 'u1', date: '2026-10-10', name: '中古 カメラ', cond: '中古', qty: 1, unit: 22000, party: 'ジモティー 個人', pName: '佐藤 一', pAddr: '東京都', verify: '対面で身分証を確認' },
+    // 10月: 個人から中古・記載が足りない(経過措置 70%)
+    { id: 'u2', date: '2026-10-11', name: '中古 レンズ', cond: '中古', qty: 1, unit: 22000, party: 'ヤフオク 出品者' },
+    // 店舗(インボイスあり)
+    { id: 's1', date: '2026-10-12', name: '新品 玩具', cond: '新品', qty: 2, unit: 5500, party: '楽天市場 トイショップ' },
+    // 店舗だが登録番号なしの印
+    { id: 's2', date: '2026-10-13', name: '新品 雑貨', cond: '新品', qty: 1, unit: 3300, party: '店舗 リサイクル山田' }
+  ];
+  const expenses = [
+    { id: 'e1', date: '2026-11-01', acct: '外注工賃', amount: 11000, payee: '梱包 田中さん', biz: 100 },
+    { id: 'e2', date: '2026-11-02', acct: '荷造運賃', amount: 1100, payee: 'ヤマト運輸', biz: 100 },
+    { id: 'e3', date: '2026-11-03', acct: '租税公課', amount: 5000, payee: '梱包 田中さん', biz: 100 }
+  ];
+  const noReg = { [B.partyKey('店舗 リサイクル山田')]: true, [B.partyKey('梱包 田中さん')]: true };
+  const K = B.transitionCredit({ ledger, expenses, sales: [] }, 2026, { tax: 'taxable', noReg });
+  const by = Object.fromEntries(K.rows.map((x) => [x.id, x]));
+  assert.deepEqual(Object.keys(by).sort(), ['e1', 'n1', 's2', 'u2'], '対象の行');
+  assert.deepEqual([by.n1.why, by.u2.why, by.s2.why, by.e1.why], ['individual', 'kobMissing', 'noReg', 'noReg']);
+  // 11,000円の10/110 = 1,000円。9月は80% → 800円、10月以降は70%
+  assert.deepEqual([by.n1.tax, by.n1.rate, by.n1.credit], [1000, 0.8, 800]);
+  assert.deepEqual([by.u2.tax, by.u2.credit, by.u2.lost], [2000, 1400, 600]);
+  assert.deepEqual([by.s2.credit, by.e1.credit], [210, 700]);
+  assert.deepEqual(K.total, { n: 4, amt: 47300, tax: 4300, credit: 3110, lost: 1190 });
+  const p80 = K.periods.find((p) => p.rate === 0.8), p70 = K.periods.find((p) => p.rate === 0.7);
+  assert.deepEqual([p80.n, p80.credit, p70.n, p70.credit], [1, 800, 3, 2310]);
+  assert.deepEqual(K.periods.map((p) => p.rate), [0.8, 0.7], 'この年にかかる時期だけ');
+  const pk = K.parties.map((p) => p.name);
+  assert.ok(pk.includes('楽天市場 トイショップ') && pk.includes('ヤマト運輸') && !pk.includes('メルカリ 出品者'), '印を付けられるのは店舗と経費の支払先');
+  // 仕訳帳の摘要に経過措置の旨
+  const J = B.journal({ ledger, expenses, sales: [] }, 2026, { tax: 'taxable', noReg });
+  assert.ok(J.some((e) => e.src.id === 'n1' && /経過措置80%控除対象/.test(e.memo)));
+  assert.ok(J.some((e) => e.src.id === 'u2' && /経過措置70%控除対象/.test(e.memo)));
+  assert.ok(J.some((e) => e.src.id === 'e1' && /経過措置70%控除対象/.test(e.memo)));
+  assert.ok(!J.some((e) => e.src.id === 's1' && /経過措置/.test(e.memo)), 'インボイスのある店舗は書かない');
+  // 免税事業者は書かない
+  assert.ok(!B.journal({ ledger, expenses, sales: [] }, 2026, { tax: 'exempt', noReg }).some((e) => /経過措置/.test(e.memo)));
+});
+
+test('経過措置の上限: 一の相手から年1億円(2027年分から)を超えた分は控除しない', () => {
+  const ledger = [{ id: 'big1', date: '2027-03-01', name: '一括仕入れ', cond: '新品', qty: 1, unit: 99000000, party: '店舗 問屋A' },
+    { id: 'big2', date: '2027-04-01', name: '一括仕入れ', cond: '新品', qty: 1, unit: 2200000, party: '店舗 問屋A' }];
+  const K = B.transitionCredit({ ledger, expenses: [] }, 2027, { tax: 'taxable', noReg: { [B.partyKey('店舗 問屋A')]: true } });
+  assert.equal(K.overCap, true);
+  const b2 = K.rows.find((x) => x.id === 'big2');
+  assert.equal(b2.over, 1200000, '1億円を超えた120万円');
+  assert.equal(b2.credit, Math.round(Math.round(1000000 * 10 / 110) * 0.7));
+});

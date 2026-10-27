@@ -2,9 +2,9 @@
    ブラウザでは window.SedoriBooks、Node では require('./books-core.js') で検算する。
    金額はすべて円の整数。日付は 'YYYY-MM-DD'。計算は参考で、申告の前に本人が確認する前提。 */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else root.SedoriBooks = factory();
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('../../assets/seller-check.js'));
+  else root.SedoriBooks = factory(root.SedoriSellerCheck);
+})(typeof self !== 'undefined' ? self : this, function (SC) {
   'use strict';
 
   /* ==================================================================
@@ -739,8 +739,10 @@
     set = set || {};
     var y = String(year), pay = set.pay || '事業主借', out = [], no = 0, L = data.ledger || [], byId = {};
     L.forEach(function (r) { byId[r.id] = r; });
-    var kob = set.tax === 'taxable' ? kobutsuCheck(L, y) : null, kobOk = {};
+    var kob = set.tax === 'taxable' ? kobutsuCheck(L, y) : null, kobOk = {}, keika = {};
     if (kob) kob.rows.forEach(function (x) { if (x.state === 'ok') kobOk[x.r.id] = 1; });
+    // 経過措置の仕入れは、摘要に「経過措置80%控除対象」のように入れる(帳簿に経過措置の適用を受ける旨を書くため)
+    if (set.tax === 'taxable') transitionCredit(data, y, set).rows.forEach(function (x) { if (x.rate > 0 && x.rate < 1) keika[x.type + ':' + x.id] = ' 経過措置' + Math.round(x.rate * 100) + '%控除対象'; });
     function J(date, lines, memo, src) { no++; lines.forEach(function (l) { if (!l[2]) return; out.push({ no: no, date: date, dr: l[0], cr: l[1], amt: round(l[2]), memo: (l[3] || memo || '').slice(0, 60), src: src, taxDr: l[4] || 'out', taxCr: l[5] || 'out' }); }); }
     // 期首の棚卸(年の初め)
     var T = taxReport(data, y, set);
@@ -748,7 +750,7 @@
     // 仕入
     L.filter(function (r) { return !r.wait && inYear(r.date, y); }).sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (r) {
       var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1));
-      var m = ('仕入 ' + (r.name || '') + (kobOk[r.id] ? ' 古物商特例' : '')).trim();
+      var m = ('仕入 ' + (r.name || '') + (kobOk[r.id] ? ' 古物商特例' : (keika['ledger:' + r.id] || ''))).trim();
       J(r.date, [['仕入高', pay, amt, m, kobOk[r.id] ? 'kobutsu' : 'buy', 'out']], '', { type: 'ledger', id: r.id });
     });
     // 売上(取り込み)
@@ -776,7 +778,7 @@
     // 経費
     (data.expenses || []).filter(function (x) { return inYear(x.date, y); }).sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (x) {
       var a = bizAmount(x); if (!a) return;
-      var m = (x.payee || '') + (x.memo ? ' ' + x.memo : '') + (Number(x.biz) < 100 ? ' (事業' + x.biz + '%)' : '');
+      var m = (x.payee || '') + (x.memo ? ' ' + x.memo : '') + (Number(x.biz) < 100 ? ' (事業' + x.biz + '%)' : '') + (keika['expense:' + x.id] || '');
       J(x.date, [[x.acct || '雑費', pay, a, m.trim() || x.acct, x.acct === '租税公課' ? 'out' : 'buy', 'out']], '', { type: 'expense', id: x.id });
     });
     // ポイント
@@ -871,29 +873,105 @@
   /**
    * 古物商特例の確認。対象は中古品を個人(適格請求書発行事業者以外)から買った仕入れ。
    * 帳簿に要る事項: 相手の氏名・住所(古物営業法で本人確認が要る取引のみ)、年月日、品名(内容)、数量、対価、特例の対象である旨。
-   * 返り値 { rows:[{r, state:'ok'|'missing'|'biz'|'new', need:[足りない項目], idReq}], ok, missing, biz, amountOk }
+   * 返り値 { rows:[{r, state:'ok'|'missing'|'biz'|'new', need:[足りない項目], idReq, why:確認が要る理由}], ok, missing, biz, amountOk }
    */
   function kobutsuCheck(ledger, year) {
-    var y = String(year), rows = [];
+    var y = String(year), rows = [], tx = SC.txTotals(ledger);
     (ledger || []).forEach(function (r) {
       if (r.wait || !inYear(r.date, y)) return;
       var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1));
       if (r.cond !== '中古') { rows.push({ r: r, state: 'new', need: [], amt: amt }); return; }
       if (r.verify === '古物商・法人から購入' || BIZ.test(String(r.party || ''))) { rows.push({ r: r, state: 'biz', need: [], amt: amt }); return; }
-      var idReq = amt >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || /(室外機|ヒートポンプ|エコキュート|電線|グレーチング)/.test(String(r.name || '') + ' ' + String(r.feature || ''));
+      // 売り手の確認が要るか(金額を問わない品・1回の取引の合計1万円以上)は台帳と同じ判定(seller-check.js)
+      var why = SC.reason(r, tx[r.id]), idReq = !!why;
       var need = [];
       if (!r.date) need.push('年月日');
       if (!String(r.name || '').trim() || /^\(名前なし\)$/.test(r.name)) need.push('品名');
       if (!(Number(r.qty) > 0)) need.push('数量');
       if (!(Number(r.unit) > 0)) need.push('対価');
       if (idReq) { if (!String(r.pName || '').trim()) need.push('売り手の氏名'); if (!String(r.pAddr || '').trim()) need.push('売り手の住所'); }
-      rows.push({ r: r, state: need.length ? 'missing' : 'ok', need: need, idReq: idReq, amt: amt });
+      rows.push({ r: r, state: need.length ? 'missing' : 'ok', need: need, idReq: idReq, why: why, amt: amt });
     });
     var c = function (s) { return rows.filter(function (x) { return x.state === s; }); };
     var ok = c('ok'), mi = c('missing');
     return { rows: rows, ok: ok.length, missing: mi.length, biz: c('biz').length, nw: c('new').length,
       amountOk: ok.reduce(function (s, x) { return s + x.amt; }, 0), amountMissing: mi.reduce(function (s, x) { return s + x.amt; }, 0),
       taxOk: round(ok.reduce(function (s, x) { return s + x.amt; }, 0) * 10 / 110) };
+  }
+
+  /* ==================================================================
+     インボイスの経過措置(免税事業者・登録番号の無い相手からの仕入れ)
+     ================================================================== */
+  /**
+   * 仕入税額相当額のうち控除できる割合。課税仕入れを行った日(商品は原則として引渡しを受けた日)で決まる。
+   * 令和8年度税制改正の後の割合(国税庁 インボイスQ&A 問113 令和8年4月改訂、確認 2026-10-27)。2031年10月1日からは0。
+   */
+  var TRANSITION = [
+    { from: '2023-10-01', to: '2026-09-30', rate: 0.8 },
+    { from: '2026-10-01', to: '2028-09-30', rate: 0.7 },
+    { from: '2028-10-01', to: '2030-09-30', rate: 0.5 },
+    { from: '2030-10-01', to: '2031-09-30', rate: 0.3 }
+  ];
+  var TRANSITION_SRC = { label: '国税庁 インボイスQ&A 問113(免税事業者等からの仕入れに係る経過措置・令和8年4月改訂)', url: 'https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/pdf/qa/01-15.pdf', checked: '2026-10-27' };
+  /** その日の課税仕入れの控除の割合(2023年9月30日までは全額=1、経過措置が終わった後は0) */
+  function transitionRate(d) {
+    d = String(d || '');
+    if (!d || d < TRANSITION[0].from) return 1;
+    for (var i = 0; i < TRANSITION.length; i++) if (d >= TRANSITION[i].from && d <= TRANSITION[i].to) return TRANSITION[i].rate;
+    return 0;
+  }
+  /** 一の相手からの経過措置の上限(税込・課税期間ごと)。令和8年10月1日以後に始まる課税期間は1億円、それより前は10億円。個人の課税期間は暦年 */
+  function transitionCap(year) { return String(year) + '-01-01' >= '2026-10-01' ? 100000000 : 1000000000; }
+  function periodLabel(t) { return t.from.slice(0, 4) + '年' + Number(t.from.slice(5, 7)) + '月〜' + t.to.slice(0, 4) + '年' + Number(t.to.slice(5, 7)) + '月'; }
+  function isBizParty(r) { return r.verify === '古物商・法人から購入' || BIZ.test(String(r.party || '')); }
+  function partyKey(name) { return 'p:' + payeeKey(name); }
+  /**
+   * 課税事業者の、インボイス(登録番号)の無い仕入れの控除の目安。
+   * - 台帳: 個人から買った品(中古で古物商特例の記載がそろった行は全額なので除く)と、set.noReg で「登録番号なし」にした仕入れ先
+   * - 経費: set.noReg で「登録番号なし」にした支払先(租税公課は除く)
+   * 仕入税額相当額は10/110で計算した目安(軽減税率8%の品は扱わない)。
+   * 返り値 { rows:[{type,id,date,name,party,amt,tax,rate,credit,lost,why:'individual'|'kobMissing'|'noReg',over}], periods:[{label,rate,n,amt,tax,credit}], total, parties:[{key,name,n,amt,noReg}], cap, overCap }
+   */
+  function transitionCredit(data, year, set) {
+    set = set || {};
+    var y = String(year), L = data.ledger || [], noReg = set.noReg || {}, kst = {}, rows = [], parties = {};
+    kobutsuCheck(L, y).rows.forEach(function (x) { kst[x.r.id] = x.state; });
+    function party(key, name, amt, src) { var p = parties[key] = parties[key] || { key: key, name: name, n: 0, amt: 0, src: src, noReg: !!noReg[key] }; p.n++; p.amt += amt; }
+    L.forEach(function (r) {
+      if (r.wait || !inYear(r.date, y)) return;
+      var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1)); if (amt <= 0) return;
+      var name = String(r.party || '').trim(), biz = isBizParty(r), key = partyKey(name), why;
+      if (biz && name) party(key, name, amt, 'ledger');
+      if (kst[r.id] === 'ok') return; // 古物商特例(全額控除)
+      if (!biz) why = kst[r.id] === 'missing' ? 'kobMissing' : 'individual';
+      else if (noReg[key]) why = 'noReg';
+      else return;
+      rows.push({ type: 'ledger', id: r.id, date: r.date, name: r.name || '', party: name, key: biz ? key : 'i:' + (String(r.pName || '').trim() || name || r.id), amt: amt, why: why });
+    });
+    (data.expenses || []).forEach(function (x) {
+      if (!inYear(x.date, y) || x.acct === '租税公課') return;
+      var amt = bizAmount(x), name = String(x.payee || '').trim(); if (amt <= 0 || !name) return;
+      var key = partyKey(name);
+      party(key, name, amt, 'expense');
+      if (noReg[key]) rows.push({ type: 'expense', id: x.id, date: x.date, name: x.acct || '', party: name, key: key, amt: amt, why: 'noReg' });
+    });
+    var cap = transitionCap(y), used = {}, overCap = false;
+    rows.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (x) {
+      var u = used[x.key] || 0, within = Math.max(0, Math.min(x.amt, cap - u));
+      used[x.key] = u + x.amt; x.over = x.amt - within; if (x.over) overCap = true;
+      x.tax = round(x.amt * 10 / 110); x.rate = transitionRate(x.date);
+      x.credit = round(round(within * 10 / 110) * x.rate); x.lost = x.tax - x.credit;
+    });
+    var periods = TRANSITION.map(function (t) { return { label: periodLabel(t), from: t.from, to: t.to, rate: t.rate, n: 0, amt: 0, tax: 0, credit: 0 }; });
+    var total = { n: 0, amt: 0, tax: 0, credit: 0, lost: 0 };
+    rows.forEach(function (x) {
+      var p = periods.filter(function (q) { return x.date >= q.from && x.date <= q.to; })[0];
+      if (p) { p.n++; p.amt += x.amt; p.tax += x.tax; p.credit += x.credit; }
+      total.n++; total.amt += x.amt; total.tax += x.tax; total.credit += x.credit; total.lost += x.lost;
+    });
+    var ys = y + '-01-01', ye = y + '-12-31';
+    return { rows: rows, periods: periods.filter(function (p) { return p.n || (p.from <= ye && p.to >= ys); }), total: total,
+      parties: Object.keys(parties).map(function (k) { return parties[k]; }).sort(function (a, b) { return b.amt - a.amt; }), cap: cap, overCap: overCap, src: TRANSITION_SRC };
   }
 
   /* ==================================================================
@@ -920,6 +998,7 @@
     matchLedger: matchLedger, candidates: candidates, ledgerCodes: ledgerCodes, events: events, monthly: monthly, groupBy: groupBy, partyGroup: partyGroup, chOf: CH_OF_SELL,
     breakEven: breakEven, stale: stale, stockAt: stockAt, stocktake: stocktake, countScan: countScan,
     taxReport: taxReport, journal: journal, exportRows: exportRows, encodeSJIS: encodeSJIS, SOFT: SOFT, kobutsuCheck: kobutsuCheck,
+    TRANSITION: TRANSITION, TRANSITION_SRC: TRANSITION_SRC, transitionRate: transitionRate, transitionCap: transitionCap, transitionCredit: transitionCredit, partyKey: partyKey,
     FEATURE_TIER: FEATURE_TIER, tierOf: tierOf, allowed: allowed
   };
 });

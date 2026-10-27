@@ -123,7 +123,7 @@
   $('#mp-sync').addEventListener('click', function () { SA.syncNow(); U.toast('同期しています'); });
   $('#mp-del-cloud').addEventListener('click', function () {
     if ($('#mp-del-word').value.trim() !== '消す') { U.toast('確認のため「消す」と入れてください'); $('#mp-del-word').focus(); return; }
-    SA.deleteCloud($('#mp-del-local').checked).then(function (n) { U.toast('クラウドの台帳を消しました(' + n + '件)'); render(); }).catch(function () { U.toast('消せませんでした。通信を確かめてください'); });
+    SA.deleteCloud($('#mp-del-local').checked).then(function (n) { U.toast('クラウドの台帳と帳簿を消しました(' + n + '件)'); render(); }).catch(function () { U.toast('消せませんでした。通信を確かめてください'); });
   });
   $('#mp-del-acct').addEventListener('click', function () {
     if (SA.paid()) { U.toast('先に解約してください(契約内容 > 解約について)'); return; }
