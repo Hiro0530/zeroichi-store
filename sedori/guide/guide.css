@@ -89,6 +89,7 @@ aside.rail{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px}
 @media(max-width:640px){
   body{font-size:15.5px;line-height:1.9}
   .top-in,.page,.foot .in{padding-left:16px;padding-right:16px}
+  .foot nav{gap:4px 18px}.foot nav a{display:inline-block;padding:6px 0}
   .top a.tool{display:none}
   .top .cta.sm{margin-left:auto}
   h1{font-size:23px}

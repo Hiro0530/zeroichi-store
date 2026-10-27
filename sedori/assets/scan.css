@@ -21,7 +21,8 @@
 .cam-bar{display:flex;align-items:center;gap:8px;min-height:28px}
 .cam-bar .btn[aria-pressed="true"]{background:var(--sel);border-color:var(--sel-line)}
 .cam-opt{margin-left:auto;display:flex;gap:12px;font-size:12px;color:var(--sub)}
-.cam-opt label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.cam-opt label{display:flex;align-items:center;gap:6px;cursor:pointer;min-height:36px}
+.cam-opt input{width:18px;height:18px}
 
 .manual label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px;font-weight:700}
 .manual-row{display:flex;gap:8px}

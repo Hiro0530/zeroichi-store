@@ -401,7 +401,7 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
   .lay3 .side{order:3}.lay3 .res{order:1}.lay3 .det{order:2}
   body:not([data-route="ra"]) .lay3 .side{order:0}
   .lay2 .side{order:2}
-  input[type=number],input[type=search],input:not([type]),input[type=text],input[type=date],select,textarea{font-size:16px;height:38px}
+  input[type=number],input[type=search],input:not([type]),input[type=text],input[type=date],input[type=datetime-local],select,textarea{font-size:16px;height:38px}
   textarea{height:auto}
   .fr{min-height:40px}
   .ck{min-height:40px;align-items:center}.ck input{width:18px;height:18px}
@@ -421,7 +421,7 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
   .acts .btn{height:48px;font-size:15px}
   .tabs button{padding:10px 12px}
   .btn.sm{height:36px}
-  .inl input[type=number]{height:38px;font-size:16px}
+  .inl input[type=number],.inl select{height:38px;font-size:16px}
   .edf{grid-template-columns:1fr 1fr}
   .edpaste{grid-template-columns:1fr}
   .edwrap{grid-template-columns:1fr}
@@ -722,3 +722,5 @@ p.pc-sub[data-c="year"]{color:var(--good);font-weight:700}
 .mp-p small{margin-left:4px;font-size:11px;color:var(--mute)}
 .ck .ckn{display:block;font-size:11px;color:var(--mute);line-height:1.4}
 .ck:has(.ckn){align-items:flex-start}.ck:has(.ckn) input{margin-top:3px}
+.plcmp tbody th,.plcmp thead th:first-child{position:sticky;left:0;z-index:1}
+.plcmp thead th:first-child{background:var(--th)}
