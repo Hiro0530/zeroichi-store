@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261027b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261027c">
 </head>
 <body data-base="../" data-route="auction" data-route-label="業者オークション" data-page="auction-mercari">
 <header class="hd">
@@ -28,6 +28,10 @@
       <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
       <button type="submit">検索</button>
     </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
     <div class="tgt" id="tgt">
       <span class="tgt-k">目標の利益</span>
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
@@ -78,6 +82,7 @@
         <label class="cell "><span class="ck2">その他(集荷・付属品)</span><span class="cv"><input id="s-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label>
         <div id="s-shipfee-w" class="w2" hidden><label class="cell "><span class="ck2">送料(自分で入力)</span><span class="cv"><input id="s-shipfee" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
       </div>
+      <div id="wh"></div>
       <div id="m-out" aria-live="polite"></div>
       <div class="acts">
           <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
@@ -121,8 +126,8 @@
     <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中だけに保存されます。</p>
   </div>
 </footer>
-<script src="../assets/calc.js?v=20261027b"></script>
-<script src="../assets/ui.js?v=20261027b"></script>
-<script src="../assets/market.js?v=20261027b"></script>
+<script src="../assets/calc.js?v=20261027c"></script>
+<script src="../assets/ui.js?v=20261027c"></script>
+<script src="../assets/market.js?v=20261027c"></script>
 </body>
 </html>

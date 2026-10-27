@@ -32,7 +32,7 @@
   function useQuota() { var q = quota(); if (q.n >= FREE_SEARCHES_PER_DAY) return false; q.n++; U.store.set('quota', q); showQuota(); return true; }
 
   /* ---------- 条件(左)と計算 ---------- */
-  var COND_IDS = ['sort', 'c-cat', 'c-tier', 'c-inbound', 'c-other', 'c-pt-mine', 'c-selfship'];
+  var COND_IDS = ['sort', 'c-cat', 'c-tier', 'c-inbound', 'c-other', 'c-pt-mine', 'c-carrier', 'c-selfship'];
   var COND_CHK = ['ptonly', 'freeonly', 'profitonly', 'c-usept', 'c-self'];
   function saveCond() {
     var f = {}; COND_IDS.forEach(function (id) { f[id] = $('#' + id).value; }); COND_CHK.forEach(function (id) { f[id] = $('#' + id).checked; });
@@ -49,9 +49,9 @@
   function input(it) {
     return {
       sell: it.sell || 0, category: it.cat || $('#c-cat').value, fbaTier: it.tier || $('#c-tier').value,
-      cost: Number(it.price) || 0, inShip: Number(it.inShip) || 0, inbound: val('c-inbound'), other: val('c-other'),
+      cost: Number(it.price) || 0, inShip: Number(it.inShip) || 0, inbound: val('c-inbound'), other: val('c-other') + U.whTotal(fees), wh: U.whTotal(fees),
       pointRate: ((Number(it.shopPt) || 0) + val('c-pt-mine')) / 100, usePoints: $('#c-usept').checked,
-      selfShip: $('#c-self').checked, selfShipCost: val('c-selfship')
+      selfShip: $('#c-self').checked, selfShipCost: $('#c-self').checked ? C.carrierCost(fees, $('#c-carrier').value, val('c-selfship')) : 0
     };
   }
   /** 1行ぶんの計算。Amazon売値が無い時は、目標を満たす売値で計算して est=true */
@@ -180,11 +180,12 @@
     }
     var x = r.x, tg = U.target();
     var be = C.amazonBreakEvenSell(fees, x), maxc = C.amazonMaxCost(fees, Object.assign({}, x), tg);
-    var rows = [['販売価格' + (r.est ? '(目標の売値)' : ''), r.sell], ['販売手数料', -r.referral], [x.selfShip ? 'お客様への送料' : 'FBA配送代行手数料', x.selfShip ? -r.selfShipCost : -r.fba],
+    var rows = [['販売価格' + (r.est ? '(目標の売値)' : ''), r.sell], ['販売手数料', -r.referral], [x.selfShip ? '送料(' + esc(carrierName()) + ')' : 'FBA配送代行手数料', x.selfShip ? -r.selfShipCost : -r.fba],
       ['Amazonからの入金', r.payout, 't'], ['仕入れ値', -r.cost]];
     if (r.inShip) rows.push(['仕入れの送料', -r.inShip]);
     if (r.inbound) rows.push(['納品送料・資材', -r.inbound]);
-    if (r.other) rows.push(['その他', -r.other]);
+    if (x.wh) rows.push(['発送代行(入庫・保管・撮影・出荷)', -x.wh]);
+    if (r.other - (x.wh || 0)) rows.push(['その他', -(r.other - (x.wh || 0))]);
     if (x.usePoints && r.points) rows.push(['ポイント(' + U.pct(x.pointRate) + '・税抜で計算)', r.points]);
     rows.push(['利益(1個)', r.profit, 't']);
     var keyRows = [['目標(' + esc(U.targetLabel(tg)) + ')を満たす売値', r.sug ? yen(r.sug) + '円' : '届かない', 'key go'], ['損益分岐の売値', be ? yen(be) + '円' : '—', 'key']];
@@ -218,7 +219,7 @@
     if (!r || !r.sell) { U.toast('仕入れ値を入れてください'); $('#c-cost').focus(); return; }
     if (r.est) { it.sell = r.sug; $('#c-sell').value = r.sug; fromDetail(); r = compute(it); }
     var qty = Math.max(1, val('c-qty') || 1);
-    var row = U.ledger.add({ cond: '新品', hinmoku: U.hinmokuFor(r.x.category), name: it.name || '(名前なし)',
+    var row = U.ledger.add({ ship: r.x.selfShip ? U.shipMode() : 'fba', cond: '新品', hinmoku: U.hinmokuFor(r.x.category), name: it.name || '(名前なし)',
       feature: [it.jan ? 'JAN ' + it.jan : '', it.asin ? 'ASIN ' + it.asin : ''].filter(Boolean).join(' '),
       qty: qty, unit: r.cost + r.inShip, party: it.manual ? '' : (it.src === 'yahoo' ? 'Yahoo!ショッピング ' : '楽天市場 ') + (it.shop || ''),
       ref: it.url || '', sellTo: 'Amazon', sellPrice: r.sell, profit: r.profit, route: '楽天・Yahoo!→Amazon' });
@@ -409,18 +410,32 @@
   };
 
   /* ---------- 起動 ---------- */
-  $('#c-self').addEventListener('change', function () { $('#c-selfship-w').hidden = !this.checked; });
+  function carrierName() { var c = C.findCarrier(fees, $('#c-carrier').value); return c ? c.label.replace(/\(.*\)/, '') : ''; }
+  function paintCarrier() {
+    var custom = $('#c-carrier').value === 'custom';
+    $('#c-selfship').disabled = !custom;
+    if (!custom) $('#c-selfship').value = C.carrierCost(fees, $('#c-carrier').value, 0);
+  }
+  function paintShipNote() {
+    U.mountWh($('#wh'), fees, $('#c-self').checked ? '' : { self: 'FBA: Amazonが発送します。納品は自分で(納品送料は条件の欄)', pl: '発送代行がFBAへ納品します' });
+  }
+  $('#c-self').addEventListener('change', function () { $('#c-selfship-w').hidden = !this.checked; paintShipNote(); });
   loadKeys(); showQuota(); loadWatch();
   var last = U.store.get('ra-last', null); if (last) { lists.s = last.items || []; query = last.q || ''; }
   $('[data-act="list"]').innerHTML = 'この価格で出品<kbd>Enter</kbd>';
   document.addEventListener('sedori:target', function () { render(); calcDetail(); });
+  document.addEventListener('sedori:wh', function () { render(); calcDetail(); });
   Promise.all([U.loadFees(), loadToday()]).then(function (a) {
     fees = a[0];
     $('#c-cat').innerHTML = fees.amazon.categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join('');
     $('#c-tier').innerHTML = fees.amazon.fba_tiers.map(function (t) { return '<option value="' + t.id + '">' + esc(t.label) + '</option>'; }).join('');
     $('#c-tier').value = 'std2c'; $('#c-cat').value = 'toys';
+    $('#c-carrier').innerHTML = U.carrierOptions(fees, 'yp60');
     restoreCond();
+    if (!C.findCarrier(fees, $('#c-carrier').value)) $('#c-carrier').value = 'yp60';
     $('#c-selfship-w').hidden = !$('#c-self').checked;
+    paintCarrier(); paintShipNote();
+    $('#c-carrier').addEventListener('change', paintCarrier);
     $$('.side input, .side select').forEach(function (el) {
       if (/^k-/.test(el.id)) return;
       el.addEventListener('input', function () { saveCond(); render(); calcDetail(); });

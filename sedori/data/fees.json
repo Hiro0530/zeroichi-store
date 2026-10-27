@@ -949,6 +949,26 @@
    "topic": "古物営業法 非対面取引の本人確認(警視庁)",
    "url": "https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html",
    "note": "1万円以上(一部品目は金額を問わず)はその都度確認"
+  },
+  {
+   "topic": "日本郵便 2026年10月1日の料金改定(クリックポスト240円・ゆうパケット一律360円・ゆうパック平均約10%)",
+   "url": "https://files.japanpost.jp/assets/34d9d11432734cfaa759e78fe395b688/9f91670d385b45abb05aac0502c7acb8/20260703_02_01.pdf",
+   "note": "公式(2026年7月3日発表)"
+  },
+  {
+   "topic": "ゆうパックの改定後の運賃(東京発の例)",
+   "url": "https://stockcrew.co.jp/insights/article_jiji_japanpost_neage_2026-07-06",
+   "note": "60サイズ 関東等へ970円・100サイズ1,650円・140サイズ2,600円"
+  },
+  {
+   "topic": "ヤマト運輸 宅急便・宅急便コンパクトの運賃(同一地帯・2025年10月時点)",
+   "url": "https://www.pricey.jp/web/articles/4484",
+   "note": "60サイズ940円・80サイズ1,230円・100サイズ1,530円・コンパクト650円(専用BOX別)"
+  },
+  {
+   "topic": "ヤマト運輸 同一都道府県内運賃の新設(2025年11月10日〜)",
+   "url": "https://www.lnews.jp/2025/11/r1105105.html",
+   "note": "同じ都道府県内なら60サイズ790円など、さらに安い"
   }
  ],
  "auctions": {
@@ -998,5 +1018,95 @@
     "source": ""
    }
   ]
+ },
+ "self_ship": {
+  "note": "自分で発送する時の送料(税込・個人の現金払い)。ゆうパック・宅急便は近距離(同一地帯)の目安で、遠い地域へは高くなります。自分の地域の料金で上書きしてください。",
+  "carriers": [
+   {
+    "id": "clickpost",
+    "group": "日本郵便",
+    "label": "クリックポスト(3辺60cm・長辺34cm・2kg)",
+    "fee": 240,
+    "material": 0
+   },
+   {
+    "id": "yupacket",
+    "group": "日本郵便",
+    "label": "ゆうパケット(厚さ3cmまで一律)",
+    "fee": 360,
+    "material": 0
+   },
+   {
+    "id": "yp60",
+    "group": "日本郵便",
+    "label": "ゆうパック60サイズ(東京→関東・東海など)",
+    "fee": 970,
+    "material": 0
+   },
+   {
+    "id": "yp100",
+    "group": "日本郵便",
+    "label": "ゆうパック100サイズ(東京→関東・東海など)",
+    "fee": 1650,
+    "material": 0
+   },
+   {
+    "id": "yp140",
+    "group": "日本郵便",
+    "label": "ゆうパック140サイズ(東京→関東・東海など)",
+    "fee": 2600,
+    "material": 0
+   },
+   {
+    "id": "ycompact",
+    "group": "ヤマト運輸",
+    "label": "宅急便コンパクト(専用BOX70円込み・同一地帯)",
+    "fee": 650,
+    "material": 70
+   },
+   {
+    "id": "y60",
+    "group": "ヤマト運輸",
+    "label": "宅急便60サイズ(同一地帯)",
+    "fee": 940,
+    "material": 0
+   },
+   {
+    "id": "y80",
+    "group": "ヤマト運輸",
+    "label": "宅急便80サイズ(同一地帯)",
+    "fee": 1230,
+    "material": 0
+   },
+   {
+    "id": "y100",
+    "group": "ヤマト運輸",
+    "label": "宅急便100サイズ(同一地帯)",
+    "fee": 1530,
+    "material": 0
+   },
+   {
+    "id": "custom",
+    "group": "その他",
+    "label": "自分で入力する",
+    "fee": 0,
+    "material": 0
+   }
+  ]
+ },
+ "warehouse": {
+  "note": "発送代行(倉庫)に任せる時の1個あたりの作業料の初期値。設計メモ4-3(Gemini 073)の比較の幅から置いた仮の値で、公式の料金ではありません。契約先の見積りで上書きしてください。",
+  "defaults": {
+   "in": 50,
+   "store": 100,
+   "photo": 300,
+   "out": 300
+  },
+  "labels": {
+   "in": "入庫",
+   "store": "保管(1か月)",
+   "photo": "撮影",
+   "out": "出荷作業"
+  }
  }
 }

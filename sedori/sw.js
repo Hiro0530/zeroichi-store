@@ -1,6 +1,6 @@
 /* せどり 利益チェック: オフラインでも計算できるように画面と手数料データを保存する。
    HTML・JSONは通信を優先(新しい手数料を使う)、それ以外は保存済みを優先。外部API(楽天・Yahoo!・Keepa)は扱わない。 */
-var CACHE = 'zw-sedori-v2';
+var CACHE = 'zw-sedori-v3';
 var CORE = ['./', 'rakuten-amazon/', 'muzaiko-amazon/', 'mercari-calc/', 'yahuoku-mercari/', 'auction-mercari/', 'daicho/',
   'assets/sedori.css', 'assets/calc.js', 'assets/ui.js', 'assets/ra.js', 'assets/market.js', 'assets/mz.js', 'assets/ledger.js', 'assets/top.js', 'assets/shindan.js',
   'data/fees.json', 'icon-192.png'];

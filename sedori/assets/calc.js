@@ -242,7 +242,30 @@
     return (10 - (sum % 10)) % 10 === check;
   }
 
+  /* ---------- 発送のしかた(自分で発送 / 発送代行) ---------- */
+  /** 自分で発送する時の運送会社・サイズ(fees.self_ship.carriers)。送料=運賃+資材 */
+  function findCarrier(fees, id) {
+    var c = (fees.self_ship || { carriers: [] }).carriers;
+    for (var i = 0; i < c.length; i++) if (c[i].id === id) return c[i];
+    return null;
+  }
+  function carrierCost(fees, id, custom) {
+    var c = findCarrier(fees, id);
+    if (!c || c.id === 'custom') return int(custom);
+    return int(c.fee) + int(c.material);
+  }
+  /** 発送代行の1個あたりの費用(入庫+保管+撮影+出荷)。自分で発送なら0 */
+  function warehouseCost(mode, w) {
+    if (mode !== '3pl' || !w) return 0;
+    return int(w['in']) + int(w.store) + int(w.photo) + int(w.out);
+  }
+  /** 台帳の状態の流れ。自分で発送は「入庫」を飛ばす(FBA・発送代行は倉庫に入庫する) */
+  function statusFlow(mode) {
+    return mode === 'self' ? ['仕入れ済', '出品中', '売約', '発送済'] : ['仕入れ済', '入庫', '出品中', '売約', '発送済'];
+  }
+
   return {
+    findCarrier: findCarrier, carrierCost: carrierCost, warehouseCost: warehouseCost, statusFlow: statusFlow,
     findCategory: findCategory, referralExTax: referralExTax, referralFee: referralFee,
     findFbaTier: findFbaTier, fbaFee: fbaFee, guessFbaTier: guessFbaTier, points: points,
     amazonProfit: amazonProfit, needProfit: needProfit, amazonPriceFor: amazonPriceFor, amazonBreakEvenSell: amazonBreakEvenSell, amazonMaxCost: amazonMaxCost,

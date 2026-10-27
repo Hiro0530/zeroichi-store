@@ -45,6 +45,14 @@ kbd{font:11px/16px var(--font);border:1px solid var(--line2);border-bottom-width
 .seg button{border:0;background:transparent;color:var(--hd-mute);min-width:32px;cursor:pointer;font-weight:700}
 .seg button:hover{color:#fff}
 .seg button[aria-pressed="true"]{background:#fff;color:var(--hd)}
+.shipm .seg button{padding:0 8px;font-size:12px}
+.shipnote{margin:8px 0 0;font-size:11.5px;color:var(--mute)}
+.whbox{margin-top:8px;border:1px solid var(--line);background:var(--rail);padding:8px}
+.whh{margin:0 0 4px;font-size:12px;font-weight:700;display:flex;justify-content:space-between}
+.whh span{font-weight:400;color:var(--sub)}.whh b{color:var(--ink)}
+.whg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.whg label{display:flex;flex-direction:column;gap:2px;font-size:10.5px;color:var(--sub)}
+.whg input{width:100%;text-align:right;font-weight:700;height:28px;padding:0 4px}
 .hd-ledger{flex:0 0 auto;color:#fff;text-decoration:none;font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;padding:8px 0}
 .hd-ledger:hover{color:#fff;text-decoration:underline}
 .cnt{display:inline-block;min-width:20px;text-align:center;background:#fff;color:var(--hd);border-radius:2px;padding:0 4px;font-size:12px;line-height:18px}
@@ -70,6 +78,7 @@ kbd{font:11px/16px var(--font);border:1px solid var(--line2);border-bottom-width
 .lay3{display:grid;grid-template-columns:216px minmax(0,1fr) 344px;gap:16px;align-items:start}
 .lay2{display:grid;grid-template-columns:216px minmax(0,1fr);gap:24px;align-items:start}
 @media(max-width:1360px){
+  .hd-in{gap:16px}
   .lay3{grid-template-columns:208px minmax(0,1fr) 300px;gap:12px}
   .fv input[type=number]{width:64px}
   .acts kbd{display:none}
@@ -382,7 +391,10 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
   .sbar select{max-width:96px;font-size:12px;padding:0 4px}
   .sbar input{font-size:16px}
   .sbar button{padding:0 16px}
-  .tgt{order:4;flex:1 1 100%;justify-content:flex-end}
+  .shipm{order:4}
+  .tgt{order:5;margin-left:auto}
+  .shipm .tgt-k{display:none}
+  .tgt-k{font-size:11px}
   .tgt input{font-size:16px}
   .crumb-in,.wrap,.ft-in{padding-left:12px;padding-right:12px}
   .lay3,.lay2{grid-template-columns:minmax(0,1fr);gap:12px}

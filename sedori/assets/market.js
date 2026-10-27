@@ -47,7 +47,8 @@
   function rate() { return market === 'other' ? val('s-rate') / 100 : (market === 'yahuoku' ? fees.yahuoku.rate : fees.mercari.rate); }
   function input(sh, unit, sell) {
     var shipFee = sh.id === 'custom' ? val('s-shipfee') : sh.fee;
-    return { sell: sell || 0, rate: rate(), shipFee: shipFee, material: sh.material + val('s-mat'), cost: unit, other: val('s-other') };
+    var wh = U.whTotal(fees);
+    return { sell: sell || 0, rate: rate(), shipFee: shipFee, material: sh.material + val('s-mat'), cost: unit, other: val('s-other') + wh, wh: wh };
   }
   function rowCalc(sh, b) {
     var tg = U.target(), x = input(sh, b.unit, val('s-price'));
@@ -90,7 +91,8 @@
     var r = c.r; lastRes = { r: r, b: b, c: c, sh: sh };
     var rows = [['販売価格' + (c.est ? '(目標の売値)' : ''), r.sell], [MK_LABEL[market] + 'の手数料(' + U.pct(c.x.rate, 0) + ')', -r.fee], ['送料', -r.ship]];
     if (r.material) rows.push(['梱包資材', -r.material]);
-    if (r.other) rows.push(['その他', -r.other]);
+    if (c.x.wh) rows.push(['発送代行(入庫・保管・撮影・出荷)', -c.x.wh]);
+    if (r.other - (c.x.wh || 0)) rows.push(['その他', -(r.other - (c.x.wh || 0))]);
     rows.push(['仕入れ原価(1個)', -r.cost], ['利益(1個)', r.profit, 't']);
     var keyRows = [['目標(' + esc(U.targetLabel(tg)) + ')を満たす売値', c.tp ? yen(c.tp) + '円' : '届かない', 'key go'], ['損益分岐の売値', c.be ? yen(c.be) + '円' : '—', 'key']];
     if (b.qty > 1) keyRows.push([b.qty + '個すべて売れた時の利益', yen(r.profit * b.qty) + '円', 'key']);
@@ -142,7 +144,7 @@
     if (L.c.est && L.c.tp) { $('#s-price').value = L.c.tp; update(); L = lastRes; }
     var p = preset();
     var row = U.ledger.add({
-      cond: route === 'mercari' ? '新品' : '中古', media: checked('b-media'), hinmoku: '',
+      ship: U.shipMode(), cond: route === 'mercari' ? '新品' : '中古', media: checked('b-media'), hinmoku: '',
       name: $('#m-name').value || '(名前なし)', qty: b.qty, unit: b.unit,
       party: route === 'auction' ? (p ? p.label : '') : (route === 'yahuoku' ? 'Yahoo!オークション 出品者' : ''),
       verify: route === 'auction' ? '古物商・法人から購入' : '',
@@ -170,6 +172,7 @@
   };
   U.api.onSearch = function (src, q) { if (q && !$('#m-name').value) { $('#m-name').value = q; saveForm(); } return false; };
   document.addEventListener('sedori:target', update);
+  document.addEventListener('sedori:wh', update);
 
   U.loadFees().then(function (f) {
     fees = f; ships = f.mercari.shipping;
@@ -177,6 +180,7 @@
     market = U.store.get('mk-' + route, 'mercari'); shipId = U.store.get('ship-' + route, 'tq60');
     if (!ships.some(function (s) { return s.id === shipId; })) shipId = 'tq60';
     restoreForm();
+    U.mountWh($('#wh'), fees, '送料は表で選んだ配送方法で計算します');
     if (has('b-venue')) { var keep = $('#b-venue').value; onVenue(); $('#b-venue').value = keep; }
     if (has('b-fee')) $('#b-fee').addEventListener('input', function () { feeTouched = true; });
     if (has('b-venue')) $('#b-venue').addEventListener('change', onVenue);

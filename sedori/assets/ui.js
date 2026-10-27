@@ -92,6 +92,53 @@
     });
   }
 
+  /* ---------- 発送のしかた(自分で発送 / 発送代行)。全ページ共通・端末に保存 ---------- */
+  function shipMode() { var m = store.get('ship', 'self'); return m === '3pl' ? '3pl' : 'self'; }
+  function whCosts(fees) {
+    var d = (fees && fees.warehouse && fees.warehouse.defaults) || { in: 50, store: 100, photo: 300, out: 300 };
+    var w = store.get('wh', null) || {};
+    return { in: w['in'] != null ? w['in'] : d['in'], store: w.store != null ? w.store : d.store, photo: w.photo != null ? w.photo : d.photo, out: w.out != null ? w.out : d.out };
+  }
+  function whTotal(fees) { return window.SedoriCalc.warehouseCost(shipMode(), whCosts(fees)); }
+  function mountShip() {
+    var box = $('#shipm'); if (!box) return;
+    function paint() { var m = shipMode(); $$('button', box).forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-s') === m)); }); document.body.setAttribute('data-ship', m); }
+    paint();
+    $$('button', box).forEach(function (b) {
+      b.addEventListener('click', function () { store.set('ship', b.getAttribute('data-s')); paint(); fireTarget(); toast(b.getAttribute('data-s') === '3pl' ? '発送代行に任せる: 倉庫の費用を足して計算します' : '自分で発送: 倉庫の費用なし、送料は運送会社の料金で計算します'); });
+    });
+  }
+  /** 発送代行の費用の欄(内訳の上)。自分で発送の時は1行の説明だけ */
+  function mountWh(box, fees, note) {
+    if (!box) return;
+    function draw() {
+      var n = typeof note === 'function' ? note() : (note || '');
+      var sn = n && typeof n === 'object' ? n : { self: '自分で発送: 倉庫の費用なし' + (n ? '。' + n : ''), pl: n };
+      if (shipMode() !== '3pl') { box.innerHTML = '<p class="shipnote">' + sn.self + '</p>'; return; }
+      note = sn.pl;
+      var w = whCosts(fees), L = (fees.warehouse && fees.warehouse.labels) || { in: '入庫', store: '保管(1か月)', photo: '撮影', out: '出荷作業' };
+      box.innerHTML = '<div class="whbox"><p class="whh">発送代行の費用(1個)<span>合計 <b>' + yen(whTotal(fees)) + '円</b></span></p><div class="whg">' +
+        ['in', 'store', 'photo', 'out'].map(function (k) { return '<label><span>' + esc(L[k]) + '</span><input type="number" inputmode="numeric" min="0" data-wh="' + k + '" value="' + esc(w[k]) + '"></label>'; }).join('') +
+        '</div>' + (note ? '<p class="shipnote">' + note + '</p>' : '') + '</div>';
+      $$('[data-wh]', box).forEach(function (el) {
+        el.addEventListener('input', function () {
+          var cur = whCosts(fees); cur[el.getAttribute('data-wh')] = Number(el.value) || 0; store.set('wh', cur);
+          $('.whh b', box).textContent = yen(whTotal(fees)); document.dispatchEvent(new CustomEvent('sedori:wh'));
+        });
+      });
+    }
+    draw();
+    if (!box._wired) { box._wired = true; document.addEventListener('sedori:target', function () { box._draw(); }); }
+    box._draw = draw;
+  }
+  function carrierOptions(fees, sel) {
+    var g = {};
+    ((fees.self_ship || {}).carriers || []).forEach(function (c) { (g[c.group] = g[c.group] || []).push(c); });
+    return Object.keys(g).map(function (k) {
+      return '<optgroup label="' + esc(k) + '">' + g[k].map(function (c) { return '<option value="' + c.id + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.label) + (c.id === 'custom' ? '' : ' ' + yen(c.fee + c.material) + '円') + '</option>'; }).join('') + '</optgroup>';
+    }).join('');
+  }
+
   /* ---------- 検索バー ---------- */
   function extUrl(src, q) {
     var e = encodeURIComponent(q);
@@ -196,6 +243,8 @@
       row.unit = Math.round(Number(row.unit) || 0);
       row.status = row.status || '仕入れ済';
       row.kind = '仕入れ';
+      row.ship = row.ship || shipMode();
+      if (!row.recvId) row.recvId = row.ship === 'self' ? '自宅' : (row.ship === 'fba' ? 'Amazon FBA' : '');
       rows.unshift(row);
       if (!ledger.save(rows)) { toast('この端末では保存できませんでした(プライベートブラウズ等)'); return null; }
       if (!quiet) toast('台帳に記録しました', '台帳を開く', function () { location.href = base() + 'daicho/'; });
@@ -207,9 +256,10 @@
       var rows = ledger.all(), hit = null;
       rows.forEach(function (r) {
         if (r.id !== id) return;
-        var i = STATUS.indexOf(r.status || '仕入れ済');
-        if (i < 0 || i >= STATUS.length - 1) return;
-        r.status = STATUS[i + 1];
+        var fl = flowOf(r), i = fl.indexOf(r.status || '仕入れ済');
+        if (i < 0) i = Math.max(0, STATUS.indexOf(r.status) - 1);
+        if (i >= fl.length - 1) return;
+        r.status = fl[i + 1];
         if (r.status === '売約') {
           if (!r.saleDate) r.saleDate = today();
           if (!r.salePrice && r.sellPrice) r.salePrice = r.sellPrice;
@@ -221,6 +271,15 @@
       ledger.save(rows); return hit;
     }
   };
+
+  /** その行の状態の流れ(自分で発送は入庫を飛ばす。以前の行は入庫あり) */
+  function flowOf(r) { return window.SedoriCalc.statusFlow(r.ship === 'self' ? 'self' : '3pl'); }
+  function nextLabel(r) {
+    var fl = flowOf(r), i = fl.indexOf(r.status || '仕入れ済');
+    if (i < 0 || i >= fl.length - 1) return '';
+    return fl[i + 1] === '売約' ? '売れた' : fl[i + 1] + 'へ';
+  }
+  var SHIP_LABEL = { self: '自分で発送', '3pl': '発送代行', fba: 'FBA(Amazonが発送)' };
 
   function updateCount() {
     var el = $('#hd-cnt'); if (!el) return;
@@ -354,8 +413,8 @@
 
   /* ---------- 書き出し(古物台帳の形) ---------- */
   var K_HEAD = ['No', '受入れ 年月日', '区別', '品目', '品名', '特徴', '数量', '代価(円)', '相手方 氏名', '相手方 住所', '郵便番号', '電話', 'メール', '相手方 職業', '相手方 年齢', '確認の方法',
-    '仕入れ先', 'URL', '払出し 年月日', '区別', '代価(円)', '相手方', '状態', '受取先・入庫ID', 'メモ'];
-  var K_WIDTH = [5, 11, 7, 12, 34, 24, 6, 10, 14, 34, 10, 14, 22, 10, 8, 26, 20, 30, 11, 7, 10, 18, 9, 14, 20];
+    '仕入れ先', 'URL', '払出し 年月日', '区別', '代価(円)', '相手方', '状態', '発送のしかた', '受取先・入庫ID', 'メモ'];
+  var K_WIDTH = [5, 11, 7, 12, 34, 24, 6, 10, 14, 34, 10, 14, 22, 10, 8, 26, 20, 30, 11, 7, 10, 18, 9, 14, 14, 20];
   var K_NUM = { 6: 1, 7: 1, 20: 1 };
   function kobutsuRows(rows) {
     return rows.slice().reverse().map(function (r, i) {
@@ -363,7 +422,7 @@
       return [i + 1, r.date || '', '買受け', r.hinmoku || '', r.name || '', r.feature || '', Number(r.qty) || 1, Math.round((Number(r.unit) || 0) * (Number(r.qty) || 1)),
         r.pName || '', r.pAddr || '', r.pZip || '', r.pTel || '', r.pMail || '', r.pJob || '', r.pAge || '', r.verify || '',
         r.party || '', r.ref || '', r.saleDate || '', sold ? '売却' : '', sold ? Math.round((Number(r.salePrice) || 0) * (Number(r.qty) || 1)) : '', r.saleParty || '',
-        r.status || '', r.recvId || '', r.memo || ''];
+        r.status || '', SHIP_LABEL[r.ship] || '', r.recvId || '', r.memo || ''];
     });
   }
   function exportCSV(rows) { download('kobutsu-daicho_' + today() + '.csv', window.SedoriCalc.toCSV(K_HEAD, kobutsuRows(rows))); }
@@ -465,7 +524,7 @@
   }
 
   function init() {
-    mountTarget(); mountSearch(); mountKeys(); wireMail(); mountSide(); updateCount(); registerSW();
+    mountTarget(); mountShip(); mountSearch(); mountKeys(); wireMail(); mountSide(); updateCount(); registerSW();
     loadFees().then(showFeeDate).catch(function () {
       $$('[data-feedate]').forEach(function (el) { el.textContent = '手数料データを読み込めませんでした。再読み込みしてください'; });
     });
@@ -478,6 +537,7 @@
     STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState,
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
-    brkRows: brkRows, profitHead: profitHead, result: result, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS
+    brkRows: brkRows, profitHead: profitHead, result: result,
+    shipMode: shipMode, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS
   };
 })();

@@ -55,12 +55,13 @@
 
   function rowHTML(r) {
     var si = Math.max(0, ST.indexOf(r.status || '仕入れ済'));
-    var nx = si < ST.length - 1 ? '<button type="button" class="adv' + (si === 2 ? ' sold' : '') + '" data-adv="' + esc(r.id) + '">' + (si === 2 ? '売れた' : U.NEXT_LABEL[si] + 'へ') + '</button>' : '';
+    var nl = U.nextLabel(r);
+    var nx = nl ? '<button type="button" class="adv' + (nl === '売れた' ? ' sold' : '') + '" data-adv="' + esc(r.id) + '">' + nl + '</button>' : '';
     var st = U.checkState(r);
     var qn = Number(r.qty) || 1;
     var url = r.ref ? '<a href="' + esc(r.ref) + '" target="_blank" rel="noopener">取引ページ</a>' : '';
     return '<tr data-id="' + esc(r.id) + '"' + (openId === r.id ? ' class="open"' : '') + '>' +
-      '<td data-k="状態"><div class="st"><span class="stl s' + si + '">' + esc(r.status || '仕入れ済') + '</span>' + nx + '</div></td>' +
+      '<td data-k="状態"><div class="st"><span class="stl s' + si + '">' + esc(r.status || '仕入れ済') + '</span>' + nx + '<span class="meta">' + esc(U.SHIP_LABEL[r.ship] || '発送代行') + '</span></div></td>' +
       '<td data-k="仕入日" class="nw">' + esc(r.date || '') + '</td>' +
       '<td class="nmc"><div class="nm">' + esc(r.name || '(名前なし)') + '</div><div class="meta">' + [esc(r.cond || ''), r.hinmoku ? esc(r.hinmoku) : '<span class="warnt">品目未選択</span>', esc(r.feature || ''), url].filter(Boolean).join('<span aria-hidden="true">　</span>') + '</div></td>' +
       '<td class="r" data-k="数量">' + qn + '</td>' +
@@ -76,7 +77,7 @@
 
   var F = [
     ['sec', '品物'],
-    ['date', '仕入日', 'date'], ['cond', '新品/中古', ['新品', '中古']], ['hinmoku', '品目', [''].concat(U.HINMOKU)], ['status', '状態', ST],
+    ['date', '仕入日', 'date'], ['cond', '新品/中古', ['新品', '中古']], ['hinmoku', '品目', [''].concat(U.HINMOKU)], ['status', '状態', 'flow'], ['ship', '発送のしかた', 'ship'],
     ['name', '品名', 'text', 'w2'], ['feature', '特徴(型番・色・シリアル)', 'text', 'w2'],
     ['qty', '数量', 'number'], ['unit', '仕入れ値(1個)', 'number'], ['party', '仕入れ先', 'text', 'w2'],
     ['media', 'ゲーム・CD・DVD・書籍・バイク等', 'check', 'w2'], ['recvId', '受取先・入庫ID', 'text'], ['memo', 'メモ', 'text'],
@@ -86,6 +87,10 @@
     var left = F.map(function (f) {
       if (f[0] === 'sec') return '<div class="sec">' + f[1] + '</div>';
       var v = r[f[0]] == null ? '' : r[f[0]], cls = f[3] ? ' class="' + f[3] + '"' : '';
+      if (f[2] === 'flow' || f[2] === 'ship') {
+        var opts = f[2] === 'flow' ? U.flowOf(r).map(function (s) { return [s, s]; }) : [['self', '自分で発送'], ['3pl', '発送代行'], ['fba', 'FBA(Amazonが発送)']];
+        return '<label' + cls + '>' + f[1] + '<select data-e="' + f[0] + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (String(v || (f[2] === 'ship' ? '3pl' : '')) === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
+      }
       if (Array.isArray(f[2])) return '<label' + cls + '>' + f[1] + '<select data-e="' + f[0] + '">' + f[2].map(function (o) { return '<option value="' + esc(o) + '"' + (String(v) === o ? ' selected' : '') + '>' + (o || '選んでください') + '</option>'; }).join('') + '</select></label>';
       if (f[2] === 'check') return '<label class="ck ' + (f[3] || '') + '" style="flex-direction:row"><input type="checkbox" data-e="' + f[0] + '"' + (v ? ' checked' : '') + '>' + f[1] + '</label>';
       return '<label' + cls + '>' + f[1] + '<input data-e="' + f[0] + '" type="' + f[2] + '" value="' + esc(v) + '"' + (f[2] === 'number' ? ' inputmode="numeric"' : '') + '></label>';
@@ -115,7 +120,8 @@
         if (k === 'status' && v === '売約') { var r0 = L.get(openId); if (r0 && !r0.saleDate) { patch.saleDate = U.today(); patch.salePrice = r0.salePrice || r0.sellPrice || ''; patch.saleParty = r0.saleParty || (r0.sellTo || '') + ' 購入者'; } }
         L.update(openId, patch);
         refreshRow();
-        if (k === 'status') render();
+        if (k === 'ship') { var r1 = L.get(openId); var fl = U.flowOf(r1); if (fl.indexOf(r1.status) < 0) L.update(openId, { status: fl[1] }); if (!r1.recvId || /^(自宅|Amazon FBA)$/.test(r1.recvId)) L.update(openId, { recvId: v === 'self' ? '自宅' : (v === 'fba' ? 'Amazon FBA' : '') }); }
+        if (k === 'status' || k === 'ship') render();
       });
     });
     $('[data-close]', tr).addEventListener('click', function () { openId = null; render(); });

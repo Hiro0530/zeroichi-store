@@ -4,7 +4,7 @@
   'use strict';
   var U = window.SedoriUI, C = window.SedoriCalc;
   var $ = U.$, $$ = U.$$, esc = U.esc, yen = U.yen, val = U.val;
-  var fees = null, sel = -1, cands = [], kpUsed = null, lastR = null;
+  var manual = false, fees = null, sel = -1, cands = [], kpUsed = null, lastR = null;
   var OFFS = [0, 5, 10, 15, 20, 25, 30, 40];
 
   function keys() { return U.store.get('keys', {}); }
@@ -58,7 +58,9 @@
   };
 
   function base() {
-    return { category: $('#mz-cat').value, cost: val('mz-yprice'), inShip: val('mz-yship'), other: val('mz-other'), selfShip: true, selfShipCost: val('mz-outship'), usePoints: false };
+    var wh = U.whTotal(fees);
+    return { category: $('#mz-cat').value, cost: val('mz-yprice'), inShip: val('mz-yship'), other: val('mz-other') + wh, wh: wh, selfShip: true,
+      selfShipCost: C.carrierCost(fees, $('#mz-carrier').value, val('mz-outship')), usePoints: false };
   }
   function build() {
     var nw = val('mz-new'), tg = U.target(), b = base();
@@ -88,7 +90,7 @@
   }
   $('#rows').addEventListener('click', function (e) { var tr = e.target.closest('tr[data-i]'); if (tr) select(Number(tr.getAttribute('data-i')), true); });
   function select(i, scroll) {
-    sel = i; var c = cands[i]; if (!c) return;
+    sel = i; manual = false; var c = cands[i]; if (!c) return;
     $('#mz-sell').value = c.price;
     $$('#rows tr[data-i]').forEach(function (tr) { tr.classList.toggle('on', Number(tr.getAttribute('data-i')) === i); });
     U.store.set('mz-pick', c.tag || c.off);
@@ -109,9 +111,10 @@
     if (x.cost > 0) keyRows.push(['損益分岐の出品価格', be ? yen(be) + '円' : '—', 'key']);
     if (!(x.cost > 0)) { U.result(out, '<div class="pfbox">' + U.brkRows(keyRows) + '</div><p class="note">ヤフオクの価格を入れると、利益と内訳が出ます。上限は送料別です。</p>', null, ''); return; }
     var r = C.amazonProfit(fees, x); lastR = r;
-    var rows = [['出品価格(中古)', r.sell], ['販売手数料', -r.referral], ['お客様への発送', -r.selfShipCost], ['Amazonからの入金', r.payout, 't'], ['ヤフオクの価格', -r.cost]];
+    var rows = [['出品価格(中古)', r.sell], ['販売手数料', -r.referral], ['送料(' + esc(carrierName()) + ')', -r.selfShipCost], ['Amazonからの入金', r.payout, 't'], ['ヤフオクの価格', -r.cost]];
     if (r.inShip) rows.push(['ヤフオクの送料', -r.inShip]);
-    if (r.other) rows.push(['その他', -r.other]);
+    if (x.wh) rows.push(['発送代行(入庫・保管・撮影・出荷)', -x.wh]);
+    if (r.other - (x.wh || 0)) rows.push(['その他', -(r.other - (x.wh || 0))]);
     rows.push(['利益(1個)', r.profit, 't']);
     var nw = val('mz-new');
     U.result(out, U.profitHead('利益(1個)', r.profit, U.profitClass(r.profit, r.sell, tg)) +
@@ -138,7 +141,7 @@
     var r = lastR;
     if (!r) { U.toast('ヤフオクの価格を入れてください'); $('#mz-yprice').focus(); return; }
     var media = $('#mz-media').checked, code = $('#mz-code').value.trim();
-    var row = U.ledger.add({ cond: '中古', media: media, hinmoku: U.hinmokuFor($('#mz-cat').value), name: $('#mz-name').value || $('#mz-q').value || '(名前なし)',
+    var row = U.ledger.add({ ship: U.shipMode(), cond: '中古', media: media, hinmoku: U.hinmokuFor($('#mz-cat').value), name: $('#mz-name').value || $('#mz-q').value || '(名前なし)',
       feature: code ? (/^B0/i.test(code) ? 'ASIN ' : 'JAN ') + code : '', qty: 1, unit: r.cost + r.inShip, party: 'Yahoo!オークション 出品者',
       sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, route: '無在庫 Amazon中古' });
     if (!row) return;
@@ -153,32 +156,42 @@
     if (!fees) return;
     var pick = U.store.get('mz-pick', 15);
     build();
-    if (sel < 0 || !cands[sel]) sel = cands.findIndex(function (c) { return (c.tag || c.off) === pick; });
+    if (!manual) sel = cands.findIndex(function (c) { return (c.tag || c.off) === pick; });
     render();
     if (sel >= 0) $('#mz-sell').value = cands[sel].price;
     detail(); paintBuy(false); $('#party').innerHTML = '';
-    U.store.set('form-mz', { new: $('#mz-new').value, cat: $('#mz-cat').value, outship: $('#mz-outship').value, code: $('#mz-code').value, name: $('#mz-name').value, q: $('#mz-q').value });
+    U.store.set('form-mz', { new: $('#mz-new').value, cat: $('#mz-cat').value, carrier: $('#mz-carrier').value, outship: $('#mz-outship').value, code: $('#mz-code').value, name: $('#mz-name').value, q: $('#mz-q').value });
   }
   U.api.page = {
     move: function (d) { if (!cands.length) return; select(Math.max(0, Math.min(cands.length - 1, (sel < 0 ? 0 : sel + d)))); },
     list: listAt, buy: buy
   };
   document.addEventListener('sedori:target', update);
+  document.addEventListener('sedori:wh', update);
+  function carrierName() { var c = C.findCarrier(fees, $('#mz-carrier').value); return c ? c.label.replace(/\(.*\)/, '') : ''; }
+  function paintCarrier() {
+    var custom = $('#mz-carrier').value === 'custom';
+    $('#mz-outship').disabled = !custom;
+    if (!custom) $('#mz-outship').value = C.carrierCost(fees, $('#mz-carrier').value, 0);
+  }
 
   U.loadFees().then(function (f) {
     fees = f;
     $('#mz-cat').innerHTML = f.amazon.categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join('');
     $('#mz-cat').value = 'toys';
+    $('#mz-carrier').innerHTML = U.carrierOptions(fees, 'yp60');
     var s = U.store.get('form-mz', null);
-    if (s) { $('#mz-new').value = s.new || ''; $('#mz-cat').value = s.cat || 'toys'; $('#mz-outship').value = s.outship || 900; $('#mz-code').value = s.code || ''; $('#mz-name').value = s.name || ''; $('#mz-q').value = s.q || ''; }
-    links();
+    if (s) { $('#mz-new').value = s.new || ''; $('#mz-cat').value = s.cat || 'toys'; $('#mz-carrier').value = s.carrier || 'yp60'; if (!C.findCarrier(fees, $('#mz-carrier').value)) $('#mz-carrier').value = 'yp60'; $('#mz-outship').value = s.outship || 0; $('#mz-code').value = s.code || ''; $('#mz-name').value = s.name || ''; $('#mz-q').value = s.q || ''; }
+    links(); paintCarrier();
+    $('#mz-carrier').addEventListener('change', paintCarrier);
+    U.mountWh($('#wh'), fees, '');
     ['mz-q', 'mz-code'].forEach(function (id) { $('#' + id).addEventListener('input', links); });
     $$('.side input, .side select').forEach(function (el) {
       if (el.id === 'mz-key' || el.id === 'mz-q' || el.id === 'mz-code') return;
-      el.addEventListener('input', function () { if (el.id === 'mz-new') sel = -1; update(); });
+      el.addEventListener('input', function () { if (el.id === 'mz-new') manual = false; update(); });
       el.addEventListener('change', update);
     });
-    $('#mz-sell').addEventListener('input', function () { sel = -1; $$('#rows tr.on').forEach(function (tr) { tr.classList.remove('on'); }); detail(); });
+    $('#mz-sell').addEventListener('input', function () { sel = -1; manual = true; $$('#rows tr.on').forEach(function (tr) { tr.classList.remove('on'); }); detail(); });
     update();
   });
 })();

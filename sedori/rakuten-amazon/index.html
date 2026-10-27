@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261027b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261027c">
 </head>
 <body data-base="../" data-route="ra" data-route-label="楽天・Yahoo!→Amazon" data-page="rakuten-amazon">
 <header class="hd">
@@ -28,6 +28,10 @@
       <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
       <button type="submit">検索</button>
     </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
     <div class="tgt" id="tgt">
       <span class="tgt-k">目標の利益</span>
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
@@ -56,7 +60,7 @@
         <div class="fl">
           <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat"></select></label>
           <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier"></select></label>
-          <label class="fr "><span class="fk">納品送料<small>資材込み・1個</small></span><span class="fv"><input id="c-inbound" type="number" inputmode="numeric" min="0" value="100"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>1個</small></span><span class="fv"><input id="c-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント上乗せ<small>SPU・カード</small></span><span class="fv"><input id="c-pt-mine" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><label class="ck"><input id="c-usept" type="checkbox" checked>ポイントを利益に含める</label><label class="ck"><input id="c-self" type="checkbox">自己発送(FBAなし)</label><div id="c-selfship-w" hidden><label class="fr "><span class="fk">お客様への送料</span><span class="fv"><input id="c-selfship" type="number" inputmode="numeric" min="0" value="600"><span class="u">円</span></span></label></div>
+          <label class="fr "><span class="fk">納品送料<small>資材込み・1個</small></span><span class="fv"><input id="c-inbound" type="number" inputmode="numeric" min="0" value="100"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>1個</small></span><span class="fv"><input id="c-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント上乗せ<small>SPU・カード</small></span><span class="fv"><input id="c-pt-mine" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><label class="ck"><input id="c-usept" type="checkbox" checked>ポイントを利益に含める</label><label class="ck"><input id="c-self" type="checkbox">FBAを使わない(自分か代行が発送)</label><div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier"></select></label><label class="fr "><span class="fk">送料<small>自分で入力の時</small></span><span class="fv"><input id="c-selfship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
         </div></div>
       </details>
       <details class="sbox keys" id="keys" data-desk-open>
@@ -104,6 +108,7 @@
         <label class="cell"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
         <label class="cell "><span class="ck2">Amazon売値(税込)</span><span class="cv"><input id="c-sell" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
       </div>
+      <div id="wh"></div>
       <div id="kp-out"></div>
       <div id="c-out" aria-live="polite"></div>
       <div class="acts">
@@ -155,8 +160,8 @@
     <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中だけに保存されます。</p>
   </div>
 </footer>
-<script src="../assets/calc.js?v=20261027b"></script>
-<script src="../assets/ui.js?v=20261027b"></script>
-<script src="../assets/ra.js?v=20261027b"></script>
+<script src="../assets/calc.js?v=20261027c"></script>
+<script src="../assets/ui.js?v=20261027c"></script>
+<script src="../assets/ra.js?v=20261027c"></script>
 </body>
 </html>
