@@ -1,0 +1,236 @@
+/* せどり 帳簿 — アプリ共通の sedori.css の上に重ねる分だけ。密度の高い業務画面、差し色は青1色 */
+.bk-head{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;margin-bottom:12px}
+.bk-head h1{font-size:20px;margin:0;line-height:1.3}
+.bk-mode{font-size:11.5px;font-weight:700;border:1px solid var(--line2);color:var(--sub);background:var(--rail);padding:1px 8px;border-radius:2px;white-space:nowrap;cursor:help}
+.bk-mode.paid{border-color:#a8c3e8;background:var(--ac-soft);color:var(--ac-d)}
+.bk-year{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sub)}
+.bk-year select{height:28px;font-weight:700}
+.bk-head .sum{margin-left:auto}
+.sum dd.bad{color:var(--bad)}
+.sum dd small{font-size:11px;font-weight:400;color:var(--mute);margin-left:2px}
+
+.tabs .lk{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;border:1px solid currentColor;padding:0 3px;line-height:14px;border-radius:2px;opacity:.75}
+.bk-pane{padding-top:12px}
+.bk-note{font-size:11.5px;color:var(--mute);margin:8px 0 0;line-height:1.7}
+.bk-note a{white-space:nowrap}
+.bk-demo{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);font-size:12.5px;padding:6px 12px;margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bk-demo b{font-weight:700}
+.bk-demo a{margin-left:auto}
+
+/* 2段組み(左: 入力、右: 結果) */
+.bk-2{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+.bk-2r{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.bk-box{border:1px solid var(--line);background:#fff}
+.bk-box>h2,.bk-box>.h{margin:0;font-size:12.5px;font-weight:700;background:var(--th);border-bottom:1px solid var(--line);padding:6px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bk-box>h2 small{font-weight:400;color:var(--mute);font-size:11.5px}
+.bk-box .in{padding:12px}
+.bk-box+.bk-box{margin-top:12px}
+
+/* 取り込み */
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px dashed var(--line2);background:var(--rail);min-height:112px;padding:12px;text-align:center;cursor:pointer;font-size:12.5px;color:var(--sub)}
+.drop b{color:var(--ink);font-size:13.5px}
+.drop:hover,.drop.on{border-color:var(--ac);background:var(--ac-soft)}
+.drop input{display:none}
+.paste{width:100%;min-height:96px;resize:vertical;border:1px solid var(--line2);padding:8px;font-size:12.5px;line-height:1.5;border-radius:2px}
+.row-btns{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:grid;grid-template-columns:1fr auto;gap:0 8px;padding:8px 12px;border-top:1px solid var(--line);font-size:12px}
+.hist li:first-child{border-top:0}
+.hist .t{font-weight:700;color:var(--ink)}
+.hist .m{color:var(--mute);font-size:11.5px}
+.hist button{grid-row:span 2;align-self:center}
+.hist .undone{color:var(--mute);text-decoration:line-through}
+.empty-pv{padding:24px 16px;color:var(--sub);font-size:12.5px;line-height:1.9}
+.empty-pv ol{margin:4px 0 0;padding-left:20px}
+.pv-head{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--line)}
+.pv-head .t{font-weight:700;font-size:13px}
+.pv-head .sum{margin-left:auto}
+.pv-map{display:flex;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--rail);font-size:11.5px;color:var(--sub);align-items:flex-end}
+.pv-map label{display:flex;flex-direction:column;gap:2px}
+.pv-map select,.pv-map input{height:28px;font-size:12px;max-width:180px}
+.pv-warn{margin:0;padding:6px 12px;background:var(--warn-bg);color:var(--warn-ink);font-size:11.5px;border-bottom:1px solid var(--warn-line)}
+.pv-foot{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:2}
+.pv-foot .meta{margin:0 0 0 auto;white-space:normal}
+.grid.pv{font-size:12px}
+.grid.pv td{padding:4px 8px}
+.grid.pv tr.dup td{color:var(--mute)}
+.grid.pv tr.off td:not(:first-child){opacity:.45}
+.grid.pv select{height:26px;font-size:11.5px;max-width:220px}
+.grid.pv input[type=date]{height:26px;font-size:11.5px}
+.grid.pv input[type=number]{height:26px;width:64px;text-align:right}
+.tag{display:inline-block;font-size:10.5px;line-height:16px;padding:0 4px;border:1px solid var(--line2);color:var(--sub);border-radius:2px;white-space:nowrap}
+.tag.ok{color:var(--good);border-color:#a8d5b5;background:#eef8f1}
+.tag.w{color:var(--warn-ink);border-color:var(--warn-line);background:var(--warn-bg)}
+.tag.ng{color:var(--bad);border-color:#efb3ae;background:#fdf0ef}
+.tag.ac{color:var(--ac-d);border-color:#a8c3e8;background:var(--ac-soft)}
+.neg{color:var(--bad)}
+.nw{white-space:nowrap}
+.nmw{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 経費の入力 */
+.qe{display:grid;grid-template-columns:132px 148px 120px minmax(0,1fr) 84px auto;gap:8px;align-items:end;padding:12px;border:1px solid var(--line);background:var(--rail)}
+.qe label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--sub)}
+.qe input,.qe select{height:32px;width:100%;min-width:0}
+.qe input[type=number]{text-align:right;font-weight:700}
+.qe .btn{height:32px}
+.qe-hint{grid-column:1/-1;font-size:11px;color:var(--mute);min-height:16px;margin-top:-2px}
+.grid select.inl,.grid input.inl{height:26px;font-size:12px}
+.grid input.inl[type=number]{width:56px;text-align:right}
+.mini{width:100%;border-collapse:collapse;font-size:12px}
+.mini td,.mini th{padding:4px 12px;border-top:1px solid var(--line);text-align:left}
+.mini th{font-weight:400;color:var(--sub)}
+.mini td.r,.mini th.r{text-align:right}
+.mini tr.tot td{font-weight:700;border-top:1px solid var(--line2)}
+.mini tr:first-child td,.mini tr:first-child th{border-top:0}
+.rec-f{display:grid;grid-template-columns:56px 1fr 1fr;gap:6px;padding:8px 12px;border-top:1px solid var(--line);background:var(--rail)}
+.rec-f input,.rec-f select{height:28px;font-size:12px;min-width:0}
+.rec-f .w3{grid-column:1/-1}
+.rec-f .btn{grid-column:1/-1}
+
+/* 月ごとの利益 */
+.chart{position:relative;border:1px solid var(--line);padding:8px 12px 4px;margin-bottom:12px}
+.chart svg{display:block;width:100%;height:auto}
+.chart .ttl{font-size:12px;font-weight:700;margin:0 0 4px;display:flex;justify-content:space-between}
+.chart .ttl span{font-weight:400;color:var(--mute)}
+.chart .tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line2);box-shadow:0 2px 8px rgba(20,30,45,.12);padding:6px 8px;font-size:11.5px;line-height:1.5;white-space:nowrap;display:none;z-index:3}
+.chart .tip b{font-size:12.5px}
+.ax{font:10.5px var(--font);fill:#6b7480}
+.gl{stroke:#e6e9ed;stroke-width:1}
+.zl{stroke:#9aa3ad;stroke-width:1}
+.bar{fill:var(--ac)}
+.bar.neg{fill:var(--bad)}
+.bar.dim{fill:#c9d6e8}
+.hit{fill:transparent;cursor:pointer}
+.hit:hover+.bar,.bar.on{opacity:.85}
+.grid.mo td,.grid.mo th{white-space:nowrap}
+.grid.mo tbody tr.mrow{cursor:pointer}
+.grid.mo tbody tr.mrow:hover td{background:var(--hover)}
+.grid.mo tbody tr.mrow.open td{background:var(--sel)}
+.grid.mo tbody tr.mrow.zero td{color:var(--mute)}
+.grid.mo tfoot td{font-weight:700;background:var(--rail);border-top:1px solid var(--line2)}
+.grid.mo td.pf{font-weight:700}
+.grid tr.drill>td{background:#fbfcfd;padding:8px 12px 12px}
+.drill-t{font-size:11.5px;font-weight:700;color:var(--sub);margin:4px 0}
+.grid.sub{border:1px solid var(--line);font-size:11.5px}
+.grid.sub td,.grid.sub th{padding:3px 8px}
+.est{font-size:11px;color:var(--mute);margin-left:2px;cursor:help}
+#bk-pane+.credit{margin-top:24px}
+
+/* 売れ残り */
+.days{display:inline-block;min-width:44px;text-align:right;font-weight:700}
+.days.over{color:var(--bad)}
+.lim{width:56px;height:26px;text-align:right}
+.catlim{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 12px;padding:8px 0}
+.catlim label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+.catlim input{width:64px;height:26px;text-align:right}
+
+/* 棚卸 */
+.cnt-in{width:56px;height:28px;text-align:right;font-weight:700}
+.cnt-in.done{background:#eef8f1;border-color:#a8d5b5}
+tr.diff td{background:#fdf0ef}
+.scan{position:fixed;inset:0;background:#0d1620;z-index:50;display:flex;flex-direction:column;color:#fff}
+.scan video{width:100%;flex:1 1 auto;object-fit:cover;min-height:0;background:#000}
+.scan .bandg{position:absolute;left:8%;right:8%;top:38%;height:18%;border:2px solid rgba(255,255,255,.85);border-radius:6px;pointer-events:none}
+.scan .sc-top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));font-size:14px}
+.scan .sc-top button{background:#fff;color:var(--ink);border:0;border-radius:3px;height:40px;padding:0 16px;font-weight:700}
+.scan .sc-bot{background:#fff;color:var(--ink);padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.scan .sc-last{font-size:15px;font-weight:700;min-height:24px}
+.scan .sc-last.ng{color:var(--bad)}
+.scan .sc-sub{font-size:12px;color:var(--sub);margin-top:2px}
+.scan form{display:flex;gap:8px;margin-top:8px}
+.scan form input{flex:1;height:44px;font-size:16px}
+.scan form .btn{height:44px}
+
+/* 申告用の数字 */
+.disc{border:1px solid var(--line);border-left:3px solid var(--ac);background:var(--ac-soft);padding:8px 12px;font-size:12px;line-height:1.8;margin-bottom:12px}
+.disc b{font-size:13px}
+.setf{display:flex;flex-direction:column;gap:12px;padding:12px}
+.setf .fld{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--sub)}
+.setf .fld>span{font-weight:700;color:var(--ink);font-size:12px}
+.setf .fld>span.auto,.setf .auto{font-weight:400;color:var(--mute);font-size:11px;line-height:1.6}
+.seg2{display:inline-flex;border:1px solid var(--line2);border-radius:3px;overflow:hidden}
+.seg2 button{border:0;background:#fff;height:30px;padding:0 10px;font-size:12px;cursor:pointer;border-left:1px solid var(--line2)}
+.seg2 button:first-child{border-left:0}
+.seg2 button[aria-pressed="true"]{background:var(--hd);color:#fff;font-weight:700}
+.seg2 button:disabled{color:var(--mute);cursor:not-allowed}
+.setf input[type=number]{height:30px;text-align:right;width:140px}
+.setf .pair{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.setf .auto{font-size:11px;color:var(--mute)}
+.bizdef{display:grid;grid-template-columns:1fr 64px;gap:4px 8px;align-items:center;font-size:12px}
+.bizdef input{height:26px;text-align:right}
+.form{width:100%;border-collapse:collapse;font-size:13px}
+.form td{border-bottom:1px solid var(--line);padding:6px 12px}
+.form td.no{width:40px;color:var(--sub);font-size:13px;text-align:center}
+.form td.amt{text-align:right;font-weight:700;width:150px;font-size:14px}
+.form td.src{width:104px;text-align:right;white-space:nowrap}
+.form tr.calc td{background:var(--rail)}
+.form tr.calc td.amt{color:var(--sub)}
+.form tr.key td{background:var(--sel)}
+.form tr.key td.amt{font-size:16px}
+.form tr.sub td{font-size:12px;color:var(--sub)}
+.form tr.sub td.amt{font-size:12.5px;font-weight:400;color:var(--ink)}
+.form tr.drill>td{padding:4px 12px 12px;background:#fbfcfd}
+.lnk{border:0;background:none;color:var(--link);cursor:pointer;padding:0;font-size:12px;text-decoration:underline}
+.lnk:hover{color:var(--ac-d)}
+.warns{margin:0 0 12px;padding:8px 12px;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);font-size:12px;line-height:1.7}
+.warns b{font-size:12px}
+.warns ul{margin:2px 0 0;padding-left:18px}
+
+/* 仕訳帳 */
+.exp-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.howto{font-size:11.5px;color:var(--sub);margin:8px 0 0;padding-left:18px;line-height:1.8}
+
+/* 鍵の付いた機能 */
+.lock{border:1px solid var(--line);max-width:720px}
+.lock .h{background:var(--th);padding:8px 16px;font-weight:700;font-size:13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.lock .b{padding:16px}
+.lock p{margin:0 0 12px;font-size:12.5px;color:var(--sub);line-height:1.8}
+.lock .sum{margin-bottom:16px;flex-wrap:wrap}
+
+@media(max-width:1180px){
+  .bk-2,.bk-2r{grid-template-columns:minmax(0,1fr)}
+  .qe{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .qe .qe-memo{grid-column:span 2}
+}
+@media(max-width:860px){
+  .bk-head h1{font-size:18px}
+  .bk-head .sum{margin-left:0;width:100%}
+  .bk-head .sum div{padding:4px 8px}
+  .bk-head .sum dd{font-size:14px}
+  .qe{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.mo .mh{display:none}
+  .chart .ax{font-size:11px}
+  .qe .qe-memo{grid-column:1/-1}
+  .qe kbd{display:none}
+  .bk-head .sum{display:grid;grid-template-columns:1fr 1fr}
+  .bk-head .sum div:nth-child(3){border-left:0}
+  .bk-head .sum div:nth-child(n+3){border-top:1px solid var(--line)}
+  .cards tbody tr{position:relative}
+  .cards tbody tr>td.ops{position:absolute;right:8px;top:6px}
+  .cards tbody tr>td.wide{padding-right:72px!important}
+  .qe input,.qe select{height:40px}
+  .qe .btn{height:44px;grid-column:1/-1}
+  .pv-foot .btn{flex:1;height:44px}
+  .drop{min-height:88px}
+  .form td{padding:8px}
+  .form td.amt{width:auto}
+  .form td.src{width:auto}
+  .grid.mo td,.grid.mo th{padding:6px 6px}
+  .setf input[type=number]{width:120px}
+  /* 横に広い表は横スクロール。最初の列は固定 */
+  .gridwrap.sc{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .gridwrap.sc .grid td:first-child,.gridwrap.sc .grid th:first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:1px 0 0 var(--line)}
+  .gridwrap.sc .grid thead th:first-child{background:var(--th)}
+  .gridwrap.sc .grid tfoot td:first-child{background:var(--rail)}
+  /* 一覧はカード */
+  .cards thead{display:none}
+  .cards,.cards tbody{display:block;width:100%}
+  .cards tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+  .cards tbody tr>td{display:block;border:0;padding:0!important}
+  .cards tbody tr>td[data-k]::before{content:attr(data-k);display:block;font-size:10.5px;color:var(--mute);line-height:1.3}
+  .cards tbody tr>td.wide{grid-column:1/-1;order:-1}
+  .cards tbody tr>td.r{text-align:left}
+  .cards tbody tr>td.ops{grid-column:1/-1}
+  .cards tbody tr>td.empty{grid-column:1/-1}
+  .cards .nmw{max-width:none;white-space:normal}
+}
