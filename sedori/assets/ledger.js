@@ -93,7 +93,7 @@
     ['date', '仕入日', 'date'], ['cond', '新品/中古', ['新品', '中古']], ['hinmoku', '品目', [''].concat(U.HINMOKU)], ['status', '状態', 'flow'], ['ship', '発送のしかた', 'ship'],
     ['name', '品名', 'text', 'w2'], ['feature', '特徴(型番・色・シリアル)', 'text', 'w2'],
     ['qty', '数量', 'number'], ['unit', '仕入れ値(1個)', 'number'], ['party', '仕入れ先', 'text', 'w2'],
-    ['media', 'ゲーム・CD・DVD・書籍・バイク等', 'check', 'w2'], ['recvId', '受取先・入庫ID', 'text'], ['memo', 'メモ', 'text'],
+    ['media', 'ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等', 'check', 'w2'], ['recvId', '受取先・入庫ID', 'text'], ['memo', 'メモ', 'text'],
     ['sec', '無在庫の見張り(ヤフオク)'], ['yEnd', 'ヤフオク終了日時', 'datetime-local'], ['yEndPaste', '終了日時の文字を貼り付け', 'paste', 'w2'], ['wait', 'まだ仕入れていない(売れてから仕入れる)', 'check'],
     ['sec', '売却'], ['sellTo', '売り先', 'text'], ['sellPrice', '予定売値(1個)', 'number'], ['saleDate', '売却日', 'date'], ['salePrice', '売値(1個)', 'number'], ['saleParty', '売却相手', 'text', 'w2'], ['profit', '見込み利益(1個)', 'number']
   ];

@@ -15,6 +15,17 @@ window.ZW_CONFIG = {
   },
   /* Cloudflare Worker の URL(契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
   WORKER_URL: null,
+  /* 料金(税込・円)。ここだけ直せば、料金ページ・トップの料金表・お申し込みの確認の金額が変わる
+     (ページの書き出し tools/sedori/build_pages.py もここを読む)。PayPal のプランの金額と Worker の PLANS も同じ値にそろえる。
+     open: false は「受付前」。founder: true は先着100名の価格 */
+  PLAN_CATALOG: /*PLANS*/{
+    "standard_month": { "name": "スタンダード", "cycle": "month", "price": 2480 },
+    "standard_year": { "name": "スタンダード", "cycle": "year", "price": 24800 },
+    "founder_month": { "name": "先着100名の価格", "cycle": "month", "price": 1980, "founder": true },
+    "founder_year": { "name": "先着100名の価格", "cycle": "year", "price": 19800, "founder": true },
+    "business_month": { "name": "業務", "cycle": "month", "price": 4980, "open": false },
+    "business_year": { "name": "業務", "cycle": "year", "price": 49800, "open": false }
+  }/*/PLANS*/,
   /* 無料期間(日)。PayPal のプランの無料期間と同じ値にする */
   TRIAL_DAYS: 14,
   /* 先着100名の価格の受付終了日("2026-12-31" のように。決めていなければ null。人数で終わる) */

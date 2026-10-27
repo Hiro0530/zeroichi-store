@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261028a">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028b">
 </head>
 <body data-base="../" data-page="plans">
 <header class="hd">
@@ -55,7 +55,7 @@
         <tbody><tr data-plan="standard_month"><td class="pk"><input type="radio" name="plan" value="standard_month" id="pl-standard_month" checked></td><td><label for="pl-standard_month"><b>スタンダード</b><span class="meta">月払い</span></label></td><td class="r"><span class="yen">2,480<i>円</i></span><span class="meta">/月(税込)</span></td><td class="note2">毎月</td></tr>
 <tr data-plan="standard_year"><td class="pk"><input type="radio" name="plan" value="standard_year" id="pl-standard_year"></td><td><label for="pl-standard_year"><b>スタンダード</b><span class="meta">年払い</span></label></td><td class="r"><span class="yen">24,800<i>円</i></span><span class="meta">/年(税込)</span></td><td class="note2">毎年。月あたり約2,067円(月払いより2か月分安い)</td></tr>
 <tr data-plan="founder_month" data-founder><td class="pk"><input type="radio" name="plan" value="founder_month" id="pl-founder_month"></td><td><label for="pl-founder_month"><b>先着100名の価格</b><span class="meta">月払い</span></label></td><td class="r"><span class="yen">1,980<i>円</i></span><span class="meta">/月(税込)</span></td><td class="note2">毎月。続けている間は上がりません</td></tr>
-<tr data-plan="founder_year" data-founder><td class="pk"><input type="radio" name="plan" value="founder_year" id="pl-founder_year"></td><td><label for="pl-founder_year"><b>先着100名の価格</b><span class="meta">年払い</span></label></td><td class="r"><span class="yen">19,800<i>円</i></span><span class="meta">/年(税込)</span></td><td class="note2">毎年。続けている間は上がりません</td></tr><tr class="off"><td class="pk"><input type="radio" disabled aria-label="業務(受付前)"></td><td><b>業務</b><span class="meta">月払い・年払い</span></td><td class="r"><span class="yen">4,980<i>円</i></span><span class="meta">/月(予定)</span></td><td class="note2">受付前。発送代行の連携・作業者3人・提出用PDF。機能ができてから販売します</td></tr></tbody>
+<tr data-plan="founder_year" data-founder><td class="pk"><input type="radio" name="plan" value="founder_year" id="pl-founder_year"></td><td><label for="pl-founder_year"><b>先着100名の価格</b><span class="meta">年払い</span></label></td><td class="r"><span class="yen">19,800<i>円</i></span><span class="meta">/年(税込)</span></td><td class="note2">毎年。月あたり1,650円。続けている間は上がりません</td></tr><tr class="off"><td class="pk"><input type="radio" disabled aria-label="業務(受付前)"></td><td><b>業務</b><span class="meta">月払い・年払い</span></td><td class="r"><span class="yen">4,980<i>円</i></span><span class="meta">/月(予定)</span></td><td class="note2">受付前。発送代行の連携・作業者3人・提出用PDF。機能ができてから販売します</td></tr></tbody>
       </table></div>
       <p class="hint" id="pl-founder-note">先着100名の価格は、お申し込み(無料期間の始まり)の順に100名までです。<span id="pl-founder-left"></span></p>
     </section>
@@ -128,7 +128,7 @@
         <h3>古物営業法</h3>
         <ul>
           <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
-          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等と、2025年10月1日からはエアコンの室外機・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
           <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で相手確認が未入力の行には印が付きます。</li>
           <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
         </ul>
@@ -151,11 +151,11 @@
     <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中に保存されます(スタンダードでログインしている時は、台帳をクラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261028a"></script>
-<script src="../assets/sync.js?v=20261028a"></script>
-<script src="../assets/calc.js?v=20261028a"></script>
-<script src="../assets/ui.js?v=20261028a"></script>
-<script src="../assets/account.js?v=20261028a"></script>
-<script src="../assets/plans.js?v=20261028a"></script>
+<script src="../assets/config.js?v=20261028b"></script>
+<script src="../assets/sync.js?v=20261028b"></script>
+<script src="../assets/calc.js?v=20261028b"></script>
+<script src="../assets/ui.js?v=20261028b"></script>
+<script src="../assets/account.js?v=20261028b"></script>
+<script src="../assets/plans.js?v=20261028b"></script>
 </body>
 </html>

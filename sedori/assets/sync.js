@@ -112,7 +112,7 @@
 
   /**
    * 契約の状態を画面向けにまとめる。sub は users/{uid}.subscription(Worker が PayPal の状態から書く)。
-   * status: trialing(無料期間)/ active / past_due(支払いの失敗)/ paused(一時停止)/ canceled(解約。paidThrough まで使える)/ expired
+   * status: trialing(無料期間)/ active / past_due(支払いの失敗)/ paused(一時停止)/ suspended(PayPalが止めた)/ incomplete / canceled(解約。paidThrough まで使える)/ expired
    * 返り値 { key, paid, label, until, retainUntil, canCancel }
    */
   function planState(sub, now) {
@@ -124,6 +124,8 @@
     if (stt === 'active') return { key: 'active', paid: true, label: name, until: next, next: next, retainUntil: null, canCancel: true };
     if (stt === 'past_due') return { key: 'past_due', paid: true, label: name + '(お支払いの確認待ち)', until: next, next: next, retainUntil: null, canCancel: true };
     if (stt === 'paused') return { key: 'paused', paid: false, label: name + '(一時停止中)', until: toMs(sub.resumeAt), next: toMs(sub.resumeAt), retainUntil: null, canCancel: true };
+    if (stt === 'suspended') return { key: 'suspended', paid: false, label: name + '(お支払いが止まっています)', until: null, next: null, retainUntil: null, canCancel: true };
+    if (stt === 'incomplete') return { key: 'incomplete', paid: false, label: 'お申し込みの手続き中', until: null, next: null, retainUntil: null, canCancel: false };
     if (stt === 'canceled' && paidThrough && paidThrough > now) return { key: 'ending', paid: true, label: name + '(解約済み・期間の終わりまで使えます)', until: paidThrough, next: null, retainUntil: addYears(paidThrough, RETAIN_YEARS), canCancel: false };
     var ended = paidThrough || canceledAt || now;
     var keep = toMs(sub.retainUntil) || addYears(ended, RETAIN_YEARS);

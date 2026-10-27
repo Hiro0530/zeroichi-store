@@ -22,6 +22,11 @@
   var lo = $('#mp-logout'); if (lo) lo.addEventListener('click', function () { SA.signOut().then(function () { U.toast('ログアウトしました。この端末の台帳はそのまま残ります'); }); });
 
   /* ---------- 契約内容 ---------- */
+  function yearText(k) {
+    var c = (cfg.PLAN_CATALOG || {})[k]; if (!c) return '年払い';
+    var m = Math.round(c.price / 12);
+    return '年' + c.price.toLocaleString('ja-JP') + '円(月あたり' + (c.price % 12 ? '約' : '') + m.toLocaleString('ja-JP') + '円)';
+  }
   function planKeyOf(sub) { return (sub && sub.planKey) || ''; }
   function paintPlan(s) {
     var box = $('#mp-plan-box'), det = $('#cancel');
@@ -55,7 +60,7 @@
     }
     var items = [];
     if (p.key === 'active') items.push('<div class="alt-i"><b>1か月だけ止める</b><p>1か月の間は請求せず、' + jd(Date.now() + 30 * 864e5) + 'ごろに自動で再開します。止めている間もクラウドの台帳は読めて、書き出せます(保存は再開後に)。</p><button type="button" class="btn sm ghost" id="mp-pause">1か月止める</button></div>');
-    if (/_month$/.test(pk)) items.push('<div class="alt-i"><b>年払いに変える</b><p>' + (/^founder/.test(pk) ? '年19,800円(月あたり1,650円)' : '年24,800円(月あたり約2,067円)') + '。PayPalの画面で承認すると、次の請求から変わります。</p><button type="button" class="btn sm ghost" id="mp-year">年払いに変える</button></div>');
+    if (/_month$/.test(pk)) items.push('<div class="alt-i"><b>年払いに変える</b><p>' + yearText(pk.replace('_month', '_year')) + '。PayPalの画面で承認すると、次の請求から変わります。</p><button type="button" class="btn sm ghost" id="mp-year">年払いに変える</button></div>');
     if (/^founder/.test(pk)) items.push('<div class="alt-i"><p class="hint">先着100名の価格は、続けている間だけの価格です。解約して申し込み直すと、その時の価格になります。</p></div>');
     if (p.key === 'trial') items.push('<div class="alt-i"><p class="hint">いまは無料期間中です。' + jd(p.until) + 'より前に解約すれば、料金はかかりません。</p></div>');
     alt.innerHTML = items.join('');

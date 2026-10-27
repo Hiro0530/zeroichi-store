@@ -198,11 +198,13 @@
   }
 
   /* ---------- メール(事前登録・メルマガ) ---------- */
+  /** 料金は config.js の PLAN_CATALOG から(無ければ既定の表示) */
+  function catPrice(k, d) { var c = ((window.ZW_CONFIG || {}).PLAN_CATALOG || {})[k]; return c ? Number(c.price).toLocaleString('ja-JP') : d; }
   function mailto(subject, body) { return 'mailto:' + MAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); }
   var PREREG = mailto('せどりアプリ事前登録',
     'このまま送信してください(分かる所だけで大丈夫です)。\n\nお名前(ニックネーム可):\nよく使う仕入れ先:\nよく使う売り先:\nいま一番面倒な作業:\n\n' +
     'いま道具に払っている月額(だいたい):\n\n' +
-    '※有料版(スタンダード 月2,480円・先着100名は月1,980円・14日間無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
+    '※有料版(スタンダード 月' + catPrice('standard_month', '2,480') + '円・先着100名は月' + catPrice('founder_month', '1,980') + '円・14日間無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
   var NEWS = mailto('せどりメルマガ登録',
     'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\nお名前(ニックネーム可):\n知りたいこと:\n\n※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
   function wireMail() {
@@ -224,10 +226,13 @@
     pc: '事務機器類', stationery: '事務機器類', car: '道具類', instruments: '道具類', game_console: '道具類' };
   function hinmokuFor(catId) { return CAT_HINMOKU[catId] || '道具類'; }
 
+  /** 金額を問わず本人確認が要る品(2025年10月1日から エアコンの室外機・電線・金属製グレーチング が追加)。品名から見分ける */
+  var ANY_PRICE = /(室外機|電線|グレーチング)/;
+  function anyPriceItem(r) { return ANY_PRICE.test(String(r.name || '') + ' ' + String(r.feature || '')); }
   /** 相手確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
   function checkState(r) {
     if (r.wait) return 'na'; // 無在庫で出品中(まだ仕入れていない)
-    var required = r.cond === '中古' && ((Number(r.unit) || 0) >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車');
+    var required = r.cond === '中古' && ((Number(r.unit) || 0) >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || anyPriceItem(r));
     if (!required) return r.cond === '中古' && r.verify ? 'ok' : 'na';
     if (VERIFY_NO_PARTY.indexOf(r.verify) >= 0) return 'ok';
     return r.pName && r.pAddr && r.verify ? 'ok' : 'need';
@@ -614,7 +619,7 @@
   window.SedoriUI = {
     store: store, $: $, $$: $$, esc: esc, yen: yen, pct: pct, val: val, today: today, narrow: narrow, loadFees: loadFees,
     toast: toast, download: download, target: target, targetLabel: targetLabel, api: api, extUrl: extUrl,
-    STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState,
+    STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState, anyPriceItem: anyPriceItem,
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
     brkRows: brkRows, profitHead: profitHead, result: result,

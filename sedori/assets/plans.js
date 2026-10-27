@@ -5,12 +5,12 @@
   var U = window.SedoriUI, $ = U.$, $$ = U.$$, esc = U.esc;
   var cfg = window.ZW_CONFIG || {}, SA = window.SedoriAccount;
   var DAYS = Number(cfg.TRIAL_DAYS) || 14;
-  var PLAN = {
-    standard_month: { name: 'スタンダード(月払い)', price: 2480, per: '月', cyc: 'month' },
-    standard_year: { name: 'スタンダード(年払い)', price: 24800, per: '年', cyc: 'year' },
-    founder_month: { name: '先着100名の価格(月払い)', price: 1980, per: '月', cyc: 'month', founder: true },
-    founder_year: { name: '先着100名の価格(年払い)', price: 19800, per: '年', cyc: 'year', founder: true }
-  };
+  // 料金は config.js の PLAN_CATALOG だけで決める
+  var PLAN = {};
+  Object.keys(cfg.PLAN_CATALOG || {}).forEach(function (k) {
+    var c = cfg.PLAN_CATALOG[k]; if (c.open === false) return;
+    PLAN[k] = { name: c.name + (c.cycle === 'year' ? '(年払い)' : '(月払い)'), price: c.price, per: c.cycle === 'year' ? '年' : '月', cyc: c.cycle, founder: !!c.founder };
+  });
   var WD = '日月火水木金土';
   function jdate(d) { return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日(' + WD[d.getDay()] + ')'; }
   var founder = { open: true, left: null };

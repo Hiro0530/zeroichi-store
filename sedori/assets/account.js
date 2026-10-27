@@ -142,6 +142,8 @@
     F.setDoc(ref, { email: user.email || '', lastLoginAt: F.serverTimestamp() }, { merge: true }).catch(function () { /* オフライン等 */ });
     unsubUser = F.onSnapshot(ref, function (snap) {
       var d = snap.exists() ? snap.data() : {};
+      // 最初に来た経路(紹介ページ等が保存した zw-sedori:utm-first)を、まだ無ければプロフィールに残す
+      if (!d.utmFirst) { var utm = null; try { utm = JSON.parse(localStorage.getItem('zw-sedori:utm-first') || 'null'); } catch (e) { utm = null; } if (utm && typeof utm === 'object') F.setDoc(ref, { utmFirst: JSON.parse(JSON.stringify(utm)) }, { merge: true }).catch(function () {}); }
       st.sub = d.subscription || null;
       st.plan = S.planState(st.sub);
       if (d.settings && Number(d.settingsAt) > Number(store.get('settings-at', 0))) applySettings(d.settings, d.settingsAt);
