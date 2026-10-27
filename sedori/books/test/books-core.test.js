@@ -1,4 +1,4 @@
-/* 帳簿の計算の検算: node --test sedori/books/test/ */
+/* 帳簿の計算の検算: node --test sedori/books/test/*.test.js */
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -399,7 +399,7 @@ test('古物商特例: 個人からの中古の仕入れの記載の確認', () 
   const k = B.kobutsuCheck(LEDGER, 2026);
   const st = Object.fromEntries(k.rows.map((x) => [x.r.id, x]));
   assert.equal(st.a.state, 'new');
-  assert.equal(st.c.state, 'missing'); assert.deepEqual(st.c.need, ['相手の氏名', '相手の住所']); // ゲーム機(1万円以上・本人確認が要る)
+  assert.equal(st.c.state, 'missing'); assert.deepEqual(st.c.need, ['売り手の氏名', '売り手の住所']); // ゲーム機(1万円以上・本人確認が要る)
   assert.equal(st.f.state, 'ok'); // 氏名・住所あり
   assert.equal(st.g.state, 'missing'); // ゲームソフトは金額を問わず
   assert.equal(st.h.state, 'biz'); // ハードオフ(事業者)

@@ -784,7 +784,11 @@
     if (pt) J(y + '-12-31', [[pay, set.points === 'misc' ? '雑収入' : '仕入高', pt, set.points === 'misc' ? '仕入れで付いたポイント(雑収入)' : '仕入れで付いたポイント(仕入値引き)', 'out', set.points === 'misc' ? 'out' : 'buy']], '', { type: 'points', id: 'points' });
     // 期末の棚卸(年の終わり)
     if (T.A.closing) J(y + '-12-31', [['商品', '期末商品棚卸高', T.A.closing, '期末商品棚卸高の振替', 'out', 'out']], '', { type: 'stock', id: 'closing' });
-    return out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.no - b.no; });
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.no - b.no; });
+    // 日付順に番号を振り直す(1つの取引の行は同じ番号)
+    var re = {}, seq = 0;
+    out.forEach(function (e) { if (re[e.no] == null) re[e.no] = ++seq; e.no = re[e.no]; });
+    return out;
   }
 
   /* ---------- 会計ソフト向けの書き出し ---------- */
@@ -876,13 +880,13 @@
       var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1));
       if (r.cond !== '中古') { rows.push({ r: r, state: 'new', need: [], amt: amt }); return; }
       if (r.verify === '古物商・法人から購入' || BIZ.test(String(r.party || ''))) { rows.push({ r: r, state: 'biz', need: [], amt: amt }); return; }
-      var idReq = amt >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || /(室外機|電線|グレーチング)/.test(String(r.name || '') + ' ' + String(r.feature || ''));
+      var idReq = amt >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || /(室外機|ヒートポンプ|エコキュート|電線|グレーチング)/.test(String(r.name || '') + ' ' + String(r.feature || ''));
       var need = [];
       if (!r.date) need.push('年月日');
       if (!String(r.name || '').trim() || /^\(名前なし\)$/.test(r.name)) need.push('品名');
       if (!(Number(r.qty) > 0)) need.push('数量');
       if (!(Number(r.unit) > 0)) need.push('対価');
-      if (idReq) { if (!String(r.pName || '').trim()) need.push('相手の氏名'); if (!String(r.pAddr || '').trim()) need.push('相手の住所'); }
+      if (idReq) { if (!String(r.pName || '').trim()) need.push('売り手の氏名'); if (!String(r.pAddr || '').trim()) need.push('売り手の住所'); }
       rows.push({ r: r, state: need.length ? 'missing' : 'ok', need: need, idReq: idReq, amt: amt });
     });
     var c = function (s) { return rows.filter(function (x) { return x.state === s; }); };

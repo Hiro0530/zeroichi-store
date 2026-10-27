@@ -547,12 +547,12 @@
       '<span class="tbar-r"><label class="inl">目安 <input type="number" id="st-days" min="1" value="' + esc(cfg.days) + '" style="width:64px;height:28px;text-align:right"> 日</label>' + seg2('st', [['1', '目安を過ぎた品'], ['0', 'すべての在庫']], stOnly ? '1' : '0') + '</span></div>' +
       '<dl class="sum" style="margin-bottom:12px">' + sumHTML([['目安を過ぎた品', over.length + '件'], ['眠っている仕入れ額', money(sleep) + '円'], ['在庫ぜんぶ', all.length + '件']]) + '</dl>' +
       (Object.keys(cats).length ? '<details class="bk-note" style="margin:0 0 8px"><summary>品目ごとに目安の日数を変える</summary><div class="catlim">' + Object.keys(cats).map(function (c) { return '<label>' + esc(c) + '<input type="number" min="1" data-cat="' + esc(c) + '" value="' + esc(cfg.cats[c] || '') + '" placeholder="' + cfg.days + '"></label>'; }).join('') + '</div></details>' : '') +
-      '<div class="gridwrap"><table class="grid cards"><thead><tr><th class="r">経過</th><th>仕入日</th><th>品名</th><th class="r">仕入れ値</th><th class="r">予定売値</th><th class="r">損益ゼロの売値</th><th class="r">値下げ候補</th><th class="r">この品の目安</th><th></th></tr></thead><tbody>' +
+      '<div class="gridwrap"><table class="grid cards"><thead><tr><th class="r">経過</th><th>仕入日</th><th>品名</th><th class="r">仕入れ値(1個)</th><th class="r">予定売値</th><th class="r">損益ゼロの売値</th><th class="r">値下げ候補</th><th class="r">この品の目安</th><th></th></tr></thead><tbody>' +
       (list.length ? list.map(function (x) {
         var r = x.r;
         return '<tr><td data-k="経過" class="r"><span class="days' + (x.over ? ' over' : '') + '">' + x.days + '日</span></td><td data-k="仕入日" class="nw">' + esc(r.date) + '</td>' +
           '<td class="wide nmw" title="' + esc(r.name) + '">' + esc(r.name || '(名前なし)') + '<div class="meta">' + esc([r.hinmoku, r.sellTo ? r.sellTo + 'で販売予定' : '', r.status].filter(Boolean).join('・')) + '</div></td>' +
-          '<td data-k="仕入れ値" class="r">' + money(x.cost) + '</td><td data-k="予定売値" class="r">' + (x.plan ? money(x.plan) : '<span class="muted">—</span>') + '</td>' +
+          '<td data-k="仕入れ値(1個)" class="r">' + money(r.unit) + ((Number(r.qty) || 1) > 1 ? '<div class="meta">' + r.qty + '個 計' + yen(x.cost) + '</div>' : '') + '</td><td data-k="予定売値" class="r">' + (x.plan ? money(x.plan) : '<span class="muted">—</span>') + '</td>' +
           '<td data-k="損益ゼロの売値" class="r">' + money(x.be) + '</td><td data-k="値下げ候補" class="r"><b>' + money(x.suggest) + '</b>' + (x.plan && x.suggest < x.plan ? '<div class="meta">−' + yen(x.plan - x.suggest) + '円</div>' : '') + '</td>' +
           '<td data-k="この品の目安" class="r"><input class="lim" type="number" min="1" data-lim="' + esc(r.id) + '" value="' + esc(cfg.items[r.id] || '') + '" placeholder="' + x.limit + '">日</td>' +
           '<td class="ops">' + daichoLink(r.id, '台帳で開く') + '</td></tr>';
@@ -744,16 +744,16 @@
     pane.innerHTML = '<div class="bk-pane"><div class="tbar" style="padding-top:0"><p class="tbar-t">古物商特例の確認<small>' + year + '年の仕入れ・個人(インボイスを出せない相手)からの中古品</small></p><span class="tbar-r">' +
       seg2('kb', [['missing', '足りない ' + k.missing], ['ok', 'そろい ' + k.ok], ['biz', '事業者 ' + k.biz], ['all', 'すべて ' + k.rows.length]], kbFilter) + '</span></div>' +
       '<dl class="sum" style="margin-bottom:12px">' + sumHTML([['記載がそろった仕入れ', k.ok + '件・' + money(k.amountOk) + '円'], ['うち消費税の目安(10/110)', money(k.taxOk) + '円'], ['記載が足りない', k.missing + '件・' + money(k.amountMissing) + '円', k.missing ? 'bad' : '']]) + '</dl>' +
-      '<div class="gridwrap"><table class="grid cards"><thead><tr><th>仕入日</th><th>品名</th><th>仕入れ先</th><th class="r">対価</th><th>本人確認</th><th>状態</th><th>足りない項目</th><th></th></tr></thead><tbody>' +
+      '<div class="gridwrap"><table class="grid cards"><thead><tr><th>仕入日</th><th>品名</th><th>仕入れ先</th><th class="r">対価</th><th>売り手の確認</th><th>状態</th><th>足りない項目</th><th></th></tr></thead><tbody>' +
       (list.length ? list.map(function (x) {
         var r = x.r, st = ST[x.state];
         return '<tr><td data-k="仕入日" class="nw">' + esc(r.date) + '</td><td class="wide nmw" title="' + esc(r.name) + '">' + esc(r.name || '(名前なし)') + '</td><td data-k="仕入れ先" class="nmw">' + esc(r.party || '—') + (r.pName ? '<div class="meta">' + esc(r.pName) + '</div>' : '') + '</td>' +
-          '<td data-k="対価" class="r">' + money(x.amt) + '</td><td data-k="本人確認">' + (x.state === 'ok' || x.state === 'missing' ? (x.idReq ? '要る' : '<span class="muted">不要(1万円未満)</span>') : '<span class="muted">—</span>') + '</td>' +
+          '<td data-k="対価" class="r">' + money(x.amt) + '</td><td data-k="売り手の確認">' + (x.state === 'ok' || x.state === 'missing' ? (x.idReq ? '要る' : '<span class="muted">不要(1万円未満)</span>') : '<span class="muted">—</span>') + '</td>' +
           '<td data-k="状態"><span class="tag ' + st[1] + '">' + st[0] + '</span></td><td data-k="足りない項目">' + (x.need.length ? '<b class="neg">' + esc(x.need.join('・')) + '</b>' : '') + '</td>' +
           '<td class="ops">' + (x.state === 'missing' ? daichoLink(r.id, '台帳で入れる') : '') + '</td></tr>';
       }).join('') : '<tr><td colspan="8" class="empty">' + ({ missing: '記載が足りない仕入れはありません。', ok: '記載がそろった仕入れはまだありません。', biz: '事業者からの中古の仕入れはありません。' }[kbFilter] || 'この年の仕入れはありません。') + '</td></tr>') +
       '</tbody></table></div>' +
-      '<p class="bk-note">古物商が、適格請求書発行事業者でない個人から古物(売るための商品)を買った時は、帳簿に一定の事項を書いて保存すれば、請求書なしで仕入税額控除を受けられます(古物商等特例)。帳簿には、相手の氏名・住所(古物営業法で本人確認が要る取引の時)、年月日、品名、数量、対価と、特例の対象であることを書きます。書き出す仕訳の摘要には「古物商特例」と入れます。' +
+      '<p class="bk-note">古物商が、適格請求書発行事業者でない個人から古物(売るための商品)を買った時は、帳簿に一定の事項を書いて保存すれば、請求書なしで仕入税額控除を受けられます(古物商等特例)。帳簿には、売り手の氏名・住所(古物営業法で売り手の確認が要る取引の時)、年月日、品名、数量、対価と、特例の対象であることを書きます。書き出す仕訳の摘要には「古物商特例」と入れます。' +
       ' 相手が事業者(店舗・ショップ等)の時は、その相手が発行する適格請求書(レシート)の保存が必要です。記載が足りない仕入れは特例の対象にならず、経過措置の割合での控除になる場合があります。' +
       ' 参考: <a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/pdf/qa/01-13.pdf" target="_blank" rel="noopener">国税庁 インボイス制度Q&A(古物商等特例)</a>・<a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/pdf/qa/106.pdf" target="_blank" rel="noopener">問106</a>(2026年10月27日確認)。判定は台帳の入力からの目安で、適用できるかの最終判断はご自身で確かめてください。</p></div>';
     $$('[data-seg="kb"] button', pane).forEach(function (b) { b.addEventListener('click', function () { kbFilter = b.getAttribute('data-v'); render(); }); });
