@@ -1,0 +1,27 @@
+# せどり 利益チェック: 契約の受け口(Cloudflare Workers の無料枠)
+name = "zw-sedori-billing"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# 毎日 9:10(日本時間)= 0:10 UTC: 無料期間の終了3日前のメール・一時停止の自動再開・解約から3年たった台帳の削除
+[triggers]
+crons = ["10 0 * * *"]
+
+[vars]
+FIREBASE_PROJECT_ID = "ここに Firebase のプロジェクトID"
+FIREBASE_SA_EMAIL = "ここに サービスアカウントのメールアドレス"
+PAYPAL_ENV = "sandbox"            # 本番は "live"
+PAYPAL_CLIENT_ID = "ここに PayPal の Client ID"
+ALLOWED_ORIGIN = "https://hiro0530.github.io"   # 独自ドメインに移す時は新しい住所を足す(カンマ区切り。docs/sedori_app/domain.md)
+APP_URL = "https://hiro0530.github.io/zeroichi-store/sedori/"
+TRIAL_DAYS = "14"
+FOUNDER_LIMIT = "100"
+# PayPal のプランID → アプリのプラン(金額は sedori/assets/config.js の PLAN_CATALOG と同じにする)
+PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amount":"月4,980円"},"P-TOTAL-YEAR":{"key":"total_year","name":"総合(年払い)","amount":"年49,800円"},"P-FOUNDER-MONTH":{"key":"founder_month","name":"総合 先着100名の価格(月払い)","amount":"月3,980円","founder":true},"P-FOUNDER-YEAR":{"key":"founder_year","name":"総合 先着100名の価格(年払い)","amount":"年39,800円","founder":true},"P-LIGHT-MONTH":{"key":"light_month","name":"ライト(月払い)","amount":"月2,980円"},"P-LIGHT-YEAR":{"key":"light_year","name":"ライト(年払い)","amount":"年29,800円"},"P-BUSINESS-MONTH":{"key":"business_month","name":"業務(月払い)","amount":"月7,980円"},"P-BUSINESS-YEAR":{"key":"business_year","name":"業務(年払い)","amount":"年79,800円"}}'
+
+# 秘密の値は次のコマンドで入れる(このファイルには書かない)
+#   wrangler secret put FIREBASE_SA_KEY     … サービスアカウントの private_key(-----BEGIN PRIVATE KEY----- から)
+#   wrangler secret put PAYPAL_SECRET       … PayPal の Secret
+#   wrangler secret put PAYPAL_WEBHOOK_ID   … PayPal の Webhook ID
+#   wrangler secret put MAIL_HOOK_URL       … メール送信(Apps Script)の URL
+#   wrangler secret put MAIL_HOOK_SECRET    … メール送信の合言葉(Apps Script と同じ)

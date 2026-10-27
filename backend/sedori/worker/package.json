@@ -1,0 +1,9 @@
+{
+  "name": "zw-sedori-billing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/test_worker.js",
+    "deploy": "wrangler deploy"
+  }
+}
