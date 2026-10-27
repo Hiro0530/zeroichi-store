@@ -102,6 +102,7 @@ eq(S.firstSync('u2', 'u1', 0), 'merge', '別のアカウントでも空なら');
   eq(S.planState({ status: 'active', nextBillingAt: '2026-11-27T00:00:00Z' }, now).next, Date.UTC(2026, 10, 27), '次回の請求日(ISO)');
   eq(S.planState({ status: 'past_due' }, now).paid, true, '支払いの確認待ちも使える');
   eq(S.planState({ status: 'paused', resumeAt: now + 30 * 864e5 }, now).paid, false, '一時停止中は保存しない');
+  eq([S.planState({ status: 'suspended' }, now).key, S.planState({ status: 'suspended' }, now).canCancel], ['suspended', true], 'PayPalが止めた時も解約できる');
   const ending = S.planState({ status: 'canceled', paidThrough: now + 10 * 864e5 }, now);
   eq([ending.key, ending.paid, ending.canCancel], ['ending', true, false], '解約後も支払い済みの期間は使える');
   eq(new Date(ending.retainUntil).getUTCFullYear(), 2029, '保管は期間の終わりから3年');

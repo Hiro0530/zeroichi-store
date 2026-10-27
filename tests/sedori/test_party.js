@@ -37,6 +37,10 @@ eq(U.checkState({ cond: '中古', unit: 9999 }), 'na', '中古1万円未満は�
 eq(U.checkState({ cond: '中古', unit: 10000 }), 'need', '中古1万円以上は未入力');
 eq(U.checkState({ cond: '中古', unit: 500, media: true }), 'need', 'ゲーム等は金額を問わず');
 eq(U.checkState({ cond: '中古', unit: 500, hinmoku: '書籍' }), 'need', '書籍は金額を問わず');
+eq(U.checkState({ cond: '中古', unit: 3000, name: 'ダイキン エアコン 室外機 RZRP' }), 'need', '室外機は金額を問わず(2025年10月1日から)');
+eq(U.checkState({ cond: '中古', unit: 800, name: 'VVFケーブル 電線 2.0mm 100m' }), 'need', '電線は金額を問わず');
+eq(U.checkState({ cond: '中古', unit: 1500, name: '金属製グレーチング 300幅' }), 'need', '金属製グレーチングは金額を問わず');
+eq(U.checkState({ cond: '新品', unit: 1500, name: 'グレーチング 新品' }), 'na', '新品は対象外');
 eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b' }), 'need', '確認方法が無いと未入力');
 eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b', verify: '本人限定受取郵便で確認' }), 'ok', '氏名・住所・確認方法で済');
 eq(U.checkState({ cond: '中古', unit: 40000, verify: '古物商・法人から購入' }), 'ok', '古物商・法人から');

@@ -16,7 +16,25 @@ ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__)
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
 BASE_URL = "https://hiro0530.github.io/zeroichi-store/sedori/"
-VER = "20261028a"
+VER = "20261028b"
+
+# 料金は sedori/assets/config.js の PLAN_CATALOG だけで決める(/*PLANS*/ と /*/PLANS*/ の間の JSON)
+import re as _re
+CAT = json.loads(_re.search(r"/\*PLANS\*/(.*?)/\*/PLANS\*/", (S / "assets/config.js").read_text(encoding="utf-8"), _re.S).group(1))
+
+
+def yen(n: int) -> str:
+    return f"{n:,}円"
+
+
+def per_month(k: str) -> str:
+    p = CAT[k]["price"]
+    return ("約" if p % 12 else "") + f"{round(p / 12):,}円"
+
+
+P_SM, P_SY, P_FM, P_FY = (CAT[k]["price"] for k in ("standard_month", "standard_year", "founder_month", "founder_year"))
+P_BM, P_BY = CAT["business_month"]["price"], CAT["business_year"]["price"]
+SAVE_MONTHS = round((P_SM * 12 - P_SY) / P_SM)
 
 ROUTES = [
     ("rakuten-amazon", "楽天・Yahoo!→Amazon"),
@@ -87,7 +105,7 @@ LEGAL = """<details class="legal" id="legal">
         <h3>古物営業法</h3>
         <ul>
           <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
-          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等と、2025年10月1日からはエアコンの室外機・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
           <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で相手確認が未入力の行には印が付きます。</li>
           <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
         </ul>
@@ -305,7 +323,7 @@ MZ_BODY = f"""<div class="lay3">
       {box("ヤフオクの価格", '''<div class="fl">
           <label class="fr col"><span class="fk">検索する言葉</span><input id="mz-q"></label>
           <p class="row-links"><a id="mz-yh" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">出品中を見る</a><a id="mz-yh-closed" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">落札相場を見る</a></p>
-          ''' + fld("価格", num("mz-yprice"), "円", "即決・落札見込み") + fld("送料", num("mz-yship", "0"), "円", "出品者→自分") + chk("mz-media", "ゲーム・CD・DVD・書籍・バイク等") + '''
+          ''' + fld("価格", num("mz-yprice"), "円", "即決・落札見込み") + fld("送料", num("mz-yship", "0"), "円", "出品者→自分") + chk("mz-media", "ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等") + '''
           <label class="fr col"><span class="fk">ヤフオクの終了日時<small>入れると「出品した(見張る)」で台帳に入り、終了60分前に通知</small></span><input id="mz-yend" type="datetime-local"></label>
           <label class="fr col"><span class="sr">終了日時の文字を貼り付け</span><input id="mz-yend-paste" type="text" autocomplete="off" placeholder="終了日時の文字を貼り付け"></label>
         </div>''')}
@@ -408,7 +426,7 @@ route_page("mercari-calc", "メルカリ 手数料・送料・利益の計算",
 
 YM_SIDE = box("仕入れ(ヤフオク)", '<div class="fl">' + fld("落札価格", num("b-bid"), "円") + fld("送料", num("b-ship", "0"), "円", "出品者→自分") +
               fld("その他", num("b-other", "0"), "円", "支払い手数料など") + fld("ポイント", dec("b-pt", "0"), "%", "落札価格に対して") +
-              fld("個数", num("b-qty", "1", ' min="1"'), "個", "まとめ落札") + chk("b-media", "ゲーム・CD・DVD・書籍・バイク等") + "</div>" + unit_line() +
+              fld("個数", num("b-qty", "1", ' min="1"'), "個", "まとめ落札") + chk("b-media", "ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等") + "</div>" + unit_line() +
               '<p class="hint" id="guard" hidden><span class="badge">相手確認が必要</span> 1万円以上(またはゲーム等)の中古品です。仕入れた後、台帳で相手の確認を入力してください。</p>')
 route_page("yahuoku-mercari", "ヤフオク→メルカリ 利益計算",
            "Yahoo!オークションで落札した品をメルカリで売った時の、配送方法ごとの利益と損益分岐を一覧で計算。まとめ落札の1個原価、ポイント。仕入れると古物台帳に自動で記録。無料・登録不要。",
@@ -445,7 +463,7 @@ LEDGER_BODY = """<div class="lg">
       <tbody id="lg-rows"></tbody>
     </table>
   </div>
-  <p class="credit">仕入れ値1万円以上の中古品と、ゲーム・CD・DVD・書籍・バイク等の中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。CSV・Excelは古物台帳の項目(受入れ・払出し)の順で書き出します。「出品中」の行にヤフオク終了日時を入れると「終了が近い順」に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、終了60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。データはこの端末のブラウザの中にあります。無料プランでは、機種変更の前に書き出してください。</p>
+  <p class="credit">仕入れ値1万円以上の中古品と、ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等の中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。CSV・Excelは古物台帳の項目(受入れ・払出し)の順で書き出します。「出品中」の行にヤフオク終了日時を入れると「終了が近い順」に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、終了60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。データはこの端末のブラウザの中にあります。無料プランでは、機種変更の前に書き出してください。</p>
 </div>"""
 out = head("古物台帳", "仕入れた品を自動で記録する古物台帳。状態(仕入れ済→入庫→出品中→売約→発送済)を1クリックで進め、売れたら売却日・売値・相手を自動で記入。CSV・Excelで書き出し。",
            "daicho/", "../", 'data-page="daicho"')
@@ -486,7 +504,7 @@ TOP_BODY = f"""<div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
     <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
-      <table class="kv"><tr><th>無料</th><td>0円・登録不要</td></tr><tr><th>スタンダード</th><td>月2,480円(税込)<br>14日間無料<span data-bill="prep">・準備中</span></td></tr><tr><th>先着100名</th><td>月1,980円<br>途中で上がりません</td></tr></table>
+      <table class="kv"><tr><th>無料</th><td>0円・登録不要</td></tr><tr><th>スタンダード</th><td>月{yen(P_SM)}(税込)<br>14日間無料<span data-bill="prep">・準備中</span></td></tr><tr><th>先着100名</th><td>月{yen(P_FM)}<br>途中で上がりません</td></tr></table>
       <p class="row-links"><a href="plans/" data-bill="ready">14日間無料で始める</a><a data-mail="prereg" href="#" data-bill="prep">事前登録(無料)</a><a href="plans/">料金の詳しい説明</a></p>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳の付け方を週1回。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
@@ -525,11 +543,11 @@ TOP_BODY = f"""<div class="lay2">
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
     <h2 class="sec-h" id="plans">料金とプラン</h2>
-    <p>無料 0円/スタンダード <b>月2,480円</b>(先着100名は月1,980円)/業務 月4,980円(予定)。すべて税込。スタンダードは14日間無料で、お支払いはPayPalです。<span data-bill="prep">いまは準備中です。</span></p>
+    <p>無料 0円/スタンダード <b>月{yen(P_SM)}</b>(先着100名は月{yen(P_FM)})/業務 月{yen(P_BM)}(予定)。すべて税込。スタンダードは14日間無料で、お支払いはPayPalです。<span data-bill="prep">いまは準備中です。</span></p>
     <div class="gridwrap"><table class="grid nimg cmp" style="min-width:600px">
       <thead><tr><th></th><th>無料(いま使えます)</th><th>スタンダード<span data-bill="prep">(準備中)</span></th><th>業務(受付前)</th></tr></thead>
       <tbody>
-        <tr><th>料金(税込)</th><td>0円・登録不要</td><td><b>月2,480円</b>・年24,800円<br>先着100名は月1,980円・年19,800円</td><td>月4,980円・年49,800円(予定)</td></tr>
+        <tr><th>料金(税込)</th><td>0円・登録不要</td><td><b>月{yen(P_SM)}</b>・年{yen(P_SY)}<br>先着100名は月{yen(P_FM)}・年{yen(P_FY)}</td><td>月{yen(P_BM)}・年{yen(P_BY)}(予定)</td></tr>
         <tr><th>無料期間</th><td>—</td><td>14日(終わると自動で有料)</td><td>14日</td></tr>
         <tr><th>計算ページ</th><td>5つすべて・回数制限なし</td><td>同じ</td><td>同じ</td></tr>
         <tr><th>台帳</th><td>この端末に保存・行数の制限なし・CSV・Excel</td><td>クラウドに保存し、パソコンとスマホで同じ台帳。3年分を保管</td><td>作業する人3人まで・提出用のPDF・変更の記録</td></tr>
@@ -575,17 +593,17 @@ write("", out)
 # 料金とお申し込み(/sedori/plans/)。特商法(2022年改正)の最終確認画面の表示事項を、ボタンと同じ画面に置く
 # ------------------------------------------------------------------
 PLAN_ROWS = [
-    # key, プラン, 支払い, 価格(税込), 補足, data-founder
-    ("standard_month", "スタンダード", "月払い", "2,480円", "毎月", False),
-    ("standard_year", "スタンダード", "年払い", "24,800円", "毎年。月あたり約2,067円(月払いより2か月分安い)", False),
-    ("founder_month", "先着100名の価格", "月払い", "1,980円", "毎月。続けている間は上がりません", True),
-    ("founder_year", "先着100名の価格", "年払い", "19,800円", "毎年。続けている間は上がりません", True),
+    # key, プラン, 支払い, 価格(税込), 補足, 先着
+    (k, c["name"], "年払い" if c["cycle"] == "year" else "月払い", yen(c["price"]),
+     ("毎年。月あたり" + per_month(k) + (f"(月払いより{SAVE_MONTHS}か月分安い)" if not c.get("founder") else "") if c["cycle"] == "year" else "毎月") + ("。続けている間は上がりません" if c.get("founder") else ""),
+     bool(c.get("founder")))
+    for k, c in CAT.items() if c.get("open", True)
 ]
 plan_pick = "\n".join(
     f'<tr data-plan="{k}"{" data-founder" if f else ""}><td class="pk"><input type="radio" name="plan" value="{k}" id="pl-{k}"{" checked" if k == "standard_month" else ""}></td>'
     f'<td><label for="pl-{k}"><b>{n}</b><span class="meta">{c}</span></label></td><td class="r"><span class="yen">{p.replace("円", "")}<i>円</i></span><span class="meta">{"/月" if c == "月払い" else "/年"}(税込)</span></td><td class="note2">{note}</td></tr>'
     for k, n, c, p, note, f in PLAN_ROWS) + \
-    '<tr class="off"><td class="pk"><input type="radio" disabled aria-label="業務(受付前)"></td><td><b>業務</b><span class="meta">月払い・年払い</span></td><td class="r"><span class="yen">4,980<i>円</i></span><span class="meta">/月(予定)</span></td><td class="note2">受付前。発送代行の連携・作業者3人・提出用PDF。機能ができてから販売します</td></tr>'
+    f'<tr class="off"><td class="pk"><input type="radio" disabled aria-label="業務(受付前)"></td><td><b>業務</b><span class="meta">月払い・年払い</span></td><td class="r"><span class="yen">{P_BM:,}<i>円</i></span><span class="meta">/月(予定)</span></td><td class="note2">受付前。発送代行の連携・作業者3人・提出用PDF。機能ができてから販売します</td></tr>'
 
 PLANS_BODY = """<div class="pl">
   <h1 class="pg-h">料金とお申し込み</h1>
@@ -622,7 +640,7 @@ PLANS_BODY = """<div class="pl">
         <table class="kv conf" id="pl-conf">
           <tr><th>プラン</th><td id="cf-plan">スタンダード(月払い)</td></tr>
           <tr><th>分量</th><td>台帳のクラウド保存と端末間の同期(1アカウント)、楽天の検索 制限なし、設定の同期。左の「2. 使えるようになること」のとおり</td></tr>
-          <tr><th>価格(税込)</th><td><b id="cf-price">月2,480円</b><span class="meta">これ以外の費用はかかりません(通信費を除く)</span></td></tr>
+          <tr><th>価格(税込)</th><td><b id="cf-price">月""" + yen(P_SM) + """</b><span class="meta">これ以外の費用はかかりません(通信費を除く)</span></td></tr>
           <tr><th>無料期間</th><td><b id="cf-trial">お申し込みの日から14日間</b></td></tr>
           <tr><th>支払いの時期</th><td id="cf-when">無料期間が終わる日に1回目、以後は毎月同じ日に、自動で請求します(前払い)</td></tr>
           <tr><th>支払いの方法</th><td>PayPal(PayPal残高・PayPalに登録したクレジットカード・デビットカード・銀行口座)。お申し込みには支払い方法の登録が必要です</td></tr>
@@ -636,7 +654,7 @@ PLANS_BODY = """<div class="pl">
         </table>
         <div class="trial-box" id="cf-trialbox">
           <p><b id="cf-t1">今日から14日間は無料です。</b></p>
-          <p id="cf-t2">無料期間が終わる日に、1回目の2,480円(税込)をPayPalで自動でお支払いいただき、以後は毎月同じ日に請求します。無料期間の終了3日前に、メールでお知らせします。</p>
+          <p id="cf-t2">無料期間が終わる日に、1回目の""" + yen(P_SM) + """(税込)をPayPalで自動でお支払いいただき、以後は毎月同じ日に請求します。無料期間の終了3日前に、メールでお知らせします。</p>
         </div>
         <div class="pay" id="pl-pay">
           <div data-bill="prep">
@@ -659,7 +677,7 @@ PLANS_BODY = """<div class="pl">
   </div>
 </div>"""
 
-out = head("料金とお申し込み", "せどり 利益チェックの料金(無料/スタンダード 月2,480円・年24,800円/先着100名 月1,980円・年19,800円)、14日間の無料期間、支払いの時期と方法、解約の方法。",
+out = head("料金とお申し込み", f"せどり 利益チェックの料金(無料/スタンダード 月{yen(P_SM)}・年{yen(P_SY)}/先着100名 月{yen(P_FM)}・年{yen(P_FY)})、14日間の無料期間、支払いの時期と方法、解約の方法。",
            "plans/", "../", 'data-page="plans"')
 out += header("../", "plans", "rakuten") + crumb("../", "料金とお申し込み") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
 write("plans", out)
@@ -803,7 +821,11 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <p>次のことをしないでください。法令や公序良俗に反すること/他人のアカウントを使うこと/本サービスの仕組みに過大な負荷をかけること、不正にアクセスすること/盗品など不正な品の取引の記録・隠ぺいに使うこと/本サービスを当方の許可なく再販売すること。</p>
 
 <h2>第9条(計算と情報の扱い)</h2>
-<p>計算は、公開されている料金表をもとにした目安です。利益・販売・仕入れの結果を保証しません。手数料・送料は変わることがあるので、確認日と出典を見て、各サービスで確かめてください。</p>
+<ol>
+<li>計算は、公開されている料金表をもとにした参考の値(目安)です。利益・販売・仕入れの結果を保証しません。手数料・送料は変わることがあるので、確認日と出典を見て、各サービスで確かめてください。</li>
+<li>CSV・Excelの取り込み、貼り付けた文字からの項目の取り出しなど、データの取り込みは、利用者が自分で行い、取り込んだ内容を利用者が確かめて確定するものです。当方はデータの移し替えの代行(移行代行)は行いません。</li>
+<li>取り込んだデータ・利用者が入れたデータの誤りや抜け、およびそれにもとづく税務・法令上の結果(確定申告・古物台帳の記載など)について、当方は責任を負いません。申告や警察への提出などに使う前に、利用者が内容を確かめてください。</li>
+</ol>
 
 <h2>第10条(サービスの変更・停止)</h2>
 <ol>
