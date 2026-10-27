@@ -312,16 +312,16 @@ def grade(d: date, results: dict) -> dict | None:
     return by
 
 
-BOUNDS = ((13, 50), (17, 50), (22, 0))   # 1回の実行が終わる時刻(JST)。次の実行(:53開始)と重ならないように
+WINDOWS = {"1": ("09:50", "12:48"), "2": ("12:51", "15:48"), "3": ("15:51", "18:48"), "4": ("18:51", "22:00")}
 
 
-def loop():
-    """1回の実行の中で60秒ごとに tick。次の区切り(13:50 / 17:50 / 22:00)で終わる。"""
+def loop(end_hm: str):
+    """1回の実行の中で60秒ごとに tick。end_hm(JST)で終わる。遅れて起動しても、残りの時間をそのまま受け持つ。"""
     now = datetime.now(JST)
-    ends = [now.replace(hour=h, minute=m, second=0, microsecond=0) for h, m in BOUNDS]
-    end = next((e for e in ends if e > now + timedelta(minutes=5)), None)
-    if end is None:
-        print("outside the fetching hours")
+    h, m = map(int, end_hm.split(":"))
+    end = now.replace(hour=h, minute=m, second=0, microsecond=0)
+    if end <= now:
+        print(f"window already over ({end_hm}); exit")
         return
     print(f"loop until {end:%H:%M}")
     while datetime.now(JST) < end:
@@ -334,12 +334,14 @@ def loop():
         if rf.exists() and json.loads(rf.read_text()).get("stopped"):
             print("stopped for today; exit loop")
             return
-        time.sleep(max(5.0, 60 - (time.time() - t0)))
+        time.sleep(max(5.0, min(60 - (time.time() - t0), (end - datetime.now(JST)).total_seconds())))
 
 
 if __name__ == "__main__":
     if sys.argv[1] == "loop":
-        loop()
+        loop(WINDOWS[sys.argv[2]][1] if sys.argv[2] in WINDOWS else sys.argv[2])
+    elif sys.argv[1] == "window":
+        print(" ".join(WINDOWS[sys.argv[2]]))
     elif sys.argv[1] == "tick":
         tick()
     elif sys.argv[1] == "grade":

@@ -1,37 +1,59 @@
 name: kyotei-odds
 
-# オッズを使った「紙の上だけ」の検証(ペーパートレード)。1日3回の実行(各回の中で60秒ごとに確認)+予備。
-# 2026-10-26 サイトポリシー確認(Gemini調査+オーナー判断)で稼働。403/429/5xxで当日停止、1日200リクエスト上限。動かすときは kyotei/odds_enabled.txt も必要(無ければ何も取得しない)。
-# 各回: 60秒ごとに、締切の3〜9分前の自信度Sのレースだけ4ページ(単勝・複勝/2連単・2連複/3連複/3連単)を1回ずつ、3秒以上あけて読む。1日200回まで。結果は非公開。
+# オッズを使った「紙の上だけ」の検証(ペーパートレード)。結果は非公開(キャッシュだけ)。
+# 2026-10-26 サイトポリシー確認(Gemini調査+オーナー判断)で稼働。403/429/5xxで当日停止、1日200リクエスト上限。kyotei/odds_enabled.txt が無ければ何も取得しない。
+# GitHub の定時実行は1.5〜3時間遅れることがあるので、4つの時間帯ごとに約2.5時間前に起動して時間帯の始まりまで待つ。遅れて起動しても残りの時間を受け持つ。
+# 時間帯: 1=09:50〜12:48 / 2=12:51〜15:48 / 3=15:51〜18:48 / 4=18:51〜22:00(JST)。各時間帯に予備の起動(1時間後)。同じ時間帯は1つずつ(予備は本番が終わってから動き、時間帯が終わっていれば何もしない)。
+# 各回: 60秒ごとに、締切の3〜9分前の自信度Sのレースだけ4ページ(単勝・複勝/2連単・2連複/3連複/3連単)を1回ずつ、3秒以上あけて読む。
 on:
   schedule:
-    - cron: "53 0 * * *"    # 09:53 JST 〜13:50
-    - cron: "53 4 * * *"    # 13:53 JST 〜17:50
-    - cron: "53 8 * * *"    # 17:53 JST 〜22:00
-    - cron: "23 1 * * *"    # 予備 10:23(同じ時間帯の実行が動いていれば何もしない)
-    - cron: "23 5 * * *"    # 予備 14:23
-    - cron: "23 9 * * *"    # 予備 18:23
+    - cron: "20 22 * * *"   # 07:20 JST → 時間帯1
+    - cron: "20 23 * * *"   # 08:20 JST 予備 → 時間帯1
+    - cron: "21 1 * * *"    # 10:21 JST → 時間帯2
+    - cron: "21 2 * * *"    # 11:21 JST 予備 → 時間帯2
+    - cron: "21 4 * * *"    # 13:21 JST → 時間帯3
+    - cron: "21 5 * * *"    # 14:21 JST 予備 → 時間帯3
+    - cron: "21 7 * * *"    # 16:21 JST → 時間帯4
+    - cron: "21 8 * * *"    # 17:21 JST 予備 → 時間帯4
   workflow_dispatch:
+    inputs:
+      window: {description: "時間帯 1〜4", required: true, default: "1"}
+      nowait: {description: "true なら時間帯の始まりまで待たない(試験用)", required: false, default: "false"}
 
 permissions:
   contents: read
-  actions: read
+
+concurrency:
+  group: kyotei-odds-${{ ((github.event.schedule == '20 22 * * *' || github.event.schedule == '20 23 * * *') && '1') || ((github.event.schedule == '21 1 * * *' || github.event.schedule == '21 2 * * *') && '2') || ((github.event.schedule == '21 4 * * *' || github.event.schedule == '21 5 * * *') && '3') || ((github.event.schedule == '21 7 * * *' || github.event.schedule == '21 8 * * *') && '4') || inputs.window }}
+  cancel-in-progress: false
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
-      - name: Stop here unless enabled (and unless another odds run is already going)
-        id: gate
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Which window
+        id: w
         run: |
-          if [ ! -f kyotei/odds_enabled.txt ]; then echo "disabled"; exit 0; fi
-          n=$(gh api "repos/${{ github.repository }}/actions/workflows/kyotei-odds.yml/runs?status=in_progress" --jq "[.workflow_runs[]|select(.id != ${{ github.run_id }})]|length" || echo 0)
-          if [ "$n" != "0" ]; then echo "another odds run is in progress; exit"; exit 0; fi
-          echo "on=1" >> "$GITHUB_OUTPUT"
+          case "${{ github.event.schedule }}" in
+            "20 22 * * *"|"20 23 * * *") W=1;; "21 1 * * *"|"21 2 * * *") W=2;;
+            "21 4 * * *"|"21 5 * * *") W=3;; "21 7 * * *"|"21 8 * * *") W=4;; *) W="${{ inputs.window }}";;
+          esac
+          echo "w=$W" >> "$GITHUB_OUTPUT"
+          echo "window $W"
+      - name: Stop here unless enabled
+        id: gate
+        run: if [ -f kyotei/odds_enabled.txt ]; then echo "on=1" >> "$GITHUB_OUTPUT"; else echo "disabled"; fi
+      - name: Wait until the window starts
+        if: steps.gate.outputs.on == '1'
+        run: |
+          set -- $(python3 kyotei/odds_paper.py window ${{ steps.w.outputs.w }} 2>/dev/null || echo "00:00 00:00")
+          START=$1
+          if [ "${{ inputs.nowait }}" = "true" ]; then START=00:00; fi
+          S=$(echo "${{ github.event.schedule }}" | awk '{if (NF==5) printf "%02d:%02d", $2, $1}')
+          python3 kyotei/waituntil.py "$START" /tmp/health_wait.json "odds-w${{ steps.w.outputs.w }}" "$S"
+          git pull -q --rebase origin main || true
       - if: steps.gate.outputs.on == '1'
         uses: actions/setup-python@v5
         with:
@@ -45,7 +67,10 @@ jobs:
           key: kyotei-paper-${{ github.run_id }}
           restore-keys: kyotei-paper-
       - if: steps.gate.outputs.on == '1'
-        run: python kyotei/odds_paper.py loop
+        run: |
+          mkdir -p kyotei/hist/paper
+          python3 -c "import json,pathlib as P;a=P.Path('kyotei/hist/paper/health_odds.json');n=json.loads(P.Path('/tmp/health_wait.json').read_text()) if P.Path('/tmp/health_wait.json').exists() else [];o=json.loads(a.read_text()) if a.exists() else [];a.write_text(json.dumps((o+n)[-60:],ensure_ascii=False))" || true
+          python kyotei/odds_paper.py loop ${{ steps.w.outputs.w }}
       - if: always() && steps.gate.outputs.on == '1'
         uses: actions/cache/save@v4
         with:

@@ -99,6 +99,18 @@ def _model(m: dict | None) -> dict | None:
             "not_used": NOT_USED, "uses_tide": "t_lvl_l1" in feats, "eval": e}
 
 
+def _health() -> dict:
+    """運用の点検用(HQ): 毎朝の実行と、オッズの実行の、起動時刻・予定からの遅れ・待ち時間(非公開の hist/paper から)。"""
+    out = {}
+    for k, f in (("daily", "health_daily.json"), ("odds", "health_odds.json")):
+        p = ROOT / "hist" / "paper" / f
+        try:
+            out[k] = json.loads(p.read_text())[-8:] if p.exists() else []
+        except Exception:  # noqa
+            out[k] = []
+    return out
+
+
 def build() -> dict:
     summ = _load(ROOT / "summary.json") or {"total": {}, "daily": []}
     preds = sorted((ROOT / "predictions").glob("*.json"))
@@ -116,6 +128,7 @@ def build() -> dict:
         "record": {"total": t, "daily": summ.get("daily", [])[-60:], "tiers_live": summ.get("tiers") or {}},
         "model": _model(_load(ROOT / "model.json")),
         "bet_names": {"tansho": "単勝◎", "fukusho": "複勝◎", "trio3": "3連複3点", "trifecta3": "3連単3点"},
+        "health": _health(),
         "disclaimers": DISCLAIMERS,
         "sources": ["BOAT RACE公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは置いていません。"],
     }

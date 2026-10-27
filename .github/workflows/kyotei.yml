@@ -3,12 +3,16 @@ name: kyotei
 # AI舟券 答え合わせ帳: 公式の番組表・競走成績 → 予想と答え合わせ → gh-pages の /kyotei/ だけ更新
 on:
   schedule:
-    - cron: "45 21 * * *"   # 06:45 JST
-    - cron: "17 22 * * *"   # 07:17 JST 予備(06:45 が抜けたとき。答え合わせ・予想はすでにあれば何もしない)
+    - cron: "23 18 * * *"   # 03:23 JST に早めに起動して 06:45 JST まで待つ(定時実行が1.5〜3時間遅れることがあるため)
+    - cron: "53 19 * * *"   # 04:53 JST 2本目の早め起動(1本目が終わるまで順番待ち。済んでいれば何もしない)
+    - cron: "45 21 * * *"   # 06:45 JST 遅めの予備
+    - cron: "17 22 * * *"   # 07:17 JST 遅めの予備
   push:
     branches: [main]
     paths: ["kyotei/trigger.txt"]
   workflow_dispatch:
+    inputs:
+      wait_until: {description: "この時刻(JST HH:MM)まで待ってから実行(空なら待たない)", required: false, default: ""}
 
 permissions:
   contents: write
@@ -20,7 +24,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 345
     env:
       # 非公開リポジトリ(arbitrage-scout)へ履歴の控えを置くためのトークン(未設定なら控えは作らず、キャッシュだけで動く)
       HAS_DATA_TOKEN: ${{ secrets.KYOTEI_DATA_TOKEN != '' }}
@@ -28,6 +32,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Wait until 06:45 JST (early starts only)
+        run: |
+          T=""
+          case "${{ github.event.schedule }}" in "23 18 * * *"|"53 19 * * *") T="06:45";; esac
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then T="${{ inputs.wait_until }}"; fi
+          S=$(echo "${{ github.event.schedule }}" | awk '{if (NF==5) printf "%02d:%02d", $2, $1}')
+          if [ -n "$T" ]; then python3 kyotei/waituntil.py "$T" /tmp/health_wait.json "daily" "$S"; else python3 kyotei/waituntil.py 00:00 /tmp/health_wait.json "daily" "$S"; fi
+          git pull -q --rebase origin main || true   # 待っているあいだの更新を取り込む
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -59,6 +71,7 @@ jobs:
           MODE=$(head -1 kyotei/trigger.txt 2>/dev/null || echo daily)
           if [ "${{ github.event_name }}" != "push" ]; then MODE=daily; fi   # 定時・手動実行は毎朝の処理。trigger.txt は push のときだけ
           echo "mode=$MODE"
+          python3 -c "import json,pathlib as P;a=P.Path('kyotei/hist/paper/health_daily.json');n=json.loads(P.Path('/tmp/health_wait.json').read_text()) if P.Path('/tmp/health_wait.json').exists() else [];o=json.loads(a.read_text()) if a.exists() else [];a.write_text(json.dumps((o+n)[-60:],ensure_ascii=False))" || true
           python kyotei/run.py $MODE 2>&1 | tee kyotei/last_run.log
           exit ${PIPESTATUS[0]}
       - name: Save training history (even if a later step fails, so files are not fetched twice)

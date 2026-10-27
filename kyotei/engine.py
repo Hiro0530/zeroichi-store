@@ -493,6 +493,11 @@ def main(mode: str):
         exp_v3.main(hist_dir())
         refit()
     else:  # daily(前日の答え合わせは catch_up_grading で済んでいる)
+        graded = all((ROOT / "results" / f"{today - timedelta(days=i):%Y-%m-%d}.json").exists()
+                     or not (ROOT / "predictions" / f"{today - timedelta(days=i):%Y-%m-%d}.json").exists() for i in (1, 2, 3))
+        if (ROOT / "predictions" / f"{today:%Y-%m-%d}.json").exists() and graded:
+            print("daily already done today (predictions published, recent days graded); nothing to do")
+            return
         left = top_up_history(CAP_DAILY, SLOW_PAUSE)   # 足りない過去分を毎朝少しずつ
         ensure_fan_files()
         ensure_jma()
