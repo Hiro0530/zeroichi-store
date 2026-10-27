@@ -1,4 +1,4 @@
-// 取引相手の情報の取り出し(貼り付け)と、相手確認の判定の検算。実行: node tests/sedori/test_party.js [公開フォルダ]
+// 取引相手の情報の取り出し(貼り付け)と、売り手の確認の判定の検算。実行: node tests/sedori/test_party.js [公開フォルダ]
 const path = require('path'), assert = require('assert');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
 // ブラウザの最小の代わり(ui.js は画面の部品なので、読み込めるだけの形を用意する)
@@ -31,7 +31,13 @@ const c = U.parseParty('出品者情報\n高橋 誠\n123-4567\n神奈川県横�
 eq([c.pName, c.pTel], ['高橋 誠', '090-1111-2222'], '見出しなし');
 eq(U.partyFromUrl('https://jp.mercari.com/transaction/m123'), 'メルカリ', 'URLから仕入れ先');
 
-// 4. 相手確認の判定
+// 3b. 職業・年齢(見出し付きの行だけ)
+const d = U.parseParty('氏名: 山田 太郎\n〒100-0001\n東京都千代田区千代田1-1\n職業：会社員\n年齢：４０');
+eq(d.pJob, '会社員', '職業を取り出す');
+eq(d.pAge, '40', '年齢を取り出す(全角数字も)');
+eq(U.parseParty('山本 健一 様\n大阪府大阪市北区梅田1-2-3').pJob, undefined, '見出しが無ければ職業は取らない');
+
+// 4. 売り手の確認の判定
 eq(U.checkState({ cond: '新品', unit: 30000 }), 'na', '新品は不要');
 eq(U.checkState({ cond: '中古', unit: 9999 }), 'na', '中古1万円未満は不要');
 eq(U.checkState({ cond: '中古', unit: 10000 }), 'need', '中古1万円以上は未入力');
@@ -41,6 +47,9 @@ eq(U.checkState({ cond: '中古', unit: 3000, name: 'ダイキン エアコン �
 eq(U.checkState({ cond: '中古', unit: 800, name: 'VVFケーブル 電線 2.0mm 100m' }), 'need', '電線は金額を問わず');
 eq(U.checkState({ cond: '中古', unit: 1500, name: '金属製グレーチング 300幅' }), 'need', '金属製グレーチングは金額を問わず');
 eq(U.checkState({ cond: '新品', unit: 1500, name: 'グレーチング 新品' }), 'na', '新品は対象外');
+eq(U.checkState({ cond: '中古', unit: 2000, name: 'エコキュート ヒートポンプユニット' }), 'need', '電気温水機器のヒートポンプは金額を問わず(2025年10月1日から)');
+eq(U.checkState({ cond: '中古', unit: 6000, qty: 2 }), 'need', '1万円は対価の総額: 6,000円×2個=12,000円は必要');
+eq(U.checkState({ cond: '中古', unit: 4000, qty: 2 }), 'na', '4,000円×2個=8,000円は不要');
 eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b' }), 'need', '確認方法が無いと未入力');
 eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b', verify: '本人限定受取郵便で確認' }), 'ok', '氏名・住所・確認方法で済');
 eq(U.checkState({ cond: '中古', unit: 40000, verify: '古物商・法人から購入' }), 'ok', '古物商・法人から');

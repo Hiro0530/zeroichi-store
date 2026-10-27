@@ -15,7 +15,7 @@ import sys
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[3] / "kt-zs-sedori-ghp")
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261028c"
+VER = "20261028d"
 
 import re as _re
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
@@ -43,37 +43,54 @@ LIGHT_LIMIT = int(_re.search(r"LIGHT_MONTHLY_LIMIT:\s*(\d+)", _CONFIG).group(1))
 # 帳簿の機能(/sedori/books/。別の班が作る)ができるまでは「11月中に追加」と書く
 ACC_READY = _re.search(r"ACCOUNTING_READY:\s*(true|false)", _CONFIG).group(1) == "true"
 SOON = "" if ACC_READY else '<span class="soon">11月中に追加</span>'
-SOON_NOTE = "" if ACC_READY else "「11月中に追加」の機能は、追加した日から、そのプランをお使いの方は自動で使えます(追加の料金はかかりません)。"
 
 
 def save_months(m: str, y: str) -> int:
     return round((CAT[m]["price"] * 12 - CAT[y]["price"]) / CAT[m]["price"])
 
 
-# プランごとにできること(トップ・料金ページで同じ表を使う)。列は 無料/ライト/総合/業務
+# 未完成の機能の印(比べる表の中だけ。表の下に「※は11月中に追加」と1回だけ書く)
+MARK = "" if ACC_READY else '<sup class="mk">※</sup>'
+
+# プランごとにできること(料金ページの「機能を詳しく比べる」)。列は 無料/ライト/総合/業務。8行まで
 FEATURES = [
-    ("計算ページ", "5つすべて・回数制限なし", "同じ", "同じ", "同じ"),
-    ("古物台帳", "この端末に保存・CSV・Excel", f"クラウドに保存(月{LIGHT_LIMIT}件まで)。パソコンとスマホで同じ台帳。3年分を保管", "クラウドに保存(<b>件数の制限なし</b>)", "同じ"),
-    ("バーコード読み取り", "この端末の中だけ", "スキャン一覧をパソコンと同期", "同じ", "同じ"),
-    ("ヤフオク終了前の通知", "入れた端末で60分前", "どの端末で入れた出品にも", "同じ", "同じ"),
+    ("計算ページ(5つ)", "回数制限なし", "回数制限なし", "回数制限なし", "回数制限なし"),
+    ("古物台帳の保存", "この端末だけ", f"クラウド(月{LIGHT_LIMIT}件まで)", "クラウド(件数の制限なし)", "クラウド(件数の制限なし)"),
+    ("パソコンとスマホで同じ台帳", "—", "○", "○", "○"),
+    ("ヤフオク終了60分前の通知", "入れた端末だけ", "どの端末の出品も", "どの端末の出品も", "どの端末の出品も"),
     ("楽天の検索", "1日20回", "制限なし", "制限なし", "制限なし"),
-    ("売上・経費", "期間ごとの合計(台帳)", "同じ", f"売上の取り込み・経費・月ごとの利益集計{SOON}", "同じ"),
-    ("在庫", "状態ごとの件数", "同じ", f"売れ残りアラート{SOON}", f"同じ+期末の棚卸(スマホで読み取る実地棚卸){SOON}"),
-    ("確定申告", "—", "—", "—", f"申告用の数字(青色申告決算書・収支内訳書の科目)、仕訳帳・会計ソフト向けの書き出し、古物商の仕入税額控除の特例チェック{SOON}"),
-    ("人・発送代行・提出", "—", "—", "—", f"3人まで・発送代行への指示・警察提出用の台帳PDF{SOON}"),
+    ("売上・経費・月ごとの利益", "台帳の期間合計", "台帳の期間合計", f"○{MARK}", f"○{MARK}"),
+    ("在庫", "状態ごとの件数", "状態ごとの件数", f"売れ残りアラート{MARK}", f"売れ残りアラート・期末の棚卸{MARK}"),
+    ("確定申告と複数人", "—", "—", "—", f"申告用の数字・会計ソフト向けの書き出し・仕入税額控除の特例チェック・3人まで・発送代行への指示・警察提出用の台帳PDF{MARK}"),
 ]
 
 
-def feature_rows(cols: tuple[int, ...]) -> str:
-    # 選んだ列がすべて「—」の行は出さない。総合の列(3)には色を付ける
-    # 表の一番左の列が「同じ」なら、左隣(表に出ない列)の中身に置き換える
-    def val(f, i):
-        if i == cols[0]:
-            while i > 1 and f[i] == "同じ":
-                i -= 1
-        return f[i]
-    return "\n".join("<tr><th>" + f[0] + "</th>" + "".join(f'<td{" class=\"rec\"" if i == 3 else ""}>{val(f, i)}</td>' for i in cols) + "</tr>"
-                     for f in FEATURES if any(f[i] != "—" for i in cols))
+def feature_rows() -> str:
+    return "\n".join("<tr><th>" + f[0] + "</th>" + "".join(f'<td{" class=\"rec\"" if i == 3 else ""}>{f[i]}</td>' for i in range(1, 5)) + "</tr>"
+                     for f in FEATURES)
+
+
+# 料金ページ・トップ・紹介で見せる3つのプラン(順は PC の左から)。bullets はできていること、later は「11月中に追加」の分(合わせて4つまで)
+CARDS = [
+    {"base": "light", "who": "まずは台帳をクラウドに残したい方",
+     "bullets": [f"台帳をクラウドに保存(月{LIGHT_LIMIT}件まで)", "パソコンとスマホで同じ台帳", "ヤフオク終了前の通知をどの端末にも", "楽天の検索 制限なし"], "later": []},
+    {"base": "total", "who": "売上・経費・利益まで1か所で見たい方",
+     "bullets": ["ライトのすべて", "台帳の件数は無制限"], "later": ["売上の取り込みと経費", "月ごとの利益と売れ残りアラート"]},
+    {"base": "business", "who": "棚卸と確定申告の数字まで任せたい方",
+     "bullets": ["総合のすべて"], "later": ["期末の棚卸(スマホで数える)", "確定申告用の数字と会計ソフト向けの書き出し", "3人まで・発送代行への指示・警察提出用の台帳PDF"]},
+]
+if ACC_READY:
+    for _c in CARDS:
+        _c["bullets"] += _c["later"]
+        _c["later"] = []
+
+# お申し込み内容の確認の「分量」(プランの段ごと。短く)
+_LATER = "" if ACC_READY else "(11月中に追加。追加の料金はかかりません)"
+AMOUNT = {
+    "light": f"台帳のクラウド保存(月{LIGHT_LIMIT}件まで)、パソコンとスマホの同期、ヤフオク終了前の通知、楽天の検索 制限なし。1アカウント",
+    "total": f"ライトのすべてと、台帳の件数の制限なし。売上の取り込み・経費・月ごとの利益・売れ残りアラート{_LATER}。1アカウント",
+    "business": f"総合のすべてと、期末の棚卸・確定申告用の数字と会計ソフト向けの書き出し・仕入税額控除の特例チェック・3人まで・発送代行への指示・警察提出用の台帳PDF{_LATER}",
+}
 
 
 ROUTES = [
@@ -146,8 +163,8 @@ LEGAL = """<details class="legal" id="legal">
         <h3>古物営業法</h3>
         <ul>
           <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
-          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等と、2025年10月1日からはエアコンの室外機・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
-          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で相手確認が未入力の行には印が付きます。</li>
+          <li>個人から古物を買うとき、対価の総額が1万円以上なら、その都度、法律で決められた方法で売り手の確認(住所・氏名・職業・年齢)が必要です。ゲームソフト・CD・DVD・書籍・バイクの部品等と、2025年10月1日からはエアコンの室外機・電気温水機器のヒートポンプ・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で売り手の確認が未入力の行には印が付きます。</li>
           <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
         </ul>
         <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
@@ -257,6 +274,9 @@ def cell(label: str, inp: str, unit: str = "", cls: str = "") -> str:
     return f'<label class="cell {cls}"><span class="ck2">{label}</span><span class="cv">{inp}{u}</span></label>'
 
 
+MEDIA_LABEL = '<span>金額を問わず確認が要る品<small class="ckn">ゲーム・CD・DVD・書籍・バイク部品・室外機など</small></span>'
+
+
 def chk(ident: str, label: str, checked: bool = False) -> str:
     return f'<label class="ck"><input id="{ident}" type="checkbox"{" checked" if checked else ""}>{label}</label>'
 
@@ -364,7 +384,7 @@ MZ_BODY = f"""<div class="lay3">
       {box("ヤフオクの価格", '''<div class="fl">
           <label class="fr col"><span class="fk">検索する言葉</span><input id="mz-q"></label>
           <p class="row-links"><a id="mz-yh" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">出品中を見る</a><a id="mz-yh-closed" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">落札相場を見る</a></p>
-          ''' + fld("価格", num("mz-yprice"), "円", "即決・落札見込み") + fld("送料", num("mz-yship", "0"), "円", "出品者→自分") + chk("mz-media", "ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等") + '''
+          ''' + fld("価格", num("mz-yprice"), "円", "即決・落札見込み") + fld("送料", num("mz-yship", "0"), "円", "出品者→自分") + chk("mz-media", MEDIA_LABEL) + '''
           <label class="fr col"><span class="fk">ヤフオクの終了日時<small>入れると「出品した(見張る)」で台帳に入り、終了60分前に通知</small></span><input id="mz-yend" type="datetime-local"></label>
           <label class="fr col"><span class="sr">終了日時の文字を貼り付け</span><input id="mz-yend-paste" type="text" autocomplete="off" placeholder="終了日時の文字を貼り付け"></label>
         </div>''')}
@@ -467,8 +487,8 @@ route_page("mercari-calc", "メルカリ 手数料・送料・利益の計算",
 
 YM_SIDE = box("仕入れ(ヤフオク)", '<div class="fl">' + fld("落札価格", num("b-bid"), "円") + fld("送料", num("b-ship", "0"), "円", "出品者→自分") +
               fld("その他", num("b-other", "0"), "円", "支払い手数料など") + fld("ポイント", dec("b-pt", "0"), "%", "落札価格に対して") +
-              fld("個数", num("b-qty", "1", ' min="1"'), "個", "まとめ落札") + chk("b-media", "ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等") + "</div>" + unit_line() +
-              '<p class="hint" id="guard" hidden><span class="badge">相手確認が必要</span> 1万円以上(またはゲーム等)の中古品です。仕入れた後、台帳で相手の確認を入力してください。</p>')
+              fld("個数", num("b-qty", "1", ' min="1"'), "個", "まとめ落札") + chk("b-media", MEDIA_LABEL) + "</div>" + unit_line() +
+              '<p class="hint" id="guard" hidden><span class="badge">売り手の確認が必要</span> 合計1万円以上(またはゲーム等)の中古品です。仕入れた後、台帳で売り手の確認を入力してください。</p>')
 route_page("yahuoku-mercari", "ヤフオク→メルカリ 利益計算",
            "Yahoo!オークションで落札した品をメルカリで売った時の、配送方法ごとの利益と損益分岐を一覧で計算。まとめ落札の1個原価、ポイント。仕入れると古物台帳に自動で記録。無料・登録不要。",
            "yahuoku-closed", "yahuoku", market_body(YM_SIDE, "配送方法ごとの売値と利益"), ["calc.js", "ui.js", "market.js"])
@@ -501,12 +521,12 @@ LEDGER_BODY = """<div class="lg">
   <div id="lg-form-box"></div>
   <div class="gridwrap">
     <table class="grid ledger" id="lg-grid">
-      <thead><tr><th>状態</th><th>仕入日</th><th>品名・品目・特徴</th><th class="r">数量</th><th class="r">仕入れ値</th><th>仕入れ先・相手</th><th>相手確認</th><th>売却</th><th class="r">売値</th><th class="r">見込み利益</th><th></th></tr></thead>
+      <thead><tr><th>状態</th><th>仕入日</th><th>品名・品目・特徴</th><th class="r">数量</th><th class="r">仕入れ値</th><th>仕入れ先・相手</th><th>売り手の確認</th><th>売却</th><th class="r">売値</th><th class="r">見込み利益</th><th></th></tr></thead>
       <tbody id="lg-rows"></tbody>
     </table>
   </div>
   <ul class="credit memo">
-    <li>個人から1万円以上で買った中古品と、ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチングなどの中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。</li>
+    <li>個人から1回の取引で合計1万円以上で買った中古品と、金額を問わず確認が要る品(ゲーム・CD・DVD・書籍・バイク部品・エアコンの室外機・ヒートポンプ・電線・金属製グレーチング)は、売り手の氏名と確認の方法を入れるまで「売り手の確認が未入力」と表示します。</li>
     <li>CSV・Excelは、古物台帳の項目(受入れ・払出し)の順で書き出します。</li>
     <li>「出品中」の行にヤフオクの終了日時を入れると、終了が近い順に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。</li>
     <li>無料プランのデータは、この端末のブラウザの中だけにあります。機種変更の前に書き出してください。</li>
@@ -523,6 +543,41 @@ write("daicho", out)
 fee_rows = "\n".join(
     f'      <li><a href="{esc(s["url"])}" target="_blank" rel="noopener">{esc(s["topic"])}</a>' + (f' <small>{esc(s["note"])}</small>' if s.get("note") else "") + "</li>"
     for s in FEES["sources"])
+
+def price_block(base: str) -> str:
+    # 月払い/年払いの切り替えで片方だけ見せる(data-c)。年払いは月あたりと「2か月分お得」も
+    m, y = CAT[base + "_month"]["price"], CAT[base + "_year"]["price"]
+    sv = save_months(base + "_month", base + "_year")
+    return (f'<div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>{m:,}</b><span class="pc-u">円</span><small>税込</small></p>'
+            f'<p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>{y:,}</b><span class="pc-u">円</span><small>税込</small></p>'
+            f'<p class="pc-sub" data-c="year" hidden>月あたり{per_month(base + "_year")}・{sv}か月分お得</p></div>')
+
+
+def founder_line() -> str:
+    f = CAT.get("founder_month")
+    if not f or f.get("open") is False:
+        return '<div class="pc-fd"></div>'
+    return (f'<div class="pc-fd"><p class="pc-founder" id="pc-founder"><span data-c="month">先着100名は <b>月{yen(P_FM)}</b></span>'
+            f'<span data-c="year" hidden>先着100名は <b>年{yen(P_FY)}</b></span>(続けている間ずっと)<span class="pc-left" id="pl-founder-left"></span></p></div>')
+
+
+def plan_card(c: dict) -> str:
+    b = c["base"]
+    m = CAT[b + "_month"]
+    tag = {"total": '<span class="pc-tag rec">おすすめ</span>', "business": '<span class="pc-tag">確定申告まで全部</span>'}.get(b, "")
+    lis = "".join(f"<li>{x}</li>" for x in c["bullets"])
+    later = ""
+    if c["later"]:
+        later = '<p class="pc-later"><span class="soon">11月中に追加</span></p><ul class="pc-list later">' + "".join(f"<li>{x}</li>" for x in c["later"]) + "</ul>"
+    return (f'<article class="pc pc-{b}{" rec" if b == "total" else ""}" data-base="{b}" aria-labelledby="pc-n-{b}">'
+            f'<header class="pc-h"><h3 class="pc-name" id="pc-n-{b}">{m["name"]}</h3>{tag}</header>'
+            f'<p class="pc-who">{c["who"]}</p>'
+            f'{price_block(b)}'
+            f'{founder_line() if b == "total" else '<div class="pc-fd"></div>'}'
+            f'<a class="btn pc-go{"" if b == "total" else " ghost"}" href="?plan={b}#pl-step2" data-pick="{b}" aria-pressed="false">このプランで14日無料</a>'
+            f'<div class="pc-feat"><ul class="pc-list">{lis}</ul>{later}</div>'
+            f'</article>')
+
 
 TOP_ROUTES = [
     ("rakuten-amazon", "楽天・Yahoo!→Amazon", "楽天市場・Yahoo!ショッピング", "Amazon(FBA)", "新品", "不要", "販売手数料・FBA・ポイント"),
@@ -547,13 +602,24 @@ q_rows = "\n".join(
     f'<tr><th scope="row">{label}</th><td>' + "".join(f'<label class="rd"><input type="radio" name="{k}" value="{v}">{t}</label>' for v, t in opts) + "</td></tr>"
     for k, label, opts in Q)
 
+def _mini(c: dict) -> str:
+    b = c["base"]
+    m = CAT[b + "_month"]
+    tag = '<span class="pill">おすすめ</span>' if b == "total" else ""
+    fl = f'<span class="mp-f">先着100名は月{yen(P_FM)}</span>' if b == "total" and CAT.get("founder_month", {}).get("open", True) else ""
+    return (f'<a class="mp-c{" rec" if b == "total" else ""}" href="plans/?plan={b}#pl-step2"><span class="mp-n">{m["name"]}{tag}</span><span class="mp-w">{c["who"]}</span>'
+            f'<span class="mp-p">月<b>{m["price"]:,}</b>円<small>税込</small></span>{fl}</a>')
+
+
+top_plans = "".join(_mini(c) for c in CARDS)
+
 TOP_BODY = f"""<div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
     <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
-      <table class="kv"><tr><th>無料</th><td>0円・登録不要</td></tr><tr><th>ライト</th><td>月{yen(P_LM)}(税込)<br>まずは記録だけ</td></tr><tr><th>総合<span class="pill">おすすめ</span></th><td>月{yen(P_TM)}(税込)<br>先着100名は月{yen(P_FM)}</td></tr><tr><th>業務</th><td>月{yen(P_BM)}(税込)<br>確定申告まで全部</td></tr></table>
-      <p class="hint">有料プランは14日間無料<span data-bill="prep">(いまは準備中)</span>。無料期間中は業務のすべてを使えます。</p>
-      <p class="row-links"><a href="plans/" data-bill="ready">14日間無料で始める</a><a data-mail="prereg" href="#" data-bill="prep">事前登録(無料)</a><a href="plans/">料金の詳細</a></p>
+      <table class="kv"><tr><th>ライト</th><td>月{yen(P_LM)}</td></tr><tr><th>総合<span class="pill">おすすめ</span></th><td>月{yen(P_TM)}</td></tr><tr><th>業務</th><td>月{yen(P_BM)}</td></tr></table>
+      <p class="hint">税込。どれも14日無料<span data-bill="prep">(受付は準備中)</span>。先着100名は総合が月{yen(P_FM)}。計算と、この端末の台帳は無料です。</p>
+      <p class="row-links"><a href="plans/">料金を見る</a></p>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳のつけ方を週1回お届けします。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
   </aside>
@@ -567,7 +633,7 @@ TOP_BODY = f"""<div class="lay2">
         <li>台帳は古物台帳の項目どおりの並び。そのままExcel・CSVで書き出せます</li>
         <li>無料・登録なしで使えます。入れた内容は、この端末にだけ保存されます</li>
       </ul>
-      <div class="row-btns"><a class="btn" href="#shindan-sec">向いているルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a><a class="btn ghost" href="lp/">はじめての方へ</a></div>
+      <div class="row-btns"><a class="btn" href="#shindan-sec">向いている仕入れルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a><a class="btn ghost" href="lp/">はじめての方へ</a></div>
     </div>
 
     <h2 class="sec-h">仕入れ先と売り先で選ぶ</h2>
@@ -583,26 +649,17 @@ TOP_BODY = f"""<div class="lay2">
     </table></div>
     <p class="credit">楽天市場の公式APIで毎朝取得した見本です。Amazonで売れるかは判定していません。PR: 商品へのリンクは楽天アフィリエイトのリンクです(価格は変わりません)。<a href="https://developers.rakuten.com/" target="_blank" rel="noopener">Supported by Rakuten Developers</a></p>
 
-    <h2 class="sec-h" id="shindan-sec">向いているやり方を診断(6問)</h2>
+    <h2 class="sec-h" id="shindan-sec">向いている仕入れルートを診断(6問)</h2>
     <form id="shindan" class="qtab">
       <table class="kv wide">{q_rows}</table>
       <div class="row-btns"><button class="btn pri" type="submit">診断する</button><span class="hint">収入の見込みを示すものではありません。答えはこの端末の中だけで使います。</span></div>
     </form>
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
-    <h2 class="sec-h" id="plans">料金とプラン</h2>
-    <p>無料 0円/ライト <b>月{yen(P_LM)}</b>/総合 <b>月{yen(P_TM)}</b>(先着100名は月{yen(P_FM)})/業務 <b>月{yen(P_BM)}</b>。すべて税込です。有料プランは14日間無料で、無料期間中は業務のすべてを使えます。お支払いはPayPalです。<span data-bill="prep">いまは準備中です。</span></p>
-    <div class="gridwrap"><table class="grid nimg cmp" style="min-width:760px">
-      <thead><tr><th></th><th>無料</th><th>ライト<span class="meta">まずは記録だけ</span></th><th class="rec">総合<span class="pill">おすすめ</span></th><th>業務<span class="meta">確定申告まで全部</span></th></tr></thead>
-      <tbody>
-        <tr><th>料金(税込)</th><td>0円・登録不要</td><td><b>月{yen(P_LM)}</b><br>年{yen(P_LY)}</td><td class="rec"><b>月{yen(P_TM)}</b><br>年{yen(P_TY)}<br>先着100名は月{yen(P_FM)}・年{yen(P_FY)}</td><td><b>月{yen(P_BM)}</b><br>年{yen(P_BY)}</td></tr>
-        <tr><th>無料期間</th><td>—</td><td colspan="3">14日間。期間中は業務のすべてを使え、終わる日から選んだプランで続きます</td></tr>
-{feature_rows((1, 2, 3, 4))}
-        <tr><th>解約</th><td>—</td><td colspan="3">マイページの「契約内容」→「解約について」から、いつでも。PayPalの自動支払いの管理画面や、メール1通でも解約できます。無料期間中の解約は0円。終了3日前にメールでお知らせします</td></tr>
-      </tbody>
-    </table></div>
-    <p class="hint"><span data-bill="prep">有料版のお申し込みはまだ受け付けていません。準備ができたら、事前登録の方へ順にメールでご案内します(登録しても料金はかかりません)。</span>先着100名の価格は総合だけで、お申し込みの順に100名まで。続けている間はずっとこの価格です。{SOON_NOTE}業務の年払いは、確定申告の時期だけでなく、毎月の棚卸と集計に使えます。</p>
-    <p class="row-links"><a class="btn" href="plans/" data-bill="ready">14日間無料で始める</a><a data-mail="prereg" href="#" data-bill="prep">事前登録(メール1通・無料)</a><a href="plans/">料金とお申し込みの条件</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
+    <h2 class="sec-h" id="plans">料金</h2>
+    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。どれも<b>14日無料</b>です<span data-bill="prep">(受付は準備中)</span>。</p>
+    <div class="mini-plans">{top_plans}</div>
+    <p class="row-links"><a href="plans/">機能を比べて申し込む</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
     <h2 class="sec-h" id="faq">よくある質問</h2>
     <div class="faq">
@@ -612,7 +669,7 @@ TOP_BODY = f"""<div class="lay2">
       <details><summary>Amazonの価格はどう入れますか。</summary><p>「Amazonで見る」で価格を確かめて入れてください。価格データのサービスのAPIキーをお持ちなら、設定に入れると自動で入ります(そのサービスの料金と利用条件は、そのサービスとのご契約です)。</p></details>
       <details><summary>メルカリやヤフオクの価格は自動で取れますか。</summary><p>取りません。各サービスの規約で自動アクセスが制限されているためです。検索バーで各サイトの検索ページを開き、見た価格を入れてください。</p></details>
       <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行入ります。台帳では状態を1クリックずつ進め、「売れた」を押すと売却日・売値・相手が入ります。</p></details>
-      <details id="honnin"><summary>1万円以上の中古品の本人確認は、どう記録しますか。</summary><p>台帳に、相手の氏名・住所と確認の方法を入れる欄があります。個人から1万円以上で買った中古品など、法律で確認が必要な行は、入力するまで印が付きます。確認のやり方は<a href="guide/honnin-kakunin/">手引き「古物商の本人確認」</a>にまとめています。</p></details>
+      <details id="honnin"><summary>1万円以上の中古品を買うときの、売り手の確認はどう記録しますか。</summary><p>台帳に、相手の氏名・住所と確認の方法を入れる欄があります。個人から1万円以上で買った中古品など、法律で確認が必要な行は、入力するまで印が付きます。確認のやり方は<a href="guide/honnin-kakunin/">手引き「中古品を買うときの売り手の確認」</a>にまとめています。</p></details>
       <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
       <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">準備ができたら、事前登録の方へメールでご案内します。</span><span data-bill="ready">いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
       <details><summary>解約はどうしますか。</summary><p>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すれば完了です。PayPalの自動支払いの管理画面から止めることも、メール1通でのお申し出もできます。次の請求日の前日までに解約すれば、次回からは請求しません。</p></details>
@@ -636,107 +693,93 @@ write("", out)
 # ------------------------------------------------------------------
 # 料金とお申し込み(/sedori/plans/)。特商法(2022年改正)の最終確認画面の表示事項を、ボタンと同じ画面に置く
 # ------------------------------------------------------------------
-def _tier_note(c: dict) -> str:
-    if c.get("founder"):
-        return "総合と同じ内容。続けている間ずっとこの価格"
-    return {"total": "台帳の件数は無制限。売上・経費・月ごとの利益まで", "business": "総合に加えて、棚卸・申告用の数字・仕訳帳まで",
-            "light": f"台帳のクラウド保存は月{LIGHT_LIMIT}件まで"}.get(c.get("tier"), "")
+# 料金ページの組み立て。1) 月払い/年払いの切り替えと3枚のカード 2) 選んだプランの最終確認(特商法2022年改正の表示事項)と申し込みのボタン
+MAIL_A = '<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a>'
+CONF = [
+    ("分量(できること)", '<span id="cf-amount">' + "".join(f'<span data-tier="{k}"{"" if k == "total" else " hidden"}>{v}</span>' for k, v in AMOUNT.items()) + "</span>"),
+    ("価格(税込)", f'<b id="cf-price2">月{yen(P_TM)}</b>。ほかの費用はかかりません(通信費を除く)'),
+    ("無料期間", '<span id="cf-trial">お申し込みの日から14日間</span>。期間中は業務のすべてを使えます'),
+    ("支払いの時期", '<span id="cf-when">無料期間が終わる日に1回目、以後は毎月同じ日に自動で請求します(前払い)</span>'),
+    ("支払いの方法", "PayPal(残高・登録したクレジットカード・デビットカード・銀行口座)"),
+    ("使える時期", "お申し込みの手続きが終わったら、すぐ"),
+    ("申込みの期間", '<span id="cf-period">期限はありません</span>'),
+    ("契約の期間", '<span id="cf-term">1か月ごとに自動で更新し、解約するまで続きます</span>'),
+    ("解約の方法", f"マイページの「契約内容」→「解約について」→「解約する」。PayPalの自動支払いの管理画面や、メール({MAIL_A})でも解約できます"),
+    ("解約の期限", "次の請求日の前日まで。無料期間中に解約すれば0円です"),
+    ("返金", "途中で解約しても日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します"),
+    ("解約後の台帳", "クラウドの台帳は3年間保管し、マイページから書き出せます(古物台帳は3年間の保存が必要なため)"),
+]
+conf_dl = "\n".join(f'          <div class="cf-r"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in CONF)
+cards = "\n".join("      " + plan_card(c) for c in CARDS)
+cmp_note = "" if ACC_READY else '<p class="hint">※は11月中に追加します。追加した日から、そのプランで自動で使えます(追加の料金はかかりません)。</p>'
 
+PLANS_BODY = f"""<div class="pl">
+  <div class="pl-head">
+    <h1 class="pg-h">料金</h1>
+    <p class="pl-lead">3つのプランから選べます。どれも<b>14日無料</b>で、その間は業務のすべてを使えます。プランはあとから変えられます。</p>
+  </div>
 
-# 選ぶのは4つ(総合/総合 先着100名/業務/ライト)。月払い・年払いは上の切り替えで選ぶ(料金ページの plans.js が、選んだ組み合わせのキー base_month / base_year を作る)
-PICK_BASES = ["total", "founder", "business", "light"]
-
-
-def _pick_row(base: str) -> str:
-    m, y = CAT[base + "_month"], CAT[base + "_year"]
-    bd = m.get("badge", "")
-    pill = f'<span class="pill{"" if m.get("tier") == "total" and not m.get("founder") else " gray"}">{bd}</span>' if bd else ""
-    ynote = f'月あたり{per_month(base + "_year")}・{save_months(base + "_month", base + "_year")}か月分お得' + ("。" + y["note"] if y.get("note") else "")
-    rec = ' class="rec"' if base == "total" else ""
-    return (f'<tr data-base="{base}" data-tier="{m.get("tier", "total")}"{" data-founder" if m.get("founder") else ""}{rec}>'
-            f'<td class="pk"><input type="radio" name="plan" value="{base}" id="pl-{base}"{" checked" if base == "total" else ""}></td>'
-            f'<td><label for="pl-{base}"><b>{m["name"]}</b>{pill}<span class="meta">{_tier_note(m)}</span></label></td>'
-            f'<td class="r"><span data-c="month"><span class="yen">{m["price"]:,}<i>円</i></span><span class="meta">/月(税込)</span></span>'
-            f'<span data-c="year" hidden><span class="yen">{y["price"]:,}<i>円</i></span><span class="meta">/年(税込)</span><span class="meta save">月あたり{per_month(base + "_year")}</span></span></td>'
-            f'<td class="note2"><span data-c="month">毎月のお支払い</span><span data-c="year" hidden><b class="save">{ynote}</b></span></td></tr>')
-
-
-plan_pick = "\n".join(_pick_row(b) for b in PICK_BASES if CAT.get(b + "_month", {}).get("open", True))
-
-PLANS_BODY = """<div class="pl">
-  <h1 class="pg-h">料金とお申し込み</h1>
-  <p class="pl-lead">計算と、この端末に保存する台帳は、無料・登録なしで使えます。台帳をクラウドに保存するだけならライト、売上・経費・月ごとの利益までなら総合、棚卸と確定申告の数字まで全部なら業務です。<b>14日間は無料</b>で、その間は業務のすべてを使えます。終わる日から、選んだプランで自動で続きます。</p>
-  <div class="pl-grid">
-    <section class="pl-main pl-a" aria-label="プランを選ぶ">
-      <h2 class="sec-h">1. プランを選ぶ</h2>
+  <section class="pl-s1" id="pl-step1" aria-labelledby="pl-s1h">
+    <div class="pl-bar">
+      <h2 class="pl-step" id="pl-s1h"><span class="no" aria-hidden="true">1</span>プランを選ぶ</h2>
       <fieldset class="cyc" id="pl-cyc"><legend class="sr">お支払いの周期</legend>
         <label><input type="radio" name="cyc" value="month" checked><span>月払い</span></label>
         <label><input type="radio" name="cyc" value="year"><span>年払い<small>2か月分お得</small></span></label>
       </fieldset>
-      <div class="gridwrap"><table class="grid nimg pick" id="pl-pick">
-        <thead><tr><th class="pk"></th><th>プラン</th><th class="r">価格(税込)</th><th>お支払い</th></tr></thead>
-        <tbody>""" + plan_pick + """</tbody>
-      </table></div>
-      <p class="hint" id="pl-founder-note">先着100名の価格は総合だけで、お申し込み(無料期間の始まり)の順に100名まで。続けている間はずっとこの価格です。<span id="pl-founder-left"></span></p>
-    </section>
-    <section class="pl-b" aria-label="プランごとにできること">
-
-      <h2 class="sec-h">2. プランごとにできること</h2>
+    </div>
+    <div class="pcs" id="pl-cards">
+{cards}
+    </div>
+    <p class="pl-free">5つの計算ページと、この端末に保存する台帳は、登録なしでずっと無料です。<a href="../">無料のまま使う</a></p>
+    <details class="pl-cmp" id="pl-cmp">
+      <summary>機能を詳しく比べる</summary>
       <div class="gridwrap"><table class="grid nimg cmp plcmp">
-        <thead><tr><th></th><th>ライト</th><th class="rec">総合<span class="pill">おすすめ</span><br><span class="meta">先着100名の価格も同じ内容</span></th><th>業務<br><span class="meta">確定申告まで全部</span></th></tr></thead>
+        <thead><tr><th></th><th>無料</th><th>ライト</th><th class="rec">総合</th><th>業務</th></tr></thead>
         <tbody>
-""" + feature_rows((2, 3, 4)) + """
+{feature_rows()}
         </tbody>
       </table></div>
-      <p class="hint">ログインはメールのリンクかGoogleアカウントで。台帳は Google Cloud(東京リージョン)に保存し、ログインした本人だけが読み書きできます。当方は中身を見ません(<a href="../privacy/">プライバシーポリシー</a>)。""" + SOON_NOTE + """</p>
-    </section>
+      {cmp_note}
+    </details>
+  </section>
 
-    <aside class="pl-conf" aria-label="お申し込み内容の確認">
-      <div class="conf-in">
-        <h2 class="conf-h">お申し込み内容の確認</h2>
-        <table class="kv conf" id="pl-conf">
-          <tr><th>プラン</th><td id="cf-plan">総合(月払い)</td></tr>
-          <tr><th>分量</th><td id="cf-amount"><span data-tier="total">台帳のクラウド保存(件数の制限なし)と端末間の同期(1アカウント)、スキャン一覧の同期、終了前の通知、楽天の検索 制限なし、設定の同期。売上の取り込み・経費・月ごとの利益集計・売れ残りアラート""" + ("" if ACC_READY else "(11月中に追加。追加時に自動で使えます)") + """。無料期間中は業務のすべて</span><span data-tier="business" hidden>総合のすべてに加えて、期末の棚卸(スマホで読み取る実地棚卸)、確定申告用の数字(青色申告決算書・収支内訳書の科目)と仕訳帳・会計ソフト向けの書き出し、古物商の仕入税額控除の特例チェック、3人まで、発送代行への指示、警察提出用の台帳PDF""" + ("" if ACC_READY else "(11月中に追加。追加時に自動で使えます)") + """</span><span data-tier="light" hidden>台帳のクラウド保存(月""" + str(LIGHT_LIMIT) + """件まで)と端末間の同期(1アカウント)、スキャン一覧の同期、終了前の通知、楽天の検索 制限なし、設定の同期。無料期間中は業務のすべて</span></td></tr>
-          <tr><th>価格(税込)</th><td><b id="cf-price">月""" + yen(P_TM) + """</b><span class="meta">これ以外の費用はかかりません(通信費を除く)</span></td></tr>
-          <tr><th>無料期間</th><td><b id="cf-trial">お申し込みの日から14日間</b></td></tr>
-          <tr><th>支払いの時期</th><td id="cf-when">無料期間が終わる日に1回目、以後は毎月同じ日に、自動で請求します(前払い)</td></tr>
-          <tr><th>支払いの方法</th><td>PayPal(PayPal残高・PayPalに登録したクレジットカード・デビットカード・銀行口座)。お申し込みには支払い方法の登録が必要です</td></tr>
-          <tr><th>使える時期</th><td>PayPalでの手続きが終わった時から、すぐ(無料期間中も同じ機能)</td></tr>
-          <tr><th>申込みの期間</th><td id="cf-period">期限はありません</td></tr>
-          <tr><th>契約の期間</th><td id="cf-term">1か月ごとに自動で更新。解約するまで続きます</td></tr>
-          <tr><th>解約の方法</th><td>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すると完了します(同じ画面に一時停止・プラン変更のご案内があります)。PayPalの「自動支払い」の管理画面から止めることも、メール(<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a>)でのお申し出もできます</td></tr>
-          <tr><th>解約の期限</th><td id="cf-deadline">次回の請求日の前日までに解約すれば、次回からは請求しません。無料期間中に解約すれば0円です</td></tr>
-          <tr><th>返金</th><td>支払い済みの期間の途中で解約しても、日割りの返金はありません。その期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します</td></tr>
-          <tr><th>解約後の台帳</th><td>クラウドの台帳は解約から3年間保管し、マイページから書き出せます(古物台帳は3年間の保存が必要なため)。ご自身でいつでも消せます</td></tr>
-        </table>
-        <div class="trial-box" id="cf-trialbox">
-          <p><b id="cf-t1">今日から14日間は無料です。</b></p>
-          <p id="cf-t2">無料期間中は、業務のすべての機能を使えます。終わる日から総合(月払い)で続き、1回目の""" + yen(P_TM) + """(税込)をPayPalで自動でお支払いいただきます。以後は毎月同じ日に請求します。終了3日前にメールでお知らせします。</p>
+  <section class="pl-s2" id="pl-step2" aria-labelledby="pl-s2h">
+    <div class="pl-bar">
+      <h2 class="pl-step" id="pl-s2h"><span class="no" aria-hidden="true">2</span>お申し込み内容の確認</h2>
+      <a class="pl-back" href="#pl-step1">プランを変える</a>
+    </div>
+    <div class="cf-box">
+      <div class="cf-top">
+        <p class="cf-plan"><b id="cf-plan">総合(月払い)</b><span class="cf-fd" id="cf-fd" hidden></span></p>
+        <p class="cf-price"><b id="cf-price">月{yen(P_TM)}</b><small>税込</small></p>
+        <p class="cf-trial" id="cf-t1">14日無料</p>
+      </div>
+      <dl class="cf">
+{conf_dl}
+      </dl>
+      <div class="pay" id="pl-pay">
+        <div data-bill="prep">
+          <p class="pay-st"><span class="dlg-st">準備中</span>お申し込みの受付はまだ始めていません。事前登録の方へ、受付の開始をメールでお知らせします(料金はかかりません)。</p>
+          <a class="btn wide" data-mail="prereg" href="#" id="pl-prereg">このプランで事前登録(メール1通・無料)</a>
         </div>
-        <div class="pay" id="pl-pay">
-          <div data-bill="prep">
-            <p class="dlg-st">準備中</p>
-            <p class="hint">お申し込みの受付はまだ始めていません。準備ができたら、事前登録の方へメールでご案内します(登録しても料金はかかりません)。</p>
-            <a class="btn wide" data-mail="prereg" href="#">事前登録(メール1通・無料)</a>
+        <div data-bill="ready">
+          <div id="pl-login"><button type="button" class="btn wide" id="pl-login-btn">ログインして申し込む</button><p class="hint">申し込むアカウントを決めるため、先にログインします(メールのリンクかGoogle)。</p></div>
+          <div id="pl-buy" hidden>
+            <p class="pay-who" id="pl-who"></p>
+            <p class="hint">上の内容と<a href="../terms/">利用規約</a>・<a href="../privacy/">プライバシーポリシー</a>をご確認ください。PayPalの画面で「同意して続行」を押すと、お申し込みが完了します。</p>
+            <div id="pl-pp" class="pp"></div>
           </div>
-          <div data-bill="ready">
-            <div id="pl-login"><button type="button" class="btn wide" id="pl-login-btn">ログインして申し込む</button><p class="hint">申し込むアカウントを決めるため、先にログインします(メールのリンクかGoogle)。</p></div>
-            <div id="pl-buy" hidden>
-              <p class="pay-who" id="pl-who"></p>
-              <div id="pl-pp" class="pp"></div>
-              <p class="hint">上の内容と<a href="../terms/">利用規約</a>・<a href="../privacy/">プライバシーポリシー</a>をご確認のうえ、PayPalの画面で「同意して続行」を押すとお申し込みが完了します。</p>
-            </div>
-            <div id="pl-has" hidden><p class="msg" id="pl-has-t"></p><a class="btn ghost wide" href="../mypage/">マイページで契約内容を見る</a></div>
-          </div>
+          <div id="pl-has" hidden><p class="msg" id="pl-has-t"></p><a class="btn ghost wide" href="../mypage/">マイページで契約内容を見る</a></div>
         </div>
       </div>
-    </aside>
-  </div>
+    </div>
+    <p class="hint pl-legal">ログインはメールのリンクかGoogleで。台帳は Google Cloud(東京)に保存し、ログインした本人だけが読み書きできます(<a href="../privacy/">プライバシーポリシー</a>)。<a href="../../tokushoho.html">特定商取引法に基づく表記</a></p>
+  </section>
 </div>"""
 
-out = head("料金とお申し込み", f"せどり 利益チェックの料金(無料/ライト 月{yen(P_LM)}・年{yen(P_LY)}/総合 月{yen(P_TM)}・年{yen(P_TY)}、先着100名は総合 月{yen(P_FM)}・年{yen(P_FY)})、14日間の無料期間、支払いの時期と方法、解約の方法。",
+out = head("料金", f"せどり 利益チェックの料金。ライト 月{yen(P_LM)}/総合 月{yen(P_TM)}(先着100名は月{yen(P_FM)})/業務 月{yen(P_BM)}(税込)。どれも14日無料。年払いは2か月分お得。",
            "plans/", "../", 'data-page="plans"')
-out += header("../", "plans", "rakuten") + crumb("../", "料金とお申し込み") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
+out += header("../", "plans", "rakuten") + crumb("../", "料金") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
 write("plans", out)
 
 # ------------------------------------------------------------------
@@ -830,7 +873,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <ol>
 <li>本サービスは、仕入れと販売の手数料・送料・ポイントを含めた利益の計算、古物台帳の項目に沿った記録(以下「台帳」)、その書き出しを行うウェブアプリです。</li>
 <li>無料プランでは、計算と台帳を、利用者の端末のブラウザの中に保存して使えます。登録は要りません。</li>
-<li>有料プラン(ライト・総合)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
+<li>有料プラン(ライト・総合・業務)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。総合・業務の帳簿の機能は、料金ページに「11月中に追加」と示したものを順に追加します。中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
 </ol>
 
 <h2>第2条(アカウント)</h2>
@@ -869,7 +912,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 
 <h2>第7条(古物台帳と法令)</h2>
 <ol>
-<li>本サービスの台帳は記録の入れ物で、古物営業法その他の法令に合っているかどうかの判断はしません。帳簿の記載事項・保存・本人確認などの義務は、古物商である利用者が負います。必要な項目は所轄の警察署で確認してください。</li>
+<li>本サービスの台帳は記録の入れ物で、古物営業法その他の法令に合っているかどうかの判断はしません。帳簿の記載事項・保存・売り手の確認などの義務は、古物商である利用者が負います。必要な項目は所轄の警察署で確認してください。</li>
 <li>利用者は、取引相手の個人情報を、法令に従って取得し、台帳に入れてください。</li>
 <li>本サービスは、Yahoo!オークション・メルカリ・Amazonなどのページを自動で読み取りません。各サービスの規約は利用者が守ってください。</li>
 </ol>
