@@ -1,62 +1,15 @@
-catch-up grading 2026-10-27
-graded {"date": "2026-10-27", "graded_races": 168, "win_hits": 87, "tri_hits": 43, "near": 22, "stake_win": 16800, "return_win": 14410, "stake_tri": 50400, "return_tri": 38640, "base_hits": 93, "base_return": 20670, "by_bet": {"tansho": {"races": 168, "hits": 87, "stake": 16800, "return": 14410, "pnl": -2390, "roi": 0.8577}, "trifecta3": {"races": 168, "hits": 43, "stake": 50400, "return": 38640, "pnl": -11760, "roi": 0.7667}, "fukusho": {"races": 168, "hits": 120, "stake": 16800, "return": 14760, "pnl": -2040, "roi": 0.8786}, "trio3": {"races": 168, "hits": 88, "stake": 50400, "return": 36700, "pnl": -13700, "roi": 0.7282}}, "star_by_bet": {"tansho": {"races": 5, "hits": 5, "stake": 500, "return": 600, "pnl": 100, "roi": 1.2}, "trifecta3": {"races": 5, "hits": 4, "stake": 1500, "return": 2240, "pnl": 740, "roi": 1.4933}, "fukusho": {"races": 5, "hits": 5, "stake": 500, "return": 500, "pnl": 0, "roi": 1.0}, "trio3": {"races": 5, "hits": 5, "stake": 1500, "return": 1430, "pnl": -70, "roi": 0.9533}}, "ana": {"races": 2, "hits": 1, "stake": 600, "return": 1230, "manshu_hits": 0, "manshu_races": 1}}
-paper graded 2026-10-27 {'exacta': {'bets': 26, 'hits': 2, 'stake': 2600, 'return': 540}, 'trio': {'bets': 9, 'hits': 0, 'stake': 900, 'return': 0}, 'trifecta': {'bets': 21, 'hits': 0, 'stake': 2100, 'return': 0}, 'tansho': {'bets': 3, 'hits': 0, 'stake': 300, 'return': 0}}
-amedas 2026-10-28T00:40:00+09:00: 24 venues
-built 140195 races 2024-04-21..2026-10-27 in 123s
-  base_0: 137s
-  cond[base] block 0 273s
-  cond[base] block 4 279s
-  cond[base] block 8 286s
-  cond[base] block 12 292s
-  cond[base] block 16 298s
-  cond[base] block 20 304s
-  cond[base] block 24 310s
-  cond[base] block 28 316s
-  cond[base] block 32 322s
-  cond[base] block 36 329s
-  cond[base] block 40 335s
-  cond[base] block 44 341s
-  cond[base] block 48 347s
-baseline done {"races": 28369, "top1": 0.57059, "lane1": 0.54722, "logloss": 1.18099, "brier": 0.58022, "pick_lane1_share": 0.83778, "mean_p_top": 0.57514, "exacta_ll": 2.5346, "tri_ll": 3.7788, "exacta_top1": 0.23762, "exacta_top3": 0.51183, "exacta_top5": 0.65709, "tri_top1": 0.10078, "tri_top3": 0.24449, "tri_top5": 0.34636, "tri_top10": 0.51852, "roi_tansho_top1": {"races": 28369, "roi": 0.91614, "lo": 0.90415, "hi": 0.92735, "hit": 0.57059}, "roi_exacta_top1": {"races": 28369, "roi": 0.81034, "lo": 0.79109, "hi": 0.82957, "hit": 0.23762}, "roi_trifecta_top3": {"races": 28369, "roi": 0.78121, "lo": 0.76
-  m_st2_0: 144s
-  morning st2: {'d_logloss': {'diff': -0.00097, 'lo': -0.00149, 'hi': -0.00043}, 'd_top1': {'diff': -0.00059, 'lo': -0.00173, 'hi': 0.00063}} kept=True
-  m_vl90_0: 142s
-  morning vl90: {'d_logloss': {'diff': -3e-05, 'lo': -0.0001, 'hi': 4e-05}, 'd_top1': {'diff': 4e-05, 'lo': -0.00033, 'hi': 0.00041}} kept=False
-  m_mshr_0: 147s
-  morning mshr: {'d_logloss': {'diff': -0.0006, 'lo': -0.00106, 'hi': -0.00015}, 'd_top1': {'diff': 0.00026, 'lo': -0.00078, 'hi': 0.00129}} kept=True
-  p_pre_exh_0: 164s
-  pre pre_exh: {'d_logloss': {'diff': -0.00628, 'lo': -0.00761, 'hi': -0.00496}, 'd_top1': {'diff': 0.00159, 'lo': -0.00026, 'hi': 0.00354}} kept=True
-  p_pre_wx_0: 265s
-  pre pre_wx: {'d_logloss': {'diff': -0.00204, 'lo': -0.00296, 'hi': -0.00119}, 'd_top1': {'diff': 0.00092, 'lo': -0.00074, 'hi': 0.00247}} kept=True
-  p_pre_course_0: 267s
-  pre pre_course: {'d_logloss': {'diff': -0.00686, 'lo': -0.0083, 'hi': -0.00542}, 'd_top1': {'diff': 0.00328, 'lo': 0.00177, 'hi': 0.0048}} kept=True
-  cond[pre_P1] block 0 1503s
-  cond[pre_P1] block 4 1510s
-  cond[pre_P1] block 8 1516s
-  cond[pre_P1] block 12 1522s
-  cond[pre_P1] block 16 1528s
-  cond[pre_P1] block 20 1534s
-  cond[pre_P1] block 24 1540s
-  cond[pre_P1] block 28 1546s
-  cond[pre_P1] block 32 1552s
-  cond[pre_P1] block 36 1559s
-  cond[pre_P1] block 40 1565s
-  cond[pre_P1] block 44 1571s
-  cond[pre_P1] block 48 1577s
-  cond[pre_cond] block 0 1591s
-  cond[pre_cond] block 4 1601s
-  cond[pre_cond] block 8 1608s
-  cond[pre_cond] block 12 1619s
-  cond[pre_cond] block 16 1625s
-  cond[pre_cond] block 20 1632s
-  cond[pre_cond] block 24 1640s
-  cond[pre_cond] block 28 1647s
-  cond[pre_cond] block 32 1658s
-  cond[pre_cond] block 36 1665s
-  cond[pre_cond] block 40 1673s
-  cond[pre_cond] block 44 1682s
-  cond[pre_cond] block 48 1688s
-v4 done 28.3 min
-predictions 2026-10-28: 132 races, scored 132
+history: 920 days 2024-04-21..2026-10-27, fan files: ['2304', '2310', '2404', '2410', '2504', '2510', '2604']
+races: 140195
+  fold 2026-09-02: train 131559 test 1067 (26s)
+  fold 2026-09-09: train 132626 test 1067 (39s)
+  fold 2026-09-16: train 133693 test 1116 (52s)
+  fold 2026-09-23: train 134809 test 1056 (64s)
+  fold 2026-09-30: train 135865 test 1092 (77s)
+  fold 2026-10-07: train 136957 test 1043 (92s)
+  fold 2026-10-14: train 138000 test 1068 (105s)
+  fold 2026-10-21: train 139068 test 1127 (118s)
+model {"test_from": "2026-09-02", "test_to": "2026-10-27", "lambda": [0.65, 0.45], "diff_vs_lane1": {"diff": 0.021537748957850857, "lo": 0.01493747105141269, "hi": 0.028485409911996294}, "beats_lane1": true, "full": {"top1": 0.5726, "logloss": 1.175, "brier": 0.5777, "pick_lane1_share": 0.8406, "ece": 0.0051, "roi_win": 0.9131, "tri3_hit": 0.238, "tri_logloss": 3.7831}, "base": {"top1": 0.5652, "logloss": 1.2118, "brier": 0.5919, "pick_lane1_share": 0.8789, "ece": 0.0048, "roi_win": 0.9053, "tri3_hit": 0.2213, "tri_logloss": 4.022}, "prior": {"top1": 0.5511, "logloss": 1.349, "brier": 0.644, "pick_lane1_share": 1.0, "ece": 0.0021, "roi_win": 0.9129, "tri3_hit": 0.1723, "tri_logloss": 4.3674}, "lane1": {"top1": 0.5511, "roi_win": 0.9129}}
+predictions 2026-10-28 already published; keep as is
 cumulative {"days": 5, "graded_races": 813, "win_hits": 448, "tri_hits": 200, "near": 123, "stake_win": 81300, "return_win": 71610, "stake_tri": 243900, "return_tri": 187720, "base_hits": 442, "base_return": 77160, "win_rate": 0.551, "base_win_rate": 0.5437, "tri_rate": 0.246, "roi_win": 0.8808, "roi_tri": 0.7697, "roi_base": 0.9491, "ana": {"days": 1, "races": 2, "hits": 1, "stake": 600, "return": 1230, "manshu_hits": 0, "manshu_races": 1, "roi": 2.05}, "by_bet": {"tansho": {"days": 2, "races": 310, "hits": 162, "stake": 31000, "return": 26580, "pnl": -4420, "roi": 0.8574}, "trifecta3": {"days": 2, "races": 310, "hits": 78, "stake": 93000, "return": 72190, "pnl": -20810, "roi": 0.7762}, "fukusho": {"days": 1, "races": 168, "hits": 120, "stake": 16800, "return": 14760, "pnl": -2040, "roi": 0.8786}, "trio3": {"days": 1, "races": 168, "hits": 88, "stake": 50400, "return": 36700, "pnl": -13700, "roi": 0.7282}}, "star_by_bet": {"tansho": {"days": 1, "races": 5, "hits": 5, "stake": 500, "return": 600, "pnl": 100, "roi": 1.2}, "trifecta3": {"days": 1, "races": 5, "hits": 4, "stake": 1500, "return": 2240, "pnl": 740, "roi": 1.4933}, "fukusho": {"days": 1, "races": 5, "hits": 5, "stake": 500, "return": 500, "pnl": 0, "roi": 1.0}, "trio3": {"days": 1, "races": 5, "hits": 5, "stake": 1500, "return": 1430, "pnl": -70, "roi": 0.9533}}}
+metrics rolling30 {"from": "2026-10-23", "to": "2026-10-27", "races": 813, "days": 5, "honmei_win_rate": 0.551, "honmei_win_ci": [0.5167, 0.5849], "naive_lane1_rate": 0.5437, "vs_naive_pt": 0.74, "vs_naive_ci_pt": [-1.35, 2.83], "logloss_win": 1.1932, "logloss_win_ci": [1.1275, 1.2552], "trifecta_top3_hit": 0.246, "trifecta_top3_ci": [0.2176, 0.2768], "roi_tansho": 0.8808, "roi_tansho_ci": [0.8106, 0.9564], "roi_la
 site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html
