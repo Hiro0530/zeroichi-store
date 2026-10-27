@@ -18,10 +18,16 @@
   if (!Object.keys(utm).length) { var f = sget('utm-first'); if (f) KEYS.forEach(function (k) { if (f[k]) utm[k] = f[k]; }); }
   $$('a[data-cta]').forEach(function (a) {
     a.addEventListener('click', function () {
-      var p = new URLSearchParams(utm); p.set('from', 'lp-' + a.getAttribute('data-cta'));
-      a.href = a.getAttribute('href').split('?')[0] + '?' + p.toString();
+      // ボタンに書いてある条件(?plan= など)は残し、来た時のUTMと押した場所を足す
+      var u = new URL(a.getAttribute('href'), location.href);
+      Object.keys(utm).forEach(function (k) { u.searchParams.set(k, utm[k]); });
+      u.searchParams.set('from', 'lp-' + a.getAttribute('data-cta'));
+      a.href = u.pathname + u.search + u.hash;
     });
   });
+
+  /* ---------- 画面の動きの上の住所(公開している住所をそのまま出す。独自ドメインに移っても直さなくてよい) ---------- */
+  var du = $('#demo-url'); if (du) du.textContent = location.host + location.pathname.replace(/lp\/.*$/, '');
 
   /* ---------- 手数料の確認日 ---------- */
   fetch('../data/fees.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (f) {
@@ -34,11 +40,11 @@
   /* ---------- 画面の動き ---------- */
   // z: 拡大(s=倍率、x・y=拡大の中心。画像の幅・高さに対する割合)
   var STEPS = [
-    { t: '一覧の全行に、手数料・FBA・ポイントを引いた利益が出ています。選んだ行の内訳は右に出ます。', go: 'f2', z: { s: 1.45, x: 0.62, y: 0.62 } },
-    { t: '「この価格で出品」で、目標の利益(この例は15%)を残せる一番安い売値が入ります。', go: 'f3', z: { s: 1.75, x: 0.99, y: 0.86 } },
-    { t: '「仕入れた」を押すと、その場で古物台帳に1行。品目・仕入れ先・金額が入ります。', go: null, z: { s: 1.55, x: 0.9, y: 0.95 } },
-    { t: '台帳は 仕入れ済 → 出品中 → 売約 → 発送済。相手の確認が要る行には印が付きます。', go: 'f4', z: { s: 1.5, x: 0.3, y: 0.45 } },
-    { t: '「売れた」で売却日・売値・相手が埋まり、月の利益に足されます。Excel・CSVで書き出せます。', go: null, z: { s: 1.5, x: 0.3, y: 0.45 } }
+    { t: '一覧のどの行にも、手数料・FBA・ポイントを引いた利益が出ます。行を選ぶと、右に内訳が出ます。', go: 'f2', z: { s: 1.45, x: 0.62, y: 0.62 } },
+    { t: '「この価格で出品」を押すと、目標の利益(この例は15%)が残る一番安い売値が入ります。', go: 'f3', z: { s: 1.75, x: 0.99, y: 0.86 } },
+    { t: '「仕入れた」を押すと、その場で古物台帳に1行。品目・仕入れ先・金額まで入ります。', go: null, z: { s: 1.55, x: 0.9, y: 0.95 } },
+    { t: '台帳では、仕入れ済 → 出品中 → 売約 → 発送済を1クリックずつ進めます。', go: 'f4', z: { s: 1.5, x: 0.3, y: 0.45 } },
+    { t: '「売れた」で売却日・売値・相手が入ります。Excel・CSVでいつでも書き出せます。', go: null, z: { s: 1.5, x: 0.3, y: 0.45 } }
   ];
   var POS = { f1: { x: 0.4641, y: 0.6269 }, f2: { x: 0.8117, y: 0.7956 }, f3: { x: 0.9187, y: 0.8985 }, f4: { x: 0.0447, y: 0.4464 } };
   var DUR = 4000, i = 0, timer = 0, moveT = 0, playing = !reduce, started = false;
@@ -118,6 +124,7 @@
   function fromHash() {
     var h = decodeURIComponent(location.hash.slice(1));
     if (ROUTES.indexOf(h) >= 0) { openRoute(h, true); return; }
+    var d = h && document.getElementById(h); if (d && d.tagName === 'DETAILS') d.open = true;   // よくある質問(#honnin など)は開いて見せる
     openRoute(ROUTES[0], false);
   }
   window.addEventListener('hashchange', fromHash);

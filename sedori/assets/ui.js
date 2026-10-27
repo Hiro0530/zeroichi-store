@@ -204,7 +204,7 @@
   var PREREG = mailto('せどりアプリ事前登録',
     'このまま送信してください(分かる所だけで大丈夫です)。\n\nお名前(ニックネーム可):\nよく使う仕入れ先:\nよく使う売り先:\nいま一番面倒な作業:\n\n' +
     'いま道具に払っている月額(だいたい):\n\n' +
-    '※有料版(スタンダード 月' + catPrice('standard_month', '2,480') + '円・先着100名は月' + catPrice('founder_month', '1,980') + '円・14日間無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
+    '※有料版(ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円・先着100名は月' + catPrice('founder_month', '3,980') + '円/業務 月' + catPrice('business_month', '7,980') + '円・どれも14日間無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
   var NEWS = mailto('せどりメルマガ登録',
     'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\nお名前(ニックネーム可):\n知りたいこと:\n\n※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
   function wireMail() {
@@ -600,6 +600,17 @@
   /* ---------- 起動 ---------- */
   function registerSW() {
     if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+  /* 帳簿(books/)はまだ無いことがある。無ければ、押した時に「準備中」と出す(ページができたら何もしない) */
+  (function () {
+    var links = $$('a[href$="books/"]'); if (!links.length || !window.fetch) return;
+    fetch(base() + 'books/', { method: 'HEAD', cache: 'no-cache' }).then(function (r) { return r.ok; }).catch(function () { return false; }).then(function (ok) {
+      if (ok) return;
+      links.forEach(function (a) {
+        a.setAttribute('aria-disabled', 'true'); a.classList.add('soon-link');
+        a.addEventListener('click', function (e) { e.preventDefault(); toast('帳簿(売上・経費・月ごとの集計・確定申告の数字)は準備中です。11月中に公開します'); });
+      });
+    });
+  })();
     try { navigator.serviceWorker.register(base() + 'sw.js', { scope: base() }).catch(function () {}); } catch (e) { /* 何もしない */ }
   }
   function mountSide() {

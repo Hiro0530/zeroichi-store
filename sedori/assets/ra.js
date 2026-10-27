@@ -30,7 +30,7 @@
   /* ---------- 無料版の回数 ---------- */
   function quota() { var q = U.store.get('quota', {}); if (q.d !== U.today()) q = { d: U.today(), n: 0 }; return q; }
   function paidPlan() { return !!(window.SedoriAccount && window.SedoriAccount.paid()); }
-  function showQuota() { $('#quota').textContent = paidPlan() ? '楽天の検索 制限なし(スタンダード)' : '楽天の検索 今日あと' + Math.max(0, FREE_SEARCHES_PER_DAY - quota().n) + '回'; }
+  function showQuota() { $('#quota').textContent = paidPlan() ? '楽天の検索 制限なし(有料プラン)' : '楽天の検索 今日あと' + Math.max(0, FREE_SEARCHES_PER_DAY - quota().n) + '回'; }
   function useQuota() { if (paidPlan()) return true; var q = quota(); if (q.n >= FREE_SEARCHES_PER_DAY) return false; q.n++; U.store.set('quota', q); showQuota(); return true; }
 
   /* ---------- 条件(左)と計算 ---------- */
@@ -241,7 +241,7 @@
     if ($('#freeonly').checked) p.set('postageFlag', '1');
     return fetch(RAKUTEN_EP + '?' + p.toString(), { referrerPolicy: 'strict-origin-when-cross-origin' }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok) throw new Error(r.status === 403 ? '楽天が403を返しました。アプリ設定の「許可するWebサイト」に https://hiro0530.github.io が入っているか確認してください。' :
+        if (!r.ok) throw new Error(r.status === 403 ? '楽天が403を返しました。アプリ設定の「許可するWebサイト」に ' + location.origin + ' が入っているか確認してください。' :
           (r.status === 429 ? '楽天の回数制限です。少し待ってから試してください。' : '楽天の検索に失敗しました(' + r.status + (j.error_description ? ': ' + esc(j.error_description) : '') + ')'));
         return (j.Items || []).map(function (it) {
           it = it.Item || it;

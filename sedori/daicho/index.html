@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261028b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028c">
 </head>
 <body data-base="../" data-page="daicho">
 <header class="hd">
@@ -40,7 +40,7 @@
     <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
     <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
   </div>
-  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/" aria-current="page">台帳</a></div></nav>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/" aria-current="page">台帳</a><a href="../books/">帳簿</a></div></nav>
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>台帳</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
@@ -50,6 +50,7 @@
     <dl class="sum" id="lg-sum"></dl>
     <span class="lg-act"><button type="button" class="btn sm ghost" id="lg-add">手で追加</button><button type="button" class="btn sm ghost" id="lg-csv">CSVで書き出す</button><button type="button" class="btn sm" id="lg-xlsx">Excelで書き出す</button></span>
   </div>
+  <div id="lg-up" aria-live="polite"></div>
   <div class="tabs" role="tablist" id="lg-tabs"></div>
   <div class="tbar"><p class="tbar-t" id="lg-title"></p><span class="tbar-r"><button type="button" class="btn sm ghost tg" id="lg-notify" aria-pressed="false" title="ヤフオクの終了60分前に、ブラウザの通知でお知らせ(このアプリのページを開いている間)">終了60分前の通知: オフ</button><label class="inl">期間 <select id="lg-period"><option value="all">すべて</option><option value="m0">今月</option><option value="m1">先月</option><option value="y0">今年</option></select></label></span></div>
   <div id="lg-form-box"></div>
@@ -59,12 +60,17 @@
       <tbody id="lg-rows"></tbody>
     </table>
   </div>
-  <p class="credit">仕入れ値1万円以上の中古品と、ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等の中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。CSV・Excelは古物台帳の項目(受入れ・払出し)の順で書き出します。「出品中」の行にヤフオク終了日時を入れると「終了が近い順」に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、終了60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。データはこの端末のブラウザの中にあります。無料プランでは、機種変更の前に書き出してください。</p>
+  <ul class="credit memo">
+    <li>個人から1万円以上で買った中古品と、ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチングなどの中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。</li>
+    <li>CSV・Excelは、古物台帳の項目(受入れ・払出し)の順で書き出します。</li>
+    <li>「出品中」の行にヤフオクの終了日時を入れると、終了が近い順に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。</li>
+    <li>無料プランのデータは、この端末のブラウザの中だけにあります。機種変更の前に書き出してください。</li>
+  </ul>
 </div>
 </main>
 <footer class="ft">
   <div class="ft-in">
-    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../lp/">はじめての方へ</a><a href="../guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     <details class="legal" id="legal">
       <summary>法律と規約の注意</summary>
       <div class="legal-body">
@@ -91,14 +97,14 @@
         </ul>
       </div>
     </details>
-    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中に保存されます(スタンダードでログインしている時は、台帳をクラウドにも保存します)。</p>
+    <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261028b"></script>
-<script src="../assets/sync.js?v=20261028b"></script>
-<script src="../assets/calc.js?v=20261028b"></script>
-<script src="../assets/ui.js?v=20261028b"></script>
-<script src="../assets/account.js?v=20261028b"></script>
-<script src="../assets/ledger.js?v=20261028b"></script>
+<script src="../assets/config.js?v=20261028c"></script>
+<script src="../assets/sync.js?v=20261028c"></script>
+<script src="../assets/calc.js?v=20261028c"></script>
+<script src="../assets/ui.js?v=20261028c"></script>
+<script src="../assets/account.js?v=20261028c"></script>
+<script src="../assets/ledger.js?v=20261028c"></script>
 </body>
 </html>

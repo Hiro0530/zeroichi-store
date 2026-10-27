@@ -520,7 +520,7 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
 
 /* ---------- 料金とお申し込み ---------- */
 .pl-lead{margin:0 0 12px;color:var(--sub);max-width:880px}
-.pl-grid{display:grid;grid-template-columns:minmax(0,1fr) 440px;grid-template-areas:"a c" "b c";gap:0 24px;align-items:start}
+.pl-grid{display:grid;grid-template-columns:minmax(0,1fr) 440px;grid-template-areas:"a c" "b c";grid-template-rows:auto 1fr;gap:0 24px;align-items:start}
 .pl-a{grid-area:a}.pl-b{grid-area:b}.pl-conf{grid-area:c}
 .pl-grid>section{min-width:0}
 .pl .cmp tbody th{width:104px}.pl .cmp td:nth-child(2){width:24%}
@@ -601,8 +601,8 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
   .hd-acct{order:2;padding:4px 8px;font-size:12.5px}
   .hd-ledger{margin-left:auto}
   .mp-grid{grid-template-columns:minmax(0,1fr);gap:16px}
-  .pl-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"a" "c" "b";gap:16px}
-  .pl .cmp{min-width:0;table-layout:fixed}.pl .cmp th{white-space:normal;word-break:break-all}.pl .cmp thead th:first-child{width:72px}.pl .cmp thead th:nth-child(2){width:30%}.pl .cmp tbody th{width:72px}.pl .cmp td,.pl .cmp th{font-size:12px}.pl .cmp td:nth-child(2){width:30%}
+  .pl-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"a" "c" "b";grid-template-rows:auto;gap:16px}
+  .pl .cmp{min-width:0;table-layout:fixed}.pl .cmp th{white-space:normal;word-break:break-all}.pl .cmp thead th:first-child{width:72px}.pl .cmp thead th:nth-child(n+2){width:auto}.pl .cmp tbody th{width:72px}.pl .cmp td,.pl .cmp th{font-size:12px}.pl .cmp td{width:auto}
   .pl-conf,.mp-nav{position:static}
   .mp-nav{flex-direction:row;overflow-x:auto}
   .mp-nav a{border-bottom:0;border-right:1px solid var(--line);white-space:nowrap}
@@ -621,3 +621,26 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
 .st1,.st2{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .st2:empty{display:none}
 .mp-nav a.sub{padding-left:24px;font-size:12.5px;color:var(--sub)}
+
+/* ライトの方への控えめなご案内(台帳の上に1行ずつ) */
+#lg-up:empty{display:none}
+#lg-up{display:grid;gap:6px;margin:0 0 10px}
+.up{display:flex;align-items:center;gap:12px;margin:0;padding:8px 12px;border:1px solid var(--line);background:#fafbfc;font-size:12.5px;color:var(--sub);border-radius:3px}
+.up span{flex:1;min-width:0}
+.up b{color:var(--ink);font-variant-numeric:tabular-nums}
+.up a{white-space:nowrap;font-weight:700}
+.up.warn{border-color:var(--warn-line);background:var(--warn-bg);color:var(--warn-ink)}
+.up.lock b{filter:none}
+.up-x{border:0;background:none;color:var(--mute);font-size:16px;line-height:1;min-width:32px;min-height:32px;cursor:pointer}
+
+/* プランの印(おすすめ・まずは記録だけ)と「追加予定」 */
+.pill{display:inline-block;margin-left:6px;padding:0 6px;font-size:10.5px;font-weight:700;line-height:18px;color:#fff;background:var(--ac);border-radius:2px;vertical-align:1px;white-space:nowrap}
+.pill.gray{color:var(--sub);background:none;border:1px solid var(--line2, #c3cad3);line-height:16px}
+th .pill{margin-left:4px}
+.soon{display:inline-block;margin-left:4px;padding:0 4px;font-size:10.5px;line-height:16px;color:var(--sub);border:1px dashed var(--line2, #c3cad3);border-radius:2px;white-space:nowrap;font-weight:400}
+.grid.cmp th.rec,.grid.cmp td.rec{background:#f3f7fd}
+.grid.cmp thead th.rec{box-shadow:inset 0 3px 0 var(--ac)}
+.pick .pill{margin-left:0;margin-right:6px}
+.pick label b{margin-right:6px}
+.grid.cmp thead .meta{display:block;font-weight:400;margin:0}
+.gnav a.soon-link{opacity:.75}

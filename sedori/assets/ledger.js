@@ -59,6 +59,36 @@
     $('#lg-sum').innerHTML = '<div><dt>件数</dt><dd>' + list.length + '件</dd></div><div><dt>仕入れ額</dt><dd>' + yen(buy) + '円</dd></div><div><dt>売上(売約・発送済)</dt><dd>' + yen(sale) + '円</dd></div><div><dt>見込み利益</dt><dd>' + yen(prof) + '円</dd></div>';
   }
 
+  /* 上のプランのご案内(控えめに1行ずつ。閉じたら、その月・その年は出さない)
+     ライト → 総合: 今月のクラウド保存の残り(月100件)/今月の利益の一行(内訳は総合で)
+     総合 → 業務: 期末の棚卸と申告用の書き出しは業務で
+     ライト・総合とも: 1〜3月は確定申告の案内(業務へ) */
+  function upsell() {
+    var box = $('#lg-up'); if (!box) return;
+    var SA = window.SedoriAccount, tier = SA && SA.tier ? SA.tier() : 'free';
+    if (tier !== 'light' && tier !== 'total') { box.innerHTML = ''; return; }
+    var cfg = window.ZW_CONFIG || {}, soon = cfg.ACCOUNTING_READY ? '' : '(11月中に追加)';
+    var d = new Date(), ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), mon = d.getMonth() + 1;
+    var hide = U.store.get('up-hide', {});
+    var toTotal = '../plans/?plan=total_month&from=ledger', toBiz = '../plans/?plan=business_month&from=ledger';
+    var items = [];
+    if (tier === 'light') {
+      var prof = 0;
+      L.all().forEach(function (r) { if (String(r.saleDate || '').slice(0, 7) === ym && r.profit !== '' && r.profit != null) prof += Number(r.profit) * (Number(r.qty) || 1); });
+      var cap = SA.lightCap ? SA.lightCap() : null;
+      if (cap && cap.left === 0 && cap.blocked.length) items.push(['cap', 'warn', '今月のクラウド保存が' + cap.limit + '件に達しました。' + cap.blocked.length + '件はこの端末にだけ保存しています。総合なら件数の上限はなく、すぐ同期されます。', '総合に変える', toTotal]);
+      else if (cap && cap.left <= 10) items.push(['cap', '', '今月のクラウド保存は、あと' + cap.left + '件です(ライトは月' + cap.limit + '件まで)。', '総合を見る', toTotal]);
+      if (!hide['m-' + ym]) items.push(['m-' + ym, 'lock', '今月の利益 <b>' + yen(prof) + '円</b>。内訳・グラフ・経費は総合で' + soon + '。', '総合を見る', toTotal]);
+    }
+    if (tier === 'total' && !hide['b-' + ym]) items.push(['b-' + ym, 'lock', '期末の棚卸と、確定申告用の数字・仕訳帳の書き出しは業務で' + soon + '。', '業務を見る', toBiz]);
+    if (mon <= 3 && !hide['tax-' + d.getFullYear()]) items.unshift(['tax-' + d.getFullYear(), '', '確定申告の時期です。申告用の数字(青色申告決算書・収支内訳書の科目)の書き出しは業務で使えます' + soon + '。', '業務を見る', toBiz]);
+    box.innerHTML = items.map(function (it) {
+      return '<p class="up ' + it[1] + '"><span>' + it[2] + '</span><a href="' + it[4] + '">' + it[3] + '</a>' + (it[0] !== 'cap' ? '<button type="button" class="up-x" data-up-x="' + esc(it[0]) + '" aria-label="閉じる">×</button>' : '') + '</p>';
+    }).join('');
+    $$('#lg-up [data-up-x]').forEach(function (b) { b.addEventListener('click', function () { var h = U.store.get('up-hide', {}); h[b.getAttribute('data-up-x')] = 1; U.store.set('up-hide', h); upsell(); }); });
+  }
+  document.addEventListener('sedori:acct', function () { upsell(); });
+
   function rowHTML(r) {
     var si = Math.max(0, ST.indexOf(r.status || '仕入れ済'));
     var nl = U.nextLabel(r);
@@ -116,7 +146,7 @@
 
   function render() {
     var list = rows();
-    tabs(); summary(list);
+    tabs(); summary(list); upsell();
     var label = tab === 'all' ? 'すべて' : (tab === 'need' ? '相手確認が未入力' : (tab === 'ending' ? '終了が近い順(出品中でヤフオク終了日時がある行)' : tab));
     $('#lg-title').innerHTML = esc(label) + '<small>' + list.length + '件' + (q ? '　「' + esc(q) + '」で絞り込み <button type="button" class="lnk" id="lg-clear">解除</button>' : '') + '</small>';
     var c = $('#lg-clear'); if (c) c.addEventListener('click', function () { q = ''; $('#sb-q').value = ''; history.replaceState(null, '', location.pathname); render(); });

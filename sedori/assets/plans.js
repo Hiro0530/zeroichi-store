@@ -9,14 +9,14 @@
   var PLAN = {};
   Object.keys(cfg.PLAN_CATALOG || {}).forEach(function (k) {
     var c = cfg.PLAN_CATALOG[k]; if (c.open === false) return;
-    PLAN[k] = { name: c.name + (c.cycle === 'year' ? '(年払い)' : '(月払い)'), price: c.price, per: c.cycle === 'year' ? '年' : '月', cyc: c.cycle, founder: !!c.founder };
+    PLAN[k] = { name: c.name + (c.cycle === 'year' ? '(年払い)' : '(月払い)'), price: c.price, per: c.cycle === 'year' ? '年' : '月', cyc: c.cycle, founder: !!c.founder, tier: c.tier || 'total' };
   });
   var WD = '日月火水木金土';
   function jdate(d) { return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日(' + WD[d.getDay()] + ')'; }
   var founder = { open: true, left: null };
   var sel = new URLSearchParams(location.search).get('plan');
-  if (!PLAN[sel]) sel = U.store.get('plan-pick', 'standard_month');
-  if (!PLAN[sel]) sel = 'standard_month';
+  if (!PLAN[sel]) sel = U.store.get('plan-pick', 'total_month');
+  if (!PLAN[sel]) sel = 'total_month';   // 選んでいない時は総合
 
   function paint() {
     var p = PLAN[sel], now = new Date(), end = new Date(now.getTime() + DAYS * 864e5);
@@ -26,13 +26,14 @@
       var r = $('input', tr); if (r) r.checked = on;
     });
     $('#cf-plan').textContent = p.name;
+    $$('#cf-amount [data-tier]').forEach(function (el) { el.hidden = el.getAttribute('data-tier') !== p.tier; });
     $('#cf-price').textContent = p.per + price;
     $('#cf-trial').textContent = jdate(now) + 'から' + jdate(end) + 'まで(' + DAYS + '日間)';
     $('#cf-when').textContent = jdate(end) + '(無料期間が終わる日)に1回目の' + price + 'を請求し、以後は' + (p.cyc === 'month' ? '毎月' : '毎年') + '同じ日に自動で請求します(前払い)';
     $('#cf-term').textContent = (p.cyc === 'month' ? '1か月' : '1年') + 'ごとに自動で更新。解約するまで続きます';
     $('#cf-period').textContent = p.founder ? '先着100名まで' + (founder.left != null ? '(残り' + founder.left + '名)' : '') + (cfg.FOUNDER_DEADLINE ? '、または' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで' : '') + '。続けている間は価格が上がりません' : '期限はありません';
     $('#cf-t1').textContent = '今日から' + jdate(end) + 'までの' + DAYS + '日間は無料です。';
-    $('#cf-t2').textContent = jdate(end) + 'に、1回目の' + price + '(税込)をPayPalで自動でお支払いいただき、以後は' + (p.cyc === 'month' ? '毎月' : '毎年') + '同じ日に請求します。それまでに解約すれば0円です。無料期間の終了3日前に、メールでお知らせします。';
+    $('#cf-t2').textContent = '無料期間中は、業務のすべての機能を使えます。' + jdate(end) + 'から「' + p.name + '」で続き、1回目の' + price + '(税込)をPayPalで自動でお支払いいただきます。以後は' + (p.cyc === 'month' ? '毎月' : '毎年') + '同じ日に請求します。それまでに解約すれば0円、プランの変更もマイページからできます。終了3日前にメールでお知らせします。';
     payBox();
   }
 
@@ -52,7 +53,7 @@
         $('#pl-founder-left').textContent = founder.open ? 'いま残り' + founder.left + '名です。' : '100名に達したため、受付を終えました。';
         if (!founder.open) {
           $$('#pl-pick tr[data-founder]').forEach(function (tr) { tr.classList.add('off'); tr.style.display = 'none'; });
-          if (PLAN[sel].founder) sel = sel.replace('founder', 'standard');
+          if (PLAN[sel].founder) sel = sel.replace('founder', 'total');
         }
         paint();
       }).catch(function () { /* 表示はそのまま */ });

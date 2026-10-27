@@ -276,7 +276,7 @@
     var list = S.list();
     if (!list.length) { U.toast('一覧がまだありません'); return; }
     var txt = S.encode(list), fits = txt.length <= 1800;
-    sheet('スキャン一覧をPCへ(' + list.length + '件)',
+    sheet('パソコンへ送る(' + list.length + '件)',
       '<p>パソコンで「スマホから受け取る」を開き、次のどれか1つで送ってください。</p>' +
       '<div class="send-acts">' + (navigator.share ? '<button type="button" class="btn" id="s-share">共有(LINE・メール・AirDrop)</button>' : '') +
       '<button type="button" class="btn ghost" id="s-copy">文字をコピー</button></div>' +
@@ -293,7 +293,7 @@
   var sheetCam = false, resumeCam = false;
   $('#l-recv').addEventListener('click', function () {
     sheet('スマホから受け取る',
-      '<p>スマホの「スキャン一覧をPCへ」で送った文字を貼り付けてください。JANを1行ずつ並べた文字や、1列目がJANのCSVでも受け取れます。</p>' +
+      '<p>スマホの「パソコンへ送る」で送った文字を貼り付けてください。JANを1行ずつ並べた文字や、1列目がJANのCSVでも受け取れます。</p>' +
       '<textarea id="r-txt" rows="5" placeholder="ZWS1|…  または  4901234567894"></textarea>' +
       '<div class="send-acts"><button type="button" class="btn" id="r-go">一覧に足す</button><button type="button" class="btn ghost" id="r-cam">カメラでQRを読む</button></div>' +
       '<div class="r-cam" id="r-camw" hidden><video id="r-video" playsinline muted></video></div>');

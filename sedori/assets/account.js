@@ -13,7 +13,7 @@
   var FB_VER = '10.12.2';
   var ready = !!(cfg.FIREBASE_CONFIG && cfg.FIREBASE_CONFIG.apiKey);
   var plans = cfg.PAYPAL_PLANS || {};
-  var billingReady = ready && !!cfg.PAYPAL_CLIENT_ID && !!(plans.standard_month || plans.standard_year || plans.founder_month || plans.founder_year);
+  var billingReady = ready && !!cfg.PAYPAL_CLIENT_ID && Object.keys(plans).some(function (k) { return !!plans[k]; });
 
   var st = { phase: ready ? 'idle' : 'off', user: null, sub: null, plan: S.planState(null), sync: 'local', pending: 0, lastSync: store.get('sync-last', null), error: '' };
   var fb = null, fbPromise = null, unsubLedger = null, unsubUser = null, flushTimer = null, settingsTimer = null, applyingSettings = false, pausedFor = null;
@@ -59,7 +59,7 @@
         '<div class="row-btns"><a class="btn" href="' + esc(U.PREREG) + '">事前登録(メール1通・無料)</a><button type="button" class="btn ghost" data-x>閉じる</button></div></div>';
     } else {
       d.innerHTML = '<div class="dlg-in"><div class="dlg-h"><h2 id="acct-dlg-h">ログイン</h2><button type="button" class="dlg-x" data-x aria-label="閉じる">×</button></div>' +
-        '<p class="dlg-lead">ログインすると、台帳をクラウドに保存して、パソコンとスマホで同じ台帳を使えます(スタンダード)。</p>' +
+        '<p class="dlg-lead">ログインすると、台帳をクラウドに保存して、パソコンとスマホで同じ台帳を使えます(ライト・総合)。</p>' +
         '<button type="button" class="btn wide" id="dl-google">Googleでログイン</button>' +
         '<div class="dlg-or"><span>またはメールで</span></div>' +
         '<form id="dl-mail" class="dlg-mail"><label class="sr" for="dl-email">メールアドレス</label><input id="dl-email" type="email" autocomplete="email" inputmode="email" required placeholder="メールアドレス">' +
@@ -195,6 +195,12 @@
       flush();
     }, function (e) { st.sync = 'error'; st.error = (e && e.code) || ''; emit(); });
   }
+  /** ライトの今月の件数(ライト以外は null) */
+  function capNow() {
+    if (!st.plan || st.plan.tier !== 'light') return null;
+    var d = new Date(), ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    return S.lightCap(U.ledger.all(), ym, Number(cfg.LIGHT_MONTHLY_LIMIT) || 100);
+  }
   function queue(ids) {
     var pm = pendingMap(), n = Number(store.get('sync-seq', 0));
     ids.forEach(function (id) { pm[id] = ++n; });
@@ -207,6 +213,9 @@
   function flush() {
     if (!fb || !st.user || !st.plan.paid || !unsubLedger) return;
     var pm = pendingMap(), ids = Object.keys(pm);
+    // ライトは、1か月にクラウドへ送る行を上限までにする(超えた行はこの端末に残り、総合に変えると送られる)
+    var cap = capNow();
+    if (cap && cap.blocked.length) { var bl = {}; cap.blocked.forEach(function (id) { bl[id] = 1; }); ids = ids.filter(function (id) { return !bl[id]; }); }
     st.pending = ids.length;
     if (!ids.length) { st.sync = 'synced'; emit(); return; }
     if (navigator.onLine === false) { st.sync = 'pending'; emit(); return; }
@@ -347,10 +356,21 @@
     if (ready && need) loadFB().catch(function () { /* 表示は emit 済み */ });
     if (!ready || !need) { st.phase = ready ? 'ready' : 'off'; emit(); }
   }
+  /* 発送代行に切り替えた時、ライト・総合の方へ1回だけ(この画面を開いている間)ご案内 */
+  var told3pl = false;
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target.closest('#shipm [data-s="3pl"]') : null;
+    if (!t || told3pl) return;
+    var tier = st.plan.tier;
+    if (tier !== 'light' && tier !== 'total') return;
+    told3pl = true;
+    setTimeout(function () { U.toast('発送代行への入庫・出荷の指示ファイルは業務で使えます' + (cfg.ACCOUNTING_READY ? '' : '(11月中に追加)'), '業務を見る', function () { location.href = U.base() + 'plans/?plan=business_month&from=3pl'; }); }, 2600);
+  });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
   window.SedoriAccount = {
     state: state, open: openLogin, signOut: signOut, paid: function () { return !!st.plan.paid; }, renderPayButton: renderPayButton, pause: pause, resume: resume, revise: revise, cancel: cancel, worker: worker,
+    tier: function () { return st.plan.tier || "free"; }, lightCap: capNow,
     deleteCloud: deleteCloud, cloudRows: cloudRows, deleteAccount: deleteAccount, syncNow: flush, cfg: cfg, ready: ready, billingReady: billingReady
   };
 })();

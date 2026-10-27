@@ -116,9 +116,35 @@
    * 返り値 { key, paid, label, until, retainUntil, canCancel }
    */
   function planState(sub, now) {
+    var p = planState0(sub, now);
+    p.tier = tierOf(sub, p);
+    return p;
+  }
+  /**
+   * できることの段: 'free' / 'light' / 'total' / 'business'。
+   * 無料期間中は、どのプランで申し込んでも業務のすべてを使える(終わる日から選んだプランで続く)。
+   * planKey は Worker が PayPal のプランIDから書く(light_month など)。分からない時は総合として扱う(使える機能を減らさない側に倒す)
+   */
+  function tierOf(sub, p) {
+    if (!p.paid) return 'free';
+    var k = String((sub && sub.planKey) || '');
+    if (p.key === 'trial' || /^business/.test(k)) return 'business';
+    if (/^light/.test(k)) return 'light';
+    return 'total';
+  }
+  /**
+   * ライトの「クラウドに保存できるのは1か月に limit 件まで」。仕入日(r.date の年月)が ym の行を、作った順に数え、
+   * limit を超えた分の id を blocked に返す(その行はこの端末にだけ残し、総合に変えると送る)。
+   */
+  function lightCap(rows, ym, limit) {
+    var mine = (rows || []).filter(function (r) { return r && r.id && String(r.date || '').slice(0, 7) === ym; }).sort(function (a, b) { return byCreated(b, a); });   // 古い順
+    var blocked = mine.slice(limit).map(function (r) { return r.id; });
+    return { count: mine.length, limit: limit, left: Math.max(0, limit - mine.length), blocked: blocked };
+  }
+  function planState0(sub, now) {
     now = now == null ? Date.now() : now;
     if (!sub || !sub.status) return { key: 'free', paid: false, label: '無料プラン', until: null, retainUntil: null, canCancel: false };
-    var stt = sub.status, name = sub.planName || 'スタンダード';
+    var stt = sub.status, name = sub.planName || '総合';
     var trialEnd = toMs(sub.trialEnd), next = toMs(sub.nextBillingAt), paidThrough = toMs(sub.paidThrough), canceledAt = toMs(sub.canceledAt);
     if (stt === 'trialing') return { key: 'trial', paid: true, label: name + '(無料期間中)', until: trialEnd, next: trialEnd, retainUntil: null, canCancel: true };
     if (stt === 'active') return { key: 'active', paid: true, label: name, until: next, next: next, retainUntil: null, canCancel: true };
@@ -132,5 +158,5 @@
     return { key: 'ended', paid: false, label: '解約済み', until: ended, next: null, retainUntil: keep, canCancel: false };
   }
 
-  return { PAID: PAID, RETAIN_YEARS: RETAIN_YEARS, stamp: stamp, merge: merge, toDoc: toDoc, firstSync: firstSync, planState: planState, addYears: addYears, toMs: toMs };
+  return { PAID: PAID, RETAIN_YEARS: RETAIN_YEARS, stamp: stamp, merge: merge, toDoc: toDoc, firstSync: firstSync, planState: planState, tierOf: tierOf, lightCap: lightCap, addYears: addYears, toMs: toMs };
 });

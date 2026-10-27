@@ -45,7 +45,7 @@ td:last-child{text-align:right}
     <table><tbody id="brk"></tbody></table>
     <div class="sug"><span>目標の利益率を残せる販売価格</span><b id="sug">—</b></div>
   </div>
-  <div class="ft"><span id="chk">手数料10%・送料はメルカリ便(税込)</span><a id="attr" href="https://hiro0530.github.io/zeroichi-store/sedori/lp/#mercari" target="_blank" rel="noopener">ZEROICHI WORKS せどり 利益チェック</a></div>
+  <div class="ft"><span id="chk">手数料10%・送料はメルカリ便(税込)</span><a id="attr" href="../../lp/#mercari" target="_blank" rel="noopener">ZEROICHI WORKS せどり 利益チェック</a></div>
 </div>
 <script>
 (function () {
@@ -55,10 +55,10 @@ td:last-child{text-align:right}
   var $ = function (id) { return document.getElementById(id); };
   function yen(n) { n = Math.round(n || 0); return (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ja-JP') + '円'; }
   function num(id) { var v = Number($(id).value); return isFinite(v) && v > 0 ? Math.round(v) : 0; }
-  // 埋め込み元(どのサイトに貼られたか)を紹介リンクに付ける
+  // 埋め込み元(どのサイトに貼られたか)を紹介リンクに付ける。行き先はこのページの住所から作る(独自ドメインに移っても直さなくてよい)
   try {
     var host = document.referrer ? new URL(document.referrer).hostname : 'direct';
-    $('attr').href = 'https://hiro0530.github.io/zeroichi-store/sedori/lp/?utm_source=widget&utm_medium=embed&utm_campaign=mercari-calc&utm_content=' + encodeURIComponent(host.replace(/[^a-z0-9.-]/gi, '').slice(0, 60)) + '#mercari';
+    $('attr').href = new URL('../../lp/', location.href).href + '?utm_source=widget&utm_medium=embed&utm_campaign=mercari-calc&utm_content=' + encodeURIComponent(host.replace(/[^a-z0-9.-]/gi, '').slice(0, 60)) + '#mercari';
   } catch (e) { /* そのまま */ }
   function fill() {
     $('ship').innerHTML = ships.map(function (s, i) { return '<option value="' + i + '">' + s[0] + ' ' + s[1].toLocaleString('ja-JP') + '円</option>'; }).join('');

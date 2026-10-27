@@ -28,13 +28,25 @@
     return '年' + c.price.toLocaleString('ja-JP') + '円(月あたり' + (c.price % 12 ? '約' : '') + m.toLocaleString('ja-JP') + '円)';
   }
   function planKeyOf(sub) { return (sub && sub.planKey) || ''; }
+  /** プランの切り替え先(同じ支払いの周期で。ライト・総合・業務のうち、いまのプラン以外) */
+  var TIER_RANK = { light: 1, total: 2, business: 3 };
+  function switchList(pk) {
+    var cat = cfg.PLAN_CATALOG || {}, cyc = /_year$/.test(pk) ? '_year' : '_month', cur = cat[pk];
+    if (!cur) return [];
+    return ['light', 'total', 'business'].filter(function (t) { return t !== cur.tier; }).map(function (t) {
+      var key = t + cyc, c = cat[key]; if (!c || c.open === false) return null;
+      var up = TIER_RANK[t] > TIER_RANK[cur.tier];
+      return { key: key, up: up, tier: t, label: c.name + 'に変える(' + (cyc === '_year' ? '年' : '月') + c.price.toLocaleString('ja-JP') + '円)',
+        note: cur.founder ? '先着100名の価格から変えると、元の価格には戻せません' : '' };
+    }).filter(Boolean);
+  }
   function paintPlan(s) {
     var box = $('#mp-plan-box'), det = $('#cancel');
     if (!s.ready) { box.innerHTML = '<p class="muted">有料プランは準備中です。<a href="../plans/">料金とお申し込みの条件</a></p>'; det.hidden = true; return; }
     if (!s.user) { box.innerHTML = '<p class="muted">ログインすると表示します。</p>'; det.hidden = true; return; }
     var p = s.plan, sub = s.sub || {}, rows = [];
     rows.push(['プラン', esc(p.label)]);
-    if (p.key === 'trial') rows.push(['無料期間', jd(p.until) + 'まで。この日に1回目の請求があります']);
+    if (p.key === 'trial') rows.push(['無料期間', jd(p.until) + 'まで。それまでは業務のすべてを使えます。この日から上のプランで続き、1回目の請求があります']);
     if (p.key === 'active' || p.key === 'past_due') rows.push(['次回の請求日', jd(p.next)]);
     if (p.key === 'past_due') rows.push(['お支払い', '<span class="warnt">前回のお支払いが確認できていません。PayPalのお支払い方法をご確認ください</span>']);
     if (p.key === 'paused') rows.push(['再開する日', jd(p.until) + '(この日から請求を再開します)']);
@@ -45,7 +57,11 @@
     var btns = '';
     if (p.key === 'free' || p.key === 'ended') btns = '<a class="btn" href="../plans/">プランを選ぶ(14日間無料)</a>';
     if (p.key === 'paused') btns = '<button type="button" class="btn" id="mp-resume">今すぐ再開する</button>';
+    var sws = (p.key === 'trial' || p.key === 'active') ? switchList(planKeyOf(sub)) : [];
+    sws.forEach(function (sw, i) { btns += '<button type="button" class="btn sm ghost" data-sw="' + i + '">' + esc(sw.label) + '</button>'; });
+    if (sws.length && sws[0].note) btns += '<span class="hint">' + esc(sws[0].note) + '</span>';
     box.innerHTML = (note ? '<p class="msg">' + esc(note) + '</p>' : '') + '<table class="kv wide">' + rows.map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table>' + (btns ? '<div class="row-btns">' + btns + '</div>' : '');
+    $$('#mp-plan-box [data-sw]').forEach(function (b) { b.addEventListener('click', function () { act(SA.revise(sws[Number(b.getAttribute('data-sw'))].key), 'PayPalの画面に移ります'); }); });
     var rs = $('#mp-resume'); if (rs) rs.addEventListener('click', function () { act(SA.resume(), '再開しました'); });
     det.hidden = false;
     paintCancel(s);
@@ -61,11 +77,14 @@
     var items = [];
     if (p.key === 'active') items.push('<div class="alt-i"><b>1か月だけ止める</b><p>1か月の間は請求せず、' + jd(Date.now() + 30 * 864e5) + 'ごろに自動で再開します。止めている間もクラウドの台帳は読めて、書き出せます(保存は再開後に)。</p><button type="button" class="btn sm ghost" id="mp-pause">1か月止める</button></div>');
     if (/_month$/.test(pk)) items.push('<div class="alt-i"><b>年払いに変える</b><p>' + yearText(pk.replace('_month', '_year')) + '。PayPalの画面で承認すると、次の請求から変わります。</p><button type="button" class="btn sm ghost" id="mp-year">年払いに変える</button></div>');
+    var swc = switchList(pk).filter(function (x) { return x.tier === 'light'; })[0];
+    if (swc) items.push('<div class="alt-i"><b>ライトに変える</b><p>台帳のクラウド保存(月' + (Number(cfg.LIGHT_MONTHLY_LIMIT) || 100) + '件まで)・バーコードの同期・終了前の通知は、そのまま使えます。' + esc(swc.note) + '</p><button type="button" class="btn sm ghost" id="mp-light">' + esc(swc.label) + '</button></div>');
     if (/^founder/.test(pk)) items.push('<div class="alt-i"><p class="hint">先着100名の価格は、続けている間だけの価格です。解約して申し込み直すと、その時の価格になります。</p></div>');
     if (p.key === 'trial') items.push('<div class="alt-i"><p class="hint">いまは無料期間中です。' + jd(p.until) + 'より前に解約すれば、料金はかかりません。</p></div>');
     alt.innerHTML = items.join('');
     doBox.innerHTML = '<label class="inl">解約の理由(任意) <select id="mp-reason"><option value="">選ばない</option><option>使う機会が減った</option><option>料金が合わない</option><option>機能が足りない</option><option>ほかの道具にした</option><option>その他</option></select></label>' +
       '<div class="row-btns"><button type="button" class="btn danger" id="mp-cancel">解約する</button><span class="hint">' + (p.key === 'trial' ? '無料期間中のため、料金はかかりません。' : '次回の請求日 ' + jd(p.next) + ' からは請求しません。それまで使えます。') + '</span></div>';
+    var lt = $('#mp-light'); if (lt) lt.addEventListener('click', function () { act(SA.revise(swc.key), 'PayPalの画面に移ります'); });
     var pz = $('#mp-pause'); if (pz) pz.addEventListener('click', function () { act(SA.pause(), '1か月止めました'); });
     var yr = $('#mp-year'); if (yr) yr.addEventListener('click', function () { act(SA.revise(pk.replace('_month', '_year')), 'PayPalの画面に移ります'); });
     $('#mp-cancel').addEventListener('click', function () {

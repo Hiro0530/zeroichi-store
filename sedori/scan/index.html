@@ -10,7 +10,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261027c">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028c">
 <link rel="stylesheet" href="../assets/scan.css?v=20261027a">
 </head>
 <body data-base="../" data-page="scan">
@@ -24,7 +24,7 @@
     </div>
     <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
   </div>
-  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="./" aria-current="page">読み取り</a><a href="../daicho/">台帳</a></div></nav>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="./" aria-current="page">読み取り</a><a href="../daicho/">台帳</a><a href="../books/">帳簿</a></div></nav>
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>バーコード読み取り</span></nav><span class="feedate" data-feedate></span></div></div>
 
@@ -35,7 +35,7 @@
       <div class="cam-band" aria-hidden="true"><i></i></div>
       <div class="cam-idle" id="cam-idle">
         <button type="button" class="cam-go" id="cam-go">カメラで読み取る</button>
-        <p>商品のバーコード(JAN)を枠に入れると続けて読み取ります</p>
+        <p>バーコード(JAN)を枠に入れると、続けて読み取ります</p>
       </div>
       <p class="cam-msg" id="cam-msg" role="status" aria-live="polite"></p>
     </div>
@@ -60,7 +60,7 @@
         <div class="qr" id="pair-qr" aria-label="このページのQRコード"></div>
         <div>
           <p>スマホのカメラでQRを読むと、このページが開きます。ホーム画面に追加すると、アプリのように使えます。</p>
-          <p class="hint">接続番号 <b id="pair-id"></b>(アカウントの同期が始まったら、この番号で自動でつながります)</p>
+          <p class="hint">接続番号 <b id="pair-id"></b>(アカウントの同期が始まると、この番号で自動でつながります)</p>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@
   <section class="sc-now" aria-label="読み取った商品">
     <div class="now-empty" id="now-empty">
       <h1 class="pg-h">バーコード読み取り</h1>
-      <p>読み取ると、ここにその商品の検索リンクと、目標の利益(<span data-tlabel></span>)を満たすかの計算が出ます。</p>
+      <p>読み取った商品の検索リンクと、目標の利益(<span data-tlabel></span>)に届くかの判定が、ここに出ます。</p>
       <ol class="steps-mini">
         <li>カメラで読む(続けて読めます。同じ商品は1回だけ)</li>
         <li>店頭の価格と、売れている価格を入れる</li>
@@ -108,13 +108,13 @@
     <div class="list-hd">
       <h2>スキャン一覧 <span class="n" id="l-n">0</span></h2>
       <div class="list-acts">
-        <button type="button" class="btn ghost sm" id="l-send">スキャン一覧をPCへ</button>
+        <button type="button" class="btn ghost sm" id="l-send">パソコンへ送る</button>
         <button type="button" class="btn ghost sm" id="l-recv">スマホから受け取る</button>
         <button type="button" class="btn ghost sm" id="l-csv">CSV</button>
       </div>
     </div>
     <div class="list-wrap"><table class="slist"><thead><tr><th>JAN・品名</th><th class="r">仕入れ値</th><th class="r">売値</th><th class="r">利益</th><th>記録</th><th></th></tr></thead><tbody id="l-rows"></tbody></table></div>
-    <p class="list-empty" id="l-empty">まだありません。読み取った商品はこの端末に保存されます(アカウントの同期が始まると、パソコンとスマホで同じ一覧になります)。</p>
+    <p class="list-empty" id="l-empty">まだありません。読み取った商品は、この端末に保存されます(有料プランでは、パソコンとスマホで同じ一覧になります)。</p>
     <p class="list-foot"><button type="button" class="linkbtn" id="l-clear">一覧を空にする</button></p>
   </section>
 </main>
@@ -128,9 +128,9 @@
 
 <footer class="ft">
   <div class="ft-in">
-    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../lp/">はじめての方へ</a><a href="../#fees">手数料の出典</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../lp/">はじめての方へ</a><a href="../#fees">手数料の出典</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     <p>カメラの映像はこの端末の中だけで読み取りに使い、保存・送信しません。読み取った一覧と台帳はこの端末のブラウザの中に保存されます。店内での撮影・読み取りは、お店の決まりに従ってください。価格・相場は各サイトで確かめてください(このページは他のサイトの価格を自動で読み取りません)。</p>
-    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。</p>
+    <p>ZEROICHI WORKS(個人事業)。計算は目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。</p>
   </div>
 </footer>
 <script src="../assets/calc.js?v=20261027c"></script>
