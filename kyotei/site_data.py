@@ -127,8 +127,10 @@ def build() -> dict:
         "yesterday": _yesterday(_load(results[-1]) if results else None),
         "record": {"total": t, "daily": summ.get("daily", [])[-60:], "tiers_live": summ.get("tiers") or {}},
         "model": _model(_load(ROOT / "model.json")),
-        "bet_names": {"tansho": "単勝◎", "fukusho": "複勝◎", "trio3": "3連複3点", "trifecta3": "3連単3点"},
+        "bet_names": {"tansho": "単勝◎", "fukusho": "複勝◎", "exacta1": "2連単1点", "exacta3": "2連単3点", "trio3": "3連複3点", "trifecta3": "3連単3点"},
         "health": _health(),
+        # 公開後の実績の直近30日など(metrics.py → metrics/daily.json と同じ数字。X投稿もこれを使う)
+        "metrics": {k: v for k, v in (_load(ROOT / "metrics" / "daily.json") or {}).items() if k in ("generated_at", "rolling30", "rolling30_tier_S", "since_start", "definitions")},
         "disclaimers": DISCLAIMERS,
         "sources": ["BOAT RACE公式サイトのダウンロードデータ(番組表・競走成績・レーサー期別成績)。データファイルそのものは置いていません。"],
     }

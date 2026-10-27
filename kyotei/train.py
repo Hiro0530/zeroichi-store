@@ -63,6 +63,16 @@ def load_config() -> dict:
     return json.loads(f.read_text(encoding="utf-8")) if f.exists() else dict(V2_CONFIG)
 
 
+def pre_config(cfg: dict) -> dict | None:
+    """直前版の構成(model_config.json の "pre")。無ければ None(直前版は作らない)。"""
+    p = cfg.get("pre")
+    if not p or not p.get("feats"):
+        return None
+    return {"feats": p["feats"], "vx": p.get("vx", []), "train_days": cfg.get("train_days") or 365,
+            "ensemble": p.get("ensemble") or [[cfg.get("train_days") or 365, 30.0]], "cond_feats": p.get("cond_feats"),
+            "live": p.get("live", False)}
+
+
 def fit_components(data, mask, cfg, s=None, w0s=None):
     """構成どおりに学習(アンサンブルの各要素)。s を渡すとその日より前の train_days 日だけで学習。"""
     X, V, y, D = data["X"], data["V"], data["y"], data["D"]
@@ -92,6 +102,11 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
     w_c2 = w_c3 = None
     keep["T"] = []
     import cond as C
+    pcfg = pre_config(cfg)
+    keep_pre = {"pre_P": [], "pre_T": []}
+    keep.update(keep_pre)
+    w_pre = w_pc2 = w_pc3 = None
+    cm = None
     for s in starts:
         tr = D < s
         te = (D >= s) & (D < s + 7)
@@ -107,11 +122,26 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
         keep["idx"].append(np.where(te)[0])
         keep["full"].append(M.predict_model({"components": comps}, X[te], V[te], ALLF))
         try:   # 2着・3着の条件付きモデル(直近365日で学習)→ 学習外の3連単の確率
-            cm = C.fit(data, tr & (D >= s - 365), w_c2, w_c3)
+            cm = C.fit(data, tr & (D >= s - 365), w_c2, w_c3)  # noqa: F841
             w_c2, w_c3 = np.array(cm["w2"]), np.array(cm["w3"])
             keep["T"].append(C.trifecta(cm, keep["full"][-1], X[te], V[te]))
         except Exception as e:  # noqa
             print("cond skipped:", e)
+        if pcfg:   # 直前版(展示タイムなど。学習は競走成績の同じ値)
+            pcomps = fit_components(data, tr, pcfg, s, w_pre)
+            w_pre = [c_["w"] for c_ in pcomps]
+            Pp = M.predict_model({"components": pcomps}, X[te], V[te], ALLF)
+            keep["pre_P"].append(Pp)
+            try:
+                pc = pcfg.get("cond_feats")
+                if pc and pc != C.CAND:
+                    cmp_ = C.fit(data, tr & (D >= s - 365), w_pc2, w_pc3, cols=pc)
+                    w_pc2, w_pc3 = np.array(cmp_["w2"]), np.array(cmp_["w3"])
+                else:
+                    cmp_ = cm
+                keep["pre_T"].append(C.trifecta(cmp_, Pp, X[te], V[te]))
+            except Exception as e:  # noqa
+                print("pre cond skipped:", e)
         keep["base"].append(M.predict(mb, _cols(X[te], BASE_FEATS), V[te]))
         keep["prior"].append(M.lane_prior_probs(V[tr], y[tr], V[te]))
         keep["oracle"].append(M.predict(mo, _cols(X[te], cfg["feats"]), V[te], data["O"][te]))
@@ -122,6 +152,7 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
     y, y2, y3, pay = data["y"][idx], data["y2"][idx], data["y3"][idx], data["pay"][idx]
     T_c = np.concatenate(keep.pop("T")) if keep.get("T") and len(keep["T"]) == len(keep["idx"]) else None
     keep.pop("T", None)
+    pre_P, pre_T = keep.pop("pre_P"), keep.pop("pre_T")
     P = {k: np.concatenate(v) for k, v in keep.items() if k != "idx"}
     l2, l3 = M.fit_lambdas(P["full"], y, y2, y3)
     rep = {"test_from": date.fromordinal(int(D[idx].min())).isoformat(),
@@ -148,6 +179,18 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
         rep["_calib"] = calib.fit_maps(P["full"], y, y2, y3, [l2, l3], T=T_c)
     except Exception as e:  # noqa
         print("calib skipped:", e)
+    if pcfg and len(pre_P) == len(keep["idx"]):
+        Pp = np.concatenate(pre_P)
+        Tp = np.concatenate(pre_T) if len(pre_T) == len(pre_P) else None
+        rp = M.metrics(Pp, y, pay, Tp if Tp is not None else M.trifecta_probs(Pp, l2, l3), y2, y3)
+        rp["vs_full_logloss"] = M.paired_ll(Pp, P["full"], y)
+        rp["vs_full_top1"] = M.paired_diff(Pp.argmax(1) == y, hit_full)
+        try:
+            import calib
+            rp["_calib"] = calib.fit_maps(Pp, y, y2, y3, [l2, l3], T=Tp)
+        except Exception as e:  # noqa
+            print("pre calib skipped:", e)
+        rep["pre"] = rp
     rep["tiers"] = M.tier_table(P["full"], y, pay, cfg.get("tiers"), days=rep["test_days"])
     rep["tiers_def"] = cfg.get("tiers") or M.TIERS
     rep["config"] = {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers")}
@@ -164,15 +207,26 @@ def train_all(hist: Path, weeks: int = 6) -> tuple[dict, dict]:
     print(f"races: {len(data['y'])}")
     rep = walk_forward(data, weeks, cfg=cfg)
     comps = fit_components(data, np.ones(len(data["y"]), bool), cfg)
+    import cond as C
     try:
-        import cond as C
         cond_m = C.fit(data, data["D"] >= data["D"].max() - 365)
     except Exception as e:  # noqa
         print("cond final fit skipped:", e)
         cond_m = None
     lam = rep.get("lambda", [1.0, 1.0])
     cal = rep.pop("_calib", None)
-    model = {"calib": cal, "cond": cond_m, **comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
+    pre_m = None
+    pcfg = pre_config(cfg)
+    if pcfg and rep.get("pre"):
+        try:
+            pcomps = fit_components(data, np.ones(len(data["y"]), bool), pcfg)
+            pc = pcfg.get("cond_feats")
+            pcond = C.fit(data, data["D"] >= data["D"].max() - 365, cols=pc) if pc and pc != C.CAND else None
+            pre_m = {"components": pcomps, "cond": pcond, "calib": rep["pre"].pop("_calib", None),
+                     "config": pcfg, "live": bool(pcfg.get("live", False))}
+        except Exception as e:  # noqa
+            print("pre final fit skipped:", e)
+    model = {"calib": cal, "cond": cond_m, "pre": pre_m, **comps[0], "components": comps, "version": 3, "lambda": lam, "n_days": len(days),
              "config": {k: cfg.get(k) for k in ("feats", "vx", "train_days", "ensemble", "tiers", "select_window")},
              "train_from": days[0][0].isoformat(), "train_to": days[-1][0].isoformat(),
              "fitted_at": datetime.now(JST).isoformat(timespec="minutes"),

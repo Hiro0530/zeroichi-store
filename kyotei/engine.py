@@ -168,7 +168,7 @@ def predict_day(d: date, races: list[dict], model: dict) -> list[dict]:
     out = []
     for i, r in enumerate(races):
         top = np.argsort(-T[i])[:3]
-        out.append({"probs": P[i].tolist(), "_T": T[i],
+        out.append({"probs": P[i].tolist(), "_T": T[i], "_X": tgt["X"][i], "_V": int(tgt["V"][i]),
                     "trifecta": [(f"{a+1}-{b+1}-{c+1}", float(T[i, j])) for j, (a, b, c) in ((j, M.PERMS[j]) for j in top)]})
     return out
 
@@ -181,9 +181,9 @@ def make_predictions(d: date, model: dict) -> dict | None:
         return None
     races = parse_b(fetch("B", d), d)
     now = datetime.now(JST)
-    preds, Ts = [], []
+    preds, Ts, Xs, Vs = [], [], [], []
     for r, pr in zip(races, predict_day(d, races, model)):
-        Ts.append(pr["_T"])
+        Ts.append(pr["_T"]); Xs.append(pr["_X"]); Vs.append(pr["_V"])
         p = pr["probs"]
         top = int(np.argmax(p))
         tri = pr["trifecta"]
@@ -206,13 +206,21 @@ def make_predictions(d: date, model: dict) -> dict | None:
             {x["key"]: [round(float(v), 7) for v in t] for x, t in zip(preds, Ts)}).encode()))
     except Exception as e:  # noqa
         print("T save skipped:", e)
+    try:   # 直前版の予想(odds_paper)で使う朝の特徴量。非公開の場所だけ(公開しない)
+        pdir = hist_dir() / "paper"
+        np.savez_compressed(pdir / f"X_{d:%Y-%m-%d}.npz", X=np.array(Xs, dtype=np.float32), V=np.array(Vs),
+                            keys=np.array([x["key"] for x in preds]), feats=np.array(ALLF))
+    except Exception as e:  # noqa
+        print("X save skipped:", e)
     try:   # 券種ごとの仮の収支のため、複勝◎と3連複3点も締切前に出しておく(後から足すと後出しになるので、公開時に決める)
         import exp_bets
         Tm = np.array(Ts)
         top2 = Tm @ exp_bets.M_TOP2
         trio = Tm @ exp_bets.M_TRIO
+        exa = Tm @ exp_bets.M_EX
         for i, x in enumerate(preds):
             x["fukusho"] = int(np.argmax(top2[i])) + 1
+            x["exacta"] = [[exp_bets.LBL["exacta"][j], round(float(exa[i, j]), 4)] for j in np.argsort(-exa[i])[:3]]   # 2連単 上位3点(2026-10-28から)
             x["trio"] = [[exp_bets.LBL["trio"][j], round(float(trio[i, j]), 4)] for j in np.argsort(-trio[i])[:3]]
         sc = [x for x in preds if x["scored"]]
         for x in sorted(sc, key=lambda x: (-max(x["probs"]), x["close"]))[:5]:
@@ -285,7 +293,7 @@ def grade_ana(pred: dict, res: dict) -> tuple[dict | None, list]:
     return s, rows
 
 
-BET_NAMES = {"tansho": "単勝◎", "fukusho": "複勝◎", "trio3": "3連複3点", "trifecta3": "3連単3点"}
+BET_NAMES = {"tansho": "単勝◎", "fukusho": "複勝◎", "exacta1": "2連単1点", "exacta3": "2連単3点", "trio3": "3連複3点", "trifecta3": "3連単3点"}
 
 
 def by_bet(rows: list) -> dict:
@@ -335,6 +343,12 @@ def grade(d: date) -> dict | None:
                 "trifecta3": {"stake": 300, "return": pay.get("trifecta", x["trifecta"]).get(actual, 0) if tri_hit else 0}}
         if r.get("fukusho"):
             bets["fukusho"] = {"stake": 100, "return": pay.get("fukusho", {}).get(str(r["fukusho"]), 0)}
+        ex_act = f"{o[0]}-{o[1]}"
+        ex_pay = pay.get("exacta", x.get("exacta") or {}).get(ex_act, 0)
+        if r.get("exacta"):
+            ex_top = [c for c, _ in r["exacta"]]
+            bets["exacta1"] = {"stake": 100, "return": ex_pay if ex_top[0] == ex_act else 0}
+            bets["exacta3"] = {"stake": 100 * len(ex_top), "return": ex_pay if ex_act in ex_top else 0}
         if r.get("trio"):
             tset = "-".join(sorted(actual.split("-")))
             bets["trio3"] = {"stake": 300, "return": pay.get("trio", {}).get(tset, 0) if any(c == tset for c, _ in r["trio"]) else 0}
@@ -344,6 +358,7 @@ def grade(d: date) -> dict | None:
                      "verdict": verdict, "win_hit": win_hit, "tri_hit": tri_hit,
                      "pay_win": pay_win, "pay_tri": pay_tri, "base_pay": base_pay,
                      "lane1_won": o[0] == 1, "trifecta_payout": x["trifecta"].get(actual),
+                     "exacta": [c for c, _ in r.get("exacta", [])], "exacta_payout": ex_pay,
                      "tansho_payout": x["tansho"].get(str(o[0]))})
     n = len(rows)
     summ = {"date": d.isoformat(), "graded_races": n,
@@ -491,6 +506,10 @@ def main(mode: str):
         ensure_jma()
         import exp_v4
         exp_v4.main(hist_dir())
+    elif mode == "blend":
+        # モデルと締切前の市場(単勝オッズ)の混ぜ方の重みを、紙の上の記録から(新しい取得なし)
+        import exp_blend
+        exp_blend.main(hist_dir())
     elif mode == "exp":
         # 改良候補の検証(v3_ablation.json と model_config.json を作る)→ その構成で学習し直す
         ensure_jma()
@@ -514,6 +533,12 @@ def main(mode: str):
     make_predictions(today, model)
     tot = cumulative()
     print("cumulative", json.dumps(tot, ensure_ascii=False))
+    try:   # 公開後の実績の毎日の数字(直近30日など)。Xとページが同じ数字を使う
+        import metrics
+        m30 = metrics.build().get("rolling30", {})
+        print("metrics rolling30", json.dumps(m30, ensure_ascii=False)[:400])
+    except Exception as e:  # noqa
+        print("metrics skipped:", e)
     try:
         from site_gen import build  # type: ignore
         build()

@@ -465,3 +465,45 @@ def build(days: list[tuple[date, list, dict]], fan_store: FanStore, target: tupl
                "X": np.array([race_features(r, d, h, fan, None, tides)[0] for r in races]) if races else np.zeros((0, 6, len(ALLF))),
                "V": np.array([int(r["venue"]) - 1 for r in races]), "fan": fan_store.asof_name(d)}
     return data, tgt
+
+
+PRE_COLS = [f for g in PRE.values() for f in g]
+
+
+def apply_pre(Xr: np.ndarray, res_like: dict, feats: list[str] | None = None) -> np.ndarray:
+    """朝の特徴量 Xr (6, len(feats)) に、直前情報(展示タイム・進入・気象。beforeinfo.as_result の形)の列を足して返す。
+    計算は race_features の直前情報の部分と同じ(test: exp_v4 と同じ値になることを tests で確認)。"""
+    feats = list(feats or ALLF)
+    X = np.array(Xr, dtype=np.float64).copy()
+    col = {f: i for i, f in enumerate(feats)}
+    exh = {b["lane"]: b.get("exh") for b in res_like.get("boats", [])}
+    cmap = {b["lane"]: b.get("course") for b in res_like.get("boats", []) if b.get("course")}
+    if len(set(cmap.values())) != 6:
+        cmap = {}
+    wx = res_like.get("wx") or {}
+    uo, vo = wind_uv(wx.get("wind", 0), wx.get("wind_dir", ""))
+    vals = {f: [0.0] * 6 for f in PRE_COLS}
+    ev = [exh.get(L + 1) for L in range(6) if exh.get(L + 1)]
+    srt = sorted(ev)
+    for L in range(6):
+        lane = L + 1
+        if len(ev) >= 4 and exh.get(lane):
+            em = sum(ev) / len(ev)
+            e = exh[lane]
+            vals["p_exh_rel"][L] = e - em
+            vals["p_exh_rank"][L] = (srt.index(e) + 1) - (len(ev) + 1) / 2
+            vals["p_exh_self"][L] = (e - em) - X[L, col["e_racer_exh"]]
+            vals["p_exh_motor"][L] = (e - em) - X[L, col["e_motor_exh"]]
+        if wx:
+            vals["p_wind_l1"][L] = wx.get("wind", 0) * (L == 0)
+            vals["p_wave_l1"][L] = wx.get("wave", 0) * (L == 0)
+            vals["p_wind_out"][L] = wx.get("wind", 0) * (L >= 3)
+        vals["o_u_l1"][L] = uo * (L == 0); vals["o_v_l1"][L] = vo * (L == 0)
+        vals["o_u_out"][L] = uo * (L >= 3); vals["o_v_out"][L] = vo * (L >= 3)
+        cs = cmap.get(lane)
+        vals["p_cshift"][L] = float(lane - cs) if cs else 0.0
+        vals["p_c1"][L] = (float(cs == 1) - float(L == 0)) if cs else 0.0
+    for f, v in vals.items():
+        if f in col:
+            X[:, col[f]] = v
+    return X

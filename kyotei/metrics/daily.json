@@ -1,0 +1,206 @@
+{
+ "schema": 1,
+ "generated_at": "2026-10-28T00:53+09:00",
+ "note": "公開後の実績だけ(公開時刻より後に締切のレース)。毎回100円の仮の回収率で、利益を約束しない。[ ]は95%区間。",
+ "definitions": {
+  "honmei_win_rate": "◎(1着の確率が最も高い艇)の1着率",
+  "naive_lane1_rate": "1号艇を毎回選んだ場合の1着率",
+  "vs_naive_pt": "◎の1着率 − 1号艇の1着率(ポイント)",
+  "logloss_win": "1着の確率の対数損失(小さいほど良い)",
+  "exacta_top3_hit": "2連単 確率上位3点のどれかが当たった割合",
+  "trifecta_top3_hit": "3連単 確率上位3点のどれかが当たった割合",
+  "roi_tansho": "単勝◎ 100円ずつ",
+  "roi_exacta_top1": "2連単 確率1位 100円ずつ",
+  "roi_trifecta_top3": "3連単 上位3点 300円ずつ",
+  "roi_lane1_tansho": "比較: 1号艇の単勝 100円ずつ"
+ },
+ "rolling30": {
+  "from": "2026-10-23",
+  "to": "2026-10-26",
+  "races": 645,
+  "days": 4,
+  "honmei_win_rate": 0.5597,
+  "honmei_win_ci": [
+   0.5211,
+   0.5975
+  ],
+  "naive_lane1_rate": 0.5411,
+  "vs_naive_pt": 1.86,
+  "vs_naive_ci_pt": [
+   -0.47,
+   4.03
+  ],
+  "logloss_win": 1.1904,
+  "logloss_win_ci": [
+   1.1195,
+   1.2674
+  ],
+  "trifecta_top3_hit": 0.2434,
+  "trifecta_top3_ci": [
+   0.2119,
+   0.278
+  ],
+  "roi_tansho": 0.8868,
+  "roi_tansho_ci": [
+   0.8105,
+   0.9571
+  ],
+  "roi_lane1_tansho": 0.8758,
+  "roi_trifecta_top3": 0.7704,
+  "roi_trifecta_top3_ci": [
+   0.6329,
+   0.9074
+  ],
+  "exacta_races": 0
+ },
+ "rolling30_tier_S": {
+  "races": 43,
+  "days": 1,
+  "honmei_win_rate": 0.7209,
+  "honmei_win_ci": [
+   0.5731,
+   0.8325
+  ],
+  "naive_lane1_rate": 0.7209,
+  "vs_naive_pt": 0.0,
+  "vs_naive_ci_pt": [
+   0.0,
+   0.0
+  ],
+  "logloss_win": 0.9856,
+  "logloss_win_ci": [
+   0.6386,
+   1.3566
+  ],
+  "trifecta_top3_hit": 0.3488,
+  "trifecta_top3_ci": [
+   0.2242,
+   0.4983
+  ],
+  "roi_tansho": 0.8767,
+  "roi_tansho_ci": [
+   0.7116,
+   1.0395
+  ],
+  "roi_lane1_tansho": 0.8767,
+  "roi_trifecta_top3": 0.7667,
+  "roi_trifecta_top3_ci": [
+   0.4504,
+   1.1202
+  ],
+  "exacta_races": 0
+ },
+ "since_start": {
+  "from": "2026-10-23",
+  "to": "2026-10-26",
+  "races": 645,
+  "days": 4,
+  "honmei_win_rate": 0.5597,
+  "honmei_win_ci": [
+   0.5211,
+   0.5975
+  ],
+  "naive_lane1_rate": 0.5411,
+  "vs_naive_pt": 1.86,
+  "vs_naive_ci_pt": [
+   -0.47,
+   4.03
+  ],
+  "logloss_win": 1.1904,
+  "logloss_win_ci": [
+   1.1195,
+   1.2674
+  ],
+  "trifecta_top3_hit": 0.2434,
+  "trifecta_top3_ci": [
+   0.2119,
+   0.278
+  ],
+  "roi_tansho": 0.8868,
+  "roi_tansho_ci": [
+   0.8105,
+   0.9571
+  ],
+  "roi_lane1_tansho": 0.8758,
+  "roi_trifecta_top3": 0.7704,
+  "roi_trifecta_top3_ci": [
+   0.6329,
+   0.9074
+  ],
+  "exacta_races": 0
+ },
+ "daily": [
+  {
+   "date": "2026-10-23",
+   "races": 168,
+   "days": 1,
+   "honmei_win_rate": 0.5417,
+   "naive_lane1_rate": 0.5179,
+   "vs_naive_pt": 2.38,
+   "vs_naive_ci_pt": [
+    -1.79,
+    6.55
+   ],
+   "logloss_win": 1.2331,
+   "trifecta_top3_hit": 0.2202,
+   "roi_tansho": 0.8815,
+   "roi_lane1_tansho": 0.9405,
+   "roi_trifecta_top3": 0.7623,
+   "exacta_races": 0
+  },
+  {
+   "date": "2026-10-24",
+   "races": 168,
+   "days": 1,
+   "honmei_win_rate": 0.5952,
+   "naive_lane1_rate": 0.5774,
+   "vs_naive_pt": 1.79,
+   "vs_naive_ci_pt": [
+    -2.98,
+    6.55
+   ],
+   "logloss_win": 1.1004,
+   "trifecta_top3_hit": 0.2024,
+   "roi_tansho": 0.9661,
+   "roi_lane1_tansho": 0.9268,
+   "roi_trifecta_top3": 0.577,
+   "exacta_races": 0
+  },
+  {
+   "date": "2026-10-25",
+   "races": 167,
+   "days": 1,
+   "honmei_win_rate": 0.5689,
+   "naive_lane1_rate": 0.5629,
+   "vs_naive_pt": 0.6,
+   "vs_naive_ci_pt": [
+    -3.59,
+    4.79
+   ],
+   "logloss_win": 1.1905,
+   "trifecta_top3_hit": 0.3054,
+   "roi_tansho": 0.8377,
+   "roi_lane1_tansho": 0.8455,
+   "roi_trifecta_top3": 0.9587,
+   "exacta_races": 0
+  },
+  {
+   "date": "2026-10-26",
+   "races": 142,
+   "days": 1,
+   "honmei_win_rate": 0.5282,
+   "naive_lane1_rate": 0.5,
+   "vs_naive_pt": 2.82,
+   "vs_naive_ci_pt": [
+    -2.11,
+    7.75
+   ],
+   "logloss_win": 1.2463,
+   "trifecta_top3_hit": 0.2465,
+   "roi_tansho": 0.857,
+   "roi_lane1_tansho": 0.7746,
+   "roi_trifecta_top3": 0.7876,
+   "exacta_races": 0
+  }
+ ]
+}

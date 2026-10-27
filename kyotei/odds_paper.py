@@ -186,6 +186,59 @@ def blend(cal: dict, odds: dict, w: float) -> tuple[dict, dict]:
     return dict(zip(ks, pb.tolist())), dict(zip(ks, pm.tolist()))
 
 
+PRE_PAGE = "beforeinfo"   # 直前情報のページ(model.json の pre.live が true のときだけ、レースごとに1回)
+
+
+def pre_probs(x: dict, d: date, model: dict, rec: dict):
+    """直前情報のページを1回読んで、直前版の1着の確率と3連単の確率を作る。→ (P(6), T(120), 記録用の dict) か None。
+    使えないとき(ページが怪しい・朝の特徴量が無い・model に pre が無い)は None(朝の確率のまま)。"""
+    pre = model.get("pre")
+    if not pre or not pre.get("live"):
+        return None
+    xf = PD / f"X_{d:%Y-%m-%d}.npz"
+    if not xf.exists():
+        return None
+    import beforeinfo
+    import cond as C
+    from features import ALLF, apply_pre
+    z = np.load(xf, allow_pickle=False)
+    keys = list(z["keys"])
+    if x["key"] not in keys:
+        return None
+    i = keys.index(x["key"])
+    feats_saved = [str(f) for f in z["feats"]]
+    Xr = np.zeros((6, len(ALLF)))
+    for j, f in enumerate(feats_saved):
+        if f in ALLF:
+            Xr[:, ALLF.index(f)] = z["X"][i][:, j]
+    rec["requests"] = rec.get("requests", 0) + 1
+    url = beforeinfo.url(x["venue"], x["race"], d)
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    try:
+        html = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        time.sleep(PAUSE)
+        if e.code in (403, 429) or e.code >= 500:
+            raise StopFetch(f"{e.code} {url}")
+        return None
+    except Exception:  # noqa
+        time.sleep(PAUSE)
+        return None
+    time.sleep(PAUSE)
+    info = beforeinfo.parse(html)
+    if not info:
+        return None
+    Xp = apply_pre(Xr, beforeinfo.as_result(info))[None]
+    V = np.array([int(z["V"][i])])
+    P = M.predict_model({"components": pre["components"]}, Xp, V, ALLF)
+    T = C.trifecta(pre.get("cond") or model, P, Xp, V, model.get("lambda", [1.0, 1.0]))
+    log = {"read_at": datetime.now(JST).isoformat(timespec="seconds"), "probs": [round(float(v), 4) for v in P[0]],
+           "probs_morning": x["probs"], "exh": [b["exh"] for b in info["boats"]], "course": [b["course"] for b in info["boats"]],
+           "st_exh": [b["st_exh"] for b in info["boats"]], "tilt": [b["tilt"] for b in info["boats"]],
+           "parts": [b["parts"] for b in info["boats"]], "prop_new": [b["prop_new"] for b in info["boats"]], "wx": info["wx"]}
+    return P[0], T[0], log
+
+
 def tick(now: datetime | None = None):
     if not ENABLED.exists():
         print("odds paper trading is disabled (no kyotei/odds_enabled.txt)")
@@ -218,12 +271,13 @@ def tick(now: datetime | None = None):
         if not (WINDOW[0] <= mins <= WINDOW[1]):
             continue
         used = rec.get("requests", 0)
-        if used + len(CORE) > MAX_REQ_DAY:
+        per_race = len(CORE) + (1 if (model.get("pre") or {}).get("live") else 0)
+        if used + per_race > MAX_REQ_DAY:
             print("daily request cap reached")
             return
         # 上限が足りなくなりそうなら、残りのレースのうち◎の確率が高いものを優先する
         rest = [y for y in targets if y["key"] not in rec["races"] and datetime.fromisoformat(y["close"]) > now + timedelta(minutes=WINDOW[0])]
-        room = (MAX_REQ_DAY - used) // len(CORE)
+        room = (MAX_REQ_DAY - used) // per_race
         if room < len(rest):
             keep_keys = {y["key"] for y in sorted(rest, key=lambda y: -max(y["probs"]))[:room]}
             if x["key"] not in keep_keys:
@@ -231,7 +285,22 @@ def tick(now: datetime | None = None):
                 rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
                 continue
         kinds = list(CORE)
-        raw, cal = race_probs(x, lam, maps, Tmap.get(x["key"]))
+        pre_log = None
+        try:   # 直前版(model.json の pre.live が true のときだけ。読めなければ朝の確率のまま)
+            got = pre_probs(x, d, model, rec)
+        except StopFetch as e:
+            rec["stopped"] = str(e)
+            rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+            print("STOP for today:", e)
+            return
+        except Exception as e:  # noqa
+            print("pre skipped:", e)
+            got = None
+        if got:
+            Pp, Tp, pre_log = got
+            raw, cal = race_probs({**x, "probs": Pp.tolist()}, lam, (model.get("pre") or {}).get("calib") or maps, Tp.tolist())
+        else:
+            raw, cal = race_probs(x, lam, maps, Tmap.get(x["key"]))
         bets, logs, checks, pages = [], {}, {}, {}
         for kind in kinds:
             if kind in ("3f", "3t") and not checks.get("tansho"):   # 単勝のページの読み取りが怪しいときは3連複・3連単を読まない
@@ -273,7 +342,8 @@ def tick(now: datetime | None = None):
                             bets.append({"bet": bet, "combo": r["combo"], "odds": r["odds"], "read_at": pages[kind],
                                          "p_blend": r["p_blend"], "ev": r["ev_blend"], "ev_raw": r["ev_raw"], "ev_cal": r["ev_cal"]})
         rec["races"][x["key"]] = {"fetched_at": now.isoformat(timespec="seconds"), "close": x["close"], "tier": x.get("tier"),
-                                  "pages": pages, "checks": checks, "bets": bets, "logs": logs}
+                                  "pages": pages, "checks": checks, "bets": bets, "logs": logs, "pre": pre_log,
+                                  "w": W_BLEND}
         rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
         print(x["key"], len(bets), "paper bets", checks)
 
@@ -302,6 +372,25 @@ def grade(d: date, results: dict) -> dict | None:
                 if o_read:
                     rec.setdefault("drift", []).append({"key": key, "bet": bet, "combo": comb, "odds_read": o_read,
                                                         "odds_final": amt / 100, "read_at": lg.get("read_at"), "close": r.get("close")})
+    # 直前版と朝の確率の答え合わせ(1着の対数損失・◎の的中)と、直前情報の風向の読み方の確認(競走成績の風向と同じか)
+    pe = {"races": 0, "ll_pre": 0.0, "ll_morning": 0.0, "hit_pre": 0, "hit_morning": 0, "wind_dir_same": 0, "wind_dir_n": 0}
+    for key, r in rec["races"].items():
+        res = results.get(key)
+        pl = r.get("pre")
+        if not res or not pl:
+            continue
+        w = res["order"][0] - 1
+        pe["races"] += 1
+        pe["ll_pre"] += -float(np.log(max(pl["probs"][w], 1e-9)))
+        pe["ll_morning"] += -float(np.log(max(pl["probs_morning"][w], 1e-9)))
+        pe["hit_pre"] += int(np.argmax(pl["probs"]) == w)
+        pe["hit_morning"] += int(np.argmax(pl["probs_morning"]) == w)
+        a, b = (pl.get("wx") or {}).get("wind_dir"), (res.get("wx") or {}).get("wind_dir")
+        if a and b:
+            pe["wind_dir_n"] += 1
+            pe["wind_dir_same"] += int(a == b)
+    if pe["races"]:
+        by["_pre_eval"] = pe
     rec["graded"] = by
     rf.write_text(json.dumps(rec, ensure_ascii=False, indent=1))
     sf = PD / "summary.json"
