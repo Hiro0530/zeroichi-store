@@ -40,7 +40,7 @@
     var need = cnt(function (r) { return U.checkState(r) === 'need'; });
     var ending = U.endingRows(all), soon = ending.filter(function (x) { return x.e.state !== 'far'; }).length;
     var list = [['all', 'すべて', all.length]].concat(ST.map(function (s) { return [s, s, cnt(function (r) { return (r.status || '仕入れ済') === s; })]; }),
-      [['ending', '終了が近い順', ending.length, soon], ['need', '相手確認が未入力', need]]);
+      [['ending', '終了が近い順', ending.length, soon], ['need', '売り手の確認が未入力', need]]);
     $('#lg-tabs').innerHTML = list.map(function (t) {
       return '<button type="button" role="tab" data-tab="' + esc(t[0]) + '" aria-selected="' + (t[0] === tab) + '">' + esc(t[1]) + '<span class="n' + ((t[0] === 'need' && t[2]) || t[3] ? ' w' : '') + '">' + (t[3] ? t[3] + '/' : '') + t[2] + '</span></button>';
     }).join('');
@@ -110,7 +110,7 @@
       '<td class="r" data-k="数量">' + qn + '</td>' +
       '<td class="r" data-k="仕入れ値"><span class="yen">' + yen(r.unit) + '<i>円</i></span>' + (qn > 1 ? '<div class="meta">計 ' + yen((Number(r.unit) || 0) * qn) + '円</div>' : '') + '</td>' +
       '<td data-k="仕入れ先・相手">' + esc(r.party || '') + (r.pName ? '<div class="meta">' + esc(r.pName) + '</div>' : '') + '</td>' +
-      '<td data-k="相手確認">' + (st === 'need' ? '<span class="badge" data-edit="' + esc(r.id) + '">相手確認が未入力</span>' : (st === 'ok' ? '<span class="badge ok">済</span><div class="meta">' + esc(r.verify || '') + '</div>' : '<span class="muted">不要</span>')) + '</td>' +
+      '<td data-k="売り手の確認">' + (st === 'need' ? '<span class="badge" data-edit="' + esc(r.id) + '">売り手の確認が未入力</span>' : (st === 'ok' ? '<span class="badge ok">済</span><div class="meta">' + esc(r.verify || '') + '</div>' : '<span class="muted">不要</span>')) + '</td>' +
       '<td data-k="売却">' + (r.saleDate ? '<span class="nw">' + esc(r.saleDate) + '</span>' : '<span class="muted">未売却</span>') + '<div class="meta">' + esc(r.saleParty || (r.sellTo ? r.sellTo + 'で販売予定' : '')) + '</div></td>' +
       '<td class="r" data-k="売値">' + (r.salePrice ? '<span class="yen">' + yen(r.salePrice) + '<i>円</i></span>' : (r.sellPrice ? '<span class="muted">予定 ' + yen(r.sellPrice) + '</span>' : '')) + '</td>' +
       '<td class="r" data-k="見込み利益">' + (r.profit === '' || r.profit == null ? '' : '<span class="pf ' + (r.profit < 0 ? 'bad' : '') + '">' + yen(Number(r.profit) * qn) + '</span>') + '</td>' +
@@ -147,7 +147,7 @@
   function render() {
     var list = rows();
     tabs(); summary(list); upsell();
-    var label = tab === 'all' ? 'すべて' : (tab === 'need' ? '相手確認が未入力' : (tab === 'ending' ? '終了が近い順(出品中でヤフオク終了日時がある行)' : tab));
+    var label = tab === 'all' ? 'すべて' : (tab === 'need' ? '売り手の確認が未入力' : (tab === 'ending' ? '終了が近い順(出品中でヤフオク終了日時がある行)' : tab));
     $('#lg-title').innerHTML = esc(label) + '<small>' + list.length + '件' + (q ? '　「' + esc(q) + '」で絞り込み <button type="button" class="lnk" id="lg-clear">解除</button>' : '') + '</small>';
     var c = $('#lg-clear'); if (c) c.addEventListener('click', function () { q = ''; $('#sb-q').value = ''; history.replaceState(null, '', location.pathname); render(); });
     var empty = L.all().length ? '条件に合う行がありません。' : 'まだ記録がありません。<br>計算ページで「仕入れた」を押すと、ここに自動で1行できます。手で入れる場合は「手で追加」。';

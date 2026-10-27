@@ -1,6 +1,6 @@
 /* せどり 利益チェック — 画面の共通部品
    保存(localStorage・try/catch)、手数料の読み込み、検索バー、目標の利益、キー操作、お知らせ、
-   古物台帳(自動記録・状態・相手確認・取引相手の情報の貼り付け)、CSV・Excel(xlsx)の書き出し */
+   古物台帳(自動記録・状態・売り手の確認・取引相手の情報の貼り付け)、CSV・Excel(xlsx)の書き出し */
 (function () {
   'use strict';
   var PREFIX = 'zw-sedori:';
@@ -204,7 +204,7 @@
   var PREREG = mailto('せどりアプリ事前登録',
     'このまま送信してください(分かる所だけで大丈夫です)。\n\nお名前(ニックネーム可):\nよく使う仕入れ先:\nよく使う売り先:\nいま一番面倒な作業:\n\n' +
     'いま道具に払っている月額(だいたい):\n\n' +
-    '※有料版(ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円・先着100名は月' + catPrice('founder_month', '3,980') + '円/業務 月' + catPrice('business_month', '7,980') + '円・どれも14日間無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
+    '※有料版(ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円・先着100名は月' + catPrice('founder_month', '3,980') + '円/業務 月' + catPrice('business_month', '7,980') + '円・どれも14日無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
   var NEWS = mailto('せどりメルマガ登録',
     'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\nお名前(ニックネーム可):\n知りたいこと:\n\n※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
   function wireMail() {
@@ -226,13 +226,15 @@
     pc: '事務機器類', stationery: '事務機器類', car: '道具類', instruments: '道具類', game_console: '道具類' };
   function hinmokuFor(catId) { return CAT_HINMOKU[catId] || '道具類'; }
 
-  /** 金額を問わず本人確認が要る品(2025年10月1日から エアコンの室外機・電線・金属製グレーチング が追加)。品名から見分ける */
-  var ANY_PRICE = /(室外機|電線|グレーチング)/;
+  /** 金額を問わず売り手の確認が要る品(2025年10月1日から エアコンの室外機・電気温水機器のヒートポンプ・電線・金属製グレーチング が追加)。品名から見分ける */
+  var ANY_PRICE = /(室外機|ヒートポンプ|エコキュート|電線|グレーチング)/;
   function anyPriceItem(r) { return ANY_PRICE.test(String(r.name || '') + ' ' + String(r.feature || '')); }
-  /** 相手確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
+  /** 売り手の確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
   function checkState(r) {
     if (r.wait) return 'na'; // 無在庫で出品中(まだ仕入れていない)
-    var required = r.cond === '中古' && ((Number(r.unit) || 0) >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || anyPriceItem(r));
+    // 1万円は1回の取引の対価の総額で見る(1個あたりではない。まとめ買いは 単価×個数)
+    var total = (Number(r.unit) || 0) * Math.max(1, Number(r.qty) || 1);
+    var required = r.cond === '中古' && (total >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車' || anyPriceItem(r));
     if (!required) return r.cond === '中古' && r.verify ? 'ok' : 'na';
     if (VERIFY_NO_PARTY.indexOf(r.verify) >= 0) return 'ok';
     return r.pName && r.pAddr && r.verify ? 'ok' : 'need';
@@ -309,8 +311,8 @@
     el.textContent = rows.length ? String(rows.length) : '';
     el.hidden = !rows.length;
     var w = $('#hd-need');
-    if (!w) { w = document.createElement('span'); w.id = 'hd-need'; w.className = 'cnt warn'; w.title = '相手確認が未入力'; el.insertAdjacentElement('afterend', w); }
-    w.textContent = need ? '確認' + need : ''; w.hidden = !need;
+    if (!w) { w = document.createElement('span'); w.id = 'hd-need'; w.className = 'cnt warn'; w.title = '売り手の確認が未入力'; el.insertAdjacentElement('afterend', w); }
+    w.textContent = need ? '売り手の確認 ' + need : ''; w.hidden = !need;
     var soon = endingRows(rows).filter(function (x) { return x.e.state !== 'far'; }).length;
     var e = $('#hd-end');
     if (!e) { e = document.createElement('span'); e.id = 'hd-end'; e.className = 'cnt end'; e.title = 'ヤフオクの終了が2時間以内(出品中)'; w.insertAdjacentElement('afterend', e); }
@@ -433,6 +435,9 @@
       }
     }
     if (name) out.pName = name.replace(/\s*(様|さん|殿)\s*$/, '').replace(/\s+/g, ' ').trim();
+    // 職業・年齢(古物台帳の項目)。見出し付きの行だけ取り出す
+    var job = t.match(/(?:^|\n)\s*(?:【[^】]*】\s*)?職業\s*[:：]\s*([^\n]{1,30})/); if (job && job[1].trim()) out.pJob = job[1].trim();
+    var age = t.match(/(?:^|\n)\s*(?:【[^】]*】\s*)?年齢\s*[:：]\s*(\d{1,3})/); if (age) out.pAge = age[1];
     return out;
   }
   function partyFromUrl(u) {
@@ -446,8 +451,8 @@
   var P_FIELDS = [['pName', '氏名'], ['pZip', '〒'], ['pAddr', '住所'], ['pTel', '電話'], ['pMail', 'メール'], ['pJob', '職業'], ['pAge', '年齢'], ['ref', 'URL']];
   function badgeHTML(r) {
     var s = checkState(r);
-    if (s === 'need') return '<span class="badge" data-badge>相手確認が未入力</span>';
-    if (s === 'ok') return '<span class="badge ok" data-badge>相手確認 済</span>';
+    if (s === 'need') return '<span class="badge" data-badge>売り手の確認が未入力</span>';
+    if (s === 'ok') return '<span class="badge ok" data-badge>売り手の確認 済</span>';
     return '<span class="badge na" data-badge>確認不要</span>';
   }
   /** 取引相手の情報の欄(貼り付け+取り出した値+確認方法)。入力のたびに台帳へ保存 */
@@ -456,7 +461,7 @@
     var r = ledger.get(id); if (!r || !box) return;
     box.innerHTML = '<div class="party' + (checkState(r) === 'need' ? '' : ' okc') + '">' +
       '<div class="party-h"><span>' + esc(opts.title || '取引相手の情報') + '</span>' + badgeHTML(r) + '</div>' +
-      '<textarea data-paste rows="3" placeholder="取引ナビ・メルカリ・メールの本文をそのまま貼り付け(氏名・〒・住所・電話・メールを取り出します)"></textarea>' +
+      '<textarea data-paste rows="3" placeholder="取引ナビ・メルカリ・メールの本文をそのまま貼り付け(氏名・〒・住所・電話・メール・職業・年齢を取り出します)"></textarea>' +
       '<div class="pgrid">' + P_FIELDS.map(function (f) {
         return '<span>' + f[1] + '</span><input data-f="' + f[0] + '" value="' + esc(r[f[0]] || '') + '"' + (f[0] === 'ref' ? ' type="url" placeholder="ヤフオク・メルカリの取引URL"' : '') + (f[0] === 'pMail' ? ' type="email"' : '') + (f[0] === 'pTel' ? ' type="tel"' : '') + '>';
       }).join('') +

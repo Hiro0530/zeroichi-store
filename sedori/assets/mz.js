@@ -121,7 +121,7 @@
       '<div class="kpi"><div><b>' + U.pct(r.margin) + '</b>利益率</div><div><b>' + U.pct(r.roi, 0) + '</b>仕入れに対して</div><div><b>' + (nw > 0 ? U.pct(1 - r.sell / nw, 0) : '—') + '</b>新品より安く</div></div>' +
       U.brkRows(keyRows) + '</div>' +
       (maxc != null && x.cost > maxc ? '<p class="warn-line">ヤフオクの価格が上限を' + yen(x.cost - maxc) + '円超えています</p>' : '') +
-      (r.cost >= 10000 || $('#mz-media').checked ? '<p class="note"><span class="badge">相手確認が必要</span> 仕入れた後、出てくる欄に取引ナビの本文を貼り付けてください。</p>' : ''),
+      (r.cost >= 10000 || $('#mz-media').checked ? '<p class="note"><span class="badge">売り手の確認が必要</span> 仕入れた後、出てくる欄に取引ナビの本文を貼り付けてください。</p>' : ''),
       rows, '<p class="note">保管・返品・キャンセル時の費用は含みません。売れてから仕入れるため、仕入れ先が売り切れたらキャンセルになります。</p>');
   }
 

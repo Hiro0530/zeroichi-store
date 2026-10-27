@@ -90,7 +90,7 @@
       .filter(Boolean).join('<span aria-hidden="true">　</span>');
     var sellCell, feeCell = '—', pfCell = '—', rtCell = '—';
     if (r && r.sell) {
-      sellCell = r.est ? '<span class="yen est" title="目標の利益を満たす最安の売値">' + yen(r.sell) + '<i>円</i></span>' : '<span class="yen">' + yen(r.sell) + '<i>円</i></span>';
+      sellCell = r.est ? '<span class="yen est" title="Amazon売値が未入力のため、目標の利益を満たす最安の売値を表示"><small class="estk">目標</small>' + yen(r.sell) + '<i>円</i></span>' : '<span class="yen">' + yen(r.sell) + '<i>円</i></span>';
       feeCell = yen(r.fee);
       var cls = r.profit < 0 ? 'bad' : (r.profit >= r.need ? 'good' : '');
       pfCell = '<span class="pf ' + (r.est ? 'est' : cls) + '">' + yen(r.profit) + '</span>';
