@@ -16,13 +16,18 @@
   var founder = { open: true, left: null };
   var sel = new URLSearchParams(location.search).get('plan');
   if (!PLAN[sel]) sel = U.store.get('plan-pick', 'total_month');
-  if (!PLAN[sel]) sel = 'total_month';   // 選んでいない時は総合
+  if (!PLAN[sel]) sel = 'total_month';   // 選んでいない時は総合・月払い
+  // 画面では「プラン(4つ)」と「月払い/年払い」を別々に選ぶ。sel はその組み合わせ(total_year など)
+  function parts(k) { var i = k.lastIndexOf('_'); return { base: k.slice(0, i), cyc: k.slice(i + 1) }; }
 
   function paint() {
     var p = PLAN[sel], now = new Date(), end = new Date(now.getTime() + DAYS * 864e5);
     var price = p.price.toLocaleString('ja-JP') + '円';
-    $$('#pl-pick tbody tr[data-plan]').forEach(function (tr) {
-      var on = tr.getAttribute('data-plan') === sel; tr.classList.toggle('on', on);
+    var pt = parts(sel);
+    $$('#pl-cyc input').forEach(function (i) { i.checked = i.value === pt.cyc; i.parentNode.classList.toggle('on', i.checked); });
+    $$('#pl-pick [data-c]').forEach(function (el) { el.hidden = el.getAttribute('data-c') !== pt.cyc; });
+    $$('#pl-pick tbody tr[data-base]').forEach(function (tr) {
+      var on = tr.getAttribute('data-base') === pt.base; tr.classList.toggle('on', on);
       var r = $('input', tr); if (r) r.checked = on;
     });
     $('#cf-plan').textContent = p.name;
@@ -37,9 +42,16 @@
     payBox();
   }
 
-  $$('#pl-pick tbody tr[data-plan]').forEach(function (tr) {
-    tr.addEventListener('click', function () { sel = tr.getAttribute('data-plan'); U.store.set('plan-pick', sel); paint(); });
+  function pick(base, cyc) {
+    var k = base + '_' + cyc; if (!PLAN[k]) return;
+    sel = k; U.store.set('plan-pick', sel); paint();
+  }
+  // 行のどこを押しても選べる。キーボードはラジオボタン(矢印キー)の change で動く
+  $$('#pl-pick tbody tr[data-base]').forEach(function (tr) {
+    tr.addEventListener('click', function (e) { if (e.target.tagName === 'INPUT') return; pick(tr.getAttribute('data-base'), parts(sel).cyc); });
+    var r = $('input', tr); if (r) r.addEventListener('change', function () { if (r.checked) pick(r.value, parts(sel).cyc); });
   });
+  $$('#pl-cyc input').forEach(function (i) { i.addEventListener('change', function () { if (i.checked) pick(parts(sel).base, i.value); }); });
 
   /* 先着100名の残り(Worker が public/founders に書く。誰でも読める) */
   function loadFounders() {
@@ -52,7 +64,7 @@
         founder = { open: open && taken < limit, left: Math.max(0, limit - taken) };
         $('#pl-founder-left').textContent = founder.open ? 'いま残り' + founder.left + '名です。' : '100名に達したため、受付を終えました。';
         if (!founder.open) {
-          $$('#pl-pick tr[data-founder]').forEach(function (tr) { tr.classList.add('off'); tr.style.display = 'none'; });
+          $$('#pl-pick tr[data-founder]').forEach(function (tr) { tr.classList.add('off'); tr.hidden = true; var fi = $('input', tr); if (fi) fi.disabled = true; });
           if (PLAN[sel].founder) sel = sel.replace('founder', 'total');
         }
         paint();

@@ -644,3 +644,17 @@ th .pill{margin-left:4px}
 .pick label b{margin-right:6px}
 .grid.cmp thead .meta{display:block;font-weight:400;margin:0}
 .gnav a.soon-link{opacity:.75}
+
+/* 料金ページ: 月払い/年払いの切り替え */
+.cyc{display:inline-flex;margin:0 0 12px;padding:3px;border:1px solid var(--line2, #c3cad3);border-radius:6px;background:#fff}
+.cyc label{position:relative;display:flex}
+.cyc input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.cyc span{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 18px;border-radius:4px;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer}
+.cyc small{font-size:11px;font-weight:700;color:var(--good)}
+.cyc label.on span{background:var(--navy, #1e3348);color:#fff}
+.cyc label.on small{color:#bfe8cd}
+.cyc input:focus-visible+span{outline:2px solid #2f7de1;outline-offset:2px}
+.pick .save{font-weight:700;color:var(--good)}
+.pick label .meta{white-space:normal}
+.pick td.r .save{display:none}
+@media(max-width:860px){.pick td.r .save{display:block;color:var(--good);font-weight:700}}
