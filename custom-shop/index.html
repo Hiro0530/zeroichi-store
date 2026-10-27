@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>カスタムショップ支援｜小さなカスタムショップ・整備工場の「見え方」を整える|ZEROICHI WORKS</title>
+<meta name="description" content="小さなカスタムショップ・整備工場向け。Googleマップ・ホームページ・SNS・見積りの「外からの見え方」を、そのまま貼れる文章で整えます。まずは無料診断(お店の良い所2つと、すぐ直せる所3つを文例つきで)。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/custom-shop/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ZEROICHI WORKS">
+<meta property="og:title" content="腕はいいのに、外から見えていない。カスタムショップの「見え方」を整えます">
+<meta property="og:description" content="Googleマップ・ホームページ・SNS・見積りを、貼るだけの文章で。まずは無料診断から。">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/custom-shop/">
+<meta property="og:locale" content="ja_JP">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../zw.css">
+<meta name="theme-color" content="#1b2a6b">
+<style>
+.p-custom{--ac:#b23a2b;--ac-ink:#fff;--ac-soft:#f8e6e2;--ac-text:#922c1f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .p-custom{--ac:#ef7d6b;--ac-ink:#2a0905;--ac-soft:#3a1712;--ac-text:#f59d8e}}
+:root[data-theme="dark"] .p-custom{--ac:#ef7d6b;--ac-ink:#2a0905;--ac-soft:#3a1712;--ac-text:#f59d8e}
+.hero .points{list-style:none;padding:0;margin:4px 0 0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted)}
+.hero .points li{margin:0;padding-left:16px;position:relative}
+.hero .points li::before{content:"";position:absolute;left:0;top:.72em;width:8px;height:8px;border-radius:2px;background:var(--ac)}
+.voices{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:10px}
+@media(min-width:700px){.voices{grid-template-columns:1fr 1fr}}
+.voices li{margin:0;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:0 var(--r-s) var(--r-s) 0;padding:12px 14px;font-size:15.5px;font-weight:500}
+.voices li::before{content:"「"}.voices li::after{content:"」"}
+.steps{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:12px}
+@media(min-width:760px){.steps{grid-template-columns:repeat(3,1fr)}}
+.steps li{margin:0;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--ac);border-radius:var(--r-m);padding:16px 16px 12px}
+.steps .n{font:600 15px/1 var(--num);letter-spacing:.08em;color:var(--ac-text)}
+.steps b{display:block;font-size:17.5px;margin:6px 0 2px}
+.steps .pr{font:600 24px/1.2 var(--num);margin:2px 0 6px}
+.steps .pr small{font:500 13px var(--jp);color:var(--muted);margin-left:4px}
+.steps p{font-size:14.5px;margin:0;color:var(--muted)}
+.fic{display:inline-block;background:var(--ink);color:var(--paper);font-weight:700;font-size:13px;padding:2px 10px;border-radius:4px;margin:0 0 8px}
+.paper .lbl{font-size:13px;font-weight:700;color:var(--ac-text);letter-spacing:.04em;margin:18px 0 4px}
+.ba{display:grid;gap:8px;margin:8px 0 4px}
+@media(min-width:700px){.ba{grid-template-columns:1fr 1fr}}
+.ba div{border:1px solid var(--line);border-radius:var(--r-s);padding:10px 12px;font-size:14.5px;background:var(--sunk)}
+.ba div.after{background:var(--ac-soft);border-color:transparent}
+.ba em{display:block;font-style:normal;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.ba div.after em{color:var(--ac-text)}
+.fix{counter-reset:fx;list-style:none;padding:0;margin:8px 0}
+.fix>li{counter-increment:fx;position:relative;padding:8px 0 12px 40px;border-top:1px solid var(--line);margin:0}
+.fix>li:first-child{border-top:0}
+.fix>li::before{content:counter(fx);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--ac);color:var(--ac-ink);font:600 16px/28px var(--num);text-align:center}
+.fix b{display:block}
+.tiers{display:grid;gap:14px;margin:14px 0}
+@media(min-width:700px){.tiers{grid-template-columns:1fr 1fr}.tier.main{grid-column:1/-1;order:-1}.tier.main ul{columns:2;column-gap:28px}.tier.main li{break-inside:avoid;margin:0 0 8px}}
+.tier{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px 18px 10px;display:flex;flex-direction:column}
+.tier.main{border:2px solid var(--ac)}
+.tier .price .amt{font-size:40px}
+.tier ul{padding-left:1.1em;font-size:14.5px;margin:6px 0 10px}
+.tier .who{font-size:13.5px;color:var(--muted);margin:0 0 4px}
+.tier .badge{align-self:flex-start;background:var(--ac);color:var(--ac-ink);font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;margin-bottom:6px}
+ol.flow{list-style:none;padding:0;counter-reset:f;margin:10px 0}
+ol.flow>li{counter-increment:f;position:relative;padding:4px 0 10px 46px}
+ol.flow>li::before{content:counter(f);position:absolute;left:0;top:4px;width:32px;height:32px;border-radius:50%;background:var(--ac);color:var(--ac-ink);font:600 18px/32px var(--num);text-align:center}
+.zw-head .sub{white-space:nowrap}
+@media(max-width:430px){.zw-logo{white-space:nowrap;font-size:14px;letter-spacing:.05em}.zw-logo.sub{font-size:12px}}
+h1 br.d{display:none}@media(min-width:700px){h1 br.d{display:inline}}
+.end{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--ac);border-radius:var(--r-m);padding:22px 20px 14px;margin-top:8px}
+</style>
+</head>
+<body class="p-custom">
+<header class="zw-head">
+  <div class="in"><a class="zw-logo" href="../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a><span class="zw-logo sub">カスタムショップ支援</span></div>
+  <div class="bar"></div>
+</header>
+<main class="wrap">
+<section class="hero">
+  <span class="tag">小さなカスタムショップ・整備工場・板金工場向け</span>
+  <h1><span class="name">カスタムショップ支援</span>腕はいいのに、外から見えていない。<br class="d">お店の「見え方」を文章で整えます</h1>
+  <p class="lead">Googleマップの説明、ホームページの作業メニュー、口コミへの返信、見積りの書き方。どれも後回しになりがちですが、お客さんはここを見て電話するかどうかを決めています。作業の手は止めずに、そのまま貼れる文章でお渡しします。</p>
+  <a class="btn" href="mailto:zeroichi.works.jp@gmail.com?subject=%E7%84%A1%E6%96%99%E8%A8%BA%E6%96%AD%E3%81%AE%E7%94%B3%E8%BE%BC%E3%81%BF%28%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%E6%94%AF%E6%8F%B4%29&amp;body=%E5%BA%97%E5%90%8D%3A%0A%E3%83%9B%E3%83%BC%E3%83%A0%E3%83%9A%E3%83%BC%E3%82%B8%E3%83%BBSNS%E3%81%AEURL%28%E3%81%AA%E3%81%91%E3%82%8C%E3%81%B0Google%E3%83%9E%E3%83%83%E3%83%97%E3%81%A7%E3%81%AE%E5%BA%97%E5%90%8D%29%3A%0A%E5%9C%B0%E5%9F%9F%28%E9%83%BD%E9%81%93%E5%BA%9C%E7%9C%8C%E3%83%BB%E5%B8%82%E5%8C%BA%E7%94%BA%E6%9D%91%29%3A%0A%E5%BE%97%E6%84%8F%E3%81%AA%E4%BD%9C%E6%A5%AD%28%E4%BB%BB%E6%84%8F%E3%80%82%E4%BE%8B%3A%20%E8%BB%8A%E9%AB%98%E8%AA%BF%E3%83%BB%E3%83%9B%E3%82%A4%E3%83%BC%E3%83%AB%E3%83%BB%E6%9D%BF%E9%87%91%29%3A%0A%E3%81%8A%E5%90%8D%E5%89%8D%28%E4%BB%BB%E6%84%8F%29%3A%0A">無料診断を申し込む</a>
+  <ul class="points">
+    <li>店名・URL・地域を送るだけ</li>
+    <li>3営業日以内にメールでお返事</li>
+    <li>お支払いの情報は要りません</li>
+    <li>電話での売り込みはしません</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2>こんなこと、ありませんか</h2>
+  <ul class="voices">
+    <li>ホームページは作ったきり。何年も触っていない</li>
+    <li>Googleマップの口コミに、何を返せばいいか分からない</li>
+    <li>車高調やホイールの問い合わせは来るが、値段だけ聞いて終わる</li>
+    <li>作業の写真は撮っているのに、載せる文章を書く時間がない</li>
+    <li>見積りを口で伝えて、後から「聞いてない」と言われた</li>
+    <li>インスタは気が向いた時だけ。続かない</li>
+  </ul>
+  <p style="margin-top:14px">仕事の中身が良くても、外から見える情報が古いままだと、初めてのお客さんには伝わりません。ここは文章と段取りの話なので、作業の合間にお店の方が抱え込まなくても整えられます。</p>
+</section>
+
+<section class="sec">
+  <h2>3段で進めます</h2>
+  <ul class="steps">
+    <li><span class="n">STEP 01</span><b>無料診断</b><div class="pr">0<small>円</small></div><p>Googleマップ・ホームページ・SNSの公開されている所を見て、良い所2つと、すぐ直すと効きそうな所3つを、文例つきでお送りします。</p></li>
+    <li><span class="n">STEP 02</span><b>見え方まるごと整備</b><div class="pr">39,800<small>円(1回)</small></div><p>作業メニューのページ原稿4本、Googleビジネスプロフィールの文章一式、見積りテンプレート、作業写真の撮り方ガイドをまとめてお渡しします。</p></li>
+    <li><span class="n">STEP 03</span><b>毎月の手入れ</b><div class="pr">19,800<small>円〜/月</small></div><p>作業写真と一言メモを送ってもらえば、Google投稿・施工事例・口コミへの返信文を毎月お返しします。</p></li>
+  </ul>
+  <p class="muted">診断だけで終わっても構いません。診断の内容は、ご自分で直すのにそのまま使えるように書きます。</p>
+</section>
+
+<section class="sec" id="sample">
+  <h2>無料診断の見本</h2>
+  <p>実際にお送りする診断の一部です。お店の名前・地域・内容はすべて架空です。</p>
+  <div class="paper">
+    <span class="fic">サンプル:架空の店舗</span>
+    <h1 style="margin-top:4px">ガレージ・ミナト(架空) 様 無料診断</h1>
+    <p class="muted">見た所: Googleビジネスプロフィール/ホームページ(トップ・料金・会社概要)/Instagram。いずれも公開されている情報だけです。</p>
+
+    <h2>良い所</h2>
+    <ul>
+      <li><b>作業写真の量が多い。</b>Instagramに足回りの作業途中の写真が多く、作業の丁寧さが伝わります。これはそのまま強みになります。</li>
+      <li><b>Googleの口コミの中身が具体的。</b>「アライメントまで説明してくれた」という口コミが複数あります。説明の丁寧さを、お店の側の言葉でも出せます。</li>
+    </ul>
+
+    <h2>すぐ直すと効きそうな所</h2>
+    <ol class="fix">
+      <li><b>Googleの「ビジネスの説明」が1行だけ</b>
+        <div class="ba">
+          <div><em>今</em>車の整備・カスタムならお任せください。</div>
+          <div class="after"><em>文例</em>軽自動車からミニバンまで、車高調の取付・ローダウン、ホイール・タイヤ交換、アライメント調整をしています。持ち込みの部品も、適合を確認した上でお受けします。作業の前に、費用と作業内容を紙でお渡しします。(以下、営業日・予約の方法・対応車種を続けます)</div>
+        </div>
+      </li>
+      <li><b>ホームページに「車高調の取付」のページがない</b><p>問い合わせの多い作業ほど、専用のページがあると電話の前に安心してもらえます。<br>入れる項目: 対象の車種/作業の流れ(預かり時間の目安)/工賃の目安と「追加になる場合」/アライメントをすすめる理由/公道を走る車は保安基準の範囲で行うこと。</p></li>
+      <li><b>口コミに返信がない(直近10件中0件)</b>
+        <div class="ba">
+          <div><em>口コミ(架空)</em>車高調の取付でお願いしました。仕上がりの説明が分かりやすかったです。</div>
+          <div class="after"><em>返信の文例</em>ご来店ありがとうございました。取付後の車高とアライメントの数値まで見ていただけて、こちらもうれしかったです。乗っていて気になる音や、車高を少し変えたくなった時は、気軽にご相談ください。</div>
+        </div>
+      </li>
+    </ol>
+
+    <h2>1か月でやる順番</h2>
+    <p>① 説明文を差し替える(5分)→ ② 直近の口コミに返信する(1件2分)→ ③ 車高調のページを1枚足す(原稿があれば20分)。</p>
+    <hr>
+    <p class="muted">実際の診断では、お店のページを見て、上の形でお店ごとに書きます。架空の見本のため、数字や口コミは作り話です。</p>
+  </div>
+</section>
+
+<section class="sec" id="price">
+  <h2>料金</h2>
+  <div class="tiers">
+    <div class="tier">
+      <p class="plan-name">無料診断</p>
+      <div class="price"><span class="amt">0</span><span class="unit">円</span></div>
+      <p class="who">まず今の状態を知りたい</p>
+      <ul>
+        <li>良い所2つ・すぐ直せる所3つ(文例つき)</li>
+        <li>1か月でやる順番</li>
+        <li>3営業日以内にメールで</li>
+      </ul>
+    </div>
+    <div class="tier main">
+      <span class="badge">おすすめ</span>
+      <p class="plan-name">見え方まるごと整備(1回)</p>
+      <div class="price"><span class="amt">39,800</span><span class="unit">円</span><small>税込・前払い</small></div>
+      <p class="who">一度まとめて整えたい</p>
+      <ul>
+        <li>作業メニューのページ原稿 4本(例: カスタム/車高調・ローダウン/ホイール・タイヤ/板金塗装)</li>
+        <li>Googleビジネスプロフィールの文章一式(説明文・サービス項目・よくある質問10・最初の投稿4本)</li>
+        <li>見積りテンプレート 4種(車高調・ホイール/タイヤ・アライメント・板金)</li>
+        <li>作業写真の撮り方・見せ方ガイド(撮る12カット・添える一文の例20)</li>
+        <li>素材を受け取ってから7営業日・修正2回まで</li>
+      </ul>
+    </div>
+    <div class="tier">
+      <p class="plan-name">毎月の手入れ</p>
+      <div class="price"><span class="amt">19,800</span><span class="unit">円/月</span><small>税込</small></div>
+      <p class="who">ベーシック</p>
+      <ul>
+        <li>Google投稿文 4本</li>
+        <li>口コミへの返信文(月20件まで)</li>
+        <li>施工事例(ビフォーアフター)2本</li>
+        <li>月1回の短い振り返り</li>
+      </ul>
+      <p class="who"><b>しっかり 34,800円/月</b>: 投稿8本・施工事例4本・よくある質問の記事2本・Instagram/Xの文案12本・季節の案内文</p>
+    </div>
+  </div>
+  <p class="muted">毎月の手入れは1か月ごとのお申込みで、自動では課金しません(毎月、PayPalの請求書をメールでお送りします)。いつでもやめられます。見え方まるごと整備をご利用のお店は、毎月の手入れの初月が半額です。</p>
+</section>
+
+<section class="sec">
+  <h2>進め方</h2>
+  <ol class="flow">
+    <li><b>メールで店名・URL・地域を送る</b><br>下のボタンを押すと、必要な項目が入ったメールが開きます。</li>
+    <li><b>3営業日以内に、無料診断が届く</b><br>公開されている情報だけで作ります。ログインの情報などは伺いません。</li>
+    <li><b>続ける場合だけ返信</b><br>「まるごと整備」か「毎月の手入れ」とご返信ください。PayPalの請求書をお送りします。</li>
+    <li><b>素材を送る→原稿が届く→貼る</b><br>今の料金表・得意な作業・写真数枚などをメールで。届いた文章を、お店のページやGoogleに貼っていただきます(貼り方の手順もお付けします)。</li>
+  </ol>
+</section>
+
+<section class="sec">
+  <h2>お約束と、やらないこと</h2>
+  <ul class="items">
+    <li><strong>結果は約束しません。</strong>検索の順位・問い合わせの数・売上が増えることは保証できません。お約束するのは、期日までに決めた量の原稿をお渡しすることです。</li>
+    <li><strong>ログイン情報は預かりません。</strong>Google・ホームページ・SNSの操作はお店の側で行っていただきます。原稿は貼るだけの形でお渡しします。</li>
+    <li><strong>ルールに反する書き方はしません。</strong>やらせの口コミ、特典つきの口コミのお願い、「地域No.1」など根拠のない表現、保安基準に合わない改造をすすめる文は書きません。</li>
+    <li><strong>写真の個人情報に気をつけます。</strong>お客さまの顔やナンバーが写った写真は、隠し方をご案内します。</li>
+    <li><strong>文章はAIで作ります。</strong>調査と文章づくりにAI(Claude ほか)を使い、お店のページや公式の情報と照らし合わせてからお送りします。</li>
+  </ul>
+</section>
+
+<section class="sec faq">
+  <h2>よくあるご質問</h2>
+  <details><summary>無料診断のあとに、営業の電話がかかってきますか?</summary><p>かかってきません。やり取りはすべてメールです。診断の最後に有料の案内を3行だけ書きますが、返信がなければそれで終わりです。</p></details>
+  <details><summary>ホームページを持っていなくても大丈夫ですか?</summary><p>大丈夫です。Googleマップのお店の情報やInstagramだけでも診断できます。ページ原稿は、ホームページを作る時や、Googleのサービス項目にもそのまま使えます。</p></details>
+  <details><summary>整備や板金が中心で、カスタムは少しだけです。</summary><p>対象です。車検・整備・板金塗装・コーティングなど、お店の作業に合わせてページの組み合わせを選べます。</p></details>
+  <details><summary>今のホームページの制作会社とぶつかりませんか?</summary><p>お渡しするのは原稿(文章)なので、制作会社さんに「この文に差し替えてほしい」と渡す使い方もできます。</p></details>
+  <details><summary>作業の写真はどれくらい要りますか?</summary><p>まるごと整備では数枚で始められます。毎月の手入れでは、作業ごとに作業前・作業中・作業後の3枚ほどと、「何の車に何をしたか」の一言メモがあれば書けます。</p></details>
+  <details><summary>口コミの返信は、悪い口コミにも書いてもらえますか?</summary><p>書きます。事実と違う点がある場合も、言い返すのではなく、事実を短く伝えてお詫びと改善を書く形にします。書いた文はお店の方が確認してから載せてください。</p></details>
+  <details><summary>やめる時はどうすればいいですか?</summary><p>メールで「やめます」と送るだけです。毎月の手入れは前払いで、翌月の請求書をお送りしなくなります。お支払い済みの月の日割り返金はありませんが、当方の不備でお渡しできなかった分は返金します。</p></details>
+  <details><summary>運営しているのは誰ですか?</summary><p>ZEROICHI WORKS(個人事業)です。事業者の表示は<a href="../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください。</p></details>
+</section>
+
+<section class="sec">
+  <div class="end">
+    <h2 style="margin-bottom:6px">まずは、今のお店の「見え方」を無料で</h2>
+    <p>店名・URL(なければGoogleマップでの店名)・地域を書いて送るだけです。3営業日以内に、メールで診断をお送りします。</p>
+    <a class="btn" href="mailto:zeroichi.works.jp@gmail.com?subject=%E7%84%A1%E6%96%99%E8%A8%BA%E6%96%AD%E3%81%AE%E7%94%B3%E8%BE%BC%E3%81%BF%28%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E3%82%B7%E3%83%A7%E3%83%83%E3%83%97%E6%94%AF%E6%8F%B4%29&amp;body=%E5%BA%97%E5%90%8D%3A%0A%E3%83%9B%E3%83%BC%E3%83%A0%E3%83%9A%E3%83%BC%E3%82%B8%E3%83%BBSNS%E3%81%AEURL%28%E3%81%AA%E3%81%91%E3%82%8C%E3%81%B0Google%E3%83%9E%E3%83%83%E3%83%97%E3%81%A7%E3%81%AE%E5%BA%97%E5%90%8D%29%3A%0A%E5%9C%B0%E5%9F%9F%28%E9%83%BD%E9%81%93%E5%BA%9C%E7%9C%8C%E3%83%BB%E5%B8%82%E5%8C%BA%E7%94%BA%E6%9D%91%29%3A%0A%E5%BE%97%E6%84%8F%E3%81%AA%E4%BD%9C%E6%A5%AD%28%E4%BB%BB%E6%84%8F%E3%80%82%E4%BE%8B%3A%20%E8%BB%8A%E9%AB%98%E8%AA%BF%E3%83%BB%E3%83%9B%E3%82%A4%E3%83%BC%E3%83%AB%E3%83%BB%E6%9D%BF%E9%87%91%29%3A%0A%E3%81%8A%E5%90%8D%E5%89%8D%28%E4%BB%BB%E6%84%8F%29%3A%0A">無料診断を申し込む</a>
+    <p class="muted">メールアプリが開かない場合は、zeroichi.works.jp@gmail.com 宛に、件名「無料診断の申込み」、本文に店名・URL・地域を書いてお送りください。</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2 style="font-size:17px">お支払い・提供の条件</h2>
+  <table class="rows">
+    <tr><th>販売価格</th><td>無料診断 0円/見え方まるごと整備 39,800円(税込・1回)/毎月の手入れ ベーシック 19,800円・しっかり 34,800円(税込・1か月ごと)/ページ原稿の追加 1本7,800円</td></tr>
+    <tr><th>お支払い</th><td>PayPal(請求書をメールでお送りします)。前払い。</td></tr>
+    <tr><th>お渡しの時期</th><td>無料診断: お申込みから3営業日以内。まるごと整備: お支払いと素材の確認後7営業日以内。毎月の手入れ: お支払いの確認後、毎月の素材を受け取ってから5営業日以内。</td></tr>
+    <tr><th>解約・返金</th><td>毎月の手入れはいつでもメールで解約でき、翌月分から請求しません。お支払い済みの月の日割り返金はありません。原稿のお渡し後の返金はお受けしていませんが、当方の不備でお渡しできなかった分は返金します。</td></tr>
+  </table>
+  <p class="muted">事業者の名称・連絡先などは<a href="../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください。</p>
+</section>
+</main>
+<footer class="zw-foot"><div class="in">
+  <nav><a href="../">ZEROICHI WORKS トップ</a><a href="../jidosha/">工場の補助金だより</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a></nav>
+  <p>見本の店舗・口コミ・数字はすべて架空です。</p>
+</div></footer>
+</body>
+</html>
