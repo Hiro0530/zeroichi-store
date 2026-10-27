@@ -42,7 +42,7 @@
   }
   function paintPlan(s) {
     var box = $('#mp-plan-box'), det = $('#cancel');
-    if (!s.ready) { box.innerHTML = '<p class="muted">有料プランは準備中です。<a href="../plans/">料金とお申し込みの条件</a></p>'; det.hidden = true; return; }
+    if (!s.ready) { box.innerHTML = '<p class="muted">有料プランは準備中です。<a href="../plans/">料金を見る</a></p>'; det.hidden = true; return; }
     if (!s.user) { box.innerHTML = '<p class="muted">ログインすると表示します。</p>'; det.hidden = true; return; }
     var p = s.plan, sub = s.sub || {}, rows = [];
     rows.push(['プラン', esc(p.label)]);
@@ -55,7 +55,7 @@
     if (sub.amount) rows.push(['料金(税込)', esc(sub.amount)]);
     if (p.key !== 'free') rows.push(['お支払い', 'PayPal' + (sub.id ? '<span class="meta">契約番号 ' + esc(sub.id) + '</span>' : '')]);
     var btns = '';
-    if (p.key === 'free' || p.key === 'ended') btns = '<a class="btn" href="../plans/">プランを選ぶ(14日間無料)</a>';
+    if (p.key === 'free' || p.key === 'ended') btns = '<a class="btn" href="../plans/">プランを選ぶ(14日無料)</a>';
     if (p.key === 'paused') btns = '<button type="button" class="btn" id="mp-resume">今すぐ再開する</button>';
     var sws = (p.key === 'trial' || p.key === 'active') ? switchList(planKeyOf(sub)) : [];
     sws.forEach(function (sw, i) { btns += '<button type="button" class="btn sm ghost" data-sw="' + i + '">' + esc(sw.label) + '</button>'; });

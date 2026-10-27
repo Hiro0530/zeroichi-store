@@ -141,7 +141,7 @@ h3{line-height:1.5}
 .trust p{margin:0 0 12px;font-size:13.5px;color:var(--sub);flex:1}
 .trust a{font-size:13px;font-weight:700}
 
-.plans{display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;gap:0;border:1px solid var(--line2);align-items:stretch}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line2);align-items:stretch}
 .plan{padding:28px;display:flex;flex-direction:column;border-left:1px solid var(--line2);position:relative}
 .plan:first-child{border-left:0}
 .plan.main{background:#fbfcfe;box-shadow:inset 0 3px 0 var(--ac)}
@@ -193,9 +193,9 @@ h3{line-height:1.5}
   .top-nav{gap:16px;font-size:12.5px}
   h1{font-size:30px}
   .trust{grid-template-columns:repeat(2,1fr)}
-  .plans{grid-template-columns:1fr 1fr}
-  .plan:nth-child(3){border-left:0}
-  .plan:nth-child(n+3){border-top:1px solid var(--line2)}
+  .plans{grid-template-columns:1fr;border:0;gap:16px}
+  .plan{border:1px solid var(--line2)}
+  .plan.main{order:-1}
 }
 @media(max-width:1000px){
   .top-nav{display:none}
@@ -247,13 +247,9 @@ h3{line-height:1.5}
   .ticks li{grid-template-columns:1fr;gap:2px}
   .trust{grid-template-columns:1fr}
   .plans{grid-template-columns:1fr;border:0;gap:16px}
-  .plan{border:1px solid var(--line2)}
-  .plan:first-child,.plan:nth-child(3){border-left:1px solid var(--line2)}
-  .plan:nth-child(n+3){border-top:1px solid var(--line2)}
+  .plan,.plan:first-child{border:1px solid var(--line2)}
   .plan .cond{min-height:0}
   .plan.main{order:-2}
-  .plan.biz{order:-1}
-  .plans .plan:first-child{order:1}
   .phone{width:250px}
   .end p{font-size:18px}
   .end .cta{width:100%}
@@ -276,3 +272,10 @@ h3{line-height:1.5}
   .demo-steps li.on button::before{animation:none;width:100%}
 }
 .plan.biz .tag{color:var(--navy);border-color:var(--navy)}
+.plans-lead{margin:-8px 0 20px;font-size:15px;color:var(--sub)}
+.plans-lead b{color:var(--ink)}
+.plan .who{margin:4px 0 0;font-size:13px;color:var(--sub)}
+.plan li.later-h{padding-left:0;margin-top:8px;border-top:1px dashed var(--line);padding-top:12px}
+.plan li.later-h::before{display:none}
+.plan li.later-h .soon{display:inline-block;padding:0 5px;font-size:11px;line-height:18px;color:var(--sub);border:1px dashed var(--line2);border-radius:2px}
+.plan li.later::before{border-color:var(--line2)}
