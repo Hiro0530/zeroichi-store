@@ -111,4 +111,27 @@ eq(C.marketPriceFor({ rate: 0.10, shipFee: 210, material: 0, cost: 1500 }, { mod
 eq(C.marketPriceFor({ rate: 0.10, shipFee: 210, material: 0, cost: 1500 }, { mode: 'yen', value: 1000 }), 3011, 'メルカリ 目標1,000円({mode:yen})');
 eq(C.marketPriceFor({ rate: 0.10, shipFee: 0, material: 0, cost: 100 }, { mode: 'pct', value: 95 }), null, '手数料+目標が100%以上なら届かない');
 
+// 12. 発送のしかた(自分で発送 / 発送代行)
+eq(fees.self_ship.carriers.every(c => c.id === 'custom' || c.fee > 0), true, '運送会社の料金が入っている');
+eq(C.carrierCost(fees, 'clickpost'), 240, 'クリックポスト240円(2026年10月1日改定)');
+eq(C.carrierCost(fees, 'yupacket'), 360, 'ゆうパケット一律360円');
+eq(C.carrierCost(fees, 'ycompact'), 720, '宅急便コンパクト650円+専用BOX70円');
+eq(C.carrierCost(fees, 'custom', 555), 555, '自分で入力');
+const W = fees.warehouse.defaults;
+eq(C.warehouseCost('self', W), 0, '自分で発送は倉庫の費用なし');
+eq(C.warehouseCost('3pl', { in: 50, store: 100, photo: 300, out: 300 }), 750, '発送代行 50+100+300+300');
+eq(C.statusFlow('self').join('→'), '仕入れ済→出品中→売約→発送済', '自分で発送は入庫なし');
+eq(C.statusFlow('3pl').join('→'), '仕入れ済→入庫→出品中→売約→発送済', '発送代行は入庫あり');
+// 無在庫の例を両方の発送のしかたで: 10,880円・おもちゃ・ヤフオク6,000+800
+const mzBase = { sell: 10880, category: 'toys', cost: 6000, inShip: 800, selfShip: true, usePoints: false };
+// 自分で発送・ゆうパック60(970): 10880-1245-970-6800 = 1865
+eq(C.amazonProfit(fees, Object.assign({}, mzBase, { selfShipCost: C.carrierCost(fees, 'yp60'), other: C.warehouseCost('self', W) })).profit, 1865, '無在庫 自分で発送(ゆうパック60)');
+// 発送代行: さらに倉庫750円 → 1115
+eq(C.amazonProfit(fees, Object.assign({}, mzBase, { selfShipCost: C.carrierCost(fees, 'yp60'), other: C.warehouseCost('3pl', { in: 50, store: 100, photo: 300, out: 300 }) })).profit, 1115, '無在庫 発送代行(倉庫750円)');
+// メルカリ: 3,000円 宅急便60(750)・仕入れ1,500 → 自分で発送 3000-300-750-1500=450 / 発送代行 450-750=-300
+eq(C.marketProfit({ sell: 3000, rate: 0.10, shipFee: 750, material: 0, cost: 1500, other: C.warehouseCost('self', W) }).profit, 450, 'メルカリ 自分で発送');
+eq(C.marketProfit({ sell: 3000, rate: 0.10, shipFee: 750, material: 0, cost: 1500, other: 750 }).profit, -300, 'メルカリ 発送代行');
+// 目標の売値も倉庫の費用で上がる
+eq(C.marketPriceFor({ rate: 0.10, shipFee: 750, material: 0, cost: 1500, other: 750 }, 0) > C.marketPriceFor({ rate: 0.10, shipFee: 750, material: 0, cost: 1500, other: 0 }, 0), true, '発送代行は損益分岐が上がる');
+
 console.log(`OK ${n}件`);

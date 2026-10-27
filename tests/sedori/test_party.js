@@ -6,7 +6,8 @@ global.window = { matchMedia: () => ({ matches: false }) };
 global.location = { hash: '', search: '', protocol: 'http:' };
 global.navigator = {};
 global.document = { readyState: 'complete', body: { getAttribute: () => null }, addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; } };
-global.localStorage = { getItem() { return null; }, setItem() {} };
+const mem = {};
+global.localStorage = { getItem(k) { return k in mem ? mem[k] : null; }, setItem(k, v) { mem[k] = String(v); }, removeItem(k) { delete mem[k]; } };
 global.fetch = () => new Promise(() => {});
 window.SedoriCalc = require(path.join(root, 'sedori/assets/calc.js'));
 require(path.join(root, 'sedori/assets/ui.js'));
@@ -45,4 +46,25 @@ const rows = U.kobutsuRows([{ date: '2026-10-27', hinmoku: '道具類', name: 'x
 eq(rows[0].slice(0, 8), [1, '2026-10-27', '買受け', '道具類', 'x', '', 2, 3000], '受入れの列');
 eq(rows[0].slice(18, 22), ['2026-10-30', '売却', 5000, 'メルカリ 購入者'], '払出しの列');
 eq(U.K_HEAD.length, rows[0].length, '見出しと列の数');
+// 6. 台帳の状態の流れ(発送のしかたごと)
+global.setTimeout = global.setTimeout || (f => f());
+const L = U.ledger;
+localStorage.setItem('zw-sedori:ship', '"self"');
+const s1 = L.add({ name: '自分で発送の品', unit: 1000, sellPrice: 2000, sellTo: 'メルカリ' }, true);
+eq([s1.ship, s1.recvId], ['self', '自宅'], '自分で発送: 受取先は自宅');
+eq(L.advance(s1.id).status, '出品中', '自分で発送: 仕入れ済の次は出品中(入庫なし)');
+const sold = L.advance(s1.id);
+eq([sold.status, sold.salePrice, sold.saleParty], ['売約', 2000, 'メルカリ 購入者'], '売れたで売却欄を自動記入');
+eq(L.advance(s1.id).status, '発送済', '発送済');
+localStorage.setItem('zw-sedori:ship', '"3pl"');
+const s2 = L.add({ name: '発送代行の品', unit: 1000 }, true);
+eq([s2.ship, s2.recvId], ['3pl', ''], '発送代行: 受取先は代行の受付番号を入れる');
+eq(L.advance(s2.id).status, '入庫', '発送代行: 仕入れ済の次は入庫');
+const s3 = L.add({ name: 'FBAの品', unit: 1000, ship: 'fba' }, true);
+eq([s3.recvId, L.advance(s3.id).status], ['Amazon FBA', '入庫'], 'FBA: Amazonの倉庫に入庫');
+eq(U.nextLabel({ ship: 'self', status: '出品中' }), '売れた', '出品中の次のボタンは売れた');
+eq(U.whTotal({ warehouse: { defaults: { in: 50, store: 100, photo: 300, out: 300 } } }), 750, '発送代行の費用の合計');
+localStorage.setItem('zw-sedori:ship', '"self"');
+eq(U.whTotal({ warehouse: { defaults: { in: 50, store: 100, photo: 300, out: 300 } } }), 0, '自分で発送は0円');
+
 console.log(`OK ${n}件`);

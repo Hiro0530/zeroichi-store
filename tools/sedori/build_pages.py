@@ -16,7 +16,7 @@ ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__)
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
 BASE_URL = "https://hiro0530.github.io/zeroichi-store/sedori/"
-VER = "20261027b"
+VER = "20261027c"
 
 ROUTES = [
     ("rakuten-amazon", "楽天・Yahoo!→Amazon"),
@@ -58,6 +58,10 @@ def header(base: str, current: str, src: str) -> str:
       <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
       <button type="submit">検索</button>
     </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
     <div class="tgt" id="tgt">
       <span class="tgt-k">目標の利益</span>
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
@@ -217,8 +221,8 @@ RA_BODY = f"""<div class="lay3">
           <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat"></select></label>
           <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier"></select></label>
           ''' + fld("納品送料", num("c-inbound", "100"), "円", "資材込み・1個") + fld("その他", num("c-other", "0"), "円", "1個") + fld("ポイント上乗せ", dec("c-pt-mine", "0"), "%", "SPU・カード") +
-          chk("c-usept", "ポイントを利益に含める", True) + chk("c-self", "自己発送(FBAなし)") +
-          '<div id="c-selfship-w" hidden>' + fld("お客様への送料", num("c-selfship", "600"), "円") + '''</div>
+          chk("c-usept", "ポイントを利益に含める", True) + chk("c-self", "FBAを使わない(自分か代行が発送)") +
+          '<div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier"></select></label>' + fld("送料", num("c-selfship", "0"), "円", "自分で入力の時") + '''</div>
         </div>''')}
       {box("APIキー", '''<p class="hint">ご自身のIDとキーをこの端末だけに保存し、楽天・Keepaへ直接問い合わせます。</p>
         <div class="fl">
@@ -262,6 +266,7 @@ RA_BODY = f"""<div class="lay3">
         <label class="cell"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
         {cell("Amazon売値(税込)", num("c-sell"), "円")}
       </div>
+      <div id="wh"></div>
       <div id="kp-out"></div>
       <div id="c-out" aria-live="polite"></div>
       {DETAIL_ACTIONS}
@@ -298,8 +303,8 @@ MZ_BODY = f"""<div class="lay3">
           ''' + fld("価格", num("mz-yprice"), "円", "即決・落札見込み") + fld("送料", num("mz-yship", "0"), "円", "出品者→自分") + chk("mz-media", "ゲーム・CD・DVD・書籍・バイク等") + '''
         </div>''')}
       {box("発送", '''<div class="fl">
-          ''' + fld("発送費", num("mz-outship", "900"), "円", "発送代行・送料") + fld("その他", num("mz-other", "0"), "円") + '''
-          <p class="hint">FBAは使わない前提で計算します。</p>
+          ''' + '''<label class="fr col"><span class="fk">運送会社・サイズ</span><select id="mz-carrier"></select></label>''' + fld("送料", num("mz-outship", "0"), "円", "自分で入力の時") + fld("その他", num("mz-other", "0"), "円") + '''
+          <p class="hint">FBAは使いません。自分か発送代行が、お客様へ直接送ります。</p>
         </div>''', "", True)}
       {box("APIキー", '''<div class="fl"><label class="fr col"><span class="fk">Keepa APIキー</span><input id="mz-key" autocomplete="off" spellcheck="false"></label>
         <div class="row-btns"><button type="button" class="btn sm" id="mz-key-save">保存</button></div></div>''', "", False)}
@@ -323,6 +328,7 @@ MZ_BODY = f"""<div class="lay3">
       <div class="dg">
         {cell("出品価格(中古)", num("mz-sell"), "円")}
       </div>
+      <div id="wh"></div>
       <div id="mz-out" aria-live="polite"></div>
       {DETAIL_ACTIONS}
       <p class="det-links"><a id="mz-amz" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a></p>
@@ -375,6 +381,7 @@ def market_body(side: str, title_hint: str) -> str:
         {cell("その他(集荷・付属品)", num("s-other", "0"), "円")}
         <div id="s-shipfee-w" class="w2" hidden>{cell("送料(自分で入力)", num("s-shipfee", "0"), "円")}</div>
       </div>
+      <div id="wh"></div>
       <div id="m-out" aria-live="polite"></div>
       {DETAIL_ACTIONS}
     </div>
