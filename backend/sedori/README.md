@@ -5,7 +5,7 @@
 
 | 置き場所 | 中身 |
 |---|---|
-| `firestore.rules` | Cloud Firestore の規則。本人だけが自分の台帳を読み書き。契約の状態(subscription)は Worker だけが書く。台帳の書き込みは有料の間だけ、読む・消すはいつでも |
+| `firestore.rules` | Cloud Firestore の規則。本人だけが自分の台帳を読み書き。契約の状態(subscription)は Worker だけが書く。台帳の書き込みは有料の間だけ、読む・消すはいつでも。帳簿(`books`)は種類ごとに、総合以上(売上・経費など)/業務(申告用の設定・棚卸の数)の間だけ書ける |
 | `firebase.json` | Firebase CLI で規則を入れる時の設定(コンソールに貼り付けてもよい) |
 | `worker/` | Cloudflare Worker。PayPal の Webhook → Firestore、マイページからの一時停止・再開・プラン変更・解約、毎日の仕事(無料期間の終了3日前のメール・一時停止の自動再開・解約から3年たった台帳の削除) |
 | `mailer/Code.gs` | お知らせメールの送り口(Google Apps Script・事業用の Gmail から送る) |

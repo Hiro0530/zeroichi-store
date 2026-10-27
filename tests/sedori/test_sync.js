@@ -167,7 +167,7 @@ eq(S.firstSync('u2', 'u1', 0), 'merge', '別のアカウントでも空なら');
   const mem = {};
   global.localStorage = { getItem(k) { return k in mem ? mem[k] : null; }, setItem(k, v) { mem[k] = String(v); }, removeItem(k) { delete mem[k]; } };
   global.fetch = () => new Promise(() => {});
-  window.SedoriCalc = C; window.SedoriSync = S;
+  window.SedoriCalc = C; window.SedoriSync = S; window.SedoriSellerCheck = require(path.join(root, 'sedori/assets/seller-check.js'));
   require(path.join(root, 'sedori/assets/ui.js'));
   const U = window.SedoriUI, Lg = U.ledger;
   const r = Lg.add({ name: 'ゲーム機', cond: '中古', unit: 15000 }, true);

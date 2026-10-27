@@ -15,7 +15,7 @@ import sys
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[3] / "kt-zs-sedori-ghp")
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261028d"
+VER = "20261028e"
 
 import re as _re
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
@@ -40,9 +40,13 @@ def per_month(k: str) -> str:
 P_TM, P_TY, P_FM, P_FY, P_LM, P_LY, P_BM, P_BY = (CAT[k]["price"] for k in (
     "total_month", "total_year", "founder_month", "founder_year", "light_month", "light_year", "business_month", "business_year"))
 LIGHT_LIMIT = int(_re.search(r"LIGHT_MONTHLY_LIMIT:\s*(\d+)", _CONFIG).group(1))
-# 帳簿の機能(/sedori/books/。別の班が作る)ができるまでは「11月中に追加」と書く
-ACC_READY = _re.search(r"ACCOUNTING_READY:\s*(true|false)", _CONFIG).group(1) == "true"
-SOON = "" if ACC_READY else '<span class="soon">11月中に追加</span>'
+# 有料の機能ができたかどうか(config.js の FEATURES_READY)。できていない機能だけ「11月中に追加」と書く
+_FR = _re.search(r"FEATURES_READY:\s*\{(.*?)\}", _CONFIG, _re.S).group(1)
+READY = {k: v == "true" for k, v in _re.findall(r"(\w+):\s*(true|false)", _FR)}
+
+
+def ready(*keys: str) -> bool:
+    return all(READY.get(k, False) for k in keys)
 
 
 def save_months(m: str, y: str) -> int:
@@ -50,7 +54,8 @@ def save_months(m: str, y: str) -> int:
 
 
 # 未完成の機能の印(比べる表の中だけ。表の下に「※は11月中に追加」と1回だけ書く)
-MARK = "" if ACC_READY else '<sup class="mk">※</sup>'
+def mk(*keys: str) -> str:
+    return "" if ready(*keys) else '<sup class="mk">※</sup>'
 
 # プランごとにできること(料金ページの「機能を詳しく比べる」)。列は 無料/ライト/総合/業務。8行まで
 FEATURES = [
@@ -59,10 +64,11 @@ FEATURES = [
     ("パソコンとスマホで同じ台帳", "—", "○", "○", "○"),
     ("ヤフオク終了60分前の通知", "入れた端末だけ", "どの端末の出品も", "どの端末の出品も", "どの端末の出品も"),
     ("楽天の検索", "1日20回", "制限なし", "制限なし", "制限なし"),
-    ("売上・経費・月ごとの利益", "台帳の期間合計", "台帳の期間合計", f"○{MARK}", f"○{MARK}"),
-    ("在庫", "状態ごとの件数", "状態ごとの件数", f"売れ残りアラート{MARK}", f"売れ残りアラート・期末の棚卸{MARK}"),
-    ("確定申告と複数人", "—", "—", "—", f"申告用の数字と書き出し・仕入税額控除の特例チェック・3人まで・発送代行への指示・警察提出用PDF{MARK}"),
+    ("売上・経費・月ごとの利益", "台帳の期間合計", "台帳の期間合計", f"○{mk('books')}", f"○{mk('books')}"),
+    ("在庫", "状態ごとの件数", "状態ごとの件数", f"売れ残りアラート{mk('books')}", f"売れ残りアラート{mk('books')}・期末の棚卸{mk('stock')}"),
+    ("確定申告と複数人", "—", "—", "—", f"申告用の数字と書き出し・仕入税額控除の特例チェック{mk('tax')}・3人まで{mk('team')}・発送代行への指示{mk('threepl')}・警察提出用PDF{mk('policepdf')}"),
 ]
+ANY_LATER = not all(READY.values())
 
 
 def feature_rows() -> str:
@@ -70,26 +76,33 @@ def feature_rows() -> str:
                      for f in FEATURES)
 
 
-# 料金ページ・トップ・紹介で見せる3つのプラン(順は PC の左から)。bullets はできていること、later は「11月中に追加」の分(合わせて4つまで)
+# 料金ページ・トップ・紹介で見せる3つのプラン(順は PC の左から)。items は (文, その機能の FEATURES_READY のキー)。
+# できている機能は bullets、まだの機能は later(「11月中に追加」)に分ける(合わせて4つまで)
 CARDS = [
     {"base": "light", "who": "まずは台帳をクラウドに残したい方",
-     "bullets": [f"台帳をクラウドに保存(月{LIGHT_LIMIT}件まで)", "パソコンとスマホで同じ台帳", "ヤフオク終了前の通知をどの端末にも", "楽天の検索 制限なし"], "later": []},
+     "items": [(f"台帳をクラウドに保存(月{LIGHT_LIMIT}件まで)", ()), ("パソコンとスマホで同じ台帳", ()), ("ヤフオク終了前の通知をどの端末にも", ()), ("楽天の検索 制限なし", ())]},
     {"base": "total", "who": "売上・経費・利益まで1か所で見たい方",
-     "bullets": ["ライトのすべて", "台帳の件数は無制限"], "later": ["売上の取り込みと経費", "月ごとの利益と売れ残りアラート"]},
+     "items": [("ライトのすべて", ()), ("台帳の件数は無制限", ()), ("売上の取り込みと経費", ("books",)), ("月ごとの利益と売れ残りアラート", ("books",))]},
     {"base": "business", "who": "棚卸と確定申告の数字まで任せたい方",
-     "bullets": ["総合のすべて"], "later": ["期末の棚卸(スマホで数える)", "確定申告用の数字と会計ソフト向けの書き出し", "3人まで・発送代行への指示・警察提出用の台帳PDF"]},
+     "items": [("総合のすべて", ()), ("期末の棚卸(スマホで数える)", ("stock",)), ("確定申告用の数字と会計ソフト向けの書き出し", ("tax",)), ("3人まで・発送代行への指示・警察提出用の台帳PDF", ("team", "threepl", "policepdf"))]},
 ]
-if ACC_READY:
-    for _c in CARDS:
-        _c["bullets"] += _c["later"]
-        _c["later"] = []
+for _c in CARDS:
+    _c["bullets"] = [t for t, k in _c["items"] if ready(*k)]
+    _c["later"] = [t for t, k in _c["items"] if not ready(*k)]
+
+
+def _amount(parts: list[tuple[str, tuple]]) -> str:
+    # できている機能を先に、まだの機能は「(…は11月中に追加。追加の料金はかかりません)」と1回だけ添える
+    now = [t for t, k in parts if ready(*k)]
+    later = [t for t, k in parts if not ready(*k)]
+    return "・".join(now + later) + (f"({'・'.join(later)}は11月中に追加。追加の料金はかかりません)" if later else "")
+
 
 # お申し込み内容の確認の「分量」(プランの段ごと。短く)
-_LATER = "" if ACC_READY else "(11月中に追加。追加の料金はかかりません)"
 AMOUNT = {
     "light": f"台帳のクラウド保存(月{LIGHT_LIMIT}件まで)、パソコンとスマホの同期、ヤフオク終了前の通知、楽天の検索 制限なし。1アカウント",
-    "total": f"ライトのすべてと、台帳の件数の制限なし。売上の取り込み・経費・月ごとの利益・売れ残りアラート{_LATER}。1アカウント",
-    "business": f"総合のすべてと、期末の棚卸・確定申告用の数字と会計ソフト向けの書き出し・仕入税額控除の特例チェック・3人まで・発送代行への指示・警察提出用の台帳PDF{_LATER}",
+    "total": "ライトのすべてと、台帳の件数の制限なし。" + _amount([("売上の取り込み", ("books",)), ("経費", ("books",)), ("月ごとの利益", ("books",)), ("売れ残りアラート", ("books",))]) + "。1アカウント",
+    "business": "総合のすべてと、" + _amount([("期末の棚卸", ("stock",)), ("確定申告用の数字と会計ソフト向けの書き出し", ("tax",)), ("仕入税額控除の特例チェック", ("tax",)), ("3人まで", ("team",)), ("発送代行への指示", ("threepl",)), ("警察提出用の台帳PDF", ("policepdf",))]),
 }
 
 
@@ -186,8 +199,10 @@ LEGAL = """<details class="legal" id="legal">
 
 
 def footer(base: str, scripts: list[str]) -> str:
-    # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む
-    order = ["config.js", "sync.js"] + [x for x in scripts if x == "calc.js"] + ["ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js")]
+    # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む。
+    # 帳簿の同期(books-sync.js)は account.js より前、売り手の確認の判定(seller-check.js)は ui.js より前
+    first = ["books-sync.js"] if "books-sync.js" in scripts else []
+    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")]
     sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in order)
     return f"""<footer class="ft">
   <div class="ft-in">
@@ -711,7 +726,8 @@ CONF = [
 ]
 conf_dl = "\n".join(f'          <div class="cf-r"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in CONF)
 cards = "\n".join("      " + plan_card(c) for c in CARDS)
-cmp_note = "" if ACC_READY else '<p class="hint">※は11月中に追加します。追加した日から、そのプランで自動で使えます(追加の料金はかかりません)。</p>'
+cmp_note = '<p class="hint">※は11月中に追加します。追加した日から、そのプランで自動で使えます(追加の料金はかかりません)。</p>' if ANY_LATER else ""
+
 
 PLANS_BODY = f"""<div class="pl">
   <div class="pl-head">
@@ -832,11 +848,11 @@ MYPAGE_BODY = """<div class="mp">
         <div class="row-btns"><button type="button" class="btn sm" data-exp="xlsx">Excelで書き出す</button><button type="button" class="btn sm ghost" data-exp="csv">CSVで書き出す</button><button type="button" class="btn sm ghost" id="mp-cloud-exp" hidden>クラウドの台帳を書き出す</button><button type="button" class="btn sm ghost" id="mp-sync" hidden>今すぐ同期</button></div>
         <p class="hint" id="mp-keep">保管の期間: 契約中はずっと。解約後は3年間保管し、その後に消します。ご自身で消した時は、すぐ消します。</p>
         <details class="mp-danger" id="mp-del" hidden>
-          <summary>クラウドの台帳・アカウントを消す</summary>
+          <summary>クラウドの台帳・帳簿・アカウントを消す</summary>
           <div class="mp-danger-b">
-            <p>クラウドの台帳を消すと元に戻せません。古物台帳は3年間の保存が必要なので、先に書き出してください。</p>
-            <label class="ck"><input type="checkbox" id="mp-del-local">この端末の台帳も消す</label>
-            <div class="row-btns"><input type="text" id="mp-del-word" placeholder="「消す」と入力" aria-label="確認のため「消す」と入力"><button type="button" class="btn sm danger" id="mp-del-cloud">クラウドの台帳を消す</button><button type="button" class="btn sm danger ghost" id="mp-del-acct">アカウントを削除</button></div>
+            <p>クラウドの台帳と帳簿を消すと元に戻せません。古物台帳は3年間の保存が必要なので、先に書き出してください。</p>
+            <label class="ck"><input type="checkbox" id="mp-del-local">この端末の台帳と帳簿も消す</label>
+            <div class="row-btns"><input type="text" id="mp-del-word" placeholder="「消す」と入力" aria-label="確認のため「消す」と入力"><button type="button" class="btn sm danger" id="mp-del-cloud">クラウドの台帳と帳簿を消す</button><button type="button" class="btn sm danger ghost" id="mp-del-acct">アカウントを削除</button></div>
             <p class="hint">アカウントの削除は、解約が済んでからできます。</p>
           </div>
         </details>
@@ -852,7 +868,7 @@ MYPAGE_BODY = """<div class="mp">
 
 out = head("マイページ", "ログイン、契約内容、台帳のクラウド保存と書き出し、通知の設定。", "mypage/", "../", 'data-page="mypage"')
 out = out.replace('<meta name="description"', '<meta name="robots" content="noindex">\n<meta name="description"', 1)
-out += header("../", "mypage", "ledger") + crumb("../", "マイページ") + f'<main class="wrap">\n{MYPAGE_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "mypage.js"])
+out += header("../", "mypage", "ledger") + crumb("../", "マイページ") + f'<main class="wrap">\n{MYPAGE_BODY}\n</main>\n' + footer("../", ["calc.js", "books-sync.js", "ui.js", "mypage.js"])
 write("mypage", out)
 
 
@@ -873,7 +889,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <ol>
 <li>本サービスは、仕入れと販売の手数料・送料・ポイントを含めた利益の計算、古物台帳の項目に沿った記録(以下「台帳」)、その書き出しを行うウェブアプリです。</li>
 <li>無料プランでは、計算と台帳を、利用者の端末のブラウザの中に保存して使えます。登録は要りません。</li>
-<li>有料プラン(ライト・総合・業務)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。総合・業務の帳簿の機能は、料金ページに「11月中に追加」と示したものを順に追加します。中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
+<li>有料プラン(ライト・総合・業務)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。総合・業務では、売上・経費・利益・棚卸・確定申告の数字をまとめる帳簿も使えます。{TERMS_LATER}中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
 </ol>
 
 <h2>第2条(アカウント)</h2>
@@ -949,13 +965,14 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <p>ZEROICHI WORKS(事業者の名前・連絡先は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
 
 PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年10月28日(帳簿の記録のクラウド保存を追加)</p>
 <p>ZEROICHI WORKS(以下「当方」)は、「せどり 利益チェック」(以下「本サービス」)で扱う個人情報を、次のとおり取り扱います。事業者の氏名・住所等は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p>
 
 <h2>1. 扱う情報</h2>
 <table class="legal-t">
 <tr><th>アカウント</th><td>メールアドレス。Googleでログインした場合はGoogleアカウントのメールアドレスと識別子(パスワードは当方に届きません)</td></tr>
 <tr><th>台帳(有料プラン)</th><td>利用者が入れた仕入れ・売却の記録。取引相手の氏名・住所・電話・メール・職業・年齢・確認の方法など、古物台帳の項目を含みます</td></tr>
+<tr><th>帳簿(総合・業務)</th><td>取り込んだ売上(Amazonのレポート・メルカリの取引の内容)、経費と支払先、毎月の経費、取り込みの履歴、売れ残りの目安、棚卸の数、申告用の数字の設定(消費税の区分・棚卸高・登録番号の無い仕入れ先の印など)</td></tr>
 <tr><th>設定(有料プラン)</th><td>目標の利益、発送のしかた、発送代行の費用</td></tr>
 <tr><th>契約</th><td>PayPalのサブスクリプションID、プラン、契約の状態、無料期間の終わり・次回の請求日。カード番号・口座番号は当方に届かず、PayPalが扱います</td></tr>
 <tr><th>お問い合わせ</th><td>メールでいただいた内容</td></tr>
@@ -964,7 +981,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 
 <h2>2. 利用目的</h2>
 <ol>
-<li>ログインと、台帳・設定のクラウドへの保存・端末間の同期・書き出しのため</li>
+<li>ログインと、台帳・帳簿・設定のクラウドへの保存・端末間の同期・書き出しのため</li>
 <li>契約の管理(お申し込み・無料期間の終了のお知らせ・請求・一時停止・解約)のため</li>
 <li>お問い合わせへの返事、料金や規約の変更などの大切なお知らせのため</li>
 <li>不正な利用を防ぐため</li>
@@ -974,7 +991,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <h2>3. 第三者への提供の制限</h2>
 <ol>
 <li>当方は、法令に基づく場合などを除き、本人の同意なく個人情報を第三者に提供しません。</li>
-<li><b>クラウドへの保存について</b>: 台帳と設定は、Google LLC の Firebase(Cloud Firestore)の東京リージョン(日本)に保存します。Googleは、当方との契約(データ処理の規約)に基づいてデータを保管するだけで、中身を取り扱いません。このため、個人情報保護委員会の考え方(いわゆるクラウド例外)に照らし、Googleへの「第三者提供」にはあたらないものとして扱い、当方が安全管理の責任を負います。</li>
+<li><b>クラウドへの保存について</b>: 台帳・帳簿・設定は、Google LLC の Firebase(Cloud Firestore)の東京リージョン(日本)に保存します。Googleは、当方との契約(データ処理の規約)に基づいてデータを保管するだけで、中身を取り扱いません。このため、個人情報保護委員会の考え方(いわゆるクラウド例外)に照らし、Googleへの「第三者提供」にはあたらないものとして扱い、当方が安全管理の責任を負います。</li>
 <li>利用者が取引相手から得た個人情報について、当方は保管の場所を提供する立場で、その情報を取り扱いません。利用者の側でも、当方のクラウドに保存することは第三者への提供にあたらないものと考えています。</li>
 <li>支払いはPayPal(PayPal Pte. Ltd.)、契約の状態の受け渡しは Cloudflare, Inc. の Workers、お知らせのメールの送信は Google(Gmail)を使います。これらに渡すのは、それぞれの目的に必要な情報(メールアドレス・契約の識別子など)だけで、台帳の中身は渡しません。</li>
 </ol>
@@ -990,7 +1007,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 
 <h2>5. 保存の期間</h2>
 <table class="legal-t">
-<tr><th>クラウドの台帳・設定</th><td>契約中は保管します。解約(支払い済みの期間の終わり)から<b>3年間</b>保管し、その後に消します。古物台帳は最後の記入から3年間の保存が必要なため、解約後もマイページから書き出せるようにしています。利用者がマイページで消した時は、すぐ消します</td></tr>
+<tr><th>クラウドの台帳・帳簿・設定</th><td>契約中は保管します。解約(支払い済みの期間の終わり)から<b>3年間</b>保管し、その後に消します。古物台帳は最後の記入から3年間の保存が必要なため、解約後もマイページから書き出せるようにしています。利用者がマイページで消した時は、すぐ消します</td></tr>
 <tr><th>アカウント</th><td>アカウントを削除するまで(解約後、マイページから削除できます)</td></tr>
 <tr><th>契約・請求の記録</th><td>税法などの法令で決められた期間(最長7年)</td></tr>
 <tr><th>お問い合わせのメール</th><td>対応が終わってから1年</td></tr>
@@ -1008,7 +1025,8 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <h2>9. お問い合わせ</h2>
 <p>ZEROICHI WORKS(事業者の名前・住所等は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
 
-doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS)
+TERMS_LATER = "業務の機能のうち、料金ページに「11月中に追加」と示したものは順に追加します。" if ANY_LATER else ""
+doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS.replace("{TERMS_LATER}", TERMS_LATER))
 doc_page("privacy", "プライバシーポリシー", "せどり 利益チェックのプライバシーポリシー(利用目的・安全管理・第三者提供の制限とクラウドへの保存・解約後の保存期間)。", PRIVACY)
 
 

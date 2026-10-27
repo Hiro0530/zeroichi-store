@@ -10,6 +10,7 @@ const mem = {};
 global.localStorage = { getItem(k) { return k in mem ? mem[k] : null; }, setItem(k, v) { mem[k] = String(v); }, removeItem(k) { delete mem[k]; } };
 global.fetch = () => new Promise(() => {});
 window.SedoriCalc = require(path.join(root, 'sedori/assets/calc.js'));
+window.SedoriSellerCheck = require(path.join(root, 'sedori/assets/seller-check.js'));
 require(path.join(root, 'sedori/assets/ui.js'));
 const U = window.SedoriUI;
 let n = 0;
@@ -53,6 +54,31 @@ eq(U.checkState({ cond: '中古', unit: 4000, qty: 2 }), 'na', '4,000円×2個=8
 eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b' }), 'need', '確認方法が無いと未入力');
 eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b', verify: '本人限定受取郵便で確認' }), 'ok', '氏名・住所・確認方法で済');
 eq(U.checkState({ cond: '中古', unit: 40000, verify: '古物商・法人から購入' }), 'ok', '古物商・法人から');
+eq(U.checkState({ cond: '中古', unit: 12000, pName: 'a', pAddr: 'b', verify: '1万円未満のため不要' }), 'need', '1万円以上なのに「1万円未満のため不要」は済にしない');
+eq(U.checkState({ cond: '中古', unit: 800, name: 'USB 充電ケーブル 電線' }), 'na', '充電ケーブルは電線の対象外');
+eq(U.checkState({ cond: '中古', unit: 800, name: 'コンクリート製グレーチング' }), 'na', 'コンクリート製のグレーチングは対象外');
+eq(U.checkReason({ cond: '中古', unit: 800, media: true }), 'ゲーム・CD・DVD・書籍・バイク等', '理由: ゲーム等の印');
+eq(U.checkReason({ cond: '中古', unit: 800, hinmoku: '自動二輪車及び原動機付自転車' }), 'バイク・原付(部品を含む)', '理由: バイク');
+// 同じ日に同じ売り手から買った行は1回の取引として合計する(台帳に入れて判定)
+{
+  const SC = window.SedoriSellerCheck;
+  const rows = [
+    { id: 'x1', date: '2026-10-01', cond: '中古', unit: 6000, pName: '山田 太郎', party: 'ジモティー 個人' },
+    { id: 'x2', date: '2026-10-01', cond: '中古', unit: 5000, pName: '山田太郎', party: 'ジモティー 個人' },
+    { id: 'x3', date: '2026-10-01', cond: '中古', unit: 5000, party: 'メルカリ 出品者' },
+    { id: 'x4', date: '2026-10-01', cond: '中古', unit: 6000, party: 'メルカリ 出品者' },
+    { id: 'x5', date: '2026-10-02', cond: '中古', unit: 6000, pName: '山田 太郎' }
+  ];
+  const t = SC.txTotals(rows);
+  eq([t.x1, t.x2], [11000, 11000], '同じ日・同じ氏名は合計(空白の違いは同じ人)');
+  eq([t.x3, t.x4], [5000, 6000], '「メルカリ 出品者」だけでは同じ取引とみなさない');
+  eq(t.x5, 6000, '別の日は別の取引');
+  eq(SC.reason(rows[0], t.x1), '同じ取引の合計が1万円以上', '理由: 同じ取引の合計');
+  localStorage.setItem('zw-sedori:ledger', JSON.stringify(rows));
+  eq(U.checkState(rows[1]), 'need', '台帳の中で合計して判定');
+  eq(U.checkState(rows[2]), 'na', '合計しない行は1行で判定');
+  localStorage.removeItem('zw-sedori:ledger');
+}
 
 // 5. 古物台帳の書き出しの形
 const rows = U.kobutsuRows([{ date: '2026-10-27', hinmoku: '道具類', name: 'x', qty: 2, unit: 1500, saleDate: '2026-10-30', salePrice: 2500, saleParty: 'メルカリ 購入者' }]);
