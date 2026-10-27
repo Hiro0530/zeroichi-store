@@ -1,0 +1,6 @@
+"Includes Amazon Marketplace, Fulfillment by Amazon (FBA), and Amazon Webstore transactions"
+"All amounts in JPY, unless specified"
+"date/time","settlement id","type","order id","sku","description","quantity","marketplace","fulfillment","order city","order state","order postal","tax collection model","product sales","product sales tax","shipping credits","shipping credits tax","gift wrap credits","giftwrap credits tax","promotional rebates","promotional rebates tax","marketplace withheld tax","selling fees","fba fees","other transaction fees","other","total"
+"Oct 2, 2026 1:02:03 AM PDT","98765432101","Order","503-9999999-0000001","4549660123456","SONY WH-1000XM5 ワイヤレスヘッドホン","1","amazon.co.jp","Amazon","Yokohama","Kanagawa","220-0001","","38,500","0","0","0","0","0","0","0","0","-3,388","-660","0","0","34,452"
+"Oct 9, 2026 3:30:00 PM PDT","98765432101","Refund","503-9999999-0000001","4549660123456","SONY WH-1000XM5 ワイヤレスヘッドホン","1","amazon.co.jp","Amazon","Yokohama","Kanagawa","220-0001","","-38,500","0","0","0","0","0","0","0","0","2,888","0","0","0","-35,612"
+"Oct 20, 2026 12:00:00 AM PDT","98765432101","Transfer","","","To account ending in: 123","","amazon.co.jp","","","","","","0","0","0","0","0","0","0","0","0","0","0","0","-1,000","-1,000"
