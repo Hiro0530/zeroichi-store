@@ -189,6 +189,7 @@ tr.diff td{background:#fdf0ef}
 
 @media(max-width:1180px){
   .bk-2,.bk-2r{grid-template-columns:minmax(0,1fr)}
+  .tax2>div:last-child{order:-1}
   .qe{grid-template-columns:repeat(3,minmax(0,1fr))}
   .qe .qe-memo{grid-column:span 2}
 }

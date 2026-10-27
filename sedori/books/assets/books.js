@@ -641,7 +641,7 @@
     var calcRows = s.form === 'shiro' ? { '④': 1, '⑦': 1, '⑩': 1, '⑰': 1, '⑱': 1 } : { '④': 1, '⑦': 1, '㉜': 1 };
     pane.innerHTML = '<div class="bk-pane"><div class="disc"><b>確定申告に必要な数字が、毎日の記録から自動でそろいます。</b><br>表示は記録から計算した参考の値です。申告の前に、必ずご自身で内容を確認してください。経費にできるかなど個別の判断は、税務署または税理士にご相談ください。</div>' +
       (T.warn.length ? '<div class="warns"><b>確認してください</b><ul>' + T.warn.map(function (w) { return '<li>' + esc(w.msg) + '</li>'; }).join('') + '</ul></div>' : '') +
-      '<div class="bk-2"><div><section class="bk-box"><h2>設定<small>' + year + '年分</small></h2><div class="setf">' +
+      '<div class="bk-2 tax2"><div><section class="bk-box"><h2>設定<small>' + year + '年分</small></h2><div class="setf">' +
       '<div class="fld"><span>申告の書類</span>' + seg2('form', [['ao', '青色申告決算書(一般用)'], ['shiro', '収支内訳書(白色)']], s.form) + '</div>' +
       '<div class="fld"><span>消費税</span>' + seg2('tax', [['exempt', '免税事業者'], ['taxable', '課税事業者']], s.tax) + '</div>' +
       '<div class="fld"><span>経理の方式</span>' + seg2('incl', [['1', '税込経理'], ['0', '税抜経理(参考)']], TS.incl ? '1' : '0', s.tax === 'exempt') + (s.tax === 'exempt' ? '<span class="auto">免税事業者は税込経理です</span>' : '') + '</div>' +
@@ -824,7 +824,6 @@
     function ex(date, acct, amount, payee, biz) { if (date > TODAY) return; en++; E.push({ id: 'de' + en, date: date, acct: acct, amount: amount, payee: payee, memo: '', biz: biz == null ? 100 : biz, src: 'manual' }); }
     for (var q = 1; q <= 12; q++) {
       var mo = Y + '-' + String(q).padStart(2, '0');
-      ex(mo + '-27', '通信費', 7480, 'ドコモ スマホ代', 50);
       ex(mo + '-05', '荷造運賃', 4200 + q * 230, 'ヤマト運輸 宅急便コンパクト');
       ex(mo + '-11', '消耗品費', 1880 + (q % 4) * 420, 'ダイソー 梱包材・テープ');
       if (q % 2) ex(mo + '-18', '旅費交通費', 3200, 'ENEOS 仕入れのガソリン');
