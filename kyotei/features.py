@@ -50,7 +50,21 @@ GROUPS = {
     "wxdir": ["w_u_l1", "w_v_l1", "w_u_out", "w_v_out"],               # 前日の同じ場の風(向きつき)
 }
 ORACLE3 = ["o_u_l1", "o_v_l1", "o_u_out", "o_v_out"]                   # 当日のレース時の風(向きつき)。上限を測るだけ
-ALLF = FEATS + [f for g in GROUPS.values() for f in g] + ORACLE3
+# v4 の朝の候補(exp_v4.py で検証)
+GROUPS4 = {
+    "st2": ["s_st90", "s_st_sd", "s_Fper"],    # 平均STの最近90日と長期の差・STのばらつき・今期のフライング数(F持ち)
+    "vl90": ["v_vl90"],                        # 場×枠の最近90日の偏り(長期の率との差。水位・季節)
+    "mshr": ["m_shr"],                         # 番組表のモーター2連率を、そのモーターの出走数で全体平均へ寄せたもの
+}
+# 直前情報(締切の約10〜20分前に公式の直前情報ページに出る数字)。学習は競走成績ファイルの同じ値で作る。
+# 朝の予想には使わない(0のまま)。直前版の予想(exp_v4・odds_paper)だけで使う。
+PRE = {
+    "pre_exh": ["p_exh_rel", "p_exh_rank", "p_exh_self", "p_exh_motor"],   # そのレースの展示タイム(場内平均との差・順位・本人/モーターのふだんとの差)
+    "pre_wx": ["p_wind_l1", "p_wave_l1", "p_wind_out"] + ORACLE3,          # 直前の風速・波高・風向(場ごとの係数つき)
+    "pre_course": ["p_cshift", "p_c1"],                                    # 展示の進入(学習は実際の進入で代用=上限寄り)
+}
+ALLF = FEATS + [f for g in GROUPS.values() for f in g] + ORACLE3 + [f for g in GROUPS4.values() for f in g] \
+    + [f for g in PRE.values() for f in g if f not in ORACLE3]
 VX_CAND = {"tide": GROUPS["tide"], "wxdir": GROUPS["wxdir"], "oracle": ORACLE3,
            "venue_coef": ["rel_nat", "h_st_rel", "h_lane_win", "fan_c_win"]}   # 場ごとに係数を持たせる候補
 
@@ -111,6 +125,9 @@ class History:
         self.mreset = {}                                      # 場 -> モーターが入れ替わった日
         self.rexh = {}                                        # 選手 -> 展示タイムの差(場内平均との差)の指数平滑
         self.nat2 = [0.0, 0]
+        # v4
+        self.st_hist = defaultdict(lambda: deque(maxlen=40))   # 選手 -> (日, ST) 直近40本(フライング・欠場を除く)
+        self.vl90 = defaultdict(lambda: Win(90, 1))           # (場, 枠) -> 最近90日の1着
 
     def lane_prior(self, i):
         n = self.g_ln[i]
@@ -192,6 +209,7 @@ class History:
                 rlv = self.rlv[(b["racer"], v, L)]
                 rlv[0] += 1; rlv[1] += win
                 self.vl[(v, L)][0] += 1; self.vl[(v, L)][1] += win
+                self.vl90[(v, L)].add(dn, (float(win),))
                 if mno is not None:
                     m = self.motor(v, mno)
                     m["all"][0] += 1; m["all"][1] += r2
@@ -218,6 +236,7 @@ class History:
                     st = kb.get("st")
                     if st is not None and not kb.get("F") and 0 <= st < 1:
                         s["st_s"] += st; s["st_n"] += 1
+                        self.st_hist[b["racer"]].append((dn, st))
                     if kb.get("F"):
                         s["F"].append(d)
             if res.get("wx"):
@@ -267,6 +286,9 @@ def race_features(r: dict, d: date, h: History, fan: dict, res: dict | None = No
     wx = (res or {}).get("wx") or {}
     uo, vo = wind_uv(wx.get("wind", 0), wx.get("wind_dir", ""))
     exh = {b["lane"]: b.get("exh") for b in (res or {}).get("boats", [])}
+    cmap = {b["lane"]: b.get("course") for b in (res or {}).get("boats", []) if b.get("course")}
+    if len(set(cmap.values())) != 6:
+        cmap = {}
     tide = None
     if tides is not None:
         try:
@@ -359,6 +381,26 @@ def race_features(r: dict, d: date, h: History, fan: dict, res: dict | None = No
         x["w_u_out"] = up * (L >= 3); x["w_v_out"] = vp * (L >= 3)
         x["o_u_l1"] = uo * (L == 0); x["o_v_l1"] = vo * (L == 0)
         x["o_u_out"] = uo * (L >= 3); x["o_v_out"] = vo * (L >= 3)
+        # ---- v4 朝の候補
+        sth = [t for dd, t in h.st_hist.get(b["racer"], ()) if dd >= dn - 90]
+        x["s_st90"] = (sum(sth) + 5 * x["h_st"]) / (len(sth) + 5) - x["h_st"]
+        allst = [t for _, t in h.st_hist.get(b["racer"], ())]
+        x["s_st_sd"] = (float(np.std(allst)) * len(allst) + 0.05 * 5) / (len(allst) + 5) if len(allst) >= 2 else 0.05
+        ps = date(d.year, 5, 1) if 5 <= d.month <= 10 else (date(d.year, 11, 1) if d.month >= 11 else date(d.year - 1, 11, 1))
+        x["s_Fper"] = float(sum(1 for fd in (s["F"] if s else []) if fd >= ps))
+        w9 = h.vl90[(venue, L)].trim(dn) if (venue, L) in h.vl90 else None
+        x["v_vl90"] = (_logit((w9.s[0] + 60 * p_vl) / (w9.n + 60)) - _logit(p_vl)) if w9 else 0.0
+        mn = me["n"]
+        x["m_shr"] = (b["motor_2"] / 100 * mn + 0.33 * 40) / (mn + 40) * 10
+        # ---- 直前情報(res があるとき=学習、または直前版の予想で pre を渡したとき)
+        ex = exh.get(b["lane"])
+        x["p_exh_raw"] = ex or 0.0
+        x["p_wind_l1"] = wx.get("wind", 0) * (L == 0) if wx else 0.0
+        x["p_wave_l1"] = wx.get("wave", 0) * (L == 0) if wx else 0.0
+        x["p_wind_out"] = wx.get("wind", 0) * (L >= 3) if wx else 0.0
+        cs = cmap.get(b["lane"])
+        x["p_cshift"] = float(b["lane"] - cs) if cs else 0.0
+        x["p_c1"] = (float(cs == 1) - float(L == 0)) if cs else 0.0
         rows.append(x)
         orc.append([wx.get("wind", 0) * (L == 0), wx.get("wave", 0) * (L == 0), wx.get("wind", 0) * (L >= 3),
                     exh.get(b["lane"]) or 0.0])
@@ -366,6 +408,21 @@ def race_features(r: dict, d: date, h: History, fan: dict, res: dict | None = No
         m = sum(x[key] for x in rows) / 6
         for x in rows:
             x[rel] = x[key] - m
+    # 展示タイムの場内での差・順位・ふだんとの差(4艇以上の展示があるときだけ)
+    ev = [x["p_exh_raw"] for x in rows if x["p_exh_raw"] > 0]
+    if len(ev) >= 4:
+        em = sum(ev) / len(ev)
+        srt = sorted(ev)
+        for x in rows:
+            e = x["p_exh_raw"]
+            if e > 0:
+                x["p_exh_rel"] = e - em
+                x["p_exh_rank"] = (srt.index(e) + 1) - (len(ev) + 1) / 2
+                x["p_exh_self"] = (e - em) - x["e_racer_exh"]
+                x["p_exh_motor"] = (e - em) - x["e_motor_exh"]
+    for x in rows:
+        for k in ("p_exh_rel", "p_exh_rank", "p_exh_self", "p_exh_motor"):
+            x.setdefault(k, 0.0)
     X = np.array([[float(x[k]) for k in ALLF] for x in rows])
     O = np.array(orc, dtype=float)
     ex = O[:, 3]

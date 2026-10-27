@@ -486,6 +486,11 @@ def main(mode: str):
         # 舟券の種類・自信度・場ごとの仮の回収率(学習外。見つける期間と確かめる期間を分ける)
         import exp_roi
         exp_roi.main(hist_dir())
+    elif mode == "v4":
+        # 長い学習外の期間での診断・朝の候補・直前情報・市場との比較(新しい取得はしない。構成は書き換えない)
+        ensure_jma()
+        import exp_v4
+        exp_v4.main(hist_dir())
     elif mode == "exp":
         # 改良候補の検証(v3_ablation.json と model_config.json を作る)→ その構成で学習し直す
         ensure_jma()
