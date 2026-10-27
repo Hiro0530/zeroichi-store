@@ -93,6 +93,11 @@ def fair_odds(p: float) -> str:
 
 # ---- 見た目 ----
 CSS = """
+.kx-sticky{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--paper);border-top:2px solid var(--ink);padding:8px 16px calc(8px + env(safe-area-inset-bottom));text-align:center}
+.kx-sticky a{display:block;max-width:560px;margin:0 auto;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:700;font-size:15.5px;padding:12px 14px;border-radius:3px}
+.kx-sticky small{display:block;font-size:11px;color:var(--sub);margin-top:3px}
+body{padding-bottom:86px}
+@media(min-width:900px){.kx-sticky{display:none}body{padding-bottom:0}}
 .slim{margin:10px 0 0;font-size:13.5px}
 .slim a{font-weight:700}
 .pay-sec{border-top:3px solid var(--ink);margin-top:34px}
@@ -306,6 +311,12 @@ def offer_html(prev: dict | None, r: dict | None, model: dict | None) -> str:
           f"<li>次の朝から、予想を出したらすぐ {esc(MAIL)} からメールが届きます(全レースの表はメールに付けたファイルで)。</li></ol>",
           "<h3>よくある質問</h3>", faq_html(model), apply_html(ph), "</section>"]
     return "".join(o)
+
+
+def sticky_html() -> str:
+    """画面下に固定の「無料メール登録」(スマホのみ)。ページの行動は1つ: 無料の毎朝メールに登録(2026-10-27 ファネル設計)。"""
+    return (f"<div class=kx-sticky role=region aria-label='無料メール登録'><a href='{esc(FREE_MAILTO)}'>毎朝の「自信あり」をメールで受け取る(無料)</a>"
+            "<small>20歳以上の方・メール1通で登録・いつでも停止</small></div>")
 
 
 def footer_links() -> str:

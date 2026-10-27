@@ -655,8 +655,8 @@ def build():
              "<p>予想と集計は毎朝プログラムで自動更新しています。運営 ZEROICHI WORKS。"
              "<a href='https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei'>更新の記録</a>"
              "・X <a href='https://x.com/ai_kyotei_kotae'>@ai_kyotei_kotae</a>(自動投稿)</p>"
-             f"<p>{paid.footer_links()}・<a href='../privacy.html'>プライバシーポリシー</a></p></div></footer>"
-             f"<script>{JS}</script></body></html>")
+             f"<p>{paid.footer_links()}・<a href='../tokushoho.html'>特定商取引法に基づく表記(ほかの商品)</a>・<a href='../privacy.html'>プライバシーポリシー</a></p></div></footer>"
+             + paid.sticky_html() + f"<script>{JS}</script></body></html>")
     (SITE / "index.html").write_text("\n".join(h), encoding="utf-8")
     (SITE / "terms.html").write_text(paid.terms_page(), encoding="utf-8")
     (SITE / "join.html").write_text(paid.join_page(), encoding="utf-8")
