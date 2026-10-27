@@ -636,34 +636,32 @@ write("", out)
 # ------------------------------------------------------------------
 # 料金とお申し込み(/sedori/plans/)。特商法(2022年改正)の最終確認画面の表示事項を、ボタンと同じ画面に置く
 # ------------------------------------------------------------------
-def _plan_note(k: str, c: dict) -> str:
-    base = k.rsplit("_", 1)[0]
-    if c["cycle"] == "year":
-        t = "毎年。月あたり" + per_month(k) + f"(月払いより{save_months(base + '_month', k)}か月分お得)"
-    else:
-        t = "毎月"
-    if c.get("note"):
-        t += "。" + c["note"]
-    elif c.get("founder"):
-        t += "。総合と同じ内容で、続けている間ずっとこの価格"
-    elif c.get("tier") == "total":
-        t += "。台帳の件数は無制限・売上と経費まで"
-    elif c.get("tier") == "business":
-        t += "。棚卸・確定申告の数字まで"
-    elif c.get("tier") == "light":
-        t += f"。台帳のクラウド保存は月{LIGHT_LIMIT}件まで"
-    return t
+def _tier_note(c: dict) -> str:
+    if c.get("founder"):
+        return "総合と同じ内容。続けている間ずっとこの価格"
+    return {"total": "台帳の件数は無制限。売上・経費・月ごとの利益まで", "business": "総合に加えて、棚卸・申告用の数字・仕訳帳まで",
+            "light": f"台帳のクラウド保存は月{LIGHT_LIMIT}件まで"}.get(c.get("tier"), "")
 
 
-PLAN_ROWS = [
-    # key, プラン, 支払い, 価格(税込), 補足, 先着, 印
-    (k, c["name"], "年払い" if c["cycle"] == "year" else "月払い", yen(c["price"]), _plan_note(k, c), bool(c.get("founder")), c.get("badge", ""))
-    for k, c in CAT.items() if c.get("open", True)
-]
-plan_pick = "\n".join(
-    f'<tr data-plan="{k}" data-tier="{CAT[k].get("tier", "total")}"{" data-founder" if f else ""}{" class=\"rec\"" if CAT[k].get("tier") == "total" and not f else ""}><td class="pk"><input type="radio" name="plan" value="{k}" id="pl-{k}"{" checked" if k == "total_month" else ""}></td>'
-    f'<td><label for="pl-{k}"><b>{n}</b>{f"<span class=\"pill{chr(32) + "gray" if CAT[k].get("tier") != "total" else ""}\">{bd}</span>" if bd and c == "月払い" else ""}<span class="meta">{c}</span></label></td><td class="r"><span class="yen">{p.replace("円", "")}<i>円</i></span><span class="meta">{"/月" if c == "月払い" else "/年"}(税込)</span></td><td class="note2">{note}</td></tr>'
-    for k, n, c, p, note, f, bd in PLAN_ROWS)
+# 選ぶのは4つ(総合/総合 先着100名/業務/ライト)。月払い・年払いは上の切り替えで選ぶ(料金ページの plans.js が、選んだ組み合わせのキー base_month / base_year を作る)
+PICK_BASES = ["total", "founder", "business", "light"]
+
+
+def _pick_row(base: str) -> str:
+    m, y = CAT[base + "_month"], CAT[base + "_year"]
+    bd = m.get("badge", "")
+    pill = f'<span class="pill{"" if m.get("tier") == "total" and not m.get("founder") else " gray"}">{bd}</span>' if bd else ""
+    ynote = f'月あたり{per_month(base + "_year")}・{save_months(base + "_month", base + "_year")}か月分お得' + ("。" + y["note"] if y.get("note") else "")
+    rec = ' class="rec"' if base == "total" else ""
+    return (f'<tr data-base="{base}" data-tier="{m.get("tier", "total")}"{" data-founder" if m.get("founder") else ""}{rec}>'
+            f'<td class="pk"><input type="radio" name="plan" value="{base}" id="pl-{base}"{" checked" if base == "total" else ""}></td>'
+            f'<td><label for="pl-{base}"><b>{m["name"]}</b>{pill}<span class="meta">{_tier_note(m)}</span></label></td>'
+            f'<td class="r"><span data-c="month"><span class="yen">{m["price"]:,}<i>円</i></span><span class="meta">/月(税込)</span></span>'
+            f'<span data-c="year" hidden><span class="yen">{y["price"]:,}<i>円</i></span><span class="meta">/年(税込)</span><span class="meta save">月あたり{per_month(base + "_year")}</span></span></td>'
+            f'<td class="note2"><span data-c="month">毎月のお支払い</span><span data-c="year" hidden><b class="save">{ynote}</b></span></td></tr>')
+
+
+plan_pick = "\n".join(_pick_row(b) for b in PICK_BASES if CAT.get(b + "_month", {}).get("open", True))
 
 PLANS_BODY = """<div class="pl">
   <h1 class="pg-h">料金とお申し込み</h1>
@@ -671,8 +669,12 @@ PLANS_BODY = """<div class="pl">
   <div class="pl-grid">
     <section class="pl-main pl-a" aria-label="プランを選ぶ">
       <h2 class="sec-h">1. プランを選ぶ</h2>
+      <fieldset class="cyc" id="pl-cyc"><legend class="sr">お支払いの周期</legend>
+        <label><input type="radio" name="cyc" value="month" checked><span>月払い</span></label>
+        <label><input type="radio" name="cyc" value="year"><span>年払い<small>2か月分お得</small></span></label>
+      </fieldset>
       <div class="gridwrap"><table class="grid nimg pick" id="pl-pick">
-        <thead><tr><th class="pk"></th><th>プラン</th><th class="r">価格(税込)</th><th>支払い</th></tr></thead>
+        <thead><tr><th class="pk"></th><th>プラン</th><th class="r">価格(税込)</th><th>お支払い</th></tr></thead>
         <tbody>""" + plan_pick + """</tbody>
       </table></div>
       <p class="hint" id="pl-founder-note">先着100名の価格は総合だけで、お申し込み(無料期間の始まり)の順に100名まで。続けている間はずっとこの価格です。<span id="pl-founder-left"></span></p>
