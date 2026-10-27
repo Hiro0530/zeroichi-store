@@ -1,4 +1,6 @@
-/* せどり 利益チェック — 画面の共通部品(保存・手数料の読み込み・台帳・お知らせ) */
+/* せどり 利益チェック — 画面の共通部品
+   保存(localStorage・try/catch)、手数料の読み込み、検索バー、目標の利益、キー操作、お知らせ、
+   古物台帳(自動記録・状態・相手確認・取引相手の情報の貼り付け)、CSV・Excel(xlsx)の書き出し */
 (function () {
   'use strict';
   var PREFIX = 'zw-sedori:';
@@ -22,7 +24,10 @@
   function pct(x, d) { return (Math.round((Number(x) || 0) * 1000) / 10).toFixed(d == null ? 1 : d) + '%'; }
   function val(id) { var el = document.getElementById(id); if (!el) return 0; var n = Number(String(el.value).replace(/[,，\s円]/g, '')); return isFinite(n) ? n : 0; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function isTyping(el) { return el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
+  function narrow() { return window.matchMedia && window.matchMedia('(max-width:860px)').matches; }
 
+  /* ---------- 手数料 ---------- */
   var feesPromise = null;
   function loadFees() {
     if (!feesPromise) {
@@ -33,13 +38,13 @@
     }
     return feesPromise;
   }
-
   function showFeeDate(fees) {
     $$('[data-feedate]').forEach(function (el) {
-      el.innerHTML = '手数料・送料は <b>' + esc(fees.checked_label) + '</b> 確認(<a href="' + base() + '#fees">出典</a>)';
+      el.innerHTML = '手数料・送料 ' + esc(fees.checked_label) + ' 確認 <a href="' + base() + '#fees">出典</a>';
     });
   }
 
+  /* ---------- お知らせ ---------- */
   var toastTimer;
   function toast(msg, actionLabel, action) {
     var t = $('#toast');
@@ -47,190 +52,432 @@
     t.textContent = msg;
     if (actionLabel) {
       var b = document.createElement('button'); b.type = 'button'; b.textContent = actionLabel; b.className = 'toast-act';
-      b.addEventListener('click', function () { action(); t.classList.remove('on'); });
+      b.addEventListener('click', function () { t.classList.remove('on'); action(); });
       t.appendChild(b);
     }
     t.classList.add('on');
-    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('on'); }, actionLabel ? 5000 : 2400);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('on'); }, actionLabel ? 6000 : 2400);
   }
 
-  function download(name, text, type) {
-    var blob = new Blob([text], { type: type || 'text/csv;charset=utf-8' });
+  function download(name, data, type) {
+    var blob = data instanceof Blob ? data : new Blob([data], { type: type || 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
-  /* ---------- 目標の利益(円/%) — 全ページ共通の設定 ---------- */
+  /* ---------- 目標の利益(円/%)。全ページ共通・端末に保存 ---------- */
   function target() {
     var t = store.get('target', null);
     if (!t || (t.mode !== 'yen' && t.mode !== 'pct')) t = { mode: 'pct', value: 15 };
+    t.value = Number(t.value) || 0;
     return t;
   }
   function targetLabel(t) { t = t || target(); return t.mode === 'pct' ? '利益率' + t.value + '%' : '利益' + Number(t.value).toLocaleString('ja-JP') + '円'; }
+  function fireTarget() { document.dispatchEvent(new CustomEvent('sedori:target', { detail: target() })); }
   function mountTarget() {
-    $$('[data-target]').forEach(function (box) {
-      var t = target();
-      box.innerHTML = '<span class="fl">目標の利益</span><div class="tgt"><input id="t-val" type="number" inputmode="decimal" min="0" step="1" value="' + esc(t.value) + '" aria-label="目標の利益">' +
-        '<div class="seg" role="group" aria-label="単位"><button type="button" data-m="yen" aria-pressed="' + (t.mode === 'yen') + '">円</button><button type="button" data-m="pct" aria-pressed="' + (t.mode === 'pct') + '">%</button></div></div>';
-      var inp = $('#t-val', box);
-      inp.addEventListener('input', function () { var x = target(); x.value = Number(inp.value) || 0; store.set('target', x); });
-      $$('.seg button', box).forEach(function (b) {
-        b.addEventListener('click', function () {
-          var x = target(), m = b.getAttribute('data-m');
-          if (x.mode !== m) { x.mode = m; x.value = m === 'pct' ? 15 : 1000; inp.value = x.value; }
-          store.set('target', x);
-          $$('.seg button', box).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-          inp.dispatchEvent(new Event('input', { bubbles: true }));
-        });
+    var inp = $('#t-val'); if (!inp) return;
+    var t = target();
+    inp.value = t.value;
+    function paint() { var x = target(); $$('#tgt .seg button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-m') === x.mode)); }); }
+    paint();
+    inp.addEventListener('input', function () { var x = target(); x.value = Number(inp.value) || 0; store.set('target', x); fireTarget(); });
+    $$('#tgt .seg button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var x = target(), m = b.getAttribute('data-m');
+        if (x.mode !== m) { x.mode = m; x.value = m === 'pct' ? 15 : 1000; inp.value = x.value; }
+        store.set('target', x); paint(); fireTarget();
       });
     });
   }
 
-  /* ---------- メール(事前登録・メルマガ) ---------- */
-  function mailto(subject, body) {
-    return 'mailto:' + MAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  /* ---------- 検索バー ---------- */
+  function extUrl(src, q) {
+    var e = encodeURIComponent(q);
+    switch (src) {
+      case 'yshop': return 'https://shopping.yahoo.co.jp/search?p=' + e;
+      case 'amazon': return /^B0[A-Z0-9]{8}$/i.test(q) ? 'https://www.amazon.co.jp/dp/' + e : 'https://www.amazon.co.jp/s?k=' + e;
+      case 'yahuoku': return 'https://auctions.yahoo.co.jp/search/search?p=' + e + '&va=' + e;
+      case 'yahuoku-closed': return 'https://auctions.yahoo.co.jp/closedsearch/closedsearch?p=' + e + '&va=' + e;
+      case 'mercari-sold': return 'https://jp.mercari.com/search?keyword=' + e + '&status=sold_out';
+    }
+    return '';
   }
+  var api = { onSearch: null, page: null };
+  function mountSearch() {
+    var f = $('#sbar'); if (!f) return;
+    var q = $('#sb-q'), src = $('#sb-src');
+    var last = store.get('sb-src:' + (document.body.getAttribute('data-page') || ''), null);
+    if (last && src.querySelector('option[value="' + last + '"]')) src.value = last;
+    src.addEventListener('change', function () { store.set('sb-src:' + (document.body.getAttribute('data-page') || ''), src.value); });
+    var p = new URLSearchParams(location.search);
+    if (p.get('q')) q.value = p.get('q');
+    var kb = document.createElement('kbd'); kb.className = 'kb'; kb.textContent = '/'; kb.title = '「/」で検索欄へ';
+    q.insertAdjacentElement('afterend', kb);
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var s = src.value, text = q.value.trim();
+      if (api.onSearch && api.onSearch(s, text) === true) return;
+      if (!text) { q.focus(); toast('キーワードかJAN・ASINを入れてください'); return; }
+      if (s === 'rakuten') { location.href = base() + 'rakuten-amazon/?q=' + encodeURIComponent(text); return; }
+      if (s === 'ledger') { location.href = base() + 'daicho/?q=' + encodeURIComponent(text); return; }
+      if (s === 'amazon' && document.body.getAttribute('data-page') !== 'muzaiko-amazon' && document.body.getAttribute('data-page') !== 'rakuten-amazon') {
+        window.open(extUrl(s, text), '_blank', 'noopener'); return;
+      }
+      var u = extUrl(s, text);
+      if (u) { window.open(u, '_blank', 'noopener'); toast('新しいタブで開きました。見た価格を入れてください'); }
+    });
+  }
+
+  /* ---------- キー操作 ---------- */
+  function mountKeys() {
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      if (e.key === '/' && !isTyping(t)) { e.preventDefault(); var q = $('#sb-q'); if (q) { q.focus(); q.select(); } return; }
+      if (e.key === 'Escape' && isTyping(t)) { t.blur(); return; }
+      if (isTyping(t) || !api.page) return;
+      if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); api.page.move && api.page.move(1); }
+      else if (e.key === 'ArrowUp' || e.key === 'k') { e.preventDefault(); api.page.move && api.page.move(-1); }
+      else if (e.key === 'Enter' && !(t && t.tagName === 'BUTTON') && !(t && t.tagName === 'A')) { e.preventDefault(); api.page.list && api.page.list(); }
+      else if (e.key === 's' || e.key === 'S') { e.preventDefault(); api.page.buy && api.page.buy(); }
+    });
+  }
+
+  /* ---------- メール(事前登録・メルマガ) ---------- */
+  function mailto(subject, body) { return 'mailto:' + MAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); }
   var PREREG = mailto('せどりアプリ事前登録',
-    'このまま送信してください(分かる所だけで大丈夫です)。\n\n' +
-    'お名前(ニックネーム可):\n' +
-    'よく使う仕入れ先(楽天/Yahoo!/ヤフオク/業者オークション/店舗 など):\n' +
-    'よく使う売り先(Amazon/メルカリ/Yahoo!オークション など):\n' +
-    'いま一番面倒な作業:\n\n' +
+    'このまま送信してください(分かる所だけで大丈夫です)。\n\nお名前(ニックネーム可):\nよく使う仕入れ先:\nよく使う売り先:\nいま一番面倒な作業:\n\n' +
     '※有料版(月1,480円・30日無料)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
   var NEWS = mailto('せどりメルマガ登録',
-    'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\n' +
-    'お名前(ニックネーム可):\n' +
-    '知りたいこと(手数料の改定/ポイントの日程/台帳の付け方 など):\n\n' +
-    '※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
+    'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\nお名前(ニックネーム可):\n知りたいこと:\n\n※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
   function wireMail() {
     $$('[data-mail="prereg"]').forEach(function (a) { a.href = PREREG; });
     $$('[data-mail="news"]').forEach(function (a) { a.href = NEWS; });
   }
 
-  /* ---------- 仕入れ台帳(古物台帳の項目つき) ---------- */
-  var HINMOKU = ['', '美術品類', '衣類', '時計・宝飾品類', '自動車', '自動二輪車及び原動機付自転車', '自転車類', '写真機類', '事務機器類', '機械工具類', '道具類', '皮革・ゴム製品類', '書籍', '金券類'];
+  /* ==================================================================
+     古物台帳
+     ================================================================== */
+  var HINMOKU = ['美術品類', '衣類', '時計・宝飾品類', '自動車', '自動二輪車及び原動機付自転車', '自転車類', '写真機類', '事務機器類', '機械工具類', '道具類', '皮革・ゴム製品類', '書籍', '金券類'];
   var STATUS = ['仕入れ済', '入庫', '出品中', '売約', '発送済'];
-  var L_HEAD = ['状態', '受取先・入庫ID', '取引日', '区分', '新品/中古', '古物の品目', '品名', '特徴(型番・色・シリアル等)', '数量', '単価(円)', '合計(円)',
-    '仕入れ先・販売先', '注文番号・URL', '相手方の氏名', '相手方の住所', '相手方の職業', '相手方の年齢', '確認の方法',
-    '売り先', '予定売値(円)', '見込み利益(円/個)', 'ルート', 'メモ'];
-  var L_KEYS = ['status', 'recvId', 'date', 'kind', 'cond', 'hinmoku', 'name', 'feature', 'qty', 'unit', 'total',
-    'party', 'ref', 'pName', 'pAddr', 'pJob', 'pAge', 'verify', 'sellTo', 'sellPrice', 'profit', 'route', 'memo'];
+  var NEXT_LABEL = ['入庫', '出品中', '売れた', '発送済'];
+  var VERIFY = ['本人限定受取郵便で確認', '転送不要の簡易書留+本人名義口座へ振込', '対面で身分証を確認', '1万円未満のため不要', '古物商・法人から購入', 'その他(メモに記入)'];
+  var VERIFY_NO_PARTY = ['1万円未満のため不要', '古物商・法人から購入'];
+  // Amazonのカテゴリー → 古物の13区分(目安)
+  var CAT_HINMOKU = { clothes: '衣類', shoes: '皮革・ゴム製品類', bags: '皮革・ゴム製品類', watch: '時計・宝飾品類', jewelry: '時計・宝飾品類', eyewear: '道具類',
+    electronics: '機械工具類', small_appliance: '機械工具類', large_appliance: '機械工具類', home_appliance: '機械工具類', elec_acc: '機械工具類', diy: '機械工具類', industrial: '機械工具類',
+    pc: '事務機器類', stationery: '事務機器類', car: '道具類', instruments: '道具類', game_console: '道具類' };
+  function hinmokuFor(catId) { return CAT_HINMOKU[catId] || '道具類'; }
 
-  function U_toastLater(m) { setTimeout(function () { toast(m); }, 300); }
-  var LEDGER_FORM =
-    '<details class="more"><summary>手で1件追加する(古物台帳の項目つき)</summary>' +
-    '<form id="ledger-form" class="f" autocomplete="off">' +
-    '<label>取引日<input type="date" id="lg-date" name="date"></label>' +
-    '<label>区分<select name="kind"><option>仕入れ</option><option>販売</option></select></label>' +
-    '<label>新品/中古<select name="cond"><option>新品</option><option>中古</option></select></label>' +
-    '<label>古物の品目<small>中古品のとき</small><select id="lg-hinmoku" name="hinmoku"></select></label>' +
-    '<label class="full">品名<input name="name" required placeholder="例: ○○ ミニカー 1/64"></label>' +
-    '<label class="full">特徴<small>型番・色・シリアル番号など、品物を見分けられること</small><input name="feature"></label>' +
-    '<label>数量<input name="qty" type="number" inputmode="numeric" min="1" value="1"></label>' +
-    '<label class="yen">単価<input name="unit" type="number" inputmode="numeric" min="0"></label>' +
-    '<label class="full">仕入れ先・販売先<small>店名・サイト名・会場名</small><input name="party"></label>' +
-    '<label class="full">注文番号・URL<input name="ref"></label>' +
-    '<label>相手方の氏名<small>個人から中古品を買ったとき</small><input name="pName"></label>' +
-    '<label>相手方の住所<input name="pAddr"></label>' +
-    '<label>相手方の職業<input name="pJob"></label>' +
-    '<label>相手方の年齢<input name="pAge" inputmode="numeric"></label>' +
-    '<label class="full">確認の方法<small>例: 身分証(運転免許証)で確認、非対面の確認方法 など</small><input name="verify"></label>' +
-    '<label>売り先<input name="sellTo" placeholder="Amazon / メルカリ など"></label>' +
-    '<label>受取先・入庫ID<small>発送代行に送る場合の受付番号など</small><input name="recvId"></label>' +
-    '<label>メモ<input name="memo"></label>' +
-    '<div class="full btns"><button class="b" type="submit">台帳に追加</button></div>' +
-    '</form></details>';
+  /** 相手確認の状態: 'na'(不要)/'need'(未入力)/'ok'(入力済み) */
+  function checkState(r) {
+    var required = r.cond === '中古' && ((Number(r.unit) || 0) >= 10000 || !!r.media || r.hinmoku === '書籍' || r.hinmoku === '自動二輪車及び原動機付自転車');
+    if (!required) return r.cond === '中古' && r.verify ? 'ok' : 'na';
+    if (VERIFY_NO_PARTY.indexOf(r.verify) >= 0) return 'ok';
+    return r.pName && r.pAddr && r.verify ? 'ok' : 'need';
+  }
 
   var ledger = {
-    all: function () { return store.get('ledger', []); },
-    save: function (rows) { return store.set('ledger', rows); },
-    add: function (row) {
+    all: function () { var r = store.get('ledger', []); return Array.isArray(r) ? r : []; },
+    save: function (rows) { var ok = store.set('ledger', rows); updateCount(); return ok; },
+    get: function (id) { return ledger.all().filter(function (r) { return r.id === id; })[0] || null; },
+    update: function (id, patch) {
+      var rows = ledger.all(), hit = null;
+      rows.forEach(function (r) { if (r.id === id) { Object.keys(patch).forEach(function (k) { r[k] = patch[k]; }); hit = r; } });
+      ledger.save(rows); return hit;
+    },
+    add: function (row, quiet) {
       var rows = ledger.all();
       row.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       row.date = row.date || today();
-      row.qty = Number(row.qty) || 1;
+      row.qty = Math.max(1, Number(row.qty) || 1);
+      row.unit = Math.round(Number(row.unit) || 0);
       row.status = row.status || '仕入れ済';
-      row.total = row.total || Math.round((Number(row.unit) || 0) * row.qty);
+      row.kind = '仕入れ';
       rows.unshift(row);
-      if (!ledger.save(rows)) { toast('この端末では保存できませんでした(プライベートブラウズ等)'); return false; }
-      ledger.render(); toast('台帳に追加しました'); return true;
+      if (!ledger.save(rows)) { toast('この端末では保存できませんでした(プライベートブラウズ等)'); return null; }
+      if (!quiet) toast('台帳に記録しました', '台帳を開く', function () { location.href = base() + 'daicho/'; });
+      return row;
     },
-    /** 手入力の欄に値を入れて開く(中古は相手方の項目を本人が埋めてから追加する) */
-    prefill: function (row) {
-      var f = $('#ledger-form'); if (!f) return;
-      Object.keys(row).forEach(function (k) { var el = f.querySelector('[name="' + k + '"]'); if (el) el.value = row[k]; });
-      f.closest('details').open = true;
-      f.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      U_toastLater('内容を確かめて、相手方の項目を埋めてから「台帳に追加」を押してください');
-    },
-    remove: function (id) { ledger.save(ledger.all().filter(function (r) { return r.id !== id; })); ledger.render(); },
-    csv: function () {
-      var rows = ledger.all().map(function (r) { return L_KEYS.map(function (k) { return r[k] == null ? '' : r[k]; }); });
-      download('shiire-daicho_' + today() + '.csv', window.SedoriCalc.toCSV(L_HEAD, rows));
-    },
-    render: function () {
-      var box = $('#ledger'); if (!box) return;
-      var rows = ledger.all();
-      var body = rows.length ? rows.map(function (r) {
-        return '<tr><td><select data-st="' + esc(r.id) + '" aria-label="状態">' + STATUS.map(function (x) { return '<option' + ((r.status || '仕入れ済') === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select></td><td>' + esc(r.date) + '</td><td>' + esc(r.kind) + '</td><td class="nm">' + esc(r.name) +
-          (r.feature ? '<br><small>' + esc(r.feature) + '</small>' : '') + '</td><td class="n">' + esc(r.qty) + '</td><td class="n">' + yen(r.unit) +
-          '</td><td>' + esc(r.party) + '</td><td>' + esc(r.hinmoku || '') + '</td><td class="n">' + (r.profit === '' || r.profit == null ? '' : yen(r.profit)) +
-          '</td><td><button type="button" data-del="' + esc(r.id) + '" aria-label="この行を消す">消す</button></td></tr>';
-      }).join('') : '<tr><td colspan="10" class="empty">まだありません。計算結果の「台帳に追加」か、下の入力欄から追加できます。</td></tr>';
-      box.innerHTML = '<div class="ledger-wrap"><table class="ledger"><thead><tr><th>状態</th><th>日付</th><th>区分</th><th>品名・特徴</th><th>数量</th><th>単価</th><th>相手方</th><th>品目</th><th>見込み利益</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>';
-      $$('[data-del]', box).forEach(function (b) {
-        b.addEventListener('click', function () {
-          var all = ledger.all(), id = b.getAttribute('data-del');
-          ledger.remove(id);
-          toast('1件消しました', '元に戻す', function () { ledger.save(all); ledger.render(); });
-        });
+    remove: function (id) { ledger.save(ledger.all().filter(function (r) { return r.id !== id; })); },
+    /** 状態を1つ進める。「売れた」(売約)で売却日・売値・相手を自動で入れる */
+    advance: function (id) {
+      var rows = ledger.all(), hit = null;
+      rows.forEach(function (r) {
+        if (r.id !== id) return;
+        var i = STATUS.indexOf(r.status || '仕入れ済');
+        if (i < 0 || i >= STATUS.length - 1) return;
+        r.status = STATUS[i + 1];
+        if (r.status === '売約') {
+          if (!r.saleDate) r.saleDate = today();
+          if (!r.salePrice && r.sellPrice) r.salePrice = r.sellPrice;
+          if (!r.saleParty) r.saleParty = (r.sellTo || '') + ' 購入者';
+        }
+        if (r.status === '発送済' && !r.shipDate) r.shipDate = today();
+        hit = r;
       });
-      $$('[data-st]', box).forEach(function (sel) {
-        sel.addEventListener('change', function () {
-          var all = ledger.all(); all.forEach(function (r) { if (r.id === sel.getAttribute('data-st')) r.status = sel.value; });
-          ledger.save(all);
-        });
-      });
-      var c = $('#ledger-count'); if (c) c.textContent = rows.length + '件';
-    },
-    mountForm: function () {
-      var holder = $('#ledger-form-box');
-      if (holder) holder.innerHTML = LEDGER_FORM;
-      var f = $('#ledger-form'); if (!f) return;
-      var sel = $('#lg-hinmoku', f);
-      if (sel) sel.innerHTML = HINMOKU.map(function (h) { return '<option value="' + esc(h) + '">' + (h || '(新品のみ・該当なし)') + '</option>'; }).join('');
-      var d = $('#lg-date', f); if (d && !d.value) d.value = today();
-      f.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var row = {};
-        ['date', 'kind', 'cond', 'hinmoku', 'name', 'feature', 'qty', 'unit', 'party', 'ref', 'pName', 'pAddr', 'pJob', 'pAge', 'verify', 'sellTo', 'recvId', 'memo'].forEach(function (k) {
-          var el = f.querySelector('[name="' + k + '"]'); if (el) row[k] = el.value.trim();
-        });
-        if (!row.name) { toast('品名を入れてください'); return; }
-        row.route = document.body.getAttribute('data-route-label') || '';
-        if (ledger.add(row)) { f.reset(); if (d) d.value = today(); }
-      });
-      var x = $('#ledger-csv'); if (x) x.addEventListener('click', ledger.csv);
+      ledger.save(rows); return hit;
     }
   };
 
+  function updateCount() {
+    var el = $('#hd-cnt'); if (!el) return;
+    var rows = ledger.all(), need = rows.filter(function (r) { return checkState(r) === 'need'; }).length;
+    el.textContent = rows.length ? String(rows.length) : '';
+    el.hidden = !rows.length;
+    var w = $('#hd-need');
+    if (!w) { w = document.createElement('span'); w.id = 'hd-need'; w.className = 'cnt warn'; w.title = '相手確認が未入力'; el.insertAdjacentElement('afterend', w); }
+    w.textContent = need ? '確認' + need : ''; w.hidden = !need;
+  }
+
+  /* ---------- 取引相手の情報(貼り付けから取り出す) ---------- */
+  var PREF = '(北海道|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|東京都|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|京都府|大阪府|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)';
+  function toHalf(s) {
+    return String(s || '').replace(/[！-～]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .replace(/　/g, ' ').replace(/\r/g, '');
+  }
+  function normDash(s) { return s.replace(/(\d)\s*[‐‑‒–—―−ーｰ－-]\s*(?=\d)/g, '$1-'); }
+  var LABEL = /^\s*(?:【[^】]*】\s*)?(氏名|お名前|名前|購入者(?:名|様)?|出品者(?:名|様)?|落札者(?:名|様)?|送り主|発送者|差出人|ご依頼主|お届け先(?:氏名)?|住所|ご住所|発送元住所|郵便番号|〒|電話番号|電話|TEL|Tel|携帯|メールアドレス|メール|E-?mail|mail)\s*[:：]?\s*/i;
+  function parseParty(text) {
+    var out = {};
+    var t = normDash(toHalf(text));
+    var url = t.match(/https?:\/\/[^\s<>"']+/); if (url) out.ref = url[0];
+    var mail = t.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/); if (mail) out.pMail = mail[0];
+    var lines = t.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    var zipIdx = -1, addrIdx = -1;
+    lines.forEach(function (l, i) {
+      if (out.pZip) return;
+      var m = l.match(/〒\s*(\d{3})-?(\d{4})/) || (/郵便番号/.test(l) && l.match(/(\d{3})-?(\d{4})/)) || l.match(/^(\d{3})-(\d{4})(?!\d)/);
+      if (m) { out.pZip = m[1] + '-' + m[2]; zipIdx = i; }
+    });
+    var pr = new RegExp(PREF);
+    for (var i = 0; i < lines.length; i++) {
+      var m2 = lines[i].match(pr);
+      if (!m2) continue;
+      var a = lines[i].slice(m2.index).replace(/\s*(?:TEL|電話|tel)[:：]?.*$/, '').trim();
+      var nx = lines[i + 1];
+      if (nx && !LABEL.test(nx) && !/@|\d{2,4}-\d{2,4}-\d{3,4}/.test(nx) && /(号室|マンション|ハイツ|コーポ|アパート|ビル|荘|レジデンス|棟|\d+F|\d+階|\d+号)/.test(nx)) { a += ' ' + nx; }
+      out.pAddr = a.replace(/\s+/g, ' '); addrIdx = i; break;
+    }
+    var tel = null;
+    lines.forEach(function (l) {
+      if (tel) return;
+      var s = l.replace(/〒\s*\d{3}-?\d{4}/, '');
+      var m3 = s.match(/(?:\+81[-\s]?)?\(?0\d{1,4}\)?[-\s]?\d{1,4}[-\s]?\d{3,4}/);
+      if (m3) {
+        var digits = m3[0].replace(/\D/g, '').replace(/^81/, '0');
+        if (digits.length >= 10 && digits.length <= 11 && (/電話|TEL|携帯|tel/i.test(l) || /^0[789]0/.test(digits) || /-/.test(m3[0]))) tel = m3[0].replace(/^\+81[-\s]?/, '0').replace(/^\(/, '').replace(/\)\s*/g, '-').replace(/\(/g, '-').replace(/\s+/g, '-').replace(/-+/g, '-');
+      }
+    });
+    if (tel && /^0[789]0\d{8}$/.test(tel)) tel = tel.slice(0, 3) + '-' + tel.slice(3, 7) + '-' + tel.slice(7);
+    if (tel) out.pTel = tel;
+    // 氏名: 見出し付き → 「様」で終わる行 → 郵便番号・住所の直前の短い行
+    var name = null;
+    lines.forEach(function (l) {
+      if (name) return;
+      var m4 = l.match(/^\s*(?:【[^】]*】\s*)?(?:氏名|お名前|名前|購入者(?:名|様)?|出品者(?:名|様)?|落札者(?:名|様)?|送り主|発送者|差出人|ご依頼主|お届け先氏名)\s*[:：]\s*(.+)$/);
+      if (m4) name = m4[1];
+    });
+    if (!name) lines.forEach(function (l) { if (!name && /^[^\d@:：]{2,20}\s*様$/.test(l)) name = l; });
+    if (!name) {
+      var k = zipIdx >= 0 ? zipIdx : addrIdx;
+      for (var j = k - 1; j >= 0 && j >= k - 2; j--) {
+        var c = lines[j].replace(LABEL, '');
+        if (c && c.length <= 20 && !/[\d@:：]/.test(c) && !/(ありがとう|お願い|連絡|取引|発送|支払|落札|メッセージ|住所|情報)/.test(c)) { name = c; break; }
+      }
+    }
+    if (name) out.pName = name.replace(/\s*(様|さん|殿)\s*$/, '').replace(/\s+/g, ' ').trim();
+    return out;
+  }
+  function partyFromUrl(u) {
+    if (/auctions\.yahoo\.co\.jp|page\.auctions/.test(u)) return 'Yahoo!オークション';
+    if (/mercari\.com|merc\.li/.test(u)) return 'メルカリ';
+    if (/paypayfleamarket/.test(u)) return 'Yahoo!フリマ';
+    if (/fril\.jp|rakuma/.test(u)) return '楽天ラクマ';
+    return '';
+  }
+
+  var P_FIELDS = [['pName', '氏名'], ['pZip', '〒'], ['pAddr', '住所'], ['pTel', '電話'], ['pMail', 'メール'], ['pJob', '職業'], ['pAge', '年齢'], ['ref', 'URL']];
+  function badgeHTML(r) {
+    var s = checkState(r);
+    if (s === 'need') return '<span class="badge" data-badge>相手確認が未入力</span>';
+    if (s === 'ok') return '<span class="badge ok" data-badge>相手確認 済</span>';
+    return '<span class="badge na" data-badge>確認不要</span>';
+  }
+  /** 取引相手の情報の欄(貼り付け+取り出した値+確認方法)。入力のたびに台帳へ保存 */
+  function partyPanel(box, id, opts) {
+    opts = opts || {};
+    var r = ledger.get(id); if (!r || !box) return;
+    box.innerHTML = '<div class="party' + (checkState(r) === 'need' ? '' : ' okc') + '">' +
+      '<div class="party-h"><span>' + esc(opts.title || '取引相手の情報') + '</span>' + badgeHTML(r) + '</div>' +
+      '<textarea data-paste rows="3" placeholder="取引ナビ・メルカリ・メールの本文をそのまま貼り付け(氏名・〒・住所・電話・メールを取り出します)"></textarea>' +
+      '<div class="pgrid">' + P_FIELDS.map(function (f) {
+        return '<span>' + f[1] + '</span><input data-f="' + f[0] + '" value="' + esc(r[f[0]] || '') + '"' + (f[0] === 'ref' ? ' type="url" placeholder="ヤフオク・メルカリの取引URL"' : '') + (f[0] === 'pMail' ? ' type="email"' : '') + (f[0] === 'pTel' ? ' type="tel"' : '') + '>';
+      }).join('') +
+      '<span>確認方法</span><select data-f="verify"><option value="">選んでください</option>' + VERIFY.map(function (v) { return '<option' + (r.verify === v ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('') + '</select>' +
+      '</div>' + (opts.foot || '') + '</div>';
+    var root = box.firstChild;
+    function refresh() {
+      var cur = ledger.get(id); if (!cur) return;
+      var st = checkState(cur);
+      root.classList.toggle('okc', st !== 'need');
+      $('[data-badge]', root).outerHTML = badgeHTML(cur);
+      updateCount();
+      if (opts.onChange) opts.onChange(cur);
+    }
+    function put(k, v) {
+      var patch = {}; patch[k] = v;
+      if (k === 'ref') { var cur = ledger.get(id); var p = partyFromUrl(v); if (p && cur && !/[^\s]/.test((cur.party || '').replace(/^(Yahoo!オークション|メルカリ|Yahoo!フリマ|楽天ラクマ)\s*(出品者[:：]?)?\s*/, ''))) patch.party = p + ' 出品者'; }
+      ledger.update(id, patch); refresh();
+    }
+    $$('[data-f]', root).forEach(function (el) {
+      el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', function () { el.classList.remove('got'); put(el.getAttribute('data-f'), el.value.trim()); });
+    });
+    var ta = $('[data-paste]', root);
+    function run() {
+      var got = parseParty(ta.value), n = 0;
+      Object.keys(got).forEach(function (k) {
+        var el = $('[data-f="' + k + '"]', root); if (!el || !got[k]) return;
+        el.value = got[k]; el.classList.add('got'); n++;
+        put(k, got[k]);
+      });
+      if (got.pName && !(ledger.get(id) || {}).party) ledger.update(id, { party: got.pName });
+      if (n) toast(n + '項目を取り出しました。緑の欄を確かめてください');
+      else if (ta.value.trim()) toast('取り出せる項目が見つかりませんでした。欄に直接入れてください');
+    }
+    ta.addEventListener('paste', function () { setTimeout(run, 0); });
+    ta.addEventListener('change', run);
+    if (opts.focus) setTimeout(function () { ta.focus({ preventScroll: true }); }, 50);
+  }
+
+  /* ---------- 書き出し(古物台帳の形) ---------- */
+  var K_HEAD = ['No', '受入れ 年月日', '区別', '品目', '品名', '特徴', '数量', '代価(円)', '相手方 氏名', '相手方 住所', '郵便番号', '電話', 'メール', '相手方 職業', '相手方 年齢', '確認の方法',
+    '仕入れ先', 'URL', '払出し 年月日', '区別', '代価(円)', '相手方', '状態', '受取先・入庫ID', 'メモ'];
+  var K_WIDTH = [5, 11, 7, 12, 34, 24, 6, 10, 14, 34, 10, 14, 22, 10, 8, 26, 20, 30, 11, 7, 10, 18, 9, 14, 20];
+  var K_NUM = { 6: 1, 7: 1, 20: 1 };
+  function kobutsuRows(rows) {
+    return rows.slice().reverse().map(function (r, i) {
+      var sold = !!r.saleDate;
+      return [i + 1, r.date || '', '買受け', r.hinmoku || '', r.name || '', r.feature || '', Number(r.qty) || 1, Math.round((Number(r.unit) || 0) * (Number(r.qty) || 1)),
+        r.pName || '', r.pAddr || '', r.pZip || '', r.pTel || '', r.pMail || '', r.pJob || '', r.pAge || '', r.verify || '',
+        r.party || '', r.ref || '', r.saleDate || '', sold ? '売却' : '', sold ? Math.round((Number(r.salePrice) || 0) * (Number(r.qty) || 1)) : '', r.saleParty || '',
+        r.status || '', r.recvId || '', r.memo || ''];
+    });
+  }
+  function exportCSV(rows) { download('kobutsu-daicho_' + today() + '.csv', window.SedoriCalc.toCSV(K_HEAD, kobutsuRows(rows))); }
+  function exportXLSX(rows) {
+    var body = kobutsuRows(rows);
+    var blob = xlsx([['古物台帳(' + today() + ' 書き出し・' + body.length + '件)']].concat([K_HEAD], body), { widths: K_WIDTH, nums: K_NUM, headerRow: 1, titleRow: 0 });
+    download('kobutsu-daicho_' + today() + '.xlsx', blob);
+  }
+
+  /* ---------- 小さなxlsx書き出し(無圧縮zip) ---------- */
+  var CRC = (function () { var t = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0;
+    var d = new Date(), dt = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate(), tm = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+    function u16(v) { return [v & 255, (v >> 8) & 255]; }
+    function u32(v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; }
+    files.forEach(function (f) {
+      var name = enc.encode(f[0]), data = enc.encode(f[1]), c = crc32(data);
+      var lh = [].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(tm), u16(dt), u32(c), u32(data.length), u32(data.length), u16(name.length), u16(0));
+      parts.push(new Uint8Array(lh), name, data);
+      central.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(tm), u16(dt), u32(c), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(off))), name);
+      off += lh.length + name.length + data.length;
+    });
+    var cdSize = central.reduce(function (s, p) { return s + p.length; }, 0);
+    var end = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(cdSize), u32(off), u16(0)));
+    return new Blob(parts.concat(central, [end]), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  function xe(s) { return String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function colName(i) { var s = ''; i++; while (i > 0) { var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
+  function xlsx(rows, o) {
+    var ncol = Math.max.apply(null, rows.map(function (r) { return r.length; }));
+    var sd = rows.map(function (r, ri) {
+      var cells = r.map(function (v, ci) {
+        var ref = colName(ci) + (ri + 1);
+        var st = ri === o.titleRow ? 4 : (ri === o.headerRow ? 1 : (o.nums[ci] ? 3 : 2));
+        if (v === '' || v == null) return ri > o.headerRow ? '<c r="' + ref + '" s="2"/>' : '';
+        if (typeof v === 'number' && ri > o.headerRow) return '<c r="' + ref + '" s="' + st + '"><v>' + v + '</v></c>';
+        return '<c r="' + ref + '" s="' + st + '" t="inlineStr"><is><t xml:space="preserve">' + xe(v) + '</t></is></c>';
+      }).join('');
+      return '<row r="' + (ri + 1) + '"' + (ri === o.headerRow ? ' ht="30" customHeight="1"' : '') + '>' + cells + '</row>';
+    }).join('');
+    var cols = '<cols>' + o.widths.map(function (w, i) { return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>'; }).join('') + '</cols>';
+    var sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+      '<sheetViews><sheetView workbookViewId="0"><pane ySplit="2" topLeftCell="A3" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' + cols +
+      '<sheetData>' + sd + '</sheetData><autoFilter ref="A2:' + colName(ncol - 1) + Math.max(2, rows.length) + '"/><pageSetup orientation="landscape" paperSize="9" fitToHeight="0"/></worksheet>';
+    var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      '<fonts count="3"><font><sz val="10"/><name val="Meiryo UI"/></font><font><b/><sz val="10"/><name val="Meiryo UI"/></font><font><b/><sz val="13"/><name val="Meiryo UI"/></font></fonts>' +
+      '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEEF1F4"/><bgColor indexed="64"/></patternFill></fill></fills>' +
+      '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFB9C1CB"/></left><right style="thin"><color rgb="FFB9C1CB"/></right><top style="thin"><color rgb="FFB9C1CB"/></top><bottom style="thin"><color rgb="FFB9C1CB"/></bottom><diagonal/></border></borders>' +
+      '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+      '<cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+      '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
+      '<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>' +
+      '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>' +
+      '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+    return zip([
+      ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ['xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="古物台帳" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">古物台帳!$A$2:$' + colName(ncol - 1) + '$' + Math.max(2, rows.length) + '</definedName><definedName name="_xlnm.Print_Titles" localSheetId="0">古物台帳!$2:$2</definedName></definedNames></workbook>'],
+      ['xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ['xl/styles.xml', styles],
+      ['xl/worksheets/sheet1.xml', sheet]
+    ]);
+  }
+
+  /* ---------- 内訳の表示(各ページ共通) ---------- */
+  function brkRows(rows) {
+    return '<table class="brk">' + rows.map(function (a) {
+      return '<tr' + (a[2] ? ' class="' + a[2] + '"' : '') + '><td>' + a[0] + '</td><td>' + (typeof a[1] === 'number' ? yen(a[1]) + '円' : a[1]) + '</td></tr>';
+    }).join('') + '</table>';
+  }
+  function profitHead(label, profit, cls) {
+    return '<div class="pfbox"><div class="hl"><span>' + esc(label) + '</span><b class="' + cls + '">' + yen(profit) + '<i>円</i></b></div>';
+  }
+  /** 結果を2か所に描く: 上(利益・目安の価格)と、ボタンの下(内訳) */
+  function result(sumEl, sum, rows, notes) {
+    sumEl.innerHTML = sum;
+    var b = $('#brk'); if (!b) return;
+    var open = store.get('brk-open', true);
+    b.innerHTML = rows ? '<details class="brkd"' + (open ? ' open' : '') + '><summary>内訳</summary>' + brkRows(rows) + (notes || '') + '</details>' : (notes || '');
+    var d = $('details', b); if (d) d.addEventListener('toggle', function () { store.set('brk-open', d.open); });
+  }
+  function profitClass(profit, sell, tg) {
+    if (profit < 0) return 'bad';
+    return profit >= window.SedoriCalc.needProfit(sell, tg || target()) ? 'good' : '';
+  }
+
+  /* ---------- 起動 ---------- */
   function registerSW() {
     if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
     try { navigator.serviceWorker.register(base() + 'sw.js', { scope: base() }).catch(function () {}); } catch (e) { /* 何もしない */ }
   }
+  function mountSide() {
+    if (narrow() && document.body.getAttribute('data-route') === 'ra') $$('.side details[data-desk-open]').forEach(function (d) { d.open = false; });
+    var cur = $('.gnav [aria-current="page"]'); if (cur) cur.parentNode.scrollLeft = Math.max(0, cur.offsetLeft - 24);
+    if (location.hash === '#legal') { var l = $('#legal'); if (l) { l.open = true; setTimeout(function () { l.scrollIntoView(); }, 50); } }
+  }
 
   function init() {
-    var cur = $('.routes [aria-current="page"]');
-    if (cur) cur.parentNode.scrollLeft = Math.max(0, cur.offsetLeft - 16);
-    mountTarget(); wireMail(); ledger.mountForm(); ledger.render(); registerSW();
+    mountTarget(); mountSearch(); mountKeys(); wireMail(); mountSide(); updateCount(); registerSW();
     loadFees().then(showFeeDate).catch(function () {
-      $$('[data-feedate]').forEach(function (el) { el.textContent = '手数料データを読み込めませんでした。通信を確認して再読み込みしてください。'; });
+      $$('[data-feedate]').forEach(function (el) { el.textContent = '手数料データを読み込めませんでした。再読み込みしてください'; });
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  window.SedoriUI = { store: store, $: $, $$: $$, esc: esc, yen: yen, pct: pct, val: val, today: today, loadFees: loadFees,
-    toast: toast, download: download, target: target, targetLabel: targetLabel, STATUS: STATUS, ledger: ledger, HINMOKU: HINMOKU, PREREG: PREREG, NEWS: NEWS };
+  window.SedoriUI = {
+    store: store, $: $, $$: $$, esc: esc, yen: yen, pct: pct, val: val, today: today, narrow: narrow, loadFees: loadFees,
+    toast: toast, download: download, target: target, targetLabel: targetLabel, api: api, extUrl: extUrl,
+    STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState,
+    ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
+    exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
+    brkRows: brkRows, profitHead: profitHead, result: result, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS
+  };
 })();

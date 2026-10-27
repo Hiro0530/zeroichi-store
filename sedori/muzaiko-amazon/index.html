@@ -3,128 +3,140 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>無在庫型 Amazon中古×ヤフオク 価格差チェック｜ZEROICHI WORKS</title>
-<meta name="description" content="Amazonの新品価格(ご自身のKeepa APIキー)と、ご自身で確かめたヤフオクの価格から、Amazon中古の出品価格と手数料後の利益・損益分岐を計算。古物営業法の本人確認・Amazonのドロップシッピング方針の注意つき。">
+<title>無在庫 Amazon中古×ヤフオク 価格差チェック｜ZEROICHI WORKS</title>
+<meta name="description" content="Amazonの新品価格(ご自身のKeepa APIキー)と、ご自身で確かめたヤフオクの価格から、Amazon中古の出品価格ごとの利益と、ヤフオクで払ってよい上限を一覧で計算。仕入れると古物台帳に自動で記録。">
 <link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/muzaiko-amazon/">
-<meta property="og:title" content="無在庫型 Amazon中古×ヤフオク 価格差チェック">
-<meta property="og:description" content="Amazonの新品価格(ご自身のKeepa APIキー)と、ご自身で確かめたヤフオクの価格から、Amazon中古の出品価格と手数料後の利益・損益分岐を計算。古物営業法の本人確認・Amazonのドロップシッピング方針の注意つき。">
+<meta property="og:title" content="無在庫 Amazon中古×ヤフオク 価格差チェック">
+<meta property="og:description" content="Amazonの新品価格(ご自身のKeepa APIキー)と、ご自身で確かめたヤフオクの価格から、Amazon中古の出品価格ごとの利益と、ヤフオクで払ってよい上限を一覧で計算。仕入れると古物台帳に自動で記録。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/muzaiko-amazon/">
 <meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/og.png">
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<meta name="theme-color" content="#1b2a6b">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="../../zw.css">
-<link rel="stylesheet" href="../assets/sedori.css">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261027b">
 </head>
-<body class="p-sedori" data-base="../" data-route="muzaiko" data-route-label="無在庫(Amazon×ヤフオク中古)">
-<header class="zw-head">
-  <div class="in">
-    <a class="zw-logo" href="../../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a>
-    <nav class="nav" aria-label="せどりアプリ"><a href="../">せどり 利益チェック</a><a class="hide-s" href="#daicho">台帳</a></nav>
+<body data-base="../" data-route="muzaiko" data-route-label="無在庫 Amazon中古" data-page="muzaiko-amazon">
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <form class="sbar" id="sbar" role="search">
+      <label class="sr" for="sb-src">探す場所</label>
+      <select id="sb-src"><option value="rakuten">楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon" selected>Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger">台帳</option></select>
+      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
+      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
+      <button type="submit">検索</button>
+    </form>
+    <div class="tgt" id="tgt">
+      <span class="tgt-k">目標の利益</span>
+      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
+      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
+    </div>
+    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
   </div>
-  <div class="bar"></div>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/" aria-current="page">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a></div></nav>
 </header>
+<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>無在庫 Amazon中古×ヤフオク 価格差チェック</span></nav><span class="feedate" data-feedate></span></div></div>
+<main class="wrap">
+<div class="lay3">
+  <aside class="side" aria-label="条件">
+      <details class="sbox " open data-desk-open>
+        <summary>Amazonの商品</summary>
+        <div class="sbox-b"><div class="fl">
+          <label class="fr col"><span class="fk">JAN・ASIN</span><span class="fv"><input id="mz-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="mz-go">Keepa</button></span></label>
+          <div id="mz-kp"></div>
+          <label class="fr col"><span class="fk">商品名</span><input id="mz-name"></label>
+          <label class="fr "><span class="fk">新品の価格<small>Amazon</small></span><span class="fv"><input id="mz-new" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
+          <label class="fr col"><span class="fk">カテゴリー</span><select id="mz-cat"></select></label>
+        </div></div>
+      </details>
+      <details class="sbox " open data-desk-open>
+        <summary>ヤフオクの価格</summary>
+        <div class="sbox-b"><div class="fl">
+          <label class="fr col"><span class="fk">検索する言葉</span><input id="mz-q"></label>
+          <p class="row-links"><a id="mz-yh" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">出品中を見る</a><a id="mz-yh-closed" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">落札相場を見る</a></p>
+          <label class="fr "><span class="fk">価格<small>即決・落札見込み</small></span><span class="fv"><input id="mz-yprice" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">送料<small>出品者→自分</small></span><span class="fv"><input id="mz-yship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="ck"><input id="mz-media" type="checkbox">ゲーム・CD・DVD・書籍・バイク等</label>
+        </div></div>
+      </details>
+      <details class="sbox " open data-desk-open>
+        <summary>発送</summary>
+        <div class="sbox-b"><div class="fl">
+          <label class="fr "><span class="fk">発送費<small>発送代行・送料</small></span><span class="fv"><input id="mz-outship" type="number" inputmode="numeric" min="0" value="900"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他</span><span class="fv"><input id="mz-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label>
+          <p class="hint">FBAは使わない前提で計算します。</p>
+        </div></div>
+      </details>
+      <details class="sbox " data-desk-open>
+        <summary>APIキー</summary>
+        <div class="sbox-b"><div class="fl"><label class="fr col"><span class="fk">Keepa APIキー</span><input id="mz-key" autocomplete="off" spellcheck="false"></label>
+        <div class="row-btns"><button type="button" class="btn sm" id="mz-key-save">保存</button></div></div></div>
+      </details>
+  </aside>
 
-<main class="app-wrap">
-  <nav class="routes" aria-label="仕入れ先と売り先">
-    <a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a>
-    <a href="./" aria-current="page">無在庫(Amazon×ヤフオク中古)</a>
-    <a href="../mercari-calc/">メルカリ 手数料・送料</a>
-    <a href="../yahuoku-mercari/">ヤフオク→メルカリ</a>
-    <a href="../auction-mercari/">ブランド中古(業者オークション)</a>
-  </nav>
-
-  <div class="app-title">
-    <span class="tag">無在庫型・中古</span>
-    <h1>Amazon中古×ヤフオク 価格差チェック</h1>
-    <p>Amazonの新品価格から中古の出品価格を決め、ヤフオクで見た価格との差から、手数料・発送費を引いた利益を計算します。ヤフオクは検索ページを開くリンクだけで、自動では読み取りません。</p>
-    <span class="feedate" data-feedate>手数料データを読み込み中…</span>
-  </div>
-  <div class="warn" style="margin-top:14px"><b>はじめる前に(必ず)</b>
-    <ul style="margin:6px 0 0">
-      <li><b>古物商許可が必要です。</b>中古品を仕入れて売ることを繰り返す場合、古物商許可が要ります。Amazonの出品者情報には、許可した公安委員会名と許可番号の表示も必要です。</li>
-      <li><b>1万円以上の買い受けは、その都度、非対面の本人確認</b>が必要です(ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず)。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
-      <li><b>Amazonのドロップシッピング方針</b>: 記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先(ヤフオクの出品者)の情報を除くこと、返品は自分で受けること。ヤフオクの出品者からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
-      <li><b>ヤフオク出品者の写真・説明文は使わない</b>でください(著作権侵害になります)。既存の商品ページに相乗りし、コンディションは文字で説明します。</li>
-      <li><b>仕入れ先が売り切れたら、すぐAmazonの在庫を0に。</b>キャンセルが続くとアカウントの評価に響きます(出荷前キャンセル率の目安は2.5%未満)。</li>
-      <li>このツールはヤフオクに自動でアクセスしません(検索ページを開くリンクだけです)。</li>
-    </ul>
-  </div>
-  <div class="cols">
-    <div>
-      <section class="card ac" id="amazon">
-        <h2>1. Amazonの新品価格</h2>
-        <div class="f">
-          <label class="full">JAN または ASIN<input id="mz-code" autocomplete="off" spellcheck="false" placeholder="例: 4901234567894 / B0XXXXXXXX"></label>
-          <div class="full btns" style="margin:0"><button type="button" class="b g s" id="mz-go">Keepaで取得</button><a class="b g s" id="mz-amz" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a></div>
-          <div class="full" id="mz-kp"></div>
-          <label class="full">商品名<input id="mz-name"></label>
-        </div>
-        <details class="more"><summary>Keepa APIキー(任意・ご自身のキー)</summary>
-          <div class="f"><label class="full">Keepa APIキー<small>この端末のブラウザの中だけに保存し、Keepaへ直接問い合わせます。1回1トークン。</small><input id="mz-key" autocomplete="off" spellcheck="false"></label></div>
-          <div class="btns"><button type="button" class="b g s" id="mz-key-save">保存する</button></div>
-        </details>
-      </section>
-      <section class="card" id="yahoo">
-        <h2>2. ヤフオクの中古価格を見る</h2>
-        <div class="f">
-          <label class="full">検索する言葉<small>型番や短い商品名が見つけやすい</small><input id="mz-q"></label>
-          <div class="full btns" style="margin:0">
-            <a class="b" id="mz-yh" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">ヤフオクで中古価格を見る</a>
-            <a class="b g" id="mz-yh-closed" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">落札相場を見る</a>
-          </div>
-        </div>
-        <p class="note-s">新しいタブでYahoo!オークションの検索ページを開きます。見た価格を下の「ヤフオクの価格」に入れてください。</p>
-      </section>
+  <section class="res" aria-label="出品価格の候補">
+    <div class="tabs" role="tablist"><button type="button" role="tab" aria-selected="true">出品価格の候補</button></div>
+    <div class="tbar"><p class="tbar-t" id="mz-title">新品の価格を入れると、値下げ幅ごとの利益が並びます</p></div>
+    <div class="gridwrap">
+      <table class="grid nimg mc" id="grid">
+        <thead><tr><th>出品価格の決め方</th><th class="r">出品価格</th><th class="r c-fee">販売手数料</th><th class="r c-fee">発送</th><th class="r">利益</th><th class="r">利益率</th><th class="r">ヤフオク上限</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
     </div>
-    <div class="sticky">
-      <section class="card ac" id="mz-calc">
-        <h2>3. 出品価格と利益</h2>
-        <div class="f">
-          <label class="yen">Amazonの新品価格<input id="mz-new" type="number" inputmode="numeric" min="0"></label>
-          <label class="yen pct">新品より何%安く出すか<input id="mz-off" type="number" inputmode="decimal" min="0" max="90" step="1" value="15"></label>
-          <label class="yen">Amazonの出品価格(中古)<small>自動で入ります。上書きもできます</small><input id="mz-sell" type="number" inputmode="numeric" min="0"></label>
-          <label>カテゴリー<select id="mz-cat"></select></label>
-          <label class="yen">ヤフオクの価格<small>即決・落札の見込み</small><input id="mz-yprice" type="number" inputmode="numeric" min="0"></label>
-          <label class="yen">ヤフオクの送料<input id="mz-yship" type="number" inputmode="numeric" min="0" value="0"></label>
-          <label class="yen">お客様への発送<small>発送代行の料金・送料</small><input id="mz-outship" type="number" inputmode="numeric" min="0" value="900"></label>
-          <label class="yen">その他<input id="mz-other" type="number" inputmode="numeric" min="0" value="0"></label>
-          <div data-target></div>
-          <label class="chk"><input id="mz-media" type="checkbox">ゲームソフト・CD・DVD・書籍・バイク等</label>
-        </div>
-        <div class="warn" id="mz-guard" hidden><b>本人確認が必要な取引です。</b>この価格(または品目)の古物を個人から買う場合、その都度、法定の非対面の本人確認が必要です。確認できない取引は見送ってください。</div>
-        <div class="result" id="mz-out" aria-live="polite" style="margin-top:14px"></div>
-        <div class="btns"><button type="button" class="b g" id="mz-ledger">仕入れたので台帳に書く</button></div>
-        <p class="note-s">FBAは使わない前提(自己発送・発送代行)で計算しています。中古の出品には、カテゴリーによって出品許可が要るものがあります。</p>
-      </section>
-    </div>
-  </div>
-
-  <section class="card" id="daicho">
-    <h2>仕入れ台帳 <small id="ledger-count"></small></h2>
-    <p class="note-s" style="margin-top:0">5つの計算ページで共通の台帳です。CSV(Excel・Googleスプレッドシートで開けます)には古物台帳の項目(品目・特徴・相手方の氏名・住所・職業・年齢・確認の方法)も入ります。</p>
-    <div id="ledger"></div>
-    <div class="btns"><button type="button" id="ledger-csv" class="b g s">CSVで書き出す</button></div>
-    <div id="ledger-form-box"></div>
-    <p class="note-s">記帳が必要かどうか・必要な項目は、古物営業法と所轄の警察署の案内で確認してください。このツールは記録の入れ物で、法令上の判断はしません。データはこの端末のブラウザの中だけに保存され、当方には送られません。機種変更の前にCSVで書き出してください。</p>
+    <p class="credit">ヤフオク上限は、目標の利益を残せるヤフオクの価格(送料別)です。行を選ぶと出品価格に入ります。</p>
   </section>
 
+  <aside class="det" id="mz-calc" aria-label="内訳">
+    <div class="det-in">
+      <div class="det-h"><p class="det-k">選んだ出品価格</p><p class="det-name" id="d-name">—</p><p class="det-sub" id="d-sub"></p></div>
+      <div class="dg">
+        <label class="cell "><span class="ck2">出品価格(中古)</span><span class="cv"><input id="mz-sell" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
+      </div>
+      <div id="mz-out" aria-live="polite"></div>
+      <div class="acts">
+          <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
+          <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
+        </div>
+        <div id="party"></div>
+        <div id="brk"></div>
+      <p class="det-links"><a id="mz-amz" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a></p>
+    </div>
+  </aside>
+</div>
 </main>
-
-<footer class="zw-foot">
-  <div class="in">
-    <nav><a href="../">せどり 利益チェック トップ</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
-    <p>ZEROICHI WORKS(個人事業)</p>
-    <p>このアプリの画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。利益や販売を保証するものではありません。</p>
+<footer class="ft">
+  <div class="ft-in">
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <details class="legal" id="legal">
+      <summary>法律と規約の注意</summary>
+      <div class="legal-body">
+        <h3>古物営業法</h3>
+        <ul>
+          <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
+          <li>個人から1万円以上の古物を買うときは、その都度、法律で決められた方法での本人確認が必要です。ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で相手確認が未入力の行には印が付きます。</li>
+          <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
+        </ul>
+        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
+        <ul>
+          <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
+          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
+          <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
+        </ul>
+        <h3>写真と説明文</h3>
+        <ul>
+          <li>仕入れ先(ヤフオク・メルカリ等の出品者)の写真や文章を、自分の出品にそのまま使わないでください。著作権の問題になります。自分で撮った写真を使い、Amazonでは既存の商品ページに相乗りしてコンディションを文字で説明します。</li>
+        </ul>
+        <h3>自動アクセス</h3>
+        <ul>
+          <li>このアプリはメルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取りません。検索は各サイトの検索ページを新しいタブで開くだけです。楽天とKeepaは、ご自身のIDとキーで公式APIを使います。</li>
+        </ul>
+      </div>
+    </details>
+    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中だけに保存されます。</p>
   </div>
 </footer>
-<script src="../assets/calc.js"></script>
-<script src="../assets/ui.js"></script>
-<script src="../assets/mz.js"></script>
+<script src="../assets/calc.js?v=20261027b"></script>
+<script src="../assets/ui.js?v=20261027b"></script>
+<script src="../assets/mz.js?v=20261027b"></script>
 </body>
 </html>

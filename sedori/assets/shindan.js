@@ -40,10 +40,9 @@
     var order = Object.keys(s).sort(function (a, b) { return s[b] - s[a]; });
     var a = R[order[0]], b = R[order[1]];
     var note = q.lic === 'no' && q.kind === 'used' ? '<p class="note-s">中古品を仕入れて売ることを繰り返すには古物商許可が必要です。許可が出るまでは、許可の要らない新品や自分の不用品から始める型をおすすめしています。</p>' : '';
-    show('<p class="plan-name">あなたに合いそうな型</p><h3 style="margin:2px 0 6px;font-size:20px">' + a.name + '</h3><p>' + a.why + '</p>' +
-      '<a class="btn" href="' + a.url + '">' + a.name.replace(/\(.*\)/, '') + 'の計算ページを開く</a>' +
-      '<p class="muted" style="margin-top:10px">次の候補: <a href="' + b.url + '">' + b.name + '</a></p>' + note +
-      '<p class="muted">この診断は、答えに合う作業の型を選ぶためのものです。収入や利益の見込みを示すものではありません。</p>');
+    show('<p class="hint" style="margin:0">合いそうなやり方</p><h3>' + a.name + '</h3><p>' + a.why + '</p>' +
+      '<div class="row-btns"><a class="btn" href="' + a.url + '">このページを開く</a><span class="hint" style="margin:0">次の候補: <a href="' + b.url + '">' + b.name + '</a></span></div>' + note.replace('note-s', 'hint') +
+      '<p class="hint">収入や利益の見込みを示すものではありません。</p>');
     try { localStorage.setItem('zw-sedori:shindan', JSON.stringify({ q: q, r: order[0] })); } catch (err) { /* 何もしない */ }
   });
   function show(h) { var o = document.getElementById('shindan-out'); o.innerHTML = h; o.hidden = false; o.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
