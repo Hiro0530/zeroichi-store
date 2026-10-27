@@ -1,9 +1,9 @@
 """せどり 利益チェック: 共通の頭(検索バー・目標の利益・メニュー)と足(法律と規約の注意)を付けて、全ページのHTMLを書き出す。
 
 使い方: python3 tools/sedori/build_pages.py [公開フォルダ(既定 ../kt-zs-sedori-ghp)]
-- 書き出すページ: トップ、5つの計算ページ、台帳(daicho)。
+- 書き出すページ: トップ、5つの計算ページ、台帳(daicho)、料金とお申し込み(plans)、マイページ(mypage)、利用規約(terms)、プライバシーポリシー(privacy)。
 - 手数料の出典一覧(トップの #fees)は sedori/data/fees.json から作る。
-- 画面の部品は sedori/assets/ の ui.js(共通)・ra.js・mz.js・market.js・ledger.js・top.js。
+- 画面の部品は sedori/assets/ の ui.js(共通)・config.js(ログイン・お支払いの設定)・sync.js(同期の計算)・account.js(ログイン・同期)・ra.js・mz.js・market.js・ledger.js・top.js・plans.js・mypage.js。
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__)
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
 BASE_URL = "https://hiro0530.github.io/zeroichi-store/sedori/"
-VER = "20261027c"
+VER = "20261028a"
 
 ROUTES = [
     ("rakuten-amazon", "楽天・Yahoo!→Amazon"),
@@ -68,6 +68,7 @@ def header(base: str, current: str, src: str) -> str:
       <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
     </div>
     <a class="hd-ledger" href="{base}daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="{base}mypage/">ログイン</a>
   </div>
   <nav class="gnav" aria-label="ページ"><div class="gnav-in">{links}</div></nav>
 </header>
@@ -109,12 +110,14 @@ LEGAL = """<details class="legal" id="legal">
 
 
 def footer(base: str, scripts: list[str]) -> str:
-    sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in scripts)
+    # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む
+    order = ["config.js", "sync.js"] + [x for x in scripts if x == "calc.js"] + ["ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js")]
+    sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in order)
     return f"""<footer class="ft">
   <div class="ft-in">
-    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     {LEGAL}
-    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中だけに保存されます。</p>
+    <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。計算は目安で、利益や販売を保証するものではありません。入力した内容と台帳はこの端末のブラウザの中に保存されます(スタンダードでログインしている時は、台帳をクラウドにも保存します)。</p>
   </div>
 </footer>
 {sc}
@@ -151,6 +154,8 @@ def head(title: str, desc: str, path: str, base: str, body_attrs: str) -> str:
 def write(slug: str, html_text: str) -> None:
     d = S / slug if slug else S
     d.mkdir(exist_ok=True)
+    # 受付が始まってから見せる部分は、最初は隠しておく(account.js が config を見て出す)
+    html_text = html_text.replace('data-bill="ready"', 'data-bill="ready" hidden').replace('data-acct="ready"', 'data-acct="ready" hidden')
     (d / "index.html").write_text(html_text, encoding="utf-8")
 
 
@@ -301,6 +306,8 @@ MZ_BODY = f"""<div class="lay3">
           <label class="fr col"><span class="fk">検索する言葉</span><input id="mz-q"></label>
           <p class="row-links"><a id="mz-yh" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">出品中を見る</a><a id="mz-yh-closed" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener">落札相場を見る</a></p>
           ''' + fld("価格", num("mz-yprice"), "円", "即決・落札見込み") + fld("送料", num("mz-yship", "0"), "円", "出品者→自分") + chk("mz-media", "ゲーム・CD・DVD・書籍・バイク等") + '''
+          <label class="fr col"><span class="fk">ヤフオクの終了日時<small>入れると「出品した(見張る)」で台帳に入り、終了60分前に通知</small></span><input id="mz-yend" type="datetime-local"></label>
+          <label class="fr col"><span class="sr">終了日時の文字を貼り付け</span><input id="mz-yend-paste" type="text" autocomplete="off" placeholder="終了日時の文字を貼り付け"></label>
         </div>''')}
       {box("発送", '''<div class="fl">
           ''' + '''<label class="fr col"><span class="fk">運送会社・サイズ</span><select id="mz-carrier"></select></label>''' + fld("送料", num("mz-outship", "0"), "円", "自分で入力の時") + fld("その他", num("mz-other", "0"), "円") + '''
@@ -430,7 +437,7 @@ LEDGER_BODY = """<div class="lg">
     <span class="lg-act"><button type="button" class="btn sm ghost" id="lg-add">手で追加</button><button type="button" class="btn sm ghost" id="lg-csv">CSVで書き出す</button><button type="button" class="btn sm" id="lg-xlsx">Excelで書き出す</button></span>
   </div>
   <div class="tabs" role="tablist" id="lg-tabs"></div>
-  <div class="tbar"><p class="tbar-t" id="lg-title"></p><span class="tbar-r"><label class="inl">期間 <select id="lg-period"><option value="all">すべて</option><option value="m0">今月</option><option value="m1">先月</option><option value="y0">今年</option></select></label></span></div>
+  <div class="tbar"><p class="tbar-t" id="lg-title"></p><span class="tbar-r"><button type="button" class="btn sm ghost tg" id="lg-notify" aria-pressed="false" title="ヤフオクの終了60分前に、ブラウザの通知でお知らせ(このアプリのページを開いている間)">終了60分前の通知: オフ</button><label class="inl">期間 <select id="lg-period"><option value="all">すべて</option><option value="m0">今月</option><option value="m1">先月</option><option value="y0">今年</option></select></label></span></div>
   <div id="lg-form-box"></div>
   <div class="gridwrap">
     <table class="grid ledger" id="lg-grid">
@@ -438,7 +445,7 @@ LEDGER_BODY = """<div class="lg">
       <tbody id="lg-rows"></tbody>
     </table>
   </div>
-  <p class="credit">仕入れ値1万円以上の中古品と、ゲーム・CD・DVD・書籍・バイク等の中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。CSV・Excelは古物台帳の項目(受入れ・払出し)の順で書き出します。データはこの端末のブラウザの中だけにあるので、機種変更の前に書き出してください。</p>
+  <p class="credit">仕入れ値1万円以上の中古品と、ゲーム・CD・DVD・書籍・バイク等の中古品は、相手の氏名と確認の方法を入れるまで「相手確認が未入力」と表示します。CSV・Excelは古物台帳の項目(受入れ・払出し)の順で書き出します。「出品中」の行にヤフオク終了日時を入れると「終了が近い順」に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、終了60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。データはこの端末のブラウザの中にあります。無料プランでは、機種変更の前に書き出してください。</p>
 </div>"""
 out = head("古物台帳", "仕入れた品を自動で記録する古物台帳。状態(仕入れ済→入庫→出品中→売約→発送済)を1クリックで進め、売れたら売却日・売値・相手を自動で記入。CSV・Excelで書き出し。",
            "daicho/", "../", 'data-page="daicho"')
@@ -479,8 +486,8 @@ TOP_BODY = f"""<div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
     <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
-      <table class="kv"><tr><th>無料</th><td>0円・登録不要</td></tr><tr><th>スタンダード</th><td>月2,480円(税込)<br>30日無料・準備中</td></tr><tr><th>先着100名</th><td>月1,980円<br>途中で上がりません</td></tr></table>
-      <p class="row-links"><a data-mail="prereg" href="#">事前登録(無料)</a><a href="#plans">プランを比べる</a></p>
+      <table class="kv"><tr><th>無料</th><td>0円・登録不要</td></tr><tr><th>スタンダード</th><td>月2,480円(税込)<br>14日間無料<span data-bill="prep">・準備中</span></td></tr><tr><th>先着100名</th><td>月1,980円<br>途中で上がりません</td></tr></table>
+      <p class="row-links"><a href="plans/" data-bill="ready">14日間無料で始める</a><a data-mail="prereg" href="#" data-bill="prep">事前登録(無料)</a><a href="plans/">料金の詳しい説明</a></p>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳の付け方を週1回。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
   </aside>
@@ -518,34 +525,35 @@ TOP_BODY = f"""<div class="lay2">
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
     <h2 class="sec-h" id="plans">料金とプラン</h2>
-    <p>無料 0円/スタンダード <b>月2,480円</b>(先着100名は月1,980円)/業務 月4,980円(予定)。有料はどちらも税込・30日無料・準備中です。</p>
+    <p>無料 0円/スタンダード <b>月2,480円</b>(先着100名は月1,980円)/業務 月4,980円(予定)。すべて税込。スタンダードは14日間無料で、お支払いはPayPalです。<span data-bill="prep">いまは準備中です。</span></p>
     <div class="gridwrap"><table class="grid nimg cmp" style="min-width:600px">
-      <thead><tr><th></th><th>無料(いま使えます)</th><th>スタンダード(準備中)</th><th>業務(準備中)</th></tr></thead>
+      <thead><tr><th></th><th>無料(いま使えます)</th><th>スタンダード<span data-bill="prep">(準備中)</span></th><th>業務(受付前)</th></tr></thead>
       <tbody>
         <tr><th>料金(税込)</th><td>0円・登録不要</td><td><b>月2,480円</b>・年24,800円<br>先着100名は月1,980円・年19,800円</td><td>月4,980円・年49,800円(予定)</td></tr>
-        <tr><th>無料期間</th><td>—</td><td>30日</td><td>30日</td></tr>
+        <tr><th>無料期間</th><td>—</td><td>14日(終わると自動で有料)</td><td>14日</td></tr>
         <tr><th>計算ページ</th><td>5つすべて・回数制限なし</td><td>同じ</td><td>同じ</td></tr>
         <tr><th>台帳</th><td>この端末に保存・行数の制限なし・CSV・Excel</td><td>クラウドに保存し、パソコンとスマホで同じ台帳。3年分を保管</td><td>作業する人3人まで・提出用のPDF・変更の記録</td></tr>
         <tr><th>楽天の検索</th><td>1日20回</td><td>制限なし</td><td>制限なし</td></tr>
         <tr><th>ウォッチ</th><td>保存・CSV</td><td>価格・ポイントの再確認、出品者数の変化の記録※</td><td>同じ</td></tr>
         <tr><th>まとめて計算</th><td>—</td><td>JANを一括で計算(CSV)</td><td>同じ</td></tr>
         <tr><th>発送代行</th><td>自分で発送との切り替えで計算</td><td>同じ</td><td>入庫予定・出荷依頼のCSVを台帳から作成</td></tr>
-        <tr><th>解約</th><td>—</td><td colspan="2">契約画面のボタン1回かメール1通。無料期間中は0円。終了の5日前と前日にメールでお知らせ</td></tr>
+        <tr><th>解約</th><td>—</td><td colspan="2">マイページの「契約内容」→「解約について」から、いつでも。PayPalの自動支払いの管理、メール1通でも解約できます。無料期間中の解約は0円。無料期間の終了3日前にメールでお知らせ</td></tr>
       </tbody>
     </table></div>
-    <p class="hint">有料版のお申し込みはまだ受け付けていません。準備ができたら、事前登録の方へ順にメールでご案内します(登録しても料金は発生しません)。先着100名の価格は事前登録の順にご案内し、続けている間は上がりません。※価格データのサービスのAPIキーをお持ちの場合。</p>
-    <p class="row-links"><a data-mail="prereg" href="#">事前登録(メール1通・無料)</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
+    <p class="hint"><span data-bill="prep">有料版のお申し込みはまだ受け付けていません。準備ができたら、事前登録の方へ順にメールでご案内します(登録しても料金は発生しません)。</span>先着100名の価格は、お申し込みの順に100名までで、続けている間は上がりません。※価格データのサービスのAPIキーをお持ちの場合。</p>
+    <p class="row-links"><a class="btn" href="plans/" data-bill="ready">14日間無料で始める</a><a data-mail="prereg" href="#" data-bill="prep">事前登録(メール1通・無料)</a><a href="plans/">料金とお申し込みの条件</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
     <h2 class="sec-h" id="faq">よくある質問</h2>
     <div class="faq">
       <details><summary>無料でどこまで使えますか。</summary><p>5つの計算ページと台帳は、無料・回数制限なし・登録なしで使えます。楽天の検索は1日20回までで、楽天の開発者サイトでご自身の無料IDを取っていただきます。</p></details>
       <details><summary>いま使っている出品・価格改定の道具と一緒に使えますか。</summary><p>使えます。このアプリは出品や価格改定はしません。仕入れる前の計算と、仕入れた後の古物台帳を受け持ちます。</p></details>
-      <details><summary>入れたデータはどこに保存されますか。</summary><p>無料版は、この端末のブラウザの中だけです。当方のサーバーには送られません。ブラウザのデータを消すと台帳も消えるので、CSV・Excelで書き出してください。有料版はクラウドに保存しますが、当方は中身を見ず、使いません(提供の前にプライバシーポリシーへ書き加えます)。</p></details>
+      <details><summary>入れたデータはどこに保存されますか。</summary><p>無料版は、この端末のブラウザの中だけです。当方のサーバーには送られません。ブラウザのデータを消すと台帳も消えるので、CSV・Excelで書き出してください。スタンダードでログインすると台帳をクラウド(Google Cloud の東京リージョン)にも保存しますが、当方は中身を見ず、使いません(<a href="privacy/">プライバシーポリシー</a>)。解約後も3年間は保管し、マイページから書き出せます。</p></details>
       <details><summary>Amazonの価格はどう入れますか。</summary><p>「Amazonで見る」で価格を確かめて入れてください。価格データのサービスのAPIキーをお持ちなら、設定に入れると自動で入ります。そのサービスの料金と利用条件は、そのサービスとのご契約になります。</p></details>
       <details><summary>メルカリやヤフオクの価格を自動で取れませんか。</summary><p>取りません。各サービスの規約で自動アクセスが制限されているためです。検索バーで各サイトの検索ページを開き、見た価格を入れてください。</p></details>
       <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行できます。台帳では状態を1クリックで進め、「売れた」で売却日・売値・相手が入ります。1万円以上の中古品などは、相手確認を入れるまで印が付きます。</p></details>
       <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
-      <details><summary>有料版はいつから使えますか。</summary><p>準備ができたら、事前登録の方へメールでご案内します。お申し込みの受付の前に、特定商取引法に基づく表記へ料金・支払い・解約の条件を載せます。</p></details>
+      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">準備ができたら、事前登録の方へメールでご案内します。</span><span data-bill="ready">いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
+      <details><summary>解約はどうしますか。</summary><p>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すると完了します。PayPalの自動支払いの管理画面から止めることも、メール1通でのお申し出もできます。次回の請求日の前日までに解約すれば、次回からは請求されません。</p></details>
     </div>
 
     <h2 class="sec-h" id="fees">手数料・送料の出典(確認日 <!--CHECKED-->{FEES['checked_label']}<!--/CHECKED-->)</h2>
@@ -563,8 +571,329 @@ out = head("せどり 利益チェック", "楽天・Yahoo!・ヤフオク・業
 out += header("./", "", "rakuten") + crumb("./", None) + f'<main class="wrap">\n{TOP_BODY}\n</main>\n' + footer("./", ["calc.js", "ui.js", "top.js", "shindan.js"])
 write("", out)
 
+# ------------------------------------------------------------------
+# 料金とお申し込み(/sedori/plans/)。特商法(2022年改正)の最終確認画面の表示事項を、ボタンと同じ画面に置く
+# ------------------------------------------------------------------
+PLAN_ROWS = [
+    # key, プラン, 支払い, 価格(税込), 補足, data-founder
+    ("standard_month", "スタンダード", "月払い", "2,480円", "毎月", False),
+    ("standard_year", "スタンダード", "年払い", "24,800円", "毎年。月あたり約2,067円(月払いより2か月分安い)", False),
+    ("founder_month", "先着100名の価格", "月払い", "1,980円", "毎月。続けている間は上がりません", True),
+    ("founder_year", "先着100名の価格", "年払い", "19,800円", "毎年。続けている間は上がりません", True),
+]
+plan_pick = "\n".join(
+    f'<tr data-plan="{k}"{" data-founder" if f else ""}><td class="pk"><input type="radio" name="plan" value="{k}" id="pl-{k}"{" checked" if k == "standard_month" else ""}></td>'
+    f'<td><label for="pl-{k}"><b>{n}</b><span class="meta">{c}</span></label></td><td class="r"><span class="yen">{p.replace("円", "")}<i>円</i></span><span class="meta">{"/月" if c == "月払い" else "/年"}(税込)</span></td><td class="note2">{note}</td></tr>'
+    for k, n, c, p, note, f in PLAN_ROWS) + \
+    '<tr class="off"><td class="pk"><input type="radio" disabled aria-label="業務(受付前)"></td><td><b>業務</b><span class="meta">月払い・年払い</span></td><td class="r"><span class="yen">4,980<i>円</i></span><span class="meta">/月(予定)</span></td><td class="note2">受付前。発送代行の連携・作業者3人・提出用PDF。機能ができてから販売します</td></tr>'
+
+PLANS_BODY = """<div class="pl">
+  <h1 class="pg-h">料金とお申し込み</h1>
+  <p class="pl-lead">計算と、この端末に保存する台帳は、無料・登録なしで使えます。スタンダードは、台帳をクラウドに保存してパソコンとスマホで同じ台帳を使う人向けです。<b>14日間は無料</b>で、終わると自動で有料になります。</p>
+  <div class="pl-grid">
+    <section class="pl-main pl-a" aria-label="プランを選ぶ">
+      <h2 class="sec-h">1. プランを選ぶ</h2>
+      <div class="gridwrap"><table class="grid nimg pick" id="pl-pick">
+        <thead><tr><th class="pk"></th><th>プラン</th><th class="r">価格(税込)</th><th>支払い</th></tr></thead>
+        <tbody>""" + plan_pick + """</tbody>
+      </table></div>
+      <p class="hint" id="pl-founder-note">先着100名の価格は、お申し込み(無料期間の始まり)の順に100名までです。<span id="pl-founder-left"></span></p>
+    </section>
+    <section class="pl-b" aria-label="使えるようになること">
+
+      <h2 class="sec-h">2. 使えるようになること(分量)</h2>
+      <div class="gridwrap"><table class="grid nimg cmp">
+        <thead><tr><th></th><th>無料</th><th>スタンダード<span class="meta">先着100名の価格も同じ中身</span></th></tr></thead>
+        <tbody>
+          <tr><th>台帳</th><td>この端末に保存</td><td><b>クラウドに保存</b>し、パソコン・スマホ・タブレットで同じ台帳(1アカウント・端末数の制限なし・行数の制限なし)。解約後も3年間保管</td></tr>
+          <tr><th>計算ページ</th><td>5つすべて</td><td>同じ</td></tr>
+          <tr><th>楽天の検索</th><td>1日20回</td><td>制限なし</td></tr>
+          <tr><th>設定</th><td>この端末だけ</td><td>目標の利益・発送のしかた・発送代行の費用を端末間で揃える</td></tr>
+          <tr><th>無在庫の見張り</th><td>終了が近い順・60分前の通知</td><td>同じ(他の端末で入れた終了日時も届く)</td></tr>
+          <tr><th>今後の追加</th><td>—</td><td>ウォッチの再確認、JANの一括計算、ポイントの上限枠、バーコード読み取り(できたものから順に。料金は変わりません)</td></tr>
+        </tbody>
+      </table></div>
+      <p class="hint">ログインと保存の方法: メールのリンクかGoogleアカウントでログイン。台帳は Google Cloud(東京リージョン)に保存し、ログインした本人だけが読み書きできます。当方は中身を見ません(<a href="../privacy/">プライバシーポリシー</a>)。</p>
+    </section>
+
+    <aside class="pl-conf" aria-label="お申し込み内容の確認">
+      <div class="conf-in">
+        <h2 class="conf-h">お申し込み内容の確認</h2>
+        <table class="kv conf" id="pl-conf">
+          <tr><th>プラン</th><td id="cf-plan">スタンダード(月払い)</td></tr>
+          <tr><th>分量</th><td>台帳のクラウド保存と端末間の同期(1アカウント)、楽天の検索 制限なし、設定の同期。左の「2. 使えるようになること」のとおり</td></tr>
+          <tr><th>価格(税込)</th><td><b id="cf-price">月2,480円</b><span class="meta">これ以外の費用はかかりません(通信費を除く)</span></td></tr>
+          <tr><th>無料期間</th><td><b id="cf-trial">お申し込みの日から14日間</b></td></tr>
+          <tr><th>支払いの時期</th><td id="cf-when">無料期間が終わる日に1回目、以後は毎月同じ日に、自動で請求します(前払い)</td></tr>
+          <tr><th>支払いの方法</th><td>PayPal(PayPal残高・PayPalに登録したクレジットカード・デビットカード・銀行口座)。お申し込みには支払い方法の登録が必要です</td></tr>
+          <tr><th>使える時期</th><td>PayPalでの手続きが終わった時から、すぐ(無料期間中も同じ機能)</td></tr>
+          <tr><th>申込みの期間</th><td id="cf-period">期限はありません</td></tr>
+          <tr><th>契約の期間</th><td id="cf-term">1か月ごとに自動で更新。解約するまで続きます</td></tr>
+          <tr><th>解約の方法</th><td>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すると完了します(同じ画面に一時停止・プラン変更のご案内があります)。PayPalの「自動支払い」の管理画面から止めることも、メール(<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a>)でのお申し出もできます</td></tr>
+          <tr><th>解約の期限</th><td id="cf-deadline">次回の請求日の前日までに解約すれば、次回からは請求しません。無料期間中に解約すれば0円です</td></tr>
+          <tr><th>返金</th><td>支払い済みの期間の途中で解約しても、日割りの返金はありません。その期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します</td></tr>
+          <tr><th>解約後の台帳</th><td>クラウドの台帳は解約から3年間保管し、マイページから書き出せます(古物台帳は3年間の保存が必要なため)。ご自身でいつでも消せます</td></tr>
+        </table>
+        <div class="trial-box" id="cf-trialbox">
+          <p><b id="cf-t1">今日から14日間は無料です。</b></p>
+          <p id="cf-t2">無料期間が終わる日に、1回目の2,480円(税込)をPayPalで自動でお支払いいただき、以後は毎月同じ日に請求します。無料期間の終了3日前に、メールでお知らせします。</p>
+        </div>
+        <div class="pay" id="pl-pay">
+          <div data-bill="prep">
+            <p class="dlg-st">準備中</p>
+            <p class="hint">お申し込みの受付はまだ始めていません。準備ができたら、事前登録の方へメールでご案内します(登録しても料金はかかりません)。</p>
+            <a class="btn wide" data-mail="prereg" href="#">事前登録(メール1通・無料)</a>
+          </div>
+          <div data-bill="ready">
+            <div id="pl-login"><button type="button" class="btn wide" id="pl-login-btn">ログインして申し込む</button><p class="hint">申し込むアカウントを決めるため、先にログインします(メールのリンクかGoogle)。</p></div>
+            <div id="pl-buy" hidden>
+              <p class="pay-who" id="pl-who"></p>
+              <div id="pl-pp" class="pp"></div>
+              <p class="hint">上の内容と<a href="../terms/">利用規約</a>・<a href="../privacy/">プライバシーポリシー</a>をご確認のうえ、PayPalの画面で「同意して続行」を押すとお申し込みが完了します。</p>
+            </div>
+            <div id="pl-has" hidden><p class="msg" id="pl-has-t"></p><a class="btn ghost wide" href="../mypage/">マイページで契約内容を見る</a></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>"""
+
+out = head("料金とお申し込み", "せどり 利益チェックの料金(無料/スタンダード 月2,480円・年24,800円/先着100名 月1,980円・年19,800円)、14日間の無料期間、支払いの時期と方法、解約の方法。",
+           "plans/", "../", 'data-page="plans"')
+out += header("../", "plans", "rakuten") + crumb("../", "料金とお申し込み") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
+write("plans", out)
+
+# ------------------------------------------------------------------
+# マイページ(/sedori/mypage/)
+# ------------------------------------------------------------------
+MYPAGE_BODY = """<div class="mp">
+  <h1 class="pg-h">マイページ</h1>
+  <div class="mp-grid">
+    <nav class="mp-nav" aria-label="マイページの項目">
+      <a href="#mp-account">アカウント</a><a href="#mp-plan">契約内容</a><a href="#cancel" class="sub">解約について</a><a href="#mp-data">台帳とデータ</a><a href="#mp-notify">通知</a>
+    </nav>
+    <div class="mp-main">
+      <section id="mp-account" class="mp-sec">
+        <h2 class="sec-h">アカウント</h2>
+        <div data-acct="prep"><p class="dlg-st">準備中</p><p>ログインと台帳のクラウド保存は準備中です。計算と台帳は、このままログインなしで使えます(この端末に保存)。下の「台帳とデータ」から書き出しと、「通知」の設定ができます。</p></div>
+        <div data-acct="ready">
+          <div id="mp-out"><p>ログインすると、契約内容の確認と、台帳のクラウド保存の状態が見られます。</p><button type="button" class="btn" id="mp-login">ログイン</button></div>
+          <div id="mp-in" hidden>
+            <table class="kv wide"><tr><th>メールアドレス</th><td id="mp-email"></td></tr><tr><th>ログインの方法</th><td>メールのリンク・Google(パスワードは使いません)</td></tr></table>
+            <div class="row-btns"><button type="button" class="btn sm ghost" id="mp-logout">ログアウト</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mp-plan" class="mp-sec">
+        <h2 class="sec-h">契約内容</h2>
+        <div id="mp-plan-box"><p class="muted">ログインすると表示します。</p></div>
+        <details class="mp-cancel" id="cancel">
+          <summary>解約について</summary>
+          <div class="mp-cancel-b" id="mp-cancel-b">
+            <p>いつでも解約できます。次回の請求日の前日までに解約すれば、次回からは請求しません(無料期間中なら0円)。解約の前に、次の方法もあります。</p>
+            <div class="alt" id="mp-alt"></div>
+            <h3>解約する前に: 台帳を書き出す</h3>
+            <p class="hint">古物台帳は、最後の記入から3年間の保存が必要です。解約後もクラウドの台帳は3年間保管し、ここから書き出せますが、手元にも残しておくと安心です。</p>
+            <div class="row-btns"><button type="button" class="btn sm ghost" data-exp="csv">CSVで書き出す</button><button type="button" class="btn sm ghost" data-exp="xlsx">Excelで書き出す</button></div>
+            <h3>解約する</h3>
+            <div id="mp-cancel-do"></div>
+            <h3>ほかの解約の方法</h3>
+            <ul class="steps">
+              <li>PayPalから: PayPalにログイン → 右上の歯車(設定) → 「支払い」 → 「自動支払いを管理」 → 「ZEROICHI WORKS」 → 「キャンセル」。マイページの表示にも数分で反映されます。</li>
+              <li>メールで: <a href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%9B%E3%81%A9%E3%82%8A%E3%82%A2%E3%83%97%E3%83%AA%E8%A7%A3%E7%B4%84">zeroichi.works.jp@gmail.com</a> へ、ログインに使うメールアドレスから「解約」とお送りください。受け取った日に解約の手続きをします。</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="mp-data" class="mp-sec">
+        <h2 class="sec-h">台帳とデータ</h2>
+        <table class="kv wide" id="mp-data-t"></table>
+        <div class="row-btns"><button type="button" class="btn sm" data-exp="xlsx">Excelで書き出す</button><button type="button" class="btn sm ghost" data-exp="csv">CSVで書き出す</button><button type="button" class="btn sm ghost" id="mp-cloud-exp" hidden>クラウドの台帳を書き出す</button><button type="button" class="btn sm ghost" id="mp-sync" hidden>今すぐ同期</button></div>
+        <p class="hint" id="mp-keep">保管の期間: 契約中はずっと。解約後は3年間保管し、その後に消します。ご自身で消した時は、すぐ消します。</p>
+        <details class="mp-danger" id="mp-del" hidden>
+          <summary>クラウドの台帳・アカウントを消す</summary>
+          <div class="mp-danger-b">
+            <p>クラウドの台帳を消すと元に戻せません。古物台帳は3年間の保存が必要なので、先に書き出してください。</p>
+            <label class="ck"><input type="checkbox" id="mp-del-local">この端末の台帳も消す</label>
+            <div class="row-btns"><input type="text" id="mp-del-word" placeholder="「消す」と入力" aria-label="確認のため「消す」と入力"><button type="button" class="btn sm danger" id="mp-del-cloud">クラウドの台帳を消す</button><button type="button" class="btn sm danger ghost" id="mp-del-acct">アカウントを削除</button></div>
+            <p class="hint">アカウントの削除は、解約が済んでからできます。</p>
+          </div>
+        </details>
+      </section>
+
+      <section id="mp-notify" class="mp-sec">
+        <h2 class="sec-h">通知</h2>
+        <table class="kv wide"><tr><th>ヤフオクの終了60分前</th><td><button type="button" class="btn sm ghost tg" id="lg-notify" aria-pressed="false">終了60分前の通知: オフ</button><p class="hint">台帳で「出品中」の行にヤフオクの終了日時を入れると、60分前に「Amazonの在庫を0にしてください」と通知します。このアプリのページ(どれでも)を開いている間だけ届きます。ヤフオク・Amazonへの自動アクセスはしません。</p></td></tr></table>
+      </section>
+    </div>
+  </div>
+</div>"""
+
+out = head("マイページ", "ログイン、契約内容、台帳のクラウド保存と書き出し、通知の設定。", "mypage/", "../", 'data-page="mypage"')
+out = out.replace('<meta name="description"', '<meta name="robots" content="noindex">\n<meta name="description"', 1)
+out += header("../", "mypage", "ledger") + crumb("../", "マイページ") + f'<main class="wrap">\n{MYPAGE_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "mypage.js"])
+write("mypage", out)
+
+
+# ------------------------------------------------------------------
+# 利用規約・プライバシーポリシー
+# ------------------------------------------------------------------
+def doc_page(slug: str, title: str, desc: str, body: str) -> None:
+    o = head(title, desc, f"{slug}/", "../", f'data-page="{slug}"')
+    o += header("../", slug, "rakuten") + crumb("../", title) + f'<main class="wrap">\n<article class="docx">\n{body}\n</article>\n</main>\n' + footer("../", ["calc.js", "ui.js"])
+    write(slug, o)
+
+
+TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
+<p class="muted">制定日 2026年10月27日</p>
+<p>この規約は、ZEROICHI WORKS(以下「当方」)が提供する「せどり 利益チェック」(以下「本サービス」)の利用条件です。本サービスを使う方(以下「利用者」)は、この規約に同意したうえで使ってください。有料プランは、ログインしてお申し込みいただいた時に、この規約に同意したものとします。</p>
+
+<h2>第1条(本サービスの内容)</h2>
+<ol>
+<li>本サービスは、仕入れと販売の手数料・送料・ポイントを含めた利益の計算、古物台帳の項目に沿った記録(以下「台帳」)、その書き出しを行うウェブアプリです。</li>
+<li>無料プランでは、計算と台帳を、利用者の端末のブラウザの中に保存して使えます。登録は要りません。</li>
+<li>有料プラン(スタンダード)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
+</ol>
+
+<h2>第2条(アカウント)</h2>
+<ol>
+<li>有料プランを使うには、メールのリンクかGoogleアカウントでログインします。1人1アカウントで、他人と共有しないでください。</li>
+<li>ログインに使うメールアカウント・Googleアカウントは、利用者の責任で管理してください。第三者に使われたことによる損害について、当方の故意または重過失による場合を除き、当方は責任を負いません。</li>
+</ol>
+
+<h2>第3条(料金と支払い)</h2>
+<ol>
+<li>有料プランの料金(税込)、支払いの時期と方法は、料金ページのお申し込み内容の確認に表示したとおりです。支払いはPayPalのサブスクリプション(自動の定期支払い)で行います。</li>
+<li>有料プランには14日間の無料期間があります。無料期間が終わる日に1回目の料金を請求し、以後は月払いなら毎月、年払いなら毎年、同じ日に自動で請求します(前払い)。無料期間中に解約した場合、料金はかかりません。</li>
+<li>先着100名の価格は、お申し込みの順に100名までに適用し、その契約が続いている間は上げません。解約後に申し込み直した場合は、その時の価格になります。</li>
+<li>支払いが確認できない時は、当方は有料プランの機能(クラウドへの保存)を止めることがあります。その間も、保存済みの台帳の閲覧と書き出しはできます。</li>
+</ol>
+
+<h2>第4条(解約)</h2>
+<ol>
+<li>利用者は、いつでも解約できます。方法は、マイページの「契約内容」にある「解約について」から「解約する」を押して確認する方法、PayPalの自動支払いの管理画面から止める方法、メールで申し出る方法のいずれかです。</li>
+<li>次回の請求日の前日までに解約すれば、次回からは請求しません。支払い済みの期間の途中で解約しても日割りの返金はなく、その期間の終わりまで有料プランを使えます。</li>
+<li>当方の不具合で有料プランを使えなかった期間があるときは、その分を返金します。</li>
+</ol>
+
+<h2>第5条(一時停止とプランの変更)</h2>
+<ol>
+<li>利用者は、マイページから契約を1か月間一時停止できます。停止中は請求せず、クラウドへの保存は止まります(保存済みの台帳の閲覧と書き出しはできます)。1か月たつと自動で再開し、再開した日から請求を再開します。再開の日より前にマイページから再開することもできます。</li>
+<li>月払いと年払いの切り替えなどのプランの変更は、マイページから行い、PayPalの画面での承認をもって変わります。</li>
+</ol>
+
+<h2>第6条(台帳のデータ)</h2>
+<ol>
+<li>台帳に入れたデータは利用者のものです。当方は、保存・同期・書き出しのために必要な範囲でだけ扱い、中身を見たり、ほかの目的に使ったりしません。</li>
+<li>クラウドの台帳は、契約中は保管し、解約(支払い済みの期間の終わり)から3年間保管したあと消します。この間は、ログインしてマイページから書き出せます。利用者がマイページで消した時は、すぐ消します。</li>
+<li>端末のブラウザの中のデータは、当方は保管していません。ブラウザのデータを消すと消えるので、利用者が書き出して保管してください。</li>
+</ol>
+
+<h2>第7条(古物台帳と法令)</h2>
+<ol>
+<li>本サービスの台帳は記録の入れ物で、古物営業法その他の法令に合っているかどうかの判断はしません。帳簿の記載事項・保存・本人確認などの義務は、古物商である利用者が負います。必要な項目は所轄の警察署で確認してください。</li>
+<li>利用者は、取引相手の個人情報を、法令に従って取得し、台帳に入れてください。</li>
+<li>本サービスは、Yahoo!オークション・メルカリ・Amazonなどのページを自動で読み取りません。各サービスの規約は利用者が守ってください。</li>
+</ol>
+
+<h2>第8条(禁止事項)</h2>
+<p>次のことをしないでください。法令や公序良俗に反すること/他人のアカウントを使うこと/本サービスの仕組みに過大な負荷をかけること、不正にアクセスすること/盗品など不正な品の取引の記録・隠ぺいに使うこと/本サービスを当方の許可なく再販売すること。</p>
+
+<h2>第9条(計算と情報の扱い)</h2>
+<p>計算は、公開されている料金表をもとにした目安です。利益・販売・仕入れの結果を保証しません。手数料・送料は変わることがあるので、確認日と出典を見て、各サービスで確かめてください。</p>
+
+<h2>第10条(サービスの変更・停止)</h2>
+<ol>
+<li>当方は、機能を追加・変更することがあります。有料プランの機能を減らす時や、料金を変える時は、30日前までにメールとこのページでお知らせします。</li>
+<li>設備の保守・障害・天災などで、本サービスを止めることがあります。本サービスをやめる時は、90日前までにお知らせし、台帳を書き出せる期間を設けます。</li>
+</ol>
+
+<h2>第11条(責任の範囲)</h2>
+<ol>
+<li>当方は、本サービスに不具合がないこと、特定の目的に合うことを保証しません。</li>
+<li>当方の責任による損害は、当方に故意または重過失がある場合を除き、損害が生じた月に利用者が支払った有料プランの料金の額を上限とします。軽過失の場合に限り、この上限を適用します。</li>
+</ol>
+
+<h2>第12条(規約の変更)</h2>
+<p>当方は、民法の定めに従い、この規約を変えることがあります。変える時は、変更の内容と効力が生じる日を、その日より前にこのページとメールでお知らせします。</p>
+
+<h2>第13条(準拠法・管轄)</h2>
+<p>この規約は日本の法律に従います。本サービスについて争いが生じた時は、当方の所在地を管轄する地方裁判所を第一審の専属的合意管轄裁判所とします。ただし、利用者が消費者である場合は、法令の定めに従います。</p>
+
+<h2>お問い合わせ</h2>
+<p>ZEROICHI WORKS(事業者の名前・連絡先は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
+
+PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h1>
+<p class="muted">制定日 2026年10月27日</p>
+<p>ZEROICHI WORKS(以下「当方」)は、「せどり 利益チェック」(以下「本サービス」)で扱う個人情報を、次のとおり取り扱います。事業者の氏名・住所等は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p>
+
+<h2>1. 扱う情報</h2>
+<table class="legal-t">
+<tr><th>アカウント</th><td>メールアドレス。Googleでログインした場合はGoogleアカウントのメールアドレスと識別子(パスワードは当方に届きません)</td></tr>
+<tr><th>台帳(スタンダード)</th><td>利用者が入れた仕入れ・売却の記録。取引相手の氏名・住所・電話・メール・職業・年齢・確認の方法など、古物台帳の項目を含みます</td></tr>
+<tr><th>設定(スタンダード)</th><td>目標の利益、発送のしかた、発送代行の費用</td></tr>
+<tr><th>契約</th><td>PayPalのサブスクリプションID、プラン、契約の状態、無料期間の終わり・次回の請求日。カード番号・口座番号は当方に届かず、PayPalが扱います</td></tr>
+<tr><th>お問い合わせ</th><td>メールでいただいた内容</td></tr>
+<tr><th>端末の中だけの情報</th><td>無料プランの台帳、入力した値、楽天・Keepaのキーは、利用者の端末のブラウザの中だけに保存し、当方には送られません</td></tr>
+</table>
+
+<h2>2. 利用目的</h2>
+<ol>
+<li>ログインと、台帳・設定のクラウドへの保存・端末間の同期・書き出しのため</li>
+<li>契約の管理(お申し込み・無料期間の終了のお知らせ・請求・一時停止・解約)のため</li>
+<li>お問い合わせへの返事、料金や規約の変更などの大切なお知らせのため</li>
+<li>不正な利用を防ぐため</li>
+</ol>
+<p><b>台帳の中身は、上の1のためだけに扱います。</b>当方は台帳の中身を見たり、分析・営業・広告・AIの学習などに使ったりしません。障害の調査などで中身を見る必要が出た時は、事前に利用者の同意を得た範囲に限ります。</p>
+
+<h2>3. 第三者への提供の制限</h2>
+<ol>
+<li>当方は、法令に基づく場合などを除き、本人の同意なく個人情報を第三者に提供しません。</li>
+<li><b>クラウドへの保存について</b>: 台帳と設定は、Google LLC の Firebase(Cloud Firestore)の東京リージョン(日本)に保存します。Googleは、当方との契約(データ処理の規約)に基づいてデータを保管するだけで、中身を取り扱いません。このため、個人情報保護委員会の考え方(いわゆるクラウド例外)に照らし、Googleへの「第三者提供」にはあたらないものとして扱い、当方が安全管理の責任を負います。</li>
+<li>利用者が取引相手から得た個人情報について、当方は保管の場所を提供する立場で、その情報を取り扱いません。利用者の側でも、当方のクラウドに保存することは第三者への提供にあたらないものと考えています。</li>
+<li>支払いはPayPal(PayPal Pte. Ltd.)、契約の状態の受け渡しは Cloudflare, Inc. の Workers、お知らせのメールの送信は Google(Gmail)を使います。これらに渡すのは、それぞれの目的に必要な情報(メールアドレス・契約の識別子など)だけで、台帳の中身は渡しません。</li>
+</ol>
+
+<h2>4. 安全管理のためにしていること</h2>
+<ul>
+<li>通信はすべて暗号化(HTTPS)します。保存したデータもGoogleの仕組みで暗号化されます。</li>
+<li>データベースの規則で、ログインした本人だけが自分の台帳を読み書きできるようにしています。ほかの利用者からは見えません。契約の状態は、当方のサーバーだけが書き換えられます。</li>
+<li>管理用のアカウントは2段階認証で守り、秘密の鍵は公開の場所に置きません。運営責任者1名だけが管理画面に入れます。</li>
+<li>外国の制度: 利用するクラウド・決済の会社は米国・シンガポール等の事業者ですが、台帳の保存場所は日本です。</li>
+<li>漏えいなどが起きた時は、法令に従って個人情報保護委員会への報告と本人への通知を行います。</li>
+</ul>
+
+<h2>5. 保存の期間</h2>
+<table class="legal-t">
+<tr><th>クラウドの台帳・設定</th><td>契約中は保管します。解約(支払い済みの期間の終わり)から<b>3年間</b>保管し、その後に消します。古物台帳は最後の記入から3年間の保存が必要なため、解約後もマイページから書き出せるようにしています。利用者がマイページで消した時は、すぐ消します</td></tr>
+<tr><th>アカウント</th><td>アカウントを削除するまで(解約後、マイページから削除できます)</td></tr>
+<tr><th>契約・請求の記録</th><td>税法などの法令で決められた期間(最長7年)</td></tr>
+<tr><th>お問い合わせのメール</th><td>対応が終わってから1年</td></tr>
+</table>
+
+<h2>6. 開示・訂正・利用停止など</h2>
+<p>ご本人の情報の開示・訂正・削除・利用停止のご請求は、ログインに使うメールアドレスから<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a>へご連絡ください。ご本人であることを確かめたうえで、遅くとも2週間以内に対応します。台帳の書き出しと削除は、マイページからいつでもできます。</p>
+
+<h2>7. Cookie などの扱い</h2>
+<p>ログインの状態と端末の中の台帳を保つため、ブラウザの保存領域(localStorage・IndexedDB)を使います。アクセス解析と広告のための仕組みは使っていません。お申し込みの画面ではPayPalの部品を読み込み、PayPalがCookieを使うことがあります(PayPalのプライバシーステートメントに従います)。</p>
+
+<h2>8. このポリシーの変更</h2>
+<p>内容を変える時は、このページでお知らせします。大きく変える時は、ログインに使うメールアドレスにもお知らせします。</p>
+
+<h2>9. お問い合わせ</h2>
+<p>ZEROICHI WORKS(事業者の名前・住所等は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
+
+doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS)
+doc_page("privacy", "プライバシーポリシー", "せどり 利益チェックのプライバシーポリシー(利用目的・安全管理・第三者提供の制限とクラウドへの保存・解約後の保存期間)。", PRIVACY)
+
+
 # ---- サイトマップ ----
-urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")]
+# 手書きのページ(紹介・読み取り・手引き)もサイトマップに載せる(このスクリプトでは書き出さない)
+HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tesuryo/", "0.7"), ("guide/kobutsu-daicho-excel/", "0.7"), ("guide/honnin-kakunin/", "0.7"), ("guide/neduke/", "0.7")]
+urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")] + [(u, p) for u, p in HAND if (S / u / "index.html").exists()] + [("plans/", "0.6"), ("terms/", "0.2"), ("privacy/", "0.2")]
 sm = "\n".join(f"<url><loc>{BASE_URL}{u}</loc><lastmod>{FEES['checked']}</lastmod><priority>{p}</priority></url>" for u, p in urls)
 (S / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{sm}\n</urlset>\n', encoding="utf-8")
-print("built", ["top"] + [slug for slug, _ in ROUTES] + ["daicho"])
+print("built", ["top"] + [slug for slug, _ in ROUTES] + ["daicho", "plans", "mypage", "terms", "privacy"])
