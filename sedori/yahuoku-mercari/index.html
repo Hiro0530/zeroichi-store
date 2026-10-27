@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ヤフオク→メルカリ 利益計算｜ZEROICHI WORKS</title>
+<meta name="description" content="Yahoo!オークションで落札した品をメルカリで売った時の、送料・手数料込みの利益と損益分岐の価格を計算。古物台帳の項目つきの仕入れ台帳(CSV)も。無料・登録不要。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/yahuoku-mercari/">
+<meta property="og:title" content="ヤフオク→メルカリ 利益計算">
+<meta property="og:description" content="Yahoo!オークションで落札した品をメルカリで売った時の、送料・手数料込みの利益と損益分岐の価格を計算。古物台帳の項目つきの仕入れ台帳(CSV)も。無料・登録不要。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/yahuoku-mercari/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/og.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1b2a6b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../../zw.css">
+<link rel="stylesheet" href="../assets/sedori.css">
+</head>
+<body class="p-sedori" data-base="../" data-route="yahuoku" data-route-label="ヤフオク→メルカリ">
+<header class="zw-head">
+  <div class="in">
+    <a class="zw-logo" href="../../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a>
+    <nav class="nav" aria-label="せどりアプリ"><a href="../">せどり 利益チェック</a><a class="hide-s" href="#daicho">台帳</a></nav>
+  </div>
+  <div class="bar"></div>
+</header>
+
+<main class="app-wrap">
+  <nav class="routes" aria-label="仕入れ先と売り先">
+    <a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a>
+    <a href="../muzaiko-amazon/">無在庫(Amazon×ヤフオク中古)</a>
+    <a href="../mercari-calc/">メルカリ 手数料・送料</a>
+    <a href="./" aria-current="page">ヤフオク→メルカリ</a>
+    <a href="../auction-mercari/">ブランド中古(業者オークション)</a>
+  </nav>
+
+  <div class="app-title">
+    <span class="tag">フリマ・中古</span>
+    <h1>ヤフオク→メルカリ 利益計算</h1>
+    <p>落札価格と送料から1個あたりの原価を出し、メルカリ(またはYahoo!オークション)で売った時の利益を計算します。ヤフオクのページを自動で読み取る機能はありません。見た価格を入れてください。</p>
+    <span class="feedate" data-feedate>手数料データを読み込み中…</span>
+  </div>
+  <div class="cols">
+    <div>
+      <section class="card" id="buy">
+        <h2>仕入れ(Yahoo!オークション)</h2>
+        <div class="f">
+          <label class="yen">落札価格<input id="b-bid" type="number" inputmode="numeric" min="0"></label>
+          <label class="yen">送料(出品者→自分)<input id="b-ship" type="number" inputmode="numeric" min="0" value="0"></label>
+          <label class="yen">その他<small>支払い手数料など</small><input id="b-other" type="number" inputmode="numeric" min="0" value="0"></label>
+          <label class="yen pct">ポイント還元<small>落札価格に対して</small><input id="b-pt" type="number" inputmode="decimal" min="0" step="0.1" value="0"></label>
+          <label>個数<small>まとめて落札した時</small><input id="b-qty" type="number" inputmode="numeric" min="1" value="1"></label>
+          <label class="chk full"><input id="b-media" type="checkbox">ゲームソフト・CD・DVD・書籍・バイク等</label>
+        </div>
+        <p class="note-s" style="font-size:14px">1個あたりの仕入れ原価: <b id="b-unit" class="num" style="font-size:20px">—</b></p>
+        <div class="warn" id="guard" hidden><b>1万円以上の中古品です。</b>古物商が、ヤフオク・フリマなどで個人から1万円以上の古物(ゲームソフト・CD・DVD・書籍・バイク等は金額を問わず)を買うときは、<b>その都度、法律で決められた方法での本人確認</b>が必要です(身分証の写しを受け取るだけでは足りません)。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></div>
+      </section>
+      <section class="card" id="rules">
+        <h2>先に確認すること</h2>
+        <ul class="items">
+          <li><strong>古物商許可</strong>: 中古品を仕入れて売ることを繰り返すなら、古物商許可が必要です(自分の不用品を売るだけなら不要)。</li>
+          <li><strong>1万円以上の買い受け</strong>: 個人から1万円以上の古物を買う時は、その都度、法定の方法で本人確認が必要です。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。</li>
+          <li><strong>写真と説明文</strong>: 出品者の写真や文章を、メルカリの出品にそのまま使わないでください(著作権の問題になります)。自分で撮った写真を使います。</li>
+        </ul>
+      </section>
+    </div>
+    <div class="sticky">
+      <section class="card ac" id="sell">
+        <h2>売る側</h2>
+        <div class="f">
+          <label class="full">商品名(メモ)<input id="m-name"></label>
+          <label>売る場所<select id="s-market"><option value="mercari">メルカリ(10%)</option><option value="yahuoku">Yahoo!オークション(10%)</option><option value="other">その他(率を入力)</option></select></label>
+          <label class="yen pct" id="s-rate-w" hidden>販売手数料の率<small>楽天ラクマ等は各サービスで確認</small><input id="s-rate" type="number" inputmode="decimal" step="0.1" value="10"></label>
+          <label class="yen">販売価格<input id="s-price" type="number" inputmode="numeric" min="0"></label>
+          <label class="full">配送方法<small>メルカリ便の料金(税込・資材代込み)。ほかの売り場では「自分で入力する」</small><select id="s-ship"></select></label>
+          <label class="yen" id="s-shipfee-w" hidden>送料<input id="s-shipfee" type="number" inputmode="numeric" min="0" value="0"></label>
+          <label class="yen">追加の梱包資材<input id="s-mat" type="number" inputmode="numeric" min="0" value="0"></label>
+          <label class="yen">その他<small>クリーニング・付属品など</small><input id="s-other" type="number" inputmode="numeric" min="0" value="0"></label>
+          <div data-target></div>
+        </div>
+        <div class="result" id="m-out" aria-live="polite" style="margin-top:14px"></div>
+        <div class="btns"><button type="button" class="b g" id="m-ledger">台帳に書く</button></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" id="daicho">
+    <h2>仕入れ台帳 <small id="ledger-count"></small></h2>
+    <p class="note-s" style="margin-top:0">5つの計算ページで共通の台帳です。CSV(Excel・Googleスプレッドシートで開けます)には古物台帳の項目(品目・特徴・相手方の氏名・住所・職業・年齢・確認の方法)も入ります。</p>
+    <div id="ledger"></div>
+    <div class="btns"><button type="button" id="ledger-csv" class="b g s">CSVで書き出す</button></div>
+    <div id="ledger-form-box"></div>
+    <p class="note-s">記帳が必要かどうか・必要な項目は、古物営業法と所轄の警察署の案内で確認してください。このツールは記録の入れ物で、法令上の判断はしません。データはこの端末のブラウザの中だけに保存され、当方には送られません。機種変更の前にCSVで書き出してください。</p>
+  </section>
+
+</main>
+
+<footer class="zw-foot">
+  <div class="in">
+    <nav><a href="../">せどり 利益チェック トップ</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <p>ZEROICHI WORKS(個人事業)</p>
+    <p>このアプリの画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。利益や販売を保証するものではありません。</p>
+  </div>
+</footer>
+<script src="../assets/calc.js"></script>
+<script src="../assets/ui.js"></script>
+<script src="../assets/market.js"></script>
+</body>
+</html>

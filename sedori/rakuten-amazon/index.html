@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>電脳せどり 利益チェック(楽天・Yahoo!→Amazon)｜ZEROICHI WORKS</title>
+<meta name="description" content="楽天市場・Yahoo!ショッピングで見つけた商品を、Amazon(FBA)で売った時の手数料・ポイント込みの利益、損益分岐の売値、仕入れ値の上限をスマホで計算。2026年4月改定後の販売手数料・FBA配送代行手数料に対応。無料・登録不要。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/rakuten-amazon/">
+<meta property="og:title" content="電脳せどり 利益チェック(楽天・Yahoo!→Amazon)">
+<meta property="og:description" content="手数料・ポイント込みの利益と、仕入れ値の上限をスマホで計算。無料・登録不要。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/rakuten-amazon/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/og.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1b2a6b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../../zw.css">
+<link rel="stylesheet" href="../assets/sedori.css">
+</head>
+<body class="p-sedori" data-base="../" data-route-label="楽天・Yahoo!→Amazon">
+<header class="zw-head">
+  <div class="in">
+    <a class="zw-logo" href="../../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a>
+    <nav class="nav" aria-label="せどりアプリ"><a href="../">せどり 利益チェック</a><a class="hide-s" href="#daicho">台帳</a></nav>
+  </div>
+  <div class="bar"></div>
+</header>
+
+<main class="app-wrap">
+  <nav class="routes" aria-label="仕入れ先と売り先">
+    <a href="./" aria-current="page">楽天・Yahoo!→Amazon</a>
+    <a href="../muzaiko-amazon/">無在庫(Amazon×ヤフオク中古)</a>
+    <a href="../mercari-calc/">メルカリ 手数料・送料</a>
+    <a href="../yahuoku-mercari/">ヤフオク→メルカリ</a>
+    <a href="../auction-mercari/">ブランド中古(業者オークション)</a>
+  </nav>
+
+  <div class="app-title">
+    <span class="tag">電脳せどり</span>
+    <h1>楽天・Yahoo!→Amazon 利益チェック</h1>
+    <p>楽天市場・Yahoo!ショッピングの価格とポイントから、Amazon(FBA)で売った時に手元に残る金額を計算します。損益分岐の売値と、仕入れてよい価格の上限も出します。</p>
+    <span class="feedate" data-feedate>手数料データを読み込み中…</span>
+  </div>
+
+  <div class="cols ra">
+    <div>
+      <section class="card ac" id="search">
+        <h2>仕入れ先を検索 <small id="quota"></small></h2>
+        <div class="tabs2" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-src="rakuten">楽天市場</button>
+          <button type="button" role="tab" aria-selected="false" data-src="yahoo">Yahoo!ショッピング</button>
+        </div>
+        <form id="search-form" class="f">
+          <label class="full">キーワードかJANコード<input id="q" type="search" enterkeyhint="search" placeholder="例: 4901234567894 / 商品名 型番"></label>
+          <label>並び順<select id="sort"><option value="price">価格の安い順</option><option value="standard">標準</option><option value="review">レビューの多い順</option></select></label>
+          <label class="chk" style="align-self:end"><input id="ptonly" type="checkbox">ポイント2倍以上(楽天)</label>
+          <div class="full btns" style="margin:0"><button class="b" type="submit" id="go">検索する</button></div>
+        </form>
+        <div id="search-msg"></div>
+        <ul class="hits" id="hits"></ul>
+        <p class="credit" id="credit"></p>
+      </section>
+
+      <section class="card" id="today">
+        <h2>今日のポイント高還元(楽天) <small id="today-time"></small></h2>
+        <p class="note-s" style="margin-top:0">楽天市場の公式APIで毎朝取得した、ポイント倍率の高い商品の見本です。<b>Amazonで売れるかどうかは判定していません。</b>気になる物は「この商品で計算」でAmazon側の値を入れて確かめてください。価格・ポイントは取得時点のもので、変わっていることがあります。<br><b>PR</b>: 商品へのリンクには楽天アフィリエイトのリンクが含まれます(ご購入で当方に紹介料が入ることがあります。価格は変わりません)。</p>
+        <ul class="hits" id="today-list"><li class="empty">読み込み中…</li></ul>
+      </section>
+
+      <section class="card" id="keys">
+        <h2>API の設定(はじめに1回)</h2>
+        <p class="note-s" style="margin-top:0">検索とAmazonの価格取得は、<b>ご自身で無料登録した ID</b>(Keepaは有料のAPIキー)を使って、このブラウザから直接、楽天・Keepaに問い合わせます。IDやキーはこの端末のブラウザの中だけに保存し、当方のサーバーには送りません(サーバーはありません)。</p>
+        <div class="f">
+          <label class="full">楽天 アプリID(applicationId)<input id="k-rk-app" autocomplete="off" spellcheck="false"></label>
+          <label class="full">楽天 アクセスキー(accessKey・pk_で始まる)<input id="k-rk-key" autocomplete="off" spellcheck="false"></label>
+          <input type="hidden" id="k-yh-app">
+          <label class="full">Keepa APIキー(任意)<small>無い場合は、Amazonの価格を手で入れてください。</small><input id="k-kp" autocomplete="off" spellcheck="false"></label>
+        </div>
+        <div class="btns"><button class="b" type="button" id="k-save">保存する</button><button class="b g" type="button" id="k-clear">この端末から消す</button></div>
+        <details class="more"><summary>ID・キーの取り方</summary>
+          <ol class="note-s" style="font-size:13.5px">
+            <li><b>楽天</b>: <a href="https://webservice.rakuten.co.jp/" rel="noopener" target="_blank">Rakuten Developers</a> に楽天会員でログインし、アプリを新規作成。「許可するWebサイト(Origin/Referer)」に <code>https://hiro0530.github.io</code> を入れてください(入れないと403になります)。アプリIDとアクセスキーをここに貼ります。</li>
+            <li><b>Yahoo!</b>: Yahoo!ショッピングのAPIはブラウザから直接使えないため、「Yahoo!ショッピング」のタブでは公式の検索ページを開きます。IDは要りません。</li>
+            <li><b>Keepa</b>(任意・有料): <a href="https://keepa.com/#!api" rel="noopener" target="_blank">Keepa API</a> の契約でキーが発行されます。1回の取得で1トークン(カート価格つきは3トークン)を使います。</li>
+          </ol>
+          <p class="note-s">各サービスの利用規約に沿ってお使いください。当アプリはメルカリ・Yahoo!オークション・Amazonのページを自動で読み取る機能を持ちません。</p>
+        </details>
+      </section>
+    </div>
+
+    <div class="sticky">
+      <section class="card ac" id="calc">
+        <h2>利益を計算 <small><button type="button" class="b g s" id="c-reset">入力を消す</button></small></h2>
+        <div class="f">
+          <label class="full">商品名(メモ)<input id="c-name" placeholder="検索結果から入ります"></label>
+          <label class="yen">仕入れ値(税込・1個)<input id="c-cost" type="number" inputmode="numeric" min="0"></label>
+          <label class="yen">仕入れの送料(1個)<input id="c-inship" type="number" inputmode="numeric" min="0" value="0"></label>
+          <label class="yen pct">ショップの還元<small>楽天の「5倍」なら5</small><input id="c-pt-shop" type="number" inputmode="decimal" min="0" step="0.1" value="1"></label>
+          <label class="yen pct">自分の上乗せ<small>SPU・カード・キャンペーン</small><input id="c-pt-mine" type="number" inputmode="decimal" min="0" step="0.1" value="0"></label>
+          <label class="chk full"><input id="c-usept" type="checkbox" checked>ポイントを利益に含める(1ポイント=1円)</label>
+        </div>
+        <h3 style="margin:14px 0 6px;font-size:15px">Amazon 側</h3>
+        <div class="f">
+          <label class="full">JAN または ASIN<input id="c-code" inputmode="text" autocomplete="off" spellcheck="false" placeholder="例: 4901234567894 / B0XXXXXXXX"></label>
+          <div class="full btns" style="margin:0">
+            <button type="button" class="b g s" id="kp-go">Keepaで取得</button>
+            <label class="chk" style="min-height:38px;font-size:13px!important"><input id="kp-bb" type="checkbox">カート価格も(+2トークン)</label>
+            <a class="b g s" id="amz-link" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a>
+            <a class="b g s" id="kp-link" href="https://keepa.com/" target="_blank" rel="noopener">Keepaで見る</a>
+          </div>
+          <div class="full" id="kp-out"></div>
+          <label class="yen">販売価格(税込)<input id="c-sell" type="number" inputmode="numeric" min="0"></label>
+          <label>カテゴリー<select id="c-cat"></select></label>
+          <label class="full">FBAのサイズ区分<select id="c-tier"></select></label>
+          <details class="more full"><summary>寸法と重さから区分の目安を出す</summary>
+            <div class="f">
+              <label>長さ(cm)<input id="d1" type="number" inputmode="decimal" step="0.1"></label>
+              <label>幅(cm)<input id="d2" type="number" inputmode="decimal" step="0.1"></label>
+              <label>高さ(cm)<input id="d3" type="number" inputmode="decimal" step="0.1"></label>
+              <label>重さ(g)<input id="dg" type="number" inputmode="numeric"></label>
+            </div>
+            <p class="note-s" id="d-out">梱包した状態の寸法を入れてください。</p>
+          </details>
+          <label class="yen">納品送料・資材(1個)<small>FBA倉庫へ送る費用をならした額</small><input id="c-inbound" type="number" inputmode="numeric" min="0" value="100"></label>
+          <label class="yen">その他(1個)<small>検品・保管など</small><input id="c-other" type="number" inputmode="numeric" min="0" value="0"></label>
+          <label class="chk full"><input id="c-self" type="checkbox">自己発送(FBAを使わない)</label>
+          <label class="yen full" id="c-selfship-w" hidden>お客様への送料(1個)<input id="c-selfship" type="number" inputmode="numeric" min="0" value="600"></label>
+          <div data-target></div>
+          <label>仕入れる個数<input id="c-qty" type="number" inputmode="numeric" min="1" value="1"></label>
+        </div>
+
+        <div class="result" id="c-out" aria-live="polite" style="margin-top:14px"><p class="empty">仕入れ値と販売価格を入れると、ここに結果が出ます。</p></div>
+        <div class="btns">
+          <button type="button" class="b" id="c-watch">ウォッチに保存</button>
+          <button type="button" class="b g" id="c-ledger">仕入れた(台帳へ)</button>
+        </div>
+        <p class="note-s">計算は目安です(1円未満の端数処理の違いで数円ずれることがあります)。在庫保管手数料・返品・値下がりは含みません。出品前にセラーセントラルの料金シミュレーターでも確かめてください。</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" id="watch">
+    <h2>ウォッチ(気になる商品) <small id="watch-count"></small></h2>
+    <div id="watch-list"></div>
+    <div class="btns"><button type="button" class="b g s" id="watch-csv">CSVで書き出す</button></div>
+  </section>
+
+  <section class="card" id="daicho">
+    <h2>仕入れ台帳 <small id="ledger-count"></small></h2>
+    <p class="note-s" style="margin-top:0">5つの計算ページで共通の台帳です。CSV(Excel・Googleスプレッドシートで開けます)には古物台帳の項目(品目・特徴・相手方の氏名・住所・職業・年齢・確認の方法)も入ります。</p>
+    <div id="ledger"></div>
+    <div class="btns"><button type="button" id="ledger-csv" class="b g s">CSVで書き出す</button></div>
+    <div id="ledger-form-box"></div>
+    <p class="note-s">記帳が必要かどうか・必要な項目は、古物営業法と所轄の警察署の案内で確認してください。このツールは記録の入れ物で、法令上の判断はしません。データはこの端末のブラウザの中だけに保存され、当方には送られません。機種変更の前にCSVで書き出してください。</p>
+  </section>
+
+  <section class="card" id="tips">
+    <h2>使い方のコツ</h2>
+    <ul class="items">
+      <li><strong>先に「仕入れ値の上限」を見る</strong>: 目標の利益率を決めておくと、「今の価格 ≤ 上限」かどうかだけで判断できます。</li>
+      <li><strong>ポイントは別に見る</strong>: ポイントを含めない利益もいっしょに表示しています。ポイントには付与の上限や期間限定があるので、含めない利益が0円以上かも確かめてください。</li>
+      <li><strong>750円・1,000円の境目</strong>: 販売手数料は750円以下が5%、FBA配送代行手数料は1,000円以下が安い料金です。少しの値下げで手数料が変わることがあります。</li>
+      <li><strong>Amazon本体が売っている商品</strong>: Keepaの結果で「Amazon本体: 在庫あり」の時は、カートを取りにくいことがあります。</li>
+      <li><strong>出品できるかを先に確認</strong>: ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
+    </ul>
+    <div class="info">手数料の改定やポイントの日程は、<a data-mail="news" href="#">無料の週刊メルマガ(メール1通で登録)</a>でお知らせします。</div>
+  </section>
+</main>
+
+<footer class="zw-foot">
+  <div class="in">
+    <nav><a href="../">せどり 利益チェック トップ</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <p>ZEROICHI WORKS(個人事業)</p>
+    <p>このアプリの画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。利益や販売を保証するものではありません。</p>
+  </div>
+</footer>
+<script src="../assets/calc.js"></script>
+<script src="../assets/ui.js"></script>
+<script src="../assets/ra.js"></script>
+</body>
+</html>

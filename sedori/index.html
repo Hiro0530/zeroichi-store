@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>せどり 利益チェック ― 仕入れ先・売り先ごとの計算アプリ｜ZEROICHI WORKS</title>
+<meta name="description" content="楽天・Yahoo!→Amazon、Amazon中古×ヤフオク、メルカリ、ヤフオク→メルカリ、業者オークション→メルカリ。仕入れ先と売り先ごとに、手数料・送料・ポイント込みの利益と仕入れ値の上限をスマホで計算。古物台帳の項目つき台帳(CSV)。無料・登録不要。">
+<link rel="canonical" href="https://hiro0530.github.io/zeroichi-store/sedori/">
+<meta property="og:title" content="せどり 利益チェック ― 仕入れ先・売り先ごとの計算アプリ">
+<meta property="og:description" content="手数料・送料・ポイント込みの利益と、仕入れ値の上限をスマホで。無料・登録不要。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiro0530.github.io/zeroichi-store/sedori/">
+<meta property="og:image" content="https://hiro0530.github.io/zeroichi-store/sedori/og.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1b2a6b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../zw.css">
+<link rel="stylesheet" href="assets/sedori.css">
+<style>
+.qs{display:grid;gap:14px}
+.qs fieldset{border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);padding:12px 14px 10px;margin:0}
+.qs legend{font-weight:700;font-size:15px;padding:0 4px}
+.qs .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.qs label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:999px;padding:6px 12px;min-height:42px;font-size:14.5px;cursor:pointer;background:var(--paper)}
+.qs input{accent-color:var(--ac);width:18px;height:18px}
+.qs label:has(input:checked){border-color:var(--ac);background:var(--ac-soft);font-weight:700}
+#shindan-out{margin-top:14px}
+.srcs{font-size:13.5px;padding-left:1.2em}
+.srcs li{margin:6px 0}
+.srcs small{color:var(--muted)}
+</style>
+</head>
+<body class="p-sedori" data-base="./">
+<header class="zw-head">
+  <div class="in">
+    <a class="zw-logo" href="../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a>
+    <nav class="nav" aria-label="せどりアプリ"><a href="#shindan-sec">診断</a><a href="#plans">料金</a></nav>
+  </div>
+  <div class="bar"></div>
+</header>
+<main class="wrap">
+
+<section class="hero">
+  <span class="tag">せどり 利益チェック ・ 無料・登録不要</span>
+  <h1><span class="name">仕入れ先と売り先ごとの計算アプリ</span>仕入れる前に、手数料・送料・ポイント込みの利益を1画面で。</h1>
+  <p class="lead">楽天市場・Yahoo!ショッピング・ヤフオク・業者オークションで見つけた品を、Amazon・メルカリで売った時に手元に残る金額を計算します。「損益分岐の売値」と「仕入れてよい価格の上限」も出します。スマホのホーム画面に追加して、アプリのように使えます。</p>
+  <a class="btn" href="rakuten-amazon/">楽天・Yahoo!→Amazon の計算を開く</a>
+  <a class="btn ghost" href="#shindan-sec">自分に合う型を診断する(6問)</a>
+  <p class="muted">手数料・送料は <b><!--CHECKED-->2026年10月27日<!--/CHECKED--></b> に確認した値です(<a href="#fees">出典</a>)。</p>
+</section>
+
+<section class="sec" id="routes">
+  <h2>仕入れ先・売り先ごとの5つの計算ページ</h2>
+  <p class="muted">やり方(型)ごとにページを分けています。台帳は5つのページで共通です。</p>
+  <div class="route-cards">
+    <a href="rakuten-amazon/"><b>楽天・Yahoo!→Amazon</b><span class="what">電脳せどり ・ 新品</span><span class="d">楽天の公式APIで検索(ご自身の無料ID)、Yahoo!は検索ページを開く。ポイント込みの利益、FBA手数料、損益分岐、仕入れ値の上限。Keepaのキーがあれば価格・販売数も。</span></a>
+    <a href="muzaiko-amazon/"><b>無在庫型(Amazon中古×ヤフオク)</b><span class="what">中古 ・ 古物商許可が必要</span><span class="d">Amazonの新品価格から中古の出品価格を決め、ヤフオクで見た価格との差から利益を計算。古物営業法とAmazonの方針の注意つき。</span></a>
+    <a href="mercari-calc/"><b>メルカリ 手数料・送料</b><span class="what">フリマ ・ 不用品から</span><span class="d">手数料10%とメルカリ便の全サイズ(資材代込み)で手取りを計算。利益を残せる販売価格も。</span></a>
+    <a href="yahuoku-mercari/"><b>ヤフオク→メルカリ</b><span class="what">中古の価格差</span><span class="d">落札価格・送料・まとめ落札から1個の原価を出し、メルカリでの利益を計算。1万円以上の買い受けの注意つき。</span></a>
+    <a href="auction-mercari/"><b>ブランド中古(業者オークション→メルカリ)</b><span class="what">古物市場 ・ 古物商許可が必要</span><span class="d">落札手数料(価格帯別・率)、参加費の按分、税別落札の換算、ロットの1個原価。古物台帳の項目つき台帳。</span></a>
+  </div>
+</section>
+
+<section class="sec" id="shindan-sec">
+  <h2>あなたに合う せどりの型 診断(6問)</h2>
+  <p class="muted">答えに合う作業の型を1つおすすめします。収入の見込みを示すものではありません。答えはこの端末の中だけで使います。</p>
+  <form id="shindan" class="qs">
+    <fieldset><legend>1. 最初に使えるお金(仕入れ用)</legend><div class="opts">
+      <label><input type="radio" name="cap" value="low">5万円未満</label><label><input type="radio" name="cap" value="mid">5〜30万円</label><label><input type="radio" name="cap" value="high">30万円以上</label></div></fieldset>
+    <fieldset><legend>2. 1日に使える時間</legend><div class="opts">
+      <label><input type="radio" name="time" value="short">1時間未満</label><label><input type="radio" name="time" value="mid">1〜3時間</label><label><input type="radio" name="time" value="long">3時間以上</label></div></fieldset>
+    <fieldset><legend>3. 古物商許可</legend><div class="opts">
+      <label><input type="radio" name="lic" value="yes">持っている</label><label><input type="radio" name="lic" value="plan">取る予定</label><label><input type="radio" name="lic" value="no">持っていない</label></div></fieldset>
+    <fieldset><legend>4. 在庫や値下がりのリスク</legend><div class="opts">
+      <label><input type="radio" name="risk" value="low">小さく確実に</label><label><input type="radio" name="risk" value="mid">ほどほど</label><label><input type="radio" name="risk" value="high">大きめでもよい</label></div></fieldset>
+    <fieldset><legend>5. 扱いたい物</legend><div class="opts">
+      <label><input type="radio" name="kind" value="new">新品</label><label><input type="radio" name="kind" value="used">中古</label><label><input type="radio" name="kind" value="both">どちらでも</label></div></fieldset>
+    <fieldset><legend>6. 仕入れの場所</legend><div class="opts">
+      <label><input type="radio" name="where" value="net">ネットだけ</label><label><input type="radio" name="where" value="store">お店・市場にも行ける</label></div></fieldset>
+    <button class="btn" type="submit">診断する</button>
+  </form>
+  <div id="shindan-out" class="panel ac" hidden aria-live="polite"></div>
+</section>
+
+<section class="sec" id="features">
+  <h2>できること</h2>
+  <ul class="items">
+    <li><strong>手数料・送料・ポイント込みの利益</strong>: Amazonの販売手数料(2026年4月改定後)とFBA配送代行手数料、メルカリ・Yahoo!オークションの手数料、メルカリ便の送料を反映</li>
+    <li><strong>損益分岐の売値と、仕入れ値の上限</strong>: 目標の利益率を決めておけば「今の価格 ≤ 上限」だけで判断できます</li>
+    <li><strong>楽天の検索</strong>: 公式APIを、ご自身の無料IDでブラウザから直接使います(当方のサーバーを通りません)。Yahoo!ショッピングは公式の検索ページを開きます</li>
+    <li><strong>Amazonの価格・販売数・出品者数・Amazon本体の有無</strong>: ご自身のKeepa APIキーがある場合。無い場合は手で入力</li>
+    <li><strong>ポイントの計算</strong>: ショップの倍率+自分の上乗せ(SPU・カード等)。ポイント抜きの利益も同時に表示</li>
+    <li><strong>寸法と重さからFBAのサイズ区分の目安</strong></li>
+    <li><strong>ウォッチと仕入れ台帳</strong>: CSVで書き出し(Excel・Googleスプレッドシート)。台帳には古物台帳の項目つき</li>
+    <li><strong>スマホ向けの画面</strong>: ホーム画面に追加すると、アプリのように開けます</li>
+    <li><strong>今日のポイント高還元(楽天)</strong>: 毎朝、公式APIで取得した見本を表示</li>
+  </ul>
+  <div class="honest"><strong>このアプリがしないこと</strong>
+    メルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取ること(スクレイピング)、自動で購入・入札すること、利益や販売を約束すること。ヤフオクやメルカリの価格は、ご自身で見た価格を入れていただきます。</div>
+</section>
+
+<section class="sec" id="plans">
+  <h2>料金</h2>
+  <div class="plans">
+    <div class="panel">
+      <p class="plan-name">無料版(いま使えます)</p>
+      <div class="price"><span class="amt"><span class="yen">¥</span>0</span><small>登録不要</small></div>
+      <ul class="items">
+        <li>5つの計算ページ(回数の制限なし)</li>
+        <li>楽天の検索 1日20回まで</li>
+        <li>ウォッチ・仕入れ台帳・CSV書き出し</li>
+        <li>今日のポイント高還元(楽天)の見本</li>
+      </ul>
+    </div>
+    <div class="panel ac">
+      <p class="plan-name">有料版(準備中・まだ購入できません)</p>
+      <div class="price"><span class="amt"><span class="yen">¥</span>1,480</span><span class="unit">/月</span><small>税込・最初の30日無料</small></div>
+      <ul class="items">
+        <li>検索回数の制限なし</li>
+        <li>ウォッチした商品の価格・ポイントの変化を、楽天・Yahoo!の公式APIで再確認</li>
+        <li>出品者数・Amazon本体の有無の変化の記録(ご自身のKeepaキー)</li>
+        <li>台帳を複数の端末で使える同期</li>
+        <li>週刊メルマガの有料号(手数料改定・ポイントの日程・台帳の付け方)</li>
+      </ul>
+      <a class="btn" data-mail="prereg" href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%9B%E3%81%A9%E3%82%8A%E3%82%A2%E3%83%97%E3%83%AA%E4%BA%8B%E5%89%8D%E7%99%BB%E9%8C%B2">事前登録する(メール1通・無料)</a>
+      <p class="muted">事前登録しても料金はかかりません。準備ができたらご案内を1通お送りします。</p>
+    </div>
+  </div>
+  <div class="honest"><strong>解約についてのお約束(有料版の提供開始時)</strong>
+    解約は、アプリの「契約」画面のボタン1回、またはメール1通でいつでもできます。解約すると次の請求日から料金はかかりません。30日の無料期間中に解約した場合、料金は一切かかりません。無料期間が終わる3日前にメールでお知らせします。お支払い・解約の条件は、提供開始時に<a href="../tokushoho.html">特定商取引法に基づく表記</a>に記載します。</div>
+</section>
+
+<section class="sec" id="news">
+  <h2>無料の週刊メルマガ</h2>
+  <p>手数料・送料の改定、楽天・Yahoo!のポイントの日程、古物台帳の付け方、アプリの更新を、毎週1回メールでお届けします。個別のコンサルティングは行っていません。その代わりに、よくある質問への答えをメルマガで共有します。</p>
+  <a class="btn ghost" data-mail="news" href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%9B%E3%81%A9%E3%82%8A%E3%83%A1%E3%83%AB%E3%83%9E%E3%82%AC%E7%99%BB%E9%8C%B2">メルマガに登録する(メール1通)</a>
+  <p class="muted">配信停止は、届いたメールに「配信停止」と返信するだけでできます。メルマガの文面はAI(Claude)を使って作成し、人が確認してお送りします。</p>
+</section>
+
+<section class="sec" id="fees">
+  <h2>手数料・送料の出典(確認日 <!--CHECKED-->2026年10月27日<!--/CHECKED-->)</h2>
+  <p class="muted">計算に使う数値は1つのファイル(<a href="data/fees.json">fees.json</a>)にまとめ、改定があれば更新します。Amazonの販売手数料は税抜(計算では消費税10%を足しています)、FBA配送代行手数料・メルカリ・Yahoo!オークションは税込です。Amazonの公式ページは当方の確認環境から直接開けなかったため、2026年4月の改定を反映した複数の記事の数値が一致することを確認しています。出品前に、セラーセントラルの料金シミュレーターでも確かめてください。</p>
+  <ul class="srcs">
+      <!--FEES-->
+      <li><a href="https://link-ecconsulting.co.jp/column/amazon-fees-guide/" target="_blank" rel="noopener">Amazon 販売手数料(2026年4月1日改定後)</a><br><small>記事内で2026年9月27日に公式と照合と記載。税抜表示</small></li>
+      <li><a href="https://jagoo.co.jp/column/amazon-fee/" target="_blank" rel="noopener">Amazon 販売手数料・FBA配送代行手数料</a><br><small>2026年9月6日更新。2026年4月1日改定を反映</small></li>
+      <li><a href="https://wise.com/jp/blog/amazon-seller-fees" target="_blank" rel="noopener">Amazon 販売手数料・FBA配送代行手数料</a><br><small>2026年6月14日時点の料率</small></li>
+      <li><a href="https://ecstarslab.com/blog/fba-commission-price-increase/" target="_blank" rel="noopener">Amazon 2026年4月改定の内容(販売手数料+0.4%、FBA標準2・3の引き下げ)</a></li>
+      <li><a href="https://sell.amazon.co.jp/pricing" target="_blank" rel="noopener">Amazon 公式: 出品サービスの料金</a><br><small>公式。当方の確認環境からは直接開けなかったため、上の記事3本の数値の一致で確認</small></li>
+      <li><a href="https://sellercentral.amazon.co.jp/help/hub/reference/external/GT23F3ST7FEZKT9A?locale=ja-JP" target="_blank" rel="noopener">Amazon 公式: 販売手数料の改定(セラーセントラル)</a><br><small>公式(要ログイン)</small></li>
+      <li><a href="https://jp-news.mercari.com/contents/1882" target="_blank" rel="noopener">メルカリ便の送料(公式・メルカリびより)</a><br><small>2026年10月13日掲載・2026年1月時点の料金</small></li>
+      <li><a href="https://furima-navi.jp/guides/shipping-comparison" target="_blank" rel="noopener">メルカリ便の送料(照合用)</a></li>
+      <li><a href="https://aucfan.com/times/archives/46731" target="_blank" rel="noopener">メルカリ 販売手数料10%・振込申請手数料200円</a></li>
+      <li><a href="https://library.libecity.com/articles/01KM1Y0TSZKA9XHTT035DSXGNM" target="_blank" rel="noopener">メルカリ 販売手数料10%(2026年3月の記事)</a></li>
+      <li><a href="https://netshop.impress.co.jp/node/12364" target="_blank" rel="noopener">Yahoo!オークション 落札システム利用料 一律10%(2024年6月4日〜)</a></li>
+      <li><a href="https://ascii.jp/elem/000/004/193/4193266/" target="_blank" rel="noopener">Yahoo!オークション 落札システム利用料 一律10%</a></li>
+      <li><a href="https://uridoki.net/kobutsuichiba/kiji_200386" target="_blank" rel="noopener">エコリング(エコオク)の落札手数料・会費(第三者記事・掲載時点)</a><br><small>公式の会員規約で未確認</small></li>
+      <li><a href="https://uridoki.net/kobutsuichiba/kiji_249600" target="_blank" rel="noopener">大吉オークションの手数料・参加費(第三者記事・掲載時点)</a><br><small>公式の会員規約で未確認</small></li>
+      <li><a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">古物営業法 非対面取引の本人確認(警視庁)</a><br><small>1万円以上(一部品目は金額を問わず)はその都度確認</small></li>
+      <!--/FEES-->
+  </ul>
+</section>
+
+<section class="sec faq" id="faq">
+  <h2>よくある質問</h2>
+  <details><summary>本当に無料ですか? 登録は要りますか?</summary><p>計算ページは無料で、登録も要りません。楽天の検索を使う場合だけ、楽天の開発者サイトでご自身の無料IDを取っていただきます(当アプリの登録ではありません)。</p></details>
+  <details><summary>入れたデータはどこに保存されますか?</summary><p>このスマホ・パソコンのブラウザの中だけです。当方のサーバーには送られません(サーバーを持っていません)。ブラウザのデータを消すと台帳も消えるので、定期的にCSVで書き出してください。</p></details>
+  <details><summary>Keepaは必要ですか?</summary><p>必須ではありません。Keepaのキーが無い場合は、「Amazonで見る」でAmazonの価格を確かめて、手で入れてください。Keepaのキーを使う場合、料金と利用条件はKeepaとの契約になります。</p></details>
+  <details><summary>メルカリやヤフオクの価格を自動で取れませんか?</summary><p>取りません。各サービスの利用規約で、提供されている方法以外での自動アクセスが制限されているためです。検索ページを開くリンクを用意しているので、見た価格を入れてください。</p></details>
+  <details><summary>古物商許可は要りますか?</summary><p>中古品を仕入れて売ることを繰り返す場合は必要です。新品を通販で買って売る場合や、自分の不用品を売る場合は、通常は不要とされています。詳しくは営業所のある地域の警察署にご確認ください。</p></details>
+  <details><summary>計算は正確ですか?</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。1円未満の端数処理の違いで数円ずれることや、カテゴリー・サイズの判定が実際と違うことがあります。在庫保管手数料・返品・値下がりは含みません。</p></details>
+</section>
+
+</main>
+<footer class="zw-foot">
+  <div class="in">
+    <nav><a href="../">ZEROICHI WORKS ストア</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <p>ZEROICHI WORKS(個人事業)</p>
+    <p>このアプリの画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。利益や販売を保証するものではありません。</p>
+  </div>
+</footer>
+<script src="assets/calc.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/shindan.js"></script>
+</body>
+</html>

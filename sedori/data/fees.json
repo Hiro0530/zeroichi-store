@@ -1,0 +1,1002 @@
+{
+ "checked": "2026-10-27",
+ "checked_label": "2026年10月27日",
+ "_note": "手数料はこのファイルだけで変える。改定があったら数値・sources・checked を更新する。Amazonの販売手数料は税抜(別途消費税10%)、FBA配送代行手数料は税込。メルカリ・Yahoo!オークションは税込。",
+ "amazon": {
+  "tax_rate": 0.1,
+  "referral_tax_excluded": true,
+  "monthly_plan_fee_ex_tax": 4900,
+  "small_plan_per_item_ex_tax": 100,
+  "categories": [
+   {
+    "id": "toys",
+    "label": "おもちゃ&ホビー",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "electronics",
+    "label": "家電&カメラ(エレクトロニクス)",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "pc",
+    "label": "パソコン・周辺機器",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "elec_acc",
+    "label": "家電アクセサリー",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "small_appliance",
+    "label": "小型家電",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "large_appliance",
+    "label": "大型家電",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "home_appliance",
+    "label": "ホーム&キッチン家電",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "game_console",
+    "label": "テレビゲーム機本体",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "home",
+    "label": "ホーム&キッチン(生活雑貨)",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "beauty",
+    "label": "ビューティ・ヘルス・パーソナルケア(ドラッグストア)",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 1500,
+      "rate": 0.084
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ],
+    "note": "一部ブランドは15.4%"
+   },
+   {
+    "id": "food",
+    "label": "食品&飲料",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 1500,
+      "rate": 0.084
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "beer",
+    "label": "ビール類",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.069
+     }
+    ]
+   },
+   {
+    "id": "sports",
+    "label": "スポーツ&アウトドア",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "car",
+    "label": "カー&バイク用品",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "diy",
+    "label": "DIY・工具",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "baby",
+    "label": "ベビー&マタニティ",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 1500,
+      "rate": 0.084
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "pet",
+    "label": "ペット用品",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 1500,
+      "rate": 0.084
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "stationery",
+    "label": "文房具・オフィス用品",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "instruments",
+    "label": "楽器・AV制作機器",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.104
+     }
+    ]
+   },
+   {
+    "id": "garden",
+    "label": "ガーデニング・園芸用品",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "furniture",
+    "label": "家具",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "clothes",
+    "label": "服&ファッション小物",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 2500,
+      "rate": 0.084
+     },
+     {
+      "upto": 3000,
+      "rate": 0.124
+     },
+     {
+      "upto": null,
+      "split": 3000,
+      "rate_below": 0.124,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "shoes",
+    "label": "シューズ",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 7500,
+      "rate": 0.124
+     },
+     {
+      "upto": null,
+      "split": 7500,
+      "rate_below": 0.124,
+      "rate": 0.064
+     }
+    ]
+   },
+   {
+    "id": "bags",
+    "label": "バッグ・旅行かばん",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 7500,
+      "rate": 0.124
+     },
+     {
+      "upto": null,
+      "split": 7500,
+      "rate_below": 0.124,
+      "rate": 0.064
+     }
+    ]
+   },
+   {
+    "id": "eyewear",
+    "label": "アイウェア",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 3000,
+      "rate": 0.124
+     },
+     {
+      "upto": null,
+      "split": 3000,
+      "rate_below": 0.124,
+      "rate": 0.084
+     }
+    ]
+   },
+   {
+    "id": "jewelry",
+    "label": "ジュエリー",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": 10000,
+      "rate": 0.104
+     },
+     {
+      "upto": null,
+      "split": 10000,
+      "rate_below": 0.104,
+      "rate": 0.064
+     }
+    ]
+   },
+   {
+    "id": "watch",
+    "label": "腕時計",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "industrial",
+    "label": "産業・研究開発用品",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   },
+   {
+    "id": "other",
+    "label": "その他のカテゴリー",
+    "min": 30,
+    "tiers": [
+     {
+      "upto": 750,
+      "rate": 0.05
+     },
+     {
+      "upto": null,
+      "rate": 0.154
+     }
+    ]
+   }
+  ],
+  "excluded_note": "本・DVD・ミュージック・PCソフト・ビデオ・テレビゲームソフトは、カテゴリー成約料が別にかかるため、このツールでは計算しません。",
+  "fba_price_threshold": 1000,
+  "fba_price_threshold_note": "商品価格が1,000円以下か、1,000円を超えるかで料金が分かれる",
+  "fba_tiers": [
+   {
+    "id": "small",
+    "label": "小型(25×18×2.0cm・250gまで)",
+    "max_dims": [
+     25,
+     18,
+     2.0
+    ],
+    "max_g": 250,
+    "over": 288,
+    "under": 222
+   },
+   {
+    "id": "std1",
+    "label": "標準1(35×30×3.3cm・1kgまで)",
+    "max_dims": [
+     35,
+     30,
+     3.3
+    ],
+    "max_g": 1000,
+    "over": 318,
+    "under": 252
+   },
+   {
+    "id": "std2a",
+    "label": "標準2a(3辺合計20cm・2kgまで)",
+    "max_sum": 20,
+    "max_g": 2000,
+    "over": 410,
+    "under": 344
+   },
+   {
+    "id": "std2b",
+    "label": "標準2b(3辺合計30cm・2kgまで)",
+    "max_sum": 30,
+    "max_g": 2000,
+    "over": 415,
+    "under": 358
+   },
+   {
+    "id": "std2c",
+    "label": "標準2c(3辺合計40cm・2kgまで)",
+    "max_sum": 40,
+    "max_g": 2000,
+    "over": 420,
+    "under": 371
+   },
+   {
+    "id": "std2d",
+    "label": "標準2d(3辺合計50cm・2kgまで)",
+    "max_sum": 50,
+    "max_g": 2000,
+    "over": 425,
+    "under": 379
+   },
+   {
+    "id": "std2e",
+    "label": "標準2e(3辺合計60cm・2kgまで)",
+    "max_sum": 60,
+    "max_g": 2000,
+    "over": 430,
+    "under": 391
+   },
+   {
+    "id": "std3",
+    "label": "標準3(3辺合計80cm・5kgまで)",
+    "max_sum": 80,
+    "max_g": 5000,
+    "over": 472,
+    "under": 427
+   },
+   {
+    "id": "std4",
+    "label": "標準4(3辺合計100cm・9kgまで)",
+    "max_sum": 100,
+    "max_g": 9000,
+    "over": 532,
+    "under": 466
+   },
+   {
+    "id": "large1",
+    "label": "大型1(3辺合計60cm・2kgまで)",
+    "max_sum": 60,
+    "max_g": 2000,
+    "over": 589,
+    "under": 523,
+    "large": true
+   },
+   {
+    "id": "large2",
+    "label": "大型2(3辺合計80cm・5kgまで)",
+    "max_sum": 80,
+    "max_g": 5000,
+    "over": 624,
+    "under": 558,
+    "large": true
+   },
+   {
+    "id": "large3",
+    "label": "大型3(3辺合計100cm・10kgまで)",
+    "max_sum": 100,
+    "max_g": 10000,
+    "over": 675,
+    "under": 609,
+    "large": true
+   },
+   {
+    "id": "large4",
+    "label": "大型4(3辺合計120cm・15kgまで)",
+    "max_sum": 120,
+    "max_g": 15000,
+    "over": 781,
+    "under": 715,
+    "large": true
+   },
+   {
+    "id": "large5",
+    "label": "大型5(3辺合計140cm・20kgまで)",
+    "max_sum": 140,
+    "max_g": 20000,
+    "over": 1020,
+    "under": 954,
+    "large": true
+   },
+   {
+    "id": "large6",
+    "label": "大型6(3辺合計160cm・25kgまで)",
+    "max_sum": 160,
+    "max_g": 25000,
+    "over": 1100,
+    "under": 1034,
+    "large": true
+   },
+   {
+    "id": "large7",
+    "label": "大型7(3辺合計180cm・30kgまで)",
+    "max_sum": 180,
+    "max_g": 30000,
+    "over": 1532,
+    "under": 1466,
+    "large": true
+   },
+   {
+    "id": "large8",
+    "label": "大型8(3辺合計200cm・40kgまで)",
+    "max_sum": 200,
+    "max_g": 40000,
+    "over": 1756,
+    "under": 1690,
+    "large": true
+   },
+   {
+    "id": "xl1",
+    "label": "特大型1(3辺合計200cm・50kgまで)",
+    "max_sum": 200,
+    "max_g": 50000,
+    "over": 2755,
+    "under": 2689,
+    "large": true
+   },
+   {
+    "id": "xl2",
+    "label": "特大型2(3辺合計220cm・50kgまで)",
+    "max_sum": 220,
+    "max_g": 50000,
+    "over": 3573,
+    "under": 3507,
+    "large": true
+   },
+   {
+    "id": "xl3",
+    "label": "特大型3(3辺合計240cm・50kgまで)",
+    "max_sum": 240,
+    "max_g": 50000,
+    "over": 4496,
+    "under": 4430,
+    "large": true
+   },
+   {
+    "id": "xl4a",
+    "label": "特大型4a(3辺合計260cm・50kgまで)",
+    "max_sum": 260,
+    "max_g": 50000,
+    "over": 5625,
+    "under": 5559,
+    "large": true
+   },
+   {
+    "id": "xl4b",
+    "label": "特大型4b(3辺合計400cm・50kgまで)",
+    "max_sum": 400,
+    "max_g": 50000,
+    "over": 13950,
+    "under": 13884,
+    "large": true
+   }
+  ],
+  "fba_note": "FBA配送代行手数料は税込。冷凍食品は1点375円が加算。在庫保管手数料・長期在庫手数料は含まない。標準1は3辺それぞれ、その他は3辺合計で判定。長い物・重い物は大型に分類されることがあるため、セラーセントラルの料金シミュレーターで最終確認する。",
+  "points_base_note": "楽天・Yahoo!のポイントは原則として税抜の商品価格にかかるため、仕入れ値÷1.1×還元率で概算する"
+ },
+ "mercari": {
+  "rate": 0.1,
+  "rounding": "floor",
+  "transfer_fee": 200,
+  "shipping": [
+   {
+    "id": "nekopos",
+    "group": "らくらくメルカリ便",
+    "label": "ネコポス(A4・厚さ3cm・1kg)",
+    "fee": 210,
+    "material": 0
+   },
+   {
+    "id": "tqcompact",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便コンパクト(専用箱70円込み)",
+    "fee": 450,
+    "material": 70
+   },
+   {
+    "id": "tq60",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便60サイズ(2kg)",
+    "fee": 750,
+    "material": 0
+   },
+   {
+    "id": "tq80",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便80サイズ(5kg)",
+    "fee": 850,
+    "material": 0
+   },
+   {
+    "id": "tq100",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便100サイズ(10kg)",
+    "fee": 1050,
+    "material": 0
+   },
+   {
+    "id": "tq120",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便120サイズ(15kg)",
+    "fee": 1200,
+    "material": 0
+   },
+   {
+    "id": "tq140",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便140サイズ(20kg)",
+    "fee": 1450,
+    "material": 0
+   },
+   {
+    "id": "tq160",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便160サイズ(25kg)",
+    "fee": 1700,
+    "material": 0
+   },
+   {
+    "id": "tq180",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便180サイズ(30kg)",
+    "fee": 2100,
+    "material": 0
+   },
+   {
+    "id": "tq200",
+    "group": "らくらくメルカリ便",
+    "label": "宅急便200サイズ(30kg)",
+    "fee": 2500,
+    "material": 0
+   },
+   {
+    "id": "yupacket",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパケット(A4・厚さ3cm・1kg)",
+    "fee": 230,
+    "material": 0
+   },
+   {
+    "id": "yppost",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパケットポスト(専用箱65円込み)",
+    "fee": 215,
+    "material": 65
+   },
+   {
+    "id": "yppost_seal",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパケットポスト(発送用シール5円込み)",
+    "fee": 215,
+    "material": 5
+   },
+   {
+    "id": "yppostmini",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパケットポストmini(専用封筒20円込み)",
+    "fee": 160,
+    "material": 20
+   },
+   {
+    "id": "ypplus",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパケットプラス(専用箱65円込み)",
+    "fee": 455,
+    "material": 65
+   },
+   {
+    "id": "yp60",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック60サイズ",
+    "fee": 770,
+    "material": 0
+   },
+   {
+    "id": "yp80",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック80サイズ",
+    "fee": 870,
+    "material": 0
+   },
+   {
+    "id": "yp100",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック100サイズ",
+    "fee": 1070,
+    "material": 0
+   },
+   {
+    "id": "yp120",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック120サイズ",
+    "fee": 1200,
+    "material": 0
+   },
+   {
+    "id": "yp140",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック140サイズ",
+    "fee": 1450,
+    "material": 0
+   },
+   {
+    "id": "yp160",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック160サイズ",
+    "fee": 1700,
+    "material": 0
+   },
+   {
+    "id": "yp170",
+    "group": "ゆうゆうメルカリ便",
+    "label": "ゆうパック170サイズ",
+    "fee": 1900,
+    "material": 0
+   },
+   {
+    "id": "custom",
+    "group": "その他",
+    "label": "自分で入力する",
+    "fee": 0,
+    "material": 0
+   }
+  ],
+  "note": "送料は税込・全国一律。資材代はメルカリ便で使う専用箱・シール・封筒の代金(メルカリストア等の価格)。らくらくメルカリ便の集荷は別途100円。"
+ },
+ "yahuoku": {
+  "rate": 0.1,
+  "rounding": "floor",
+  "note": "落札システム利用料は2024年6月4日から、LYPプレミアム会員かどうかに関係なく落札価格の10%(税込)。自動車など一部カテゴリーは別料金(このツールでは対象外)。"
+ },
+ "sources": [
+  {
+   "topic": "Amazon 販売手数料(2026年4月1日改定後)",
+   "url": "https://link-ecconsulting.co.jp/column/amazon-fees-guide/",
+   "note": "記事内で2026年9月27日に公式と照合と記載。税抜表示"
+  },
+  {
+   "topic": "Amazon 販売手数料・FBA配送代行手数料",
+   "url": "https://jagoo.co.jp/column/amazon-fee/",
+   "note": "2026年9月6日更新。2026年4月1日改定を反映"
+  },
+  {
+   "topic": "Amazon 販売手数料・FBA配送代行手数料",
+   "url": "https://wise.com/jp/blog/amazon-seller-fees",
+   "note": "2026年6月14日時点の料率"
+  },
+  {
+   "topic": "Amazon 2026年4月改定の内容(販売手数料+0.4%、FBA標準2・3の引き下げ)",
+   "url": "https://ecstarslab.com/blog/fba-commission-price-increase/",
+   "note": ""
+  },
+  {
+   "topic": "Amazon 公式: 出品サービスの料金",
+   "url": "https://sell.amazon.co.jp/pricing",
+   "note": "公式。当方の確認環境からは直接開けなかったため、上の記事3本の数値の一致で確認"
+  },
+  {
+   "topic": "Amazon 公式: 販売手数料の改定(セラーセントラル)",
+   "url": "https://sellercentral.amazon.co.jp/help/hub/reference/external/GT23F3ST7FEZKT9A?locale=ja-JP",
+   "note": "公式(要ログイン)"
+  },
+  {
+   "topic": "メルカリ便の送料(公式・メルカリびより)",
+   "url": "https://jp-news.mercari.com/contents/1882",
+   "note": "2026年10月13日掲載・2026年1月時点の料金"
+  },
+  {
+   "topic": "メルカリ便の送料(照合用)",
+   "url": "https://furima-navi.jp/guides/shipping-comparison",
+   "note": ""
+  },
+  {
+   "topic": "メルカリ 販売手数料10%・振込申請手数料200円",
+   "url": "https://aucfan.com/times/archives/46731",
+   "note": ""
+  },
+  {
+   "topic": "メルカリ 販売手数料10%(2026年3月の記事)",
+   "url": "https://library.libecity.com/articles/01KM1Y0TSZKA9XHTT035DSXGNM",
+   "note": ""
+  },
+  {
+   "topic": "Yahoo!オークション 落札システム利用料 一律10%(2024年6月4日〜)",
+   "url": "https://netshop.impress.co.jp/node/12364",
+   "note": ""
+  },
+  {
+   "topic": "Yahoo!オークション 落札システム利用料 一律10%",
+   "url": "https://ascii.jp/elem/000/004/193/4193266/",
+   "note": ""
+  },
+  {
+   "topic": "エコリング(エコオク)の落札手数料・会費(第三者記事・掲載時点)",
+   "url": "https://uridoki.net/kobutsuichiba/kiji_200386",
+   "note": "公式の会員規約で未確認"
+  },
+  {
+   "topic": "大吉オークションの手数料・参加費(第三者記事・掲載時点)",
+   "url": "https://uridoki.net/kobutsuichiba/kiji_249600",
+   "note": "公式の会員規約で未確認"
+  },
+  {
+   "topic": "古物営業法 非対面取引の本人確認(警視庁)",
+   "url": "https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html",
+   "note": "1万円以上(一部品目は金額を問わず)はその都度確認"
+  }
+ ],
+ "auctions": {
+  "_note": "業者オークション(古物市場)の手数料の目安。掲載時点の第三者記事の値で、公式の会員規約で未確認。入会前に各市場の公式で必ず確認し、画面で上書きして使う。どこも古物商許可が入会条件。",
+  "presets": [
+   {
+    "id": "ecoring",
+    "label": "エコリング(エコオク)",
+    "type": "band",
+    "tax_excluded": true,
+    "bands": [
+     {
+      "upto": 10000,
+      "fee": 500
+     },
+     {
+      "upto": 49999,
+      "fee": 1000
+     },
+     {
+      "upto": null,
+      "fee": 2000
+     }
+    ],
+    "session_fee": 0,
+    "membership": "入会金30,000円・年会費10,000〜20,000円(入会月による)",
+    "source": "https://uridoki.net/kobutsuichiba/kiji_200386"
+   },
+   {
+    "id": "daikichi",
+    "label": "大吉オークション",
+    "type": "rate",
+    "tax_excluded": true,
+    "rate": 0.05,
+    "rate_note": "3〜5%",
+    "session_fee": 3000,
+    "membership": "入会金・年会費 無料、参加費1回3,000円",
+    "source": "https://uridoki.net/kobutsuichiba/kiji_249600"
+   },
+   {
+    "id": "custom",
+    "label": "自分で入力する",
+    "type": "custom",
+    "tax_excluded": true,
+    "session_fee": 0,
+    "membership": "",
+    "source": ""
+   }
+  ]
+ }
+}

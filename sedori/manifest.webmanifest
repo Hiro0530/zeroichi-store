@@ -1,0 +1,19 @@
+{
+  "name": "せどり 利益チェック(ZEROICHI WORKS)",
+  "short_name": "せどり利益",
+  "description": "仕入れ先と売り先ごとに、手数料・送料・ポイント込みの利益を計算",
+  "lang": "ja",
+  "start_url": "/zeroichi-store/sedori/rakuten-amazon/",
+  "scope": "/zeroichi-store/sedori/",
+  "display": "standalone",
+  "background_color": "#f1f4f7",
+  "theme_color": "#1b2a6b",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ],
+  "shortcuts": [
+    {"name": "楽天・Yahoo!→Amazon", "url": "/zeroichi-store/sedori/rakuten-amazon/"},
+    {"name": "メルカリ 手数料・送料", "url": "/zeroichi-store/sedori/mercari-calc/"}
+  ]
+}
