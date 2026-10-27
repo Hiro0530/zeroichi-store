@@ -479,14 +479,25 @@ TOP_BODY = f"""<div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
     <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
-      <table class="kv"><tr><th>無料版</th><td>0円・登録不要</td></tr><tr><th>有料版</th><td>月1,480円(税込)<br>最初の30日無料・準備中</td></tr></table>
-      <p class="row-links"><a data-mail="prereg" href="#">有料版の事前登録</a><a href="#plans">違いを見る</a></p>
+      <table class="kv"><tr><th>無料</th><td>0円・登録不要</td></tr><tr><th>スタンダード</th><td>月2,480円(税込)<br>30日無料・準備中</td></tr><tr><th>先着100名</th><td>月1,980円<br>途中で上がりません</td></tr></table>
+      <p class="row-links"><a data-mail="prereg" href="#">事前登録(無料)</a><a href="#plans">プランを比べる</a></p>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳の付け方を週1回。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
   </aside>
 
   <section class="res">
-    <h1 class="pg-h">仕入れ先と売り先で選ぶ</h1>
+    <h1 class="pg-h">せどりの利益計算と、古物台帳の自動記録</h1>
+    <div class="out-box" id="intro">
+      <p>仕入れ先と売り先を選ぶと、手数料・送料・ポイントを引いた利益と、目標の利益を残せる販売価格・仕入れ値の上限が出ます。「仕入れた」を押すと古物台帳に1行入り、「売れた」で売却の欄が埋まります。</p>
+      <ul class="memo">
+        <li>5つの仕入れルートに対応。業者オークションの参加費や、まとめ落札の1個あたりの原価も計算</li>
+        <li>台帳は古物台帳の項目と列の順。相手確認が未入力の行には印。CSV・Excelで書き出し</li>
+        <li>無料・登録なし。入れた内容はこの端末の中だけに保存</li>
+      </ul>
+      <div class="row-btns"><a class="btn" href="#shindan-sec">合うルートを診断する(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a></div>
+    </div>
+
+    <h2 class="sec-h">仕入れ先と売り先で選ぶ</h2>
     <div class="gridwrap"><table class="grid nimg rt" id="route-grid">
       <thead><tr><th>ページ</th><th>仕入れ先</th><th>売り先</th><th>商品</th><th>古物商許可</th><th>計算する手数料</th></tr></thead>
       <tbody>{route_rows}</tbody>
@@ -506,28 +517,35 @@ TOP_BODY = f"""<div class="lay2">
     </form>
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
-    <h2 class="sec-h" id="plans">無料版と有料版</h2>
-    <div class="gridwrap"><table class="grid nimg cmp">
-      <thead><tr><th></th><th>無料版(いま使えます)</th><th>有料版(準備中・月1,480円・30日無料)</th></tr></thead>
+    <h2 class="sec-h" id="plans">料金とプラン</h2>
+    <p>無料 0円/スタンダード <b>月2,480円</b>(先着100名は月1,980円)/業務 月4,980円(予定)。有料はどちらも税込・30日無料・準備中です。</p>
+    <div class="gridwrap"><table class="grid nimg cmp" style="min-width:600px">
+      <thead><tr><th></th><th>無料(いま使えます)</th><th>スタンダード(準備中)</th><th>業務(準備中)</th></tr></thead>
       <tbody>
-        <tr><th>計算ページ</th><td>5つすべて・回数制限なし</td><td>同じ</td></tr>
-        <tr><th>楽天の検索</th><td>1日20回</td><td>制限なし</td></tr>
-        <tr><th>台帳</th><td>自動記録・CSV・Excel</td><td>複数の端末で同期</td></tr>
-        <tr><th>ウォッチ</th><td>保存・CSV</td><td>価格・ポイントの再確認、出品者数・Amazon本体の変化の記録</td></tr>
-        <tr><th>メルマガ</th><td>週1回</td><td>有料号つき</td></tr>
-        <tr><th>解約</th><td>—</td><td>契約画面のボタン1回かメール1通。無料期間中は0円。終了3日前にお知らせ</td></tr>
+        <tr><th>料金(税込)</th><td>0円・登録不要</td><td><b>月2,480円</b>・年24,800円<br>先着100名は月1,980円・年19,800円</td><td>月4,980円・年49,800円(予定)</td></tr>
+        <tr><th>無料期間</th><td>—</td><td>30日</td><td>30日</td></tr>
+        <tr><th>計算ページ</th><td>5つすべて・回数制限なし</td><td>同じ</td><td>同じ</td></tr>
+        <tr><th>台帳</th><td>この端末に保存・行数の制限なし・CSV・Excel</td><td>クラウドに保存し、パソコンとスマホで同じ台帳。3年分を保管</td><td>作業する人3人まで・提出用のPDF・変更の記録</td></tr>
+        <tr><th>楽天の検索</th><td>1日20回</td><td>制限なし</td><td>制限なし</td></tr>
+        <tr><th>ウォッチ</th><td>保存・CSV</td><td>価格・ポイントの再確認、出品者数の変化の記録※</td><td>同じ</td></tr>
+        <tr><th>まとめて計算</th><td>—</td><td>JANを一括で計算(CSV)</td><td>同じ</td></tr>
+        <tr><th>発送代行</th><td>自分で発送との切り替えで計算</td><td>同じ</td><td>入庫予定・出荷依頼のCSVを台帳から作成</td></tr>
+        <tr><th>解約</th><td>—</td><td colspan="2">契約画面のボタン1回かメール1通。無料期間中は0円。終了の5日前と前日にメールでお知らせ</td></tr>
       </tbody>
     </table></div>
-    <p class="row-links"><a data-mail="prereg" href="#">有料版の事前登録(メール1通・無料)</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
+    <p class="hint">有料版のお申し込みはまだ受け付けていません。準備ができたら、事前登録の方へ順にメールでご案内します(登録しても料金は発生しません)。先着100名の価格は事前登録の順にご案内し、続けている間は上がりません。※価格データのサービスのAPIキーをお持ちの場合。</p>
+    <p class="row-links"><a data-mail="prereg" href="#">事前登録(メール1通・無料)</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
     <h2 class="sec-h" id="faq">よくある質問</h2>
     <div class="faq">
-      <details><summary>無料ですか。登録は要りますか。</summary><p>計算と台帳は無料で、登録も要りません。楽天の検索を使う場合だけ、楽天の開発者サイトでご自身の無料IDを取っていただきます。</p></details>
-      <details><summary>入れたデータはどこに保存されますか。</summary><p>この端末のブラウザの中だけです。当方のサーバーには送られません(サーバーを持っていません)。ブラウザのデータを消すと台帳も消えるので、台帳のCSV・Excelで書き出してください。</p></details>
-      <details><summary>Keepaは必要ですか。</summary><p>必須ではありません。無い場合は「Amazonで見る」で価格を確かめて手で入れてください。Keepaの料金と利用条件はKeepaとの契約になります。</p></details>
+      <details><summary>無料でどこまで使えますか。</summary><p>5つの計算ページと台帳は、無料・回数制限なし・登録なしで使えます。楽天の検索は1日20回までで、楽天の開発者サイトでご自身の無料IDを取っていただきます。</p></details>
+      <details><summary>いま使っている出品・価格改定の道具と一緒に使えますか。</summary><p>使えます。このアプリは出品や価格改定はしません。仕入れる前の計算と、仕入れた後の古物台帳を受け持ちます。</p></details>
+      <details><summary>入れたデータはどこに保存されますか。</summary><p>無料版は、この端末のブラウザの中だけです。当方のサーバーには送られません。ブラウザのデータを消すと台帳も消えるので、CSV・Excelで書き出してください。有料版はクラウドに保存しますが、当方は中身を見ず、使いません(提供の前にプライバシーポリシーへ書き加えます)。</p></details>
+      <details><summary>Amazonの価格はどう入れますか。</summary><p>「Amazonで見る」で価格を確かめて入れてください。価格データのサービスのAPIキーをお持ちなら、設定に入れると自動で入ります。そのサービスの料金と利用条件は、そのサービスとのご契約になります。</p></details>
       <details><summary>メルカリやヤフオクの価格を自動で取れませんか。</summary><p>取りません。各サービスの規約で自動アクセスが制限されているためです。検索バーで各サイトの検索ページを開き、見た価格を入れてください。</p></details>
       <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行できます。台帳では状態を1クリックで進め、「売れた」で売却日・売値・相手が入ります。1万円以上の中古品などは、相手確認を入れるまで印が付きます。</p></details>
       <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
+      <details><summary>有料版はいつから使えますか。</summary><p>準備ができたら、事前登録の方へメールでご案内します。お申し込みの受付の前に、特定商取引法に基づく表記へ料金・支払い・解約の条件を載せます。</p></details>
     </div>
 
     <h2 class="sec-h" id="fees">手数料・送料の出典(確認日 <!--CHECKED-->{FEES['checked_label']}<!--/CHECKED-->)</h2>
