@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>制作の見本｜ZEROICHI WORKS</title>
+<meta name="description" content="ZEROICHI WORKS が作って、いまも動かしている道具の一覧。せどりの業務アプリ、食品表示ラベル、現場カルテ、補助金のメール配信、毎朝自動で更新するデータサイト。制作にはAI(Claude)を使い、人が確かめてから公開しています。">
+<link rel="canonical" href="https://zeroichiworks.net/works/">
+<meta property="og:title" content="制作の見本｜ZEROICHI WORKS">
+<meta property="og:description" content="作って、毎日動かしているものだけを載せています。スプレッドシートの自動化、小さな業務アプリ、LPのご相談はこちらから。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zeroichiworks.net/works/">
+<meta property="og:image" content="https://zeroichiworks.net/works/img/sedori.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../zw.css">
+<meta name="theme-color" content="#1b2a6b">
+<style>
+.wrap.wide{max-width:1000px}
+.hero.works{padding:44px 0 8px}
+.hero.works h1{max-width:15em}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;margin:22px 0 4px;padding:0;list-style:none}
+.facts li{margin:0;font-size:14px;color:var(--muted)}
+.facts b{display:block;font:600 34px/1.05 var(--num);color:var(--ink);letter-spacing:.01em}
+.ai-note{display:grid;gap:4px;border:1px solid var(--line);border-left:4px solid var(--brand);background:var(--surface);border-radius:0 var(--r-m) var(--r-m) 0;padding:16px 18px;margin:26px 0 0;font-size:15px}
+.ai-note b{font-size:15.5px}
+.ai-note p{margin:0;color:var(--muted)}
+:root[data-theme="dark"] .ai-note{border-left-color:var(--brand-muted)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ai-note{border-left-color:var(--brand-muted)}}
+
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;padding:0;list-style:none}
+.toc li{margin:0}
+.toc a{display:inline-flex;align-items:center;min-height:40px;padding:6px 14px;border:1px solid var(--line2);border-radius:999px;text-decoration:none;font-size:14px;font-weight:700;background:var(--surface)}
+.toc a:hover{border-color:var(--ac)}
+
+.wk{display:grid;gap:18px;padding:34px 0;border-top:1px solid var(--line)}
+.wk:first-of-type{border-top:0;padding-top:14px}
+.wk .shot{margin:0;justify-self:center;width:min(240px,62vw)}
+.wk .shot img{display:block;width:100%;aspect-ratio:480/763;object-fit:cover;object-position:top;border:1px solid var(--line2);border-radius:22px;background:var(--sunk);box-shadow:0 22px 40px -28px rgba(20,32,50,.55)}
+.wk .shot figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+.kind{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;padding:0;list-style:none}
+.kind li{margin:0;font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--ac-soft);color:var(--ac-text)}
+.kind li.st{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
+.wk h2{margin:0 0 6px;font-size:clamp(21px,5vw,25px)}
+.wk h2 small{display:block;font-size:13.5px;font-weight:500;color:var(--muted);letter-spacing:.02em;margin-top:2px}
+.wk .what{font-size:16px;margin:0 0 10px}
+.wk dl{margin:6px 0 0;display:grid;gap:0}
+.wk dl>div{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--line)}
+.wk dl>div:first-child{border-top:0}
+.wk dt{font-weight:700;font-size:13.5px;color:var(--ac-text)}
+.wk dd{margin:0;font-size:15px;color:var(--muted)}
+.wk dd b{color:var(--ink);font-weight:700}
+.wk .go{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 0}
+.wk .go a{display:inline-flex;align-items:center;min-height:44px;font-weight:700;font-size:15px}
+.wk .go a::after{content:"→";margin-left:6px;text-decoration:none;display:inline-block}
+@media(min-width:760px){
+  .wk{grid-template-columns:240px minmax(0,1fr);gap:40px;align-items:start}
+  .wk .shot{width:240px;position:sticky;top:20px}
+  .wk dl>div{grid-template-columns:8.5em minmax(0,1fr);gap:14px}
+}
+
+.menu{display:grid;gap:12px;margin:8px 0 0}
+.menu .m{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:18px 20px}
+.menu h3{margin:0;font-size:18px}
+.menu .p{margin:2px 0 8px;font-weight:700;color:var(--ac-text);font-size:14.5px}
+.menu .p .num{font-size:22px;color:var(--ink);font-weight:600}
+.menu p{margin:0 0 6px;font-size:15px;color:var(--muted)}
+.menu .ex{font-size:13.5px}
+.menu+.muted{margin-top:14px}
+@media(min-width:760px){.menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.steps{list-style:none;padding:0;margin:10px 0 0;counter-reset:s}
+.steps li{position:relative;margin:0;padding:12px 0 12px 46px;border-top:1px solid var(--line);counter-increment:s}
+.steps li:first-child{border-top:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:12px;width:30px;height:30px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:5px;font:600 16px/1 var(--num)}
+.steps b{display:block}
+.steps span{color:var(--muted);font-size:15px}
+</style>
+</head>
+<body class="p-works">
+<header class="zw-head">
+  <div class="in"><a class="zw-logo" href="../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a></div>
+  <div class="bar"></div>
+</header>
+
+<main class="wrap wide">
+
+<section class="hero works">
+  <span class="tag">制作の見本</span>
+  <h1><span class="name">ZEROICHI WORKS</span>小さな仕事の道具を、作って、動かすところまで。</h1>
+  <p class="lead">ここに載せているのは、自分たちで作って、いまも毎日動かしているものだけです。スプレッドシートの集計の自動化、ブラウザで使う小さな業務アプリ、1枚のLP。同じ作り方で、ご依頼の分もお作りします。</p>
+  <ul class="facts" aria-label="見本の数字">
+    <li><b>5</b>公開中の見本</li>
+    <li><b>約1,000</b>毎朝自動で作り直すページ</li>
+    <li><b>400件以上</b>業務アプリの自動の検算</li>
+  </ul>
+  <div class="ai-note">
+    <b>AIを使って作っています</b>
+    <p>設計・文章・プログラムの下書きは AI(Anthropic の Claude)が作り、動きと中身を人が確かめてから公開・納品します。下の見本も、すべてこの方法で作っています。隠さずにお伝えしたうえで、ご依頼をお受けしています。</p>
+  </div>
+  <ul class="toc" aria-label="見本の一覧">
+    <li><a href="#sedori">せどり番頭</a></li>
+    <li><a href="#label">ラベル帳</a></li>
+    <li><a href="#hikae">ひかえ</a></li>
+    <li><a href="#hojokin">補助金ナビ</a></li>
+    <li><a href="#kyotei">データの自動更新サイト</a></li>
+    <li><a href="#menu">ご依頼の目安</a></li>
+  </ul>
+</section>
+
+<section class="sec" aria-label="見本">
+
+  <article class="wk" id="sedori">
+    <figure class="shot"><img src="img/sedori.jpg" width="480" height="763" alt="せどり番頭の紹介ページ。利益を見て仕入れる、台帳はもう書けている、という見出しと申し込みのボタン" loading="lazy"><figcaption>スマホで開いたところ</figcaption></figure>
+    <div>
+      <ul class="kind"><li>業務アプリ</li><li>定期課金</li><li>GAS</li><li class="st">運用中</li></ul>
+      <h2>せどり番頭<small>せどりの利益計算・古物台帳・帳簿</small></h2>
+      <p class="what">仕入れる前に、手数料・送料・ポイントを引いた利益が出ます。「仕入れた」を押せば古物台帳に1行入り、「売れた」で売却の欄まで埋まります。</p>
+      <dl>
+        <div><dt>使う人</dt><dd>楽天・Yahoo!・オークションで仕入れて、Amazon・メルカリで売る個人の古物商</dd></div>
+        <div><dt>作ったもの</dt><dd>5つの仕入れルートの計算ページ/端末とクラウドの台帳の同期/売上の取り込み・経費・月ごとの利益・棚卸・申告用の数字/ログインと<b>月払い・年払いの定期課金</b>(カード決済とPayPal)/解約・一時停止・プラン変更の画面/お知らせメールの送信(<b>Google Apps Script</b>で事業用のGmailから)</dd></div>
+        <div><dt>気をつけたこと</dt><dd>特定商取引法の最終確認の表示を、申し込みのボタンと同じ画面に置きました。解約はマイページの1画面で終わります。計算と台帳の同期は、自動の検算(400件以上)を通してから公開しています。</dd></div>
+      </dl>
+      <p class="go"><a href="../sedori/lp/">紹介ページを開く</a><a href="../sedori/">計算ページを開く</a></p>
+    </div>
+  </article>
+
+  <article class="wk" id="label">
+    <figure class="shot"><img src="img/label.jpg" width="480" height="763" alt="ラベル帳の入力画面。商品名・名称・内容量・期限の種類を入れる欄" loading="lazy"><figcaption>商品を入れる画面</figcaption></figure>
+    <div>
+      <ul class="kind"><li>業務アプリ</li><li>印刷</li><li class="st">先行予約中</li></ul>
+      <h2>ラベル帳<small>食品表示ラベルをブラウザで作って印刷</small></h2>
+      <p class="what">焼き菓子・パン・そうざいを袋に入れて売るお店のための道具です。原材料と重さを入れると、重い順の並べ替え、添加物の区切り、アレルゲンのまとめ書き、期限の日付を整えて、A4のラベル用紙に印刷できます。</p>
+      <dl>
+        <div><dt>使う人</dt><dd>手づくりの食品を販売している小さなお店・マルシェの出店者</dd></div>
+        <div><dt>作ったもの</dt><dd>レシピの原材料と重さの入力/重い順の並べ替え・添加物の区切り・アレルゲン(表示義務9品目+推奨20品目)のまとめ書き/製造日からの期限の計算/12面・24面などのA4ラベル用紙への印刷と1mm単位の位置合わせ/書き忘れの注意</dd></div>
+        <div><dt>気をつけたこと</dt><dd>登録なしで使え、入れたデータは端末の中だけに保存します(運営側には届きません)。</dd></div>
+      </dl>
+      <p class="go"><a href="../label/">ラベル帳を開く</a></p>
+    </div>
+  </article>
+
+  <article class="wk" id="hikae">
+    <figure class="shot"><img src="img/hikae.jpg" width="480" height="763" alt="ひかえのトップ。写真を撮って、書いて、あとで探せる、という見出し" loading="lazy"><figcaption>トップ</figcaption></figure>
+    <div>
+      <ul class="kind"><li>業務アプリ</li><li>オフライン</li><li class="st">先行予約中</li></ul>
+      <h2>ひかえ<small>現場カルテと、箱の在庫・古物台帳</small></h2>
+      <p class="what">お客さまごとの作業記録と見積り、どの箱に何を入れたか、古物の仕入れと売り。紙の控えに書いていたことを、スマホ1つにまとめるアプリです。</p>
+      <dl>
+        <div><dt>使う人</dt><dd>外構・リフォームの職人さん、美容室・サロン、古物商</dd></div>
+        <div><dt>作ったもの</dt><dd>お客さまごとの作業記録と写真/その場で作る見積書・写真台帳(A4・PDF)/箱ごとの在庫とQRラベル/古物台帳(CSVとA4横の帳簿)/名前・品名・置き場所をまとめて探す検索/写真ごとのバックアップ</dd></div>
+        <div><dt>気をつけたこと</dt><dd>インストール不要で、電波の届かない現場でも動きます。データはその端末の中だけに保存します。</dd></div>
+      </dl>
+      <p class="go"><a href="../hikae/">ひかえを開く</a></p>
+    </div>
+  </article>
+
+  <article class="wk" id="hojokin">
+    <figure class="shot"><img src="img/hojokin.jpg" width="480" height="763" alt="補助金ナビの紹介ページ。あなたの県と業種に関係する補助金だけを毎週月曜にメールで、という見出し" loading="lazy"><figcaption>紹介ページ</figcaption></figure>
+    <div>
+      <ul class="kind"><li>自動化</li><li>メール配信</li><li>LP</li><li class="st">受付中</li></ul>
+      <h2>補助金ナビ<small>県と業種に合わせた補助金のメール</small></h2>
+      <p class="what">国・県・市にばらばらに出ている補助金の情報から、その人の県と業種に関係するものだけを選び、締切と、何から手をつければいいかを添えて毎週月曜に届けます。</p>
+      <dl>
+        <div><dt>使う人</dt><dd>個人事業主・小さなお店</dd></div>
+        <div><dt>作ったもの</dt><dd>公式サイトの更新を1日1回見に行く仕組み(相手のサイトの決まりを確かめ、間隔をあけて)/確かめ済みの制度だけを県×業種で並べ替えて、週刊号の下書きを作る仕組み/紹介ページ</dd></div>
+        <div><dt>気をつけたこと</dt><dd>確かめてから14日を過ぎた情報と、締切を過ぎた情報は出しません。書類の作成や申請の代行はしていません。</dd></div>
+      </dl>
+      <p class="go"><a href="../hojokin/">補助金ナビを開く</a></p>
+    </div>
+  </article>
+
+  <article class="wk" id="kyotei">
+    <figure class="shot"><img src="img/kyotei.jpg" width="480" height="763" alt="毎朝自動で更新されるデータサイトのトップ。昨日の答え合わせの数字が並ぶ" loading="lazy"><figcaption>毎朝の更新後のトップ</figcaption></figure>
+    <div>
+      <ul class="kind"><li>データの自動更新</li><li>定時実行</li><li class="st">毎朝更新</li></ul>
+      <h2>AI舟券 答え合わせ帳<small>公式データから毎朝ページを作り直すサイト(ボートレース)</small></h2>
+      <p class="what">公式のダウンロードデータ(番組表・競走成績)を毎朝取り込み、全レースの予想と前日の答え合わせのページを自動で作り直しています。人の手は入れていません。</p>
+      <dl>
+        <div><dt>見どころ</dt><dd>毎朝決まった時刻に動く定時実行/データの取り込みから集計・ページの書き出し・公開までの自動化/場ごと・日ごとの一覧と約1,000ページの生成/外れも含めた翌朝の自動の答え合わせ</dd></div>
+        <div><dt>応用できる仕事</dt><dd>毎日・毎週の売上や在庫の集計を、決まった時刻に表やページにして共有する仕組み</dd></div>
+        <div><dt>ご注意</dt><dd>20歳以上の方向けの内容です。予想の的中や利益を約束するものではありません。</dd></div>
+      </dl>
+      <p class="go"><a href="../kyotei/">サイトを開く</a></p>
+    </div>
+  </article>
+
+</section>
+
+<section class="sec" id="menu">
+  <h2>ご依頼の目安</h2>
+  <p>内容を伺ってからお見積りします。下は、よくあるご依頼の目安です。</p>
+  <div class="menu">
+    <div class="m">
+      <h3>スプレッドシート・GASの自動化</h3>
+      <p class="p"><span class="num">15,000</span>円から</p>
+      <p>毎日の集計、転記、ほかのシートやフォームからの取り込み、決まった時刻のメール送信など。</p>
+      <p class="ex">例: 売上の表から月ごと・担当ごとの集計を自動で作る</p>
+    </div>
+    <div class="m">
+      <h3>小さな業務アプリ</h3>
+      <p class="p"><span class="num">50,000</span>円から</p>
+      <p>台帳・記録・見積り・在庫など、いまExcelや紙でしていることを、スマホとパソコンのブラウザで使える形に。</p>
+      <p class="ex">例: 現場で写真つきの作業記録を残し、事務所で一覧にする</p>
+    </div>
+    <div class="m">
+      <h3>LP(1ページ)</h3>
+      <p class="p"><span class="num">30,000</span>円から</p>
+      <p>商品やサービスの紹介ページを、文章の整理から。スマホで読みやすく、申し込みまでの手数を少なく。</p>
+      <p class="ex">例: 新しいサービスの紹介と申し込みのページ</p>
+    </div>
+  </div>
+  <p class="muted">表示は税込です。当方は適格請求書発行事業者(インボイス)の登録をしていません。</p>
+</section>
+
+<section class="sec">
+  <h2>進め方</h2>
+  <ol class="steps">
+    <li><b>ご相談</b><span>いまの作業のやり方と、困っていることを教えてください。表やシートがあれば、その形だけでも助かります。</span></li>
+    <li><b>お見積り</b><span>作るもの・金額・納期を文章でお送りします。決まるまで料金はかかりません。</span></li>
+    <li><b>作成</b><span>途中で一度、動くものを見ていただきます。直しは2回まで料金に含みます。</span></li>
+    <li><b>納品と使い方の説明</b><span>使い方の説明書をつけてお渡しします。納品物の権利は、お支払いが済んだ時点でお渡しします(使った部品のライセンスは一覧にします)。</span></li>
+  </ol>
+  <div class="honest">
+    <strong>お預かりするデータについて</strong>
+    作業に必要な範囲だけをお預かりし、ほかの目的には使いません。お客さまの取引先の名前や住所など、作業に要らない情報は記号に置き換えてから扱います。納品から30日たったら、お預かりしたデータは消します。
+  </div>
+</section>
+
+<section class="sec">
+  <h2>ご相談の窓口</h2>
+  <p>クラウドワークス・ランサーズ・ココナラからこのページをご覧の方は、それぞれのサービスのメッセージでご連絡ください。お見積り・お支払いも、そのサービスの中で行います(サービスの外での直接のお取引はしていません)。</p>
+  <p>それ以外の方は、<a href="mailto:zeroichi.works.jp@gmail.com?subject=%E5%88%B6%E4%BD%9C%E3%81%AE%E3%81%94%E7%9B%B8%E8%AB%87">zeroichi.works.jp@gmail.com</a> へメールをお送りください。2営業日以内にお返事します。</p>
+</section>
+
+</main>
+<footer class="zw-foot">
+  <div class="in">
+    <nav><a href="../">ZEROICHI WORKS ストア</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <p>ZEROICHI WORKS(個人事業)</p>
+    <p>このページと見本は、AI(Claude)を使って作り、人が確かめてから公開しています。</p>
+  </div>
+</footer>
+</body>
+</html>
