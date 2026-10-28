@@ -5,7 +5,7 @@ window.ZW_CONFIG = {
   /* サイトの住所(最後は /)。独自ドメインに移す時はここだけ直し、tools/sedori/build_pages.py と本部の guide_build.py を流し直す。
      ページ同士のリンクは相対なので、ここを使うのは canonical・OGP・サイトマップ・楽天の「許可するWebサイト」の案内だけ。
      移す時に直す場所の一覧は本部の docs/sedori_app/domain.md */
-  SITE_URL: "https://hiro0530.github.io/zeroichi-store/",
+  SITE_URL: "https://zeroichiworks.net/",
   /* Firebase の「ウェブアプリの設定」(apiKey・authDomain・projectId・appId など)。公開してよい値 */
   FIREBASE_CONFIG: null,
   /* PayPal の REST アプリの Client ID(公開してよい値。テスト中は Sandbox の ID) */

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import * as Rd from "../reading.js";
 const { E, D, P, T } = Rd;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SITE = "https://hiro0530.github.io/zeroichi-store/hoshiyomi/";
+const SITE = "https://zeroichiworks.net/hoshiyomi/";
 const mode = process.argv[2] || "all";
 const pad = (n) => String(n).padStart(2, "0");
 const write = (rel, html) => { const f = path.join(ROOT, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, html); };

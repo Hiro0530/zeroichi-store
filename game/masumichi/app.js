@@ -5,7 +5,7 @@
 const $ = s => document.querySelector(s);
 const EPOCH = Date.UTC(2026, 8, 1); // No.1 = 2026-09-01 (JST)
 const FREE_BACK = 2;                // free players can catch up on the last 2 days
-const URL_SELF = "https://hiro0530.github.io/zeroichi-store/game/masumichi/";
+const URL_SELF = "https://zeroichiworks.net/game/masumichi/";
 const PRICE = "¥480";
 
 /* ---------- i18n ---------- */
@@ -426,7 +426,7 @@ function cardCanvas(){
   x.fillStyle = tg; x.font = '800 210px "M PLUS Rounded 1c", sans-serif'; x.fillText(fmt(d.t), 540, 620);
   x.fillStyle = "#fff"; x.font = '800 46px "M PLUS Rounded 1c", sans-serif';
   x.fillText(`${L().shareStreak(streakNow())}   ${!d.h ? "✨"+L().noHint : "💡"+d.h}`, 540, 740);
-  x.fillStyle = "#9aa3c7"; x.font = '500 34px "M PLUS Rounded 1c", sans-serif'; x.fillText("hiro0530.github.io/zeroichi-store/game/masumichi", 540, 990);
+  x.fillStyle = "#9aa3c7"; x.font = '500 34px "M PLUS Rounded 1c", sans-serif'; x.fillText("zeroichiworks.net/game/masumichi", 540, 990);
   x.fillText("ZEROICHI WORKS", 540, 1040);
   return cv;
 }

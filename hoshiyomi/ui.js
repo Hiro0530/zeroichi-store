@@ -8,7 +8,7 @@ export const PAY = {
   set: { name: "年間運勢+相性 セット", price: 1500, url: "" },
 };
 export const MAIL = "zeroichi.works.jp@gmail.com";
-export const SITE = "https://hiro0530.github.io/zeroichi-store/hoshiyomi/";
+export const SITE = "https://zeroichiworks.net/hoshiyomi/";
 
 const KAN = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 export function kanji(n) {

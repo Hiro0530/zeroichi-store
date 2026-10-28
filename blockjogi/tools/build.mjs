@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as S from "../shapes.js";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SITE = "https://hiro0530.github.io/zeroichi-store/blockjogi/";
+const SITE = "https://zeroichiworks.net/blockjogi/";
 const write = (rel, s) => { const f = path.join(ROOT, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, s); };
 
 function svg(g) {
