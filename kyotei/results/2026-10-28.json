@@ -1,0 +1,6203 @@
+{
+ "summary": {
+  "date": "2026-10-28",
+  "graded_races": 124,
+  "win_hits": 60,
+  "tri_hits": 21,
+  "near": 25,
+  "stake_win": 12400,
+  "return_win": 9450,
+  "stake_tri": 37200,
+  "return_tri": 20450,
+  "base_hits": 56,
+  "base_return": 9220,
+  "by_bet": {
+   "tansho": {
+    "races": 124,
+    "hits": 60,
+    "stake": 12400,
+    "return": 9450,
+    "pnl": -2950,
+    "roi": 0.7621
+   },
+   "trifecta3": {
+    "races": 124,
+    "hits": 21,
+    "stake": 37200,
+    "return": 20450,
+    "pnl": -16750,
+    "roi": 0.5497
+   },
+   "fukusho": {
+    "races": 124,
+    "hits": 86,
+    "stake": 12400,
+    "return": 11020,
+    "pnl": -1380,
+    "roi": 0.8887
+   },
+   "trio3": {
+    "races": 124,
+    "hits": 55,
+    "stake": 37200,
+    "return": 23940,
+    "pnl": -13260,
+    "roi": 0.6435
+   }
+  },
+  "star_by_bet": {
+   "tansho": {
+    "races": 5,
+    "hits": 5,
+    "stake": 500,
+    "return": 590,
+    "pnl": 90,
+    "roi": 1.18
+   },
+   "trifecta3": {
+    "races": 5,
+    "hits": 2,
+    "stake": 1500,
+    "return": 1430,
+    "pnl": -70,
+    "roi": 0.9533
+   },
+   "fukusho": {
+    "races": 5,
+    "hits": 5,
+    "stake": 500,
+    "return": 510,
+    "pnl": 10,
+    "roi": 1.02
+   },
+   "trio3": {
+    "races": 5,
+    "hits": 2,
+    "stake": 1500,
+    "return": 540,
+    "pnl": -960,
+    "roi": 0.36
+   }
+  },
+  "ana": {
+   "races": 2,
+   "hits": 0,
+   "stake": 600,
+   "return": 0,
+   "manshu_hits": 0,
+   "manshu_races": 0
+  }
+ },
+ "races": [
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 730
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 470
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-23-01",
+   "venue_name": "唐津",
+   "race": 1,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-3-4"
+   ],
+   "actual": "1-3-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 730,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 730,
+   "exacta": [],
+   "exacta_payout": 250,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-6",
+    "1-2-4"
+   ],
+   "key": "20261028-23-02",
+   "venue_name": "唐津",
+   "race": 2,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-6",
+    "2-1-3"
+   ],
+   "actual": "4-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 94190,
+   "exacta": [],
+   "exacta_payout": 6110,
+   "tansho_payout": 1800
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-2-4",
+    "1-4-5"
+   ],
+   "key": "20261028-23-03",
+   "venue_name": "唐津",
+   "race": 3,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-4-2"
+   ],
+   "actual": "4-5-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3850,
+   "exacta": [],
+   "exacta_payout": 1270,
+   "tansho_payout": 330
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "2-3-5"
+   ],
+   "key": "20261028-23-04",
+   "venue_name": "唐津",
+   "race": 4,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "2-1-3",
+    "1-3-2"
+   ],
+   "actual": "2-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 12210,
+   "exacta": [],
+   "exacta_payout": 740,
+   "tansho_payout": 330
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 1420
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 800
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-23-05",
+   "venue_name": "唐津",
+   "race": 5,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 140,
+   "pay_tri": 1420,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 1420,
+   "exacta": [],
+   "exacta_payout": 440,
+   "tansho_payout": 140
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 220
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "2-3-5"
+   ],
+   "key": "20261028-23-06",
+   "venue_name": "唐津",
+   "race": 6,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "actual": "3-1-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1410,
+   "exacta": [],
+   "exacta_payout": 620,
+   "tansho_payout": 350
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 220
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "2-3-4",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-23-07",
+   "venue_name": "唐津",
+   "race": 7,
+   "tier": "C",
+   "pick": 2,
+   "trifecta": [
+    "2-3-4",
+    "3-2-4",
+    "2-4-3"
+   ],
+   "actual": "3-4-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1540,
+   "exacta": [],
+   "exacta_payout": 1060,
+   "tansho_payout": 670
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 310
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-5",
+    "1-3-4",
+    "1-4-6"
+   ],
+   "key": "20261028-23-08",
+   "venue_name": "唐津",
+   "race": 8,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-4-6",
+    "1-4-3"
+   ],
+   "actual": "4-5-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1470,
+   "exacta": [],
+   "exacta_payout": 690,
+   "tansho_payout": 200
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-3-5"
+   ],
+   "key": "20261028-23-09",
+   "venue_name": "唐津",
+   "race": 9,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-5",
+    "1-3-2"
+   ],
+   "actual": "5-3-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 31950,
+   "exacta": [],
+   "exacta_payout": 3920,
+   "tansho_payout": 750
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-6"
+   ],
+   "key": "20261028-23-10",
+   "venue_name": "唐津",
+   "race": 10,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "1-2-3"
+   ],
+   "actual": "2-3-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6430,
+   "exacta": [],
+   "exacta_payout": 1720,
+   "tansho_payout": 380
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 220
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-5"
+   ],
+   "key": "20261028-23-11",
+   "venue_name": "唐津",
+   "race": 11,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-5",
+    "1-3-2"
+   ],
+   "actual": "4-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 30080,
+   "exacta": [],
+   "exacta_payout": 6260,
+   "tansho_payout": 2430
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-23-12",
+   "venue_name": "唐津",
+   "race": 12,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "actual": "1-4-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1270,
+   "exacta": [],
+   "exacta_payout": 470,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": true,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-22-01",
+   "venue_name": "福岡",
+   "race": 1,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "1-4-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 2220,
+   "exacta": [],
+   "exacta_payout": 830,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-22-02",
+   "venue_name": "福岡",
+   "race": 2,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-2-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 160,
+   "pay_tri": 0,
+   "base_pay": 160,
+   "lane1_won": true,
+   "trifecta_payout": 1830,
+   "exacta": [],
+   "exacta_payout": 330,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 870
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 220
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "1-3-4"
+   ],
+   "key": "20261028-22-03",
+   "venue_name": "福岡",
+   "race": 3,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-3-4"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 160,
+   "pay_tri": 870,
+   "base_pay": 160,
+   "lane1_won": true,
+   "trifecta_payout": 870,
+   "exacta": [],
+   "exacta_payout": 340,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 710
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-5",
+    "2-4-5"
+   ],
+   "key": "20261028-22-04",
+   "venue_name": "福岡",
+   "race": 4,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "2-1-4"
+   ],
+   "actual": "4-2-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3630,
+   "exacta": [],
+   "exacta_payout": 1350,
+   "tansho_payout": 520
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 220
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 180
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-5",
+    "1-3-5",
+    "1-3-4"
+   ],
+   "key": "20261028-22-05",
+   "venue_name": "福岡",
+   "race": 5,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-4-5",
+    "1-3-4"
+   ],
+   "actual": "1-4-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 220,
+   "pay_tri": 0,
+   "base_pay": 220,
+   "lane1_won": true,
+   "trifecta_payout": 2670,
+   "exacta": [],
+   "exacta_payout": 620,
+   "tansho_payout": 220
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 560
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-6",
+    "1-2-4"
+   ],
+   "key": "20261028-22-06",
+   "venue_name": "福岡",
+   "race": 6,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-6",
+    "1-2-4"
+   ],
+   "actual": "2-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5000,
+   "exacta": [],
+   "exacta_payout": 900,
+   "tansho_payout": 610
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-2-4"
+   ],
+   "key": "20261028-22-07",
+   "venue_name": "福岡",
+   "race": 7,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-4-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 4470,
+   "exacta": [],
+   "exacta_payout": 640,
+   "tansho_payout": 140
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 200
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 770
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 280
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-22-08",
+   "venue_name": "福岡",
+   "race": 8,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 200,
+   "pay_tri": 770,
+   "base_pay": 200,
+   "lane1_won": true,
+   "trifecta_payout": 770,
+   "exacta": [],
+   "exacta_payout": 520,
+   "tansho_payout": 200
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-5",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-22-09",
+   "venue_name": "福岡",
+   "race": 9,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-4-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 5300,
+   "exacta": [],
+   "exacta_payout": 1030,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 660
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 250
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-22-10",
+   "venue_name": "福岡",
+   "race": 10,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 110,
+   "pay_tri": 660,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 660,
+   "exacta": [],
+   "exacta_payout": 370,
+   "tansho_payout": 110
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 870
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 550
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-22-11",
+   "venue_name": "福岡",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-2-3",
+    "1-3-2"
+   ],
+   "actual": "1-3-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 870,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 870,
+   "exacta": [],
+   "exacta_payout": 340,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-22-12",
+   "venue_name": "福岡",
+   "race": 12,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 1000,
+   "exacta": [],
+   "exacta_payout": 330,
+   "tansho_payout": 120
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-2-4",
+    "1-2-3"
+   ],
+   "key": "20261028-16-01",
+   "venue_name": "児島",
+   "race": 1,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-2-4",
+    "1-4-2"
+   ],
+   "actual": "3-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4360,
+   "exacta": [],
+   "exacta_payout": 1400,
+   "tansho_payout": 730
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-5",
+    "1-2-5",
+    "4-5-6"
+   ],
+   "key": "20261028-16-02",
+   "venue_name": "児島",
+   "race": 2,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-5-4",
+    "5-1-4"
+   ],
+   "actual": "4-5-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6250,
+   "exacta": [],
+   "exacta_payout": 690,
+   "tansho_payout": 290
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 4,
+   "trio": [
+    "1-3-4",
+    "1-4-6",
+    "1-4-5"
+   ],
+   "key": "20261028-16-03",
+   "venue_name": "児島",
+   "race": 3,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "3-1-4"
+   ],
+   "actual": "3-6-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2560,
+   "exacta": [],
+   "exacta_payout": 1390,
+   "tansho_payout": 290
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 220
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-5",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "key": "20261028-16-04",
+   "venue_name": "児島",
+   "race": 4,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-5-3",
+    "1-2-5"
+   ],
+   "actual": "5-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4280,
+   "exacta": [],
+   "exacta_payout": 790,
+   "tansho_payout": 390
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 800
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 250
+    }
+   },
+   "star": true,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-16-05",
+   "venue_name": "児島",
+   "race": 5,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 160,
+   "pay_tri": 800,
+   "base_pay": 160,
+   "lane1_won": true,
+   "trifecta_payout": 800,
+   "exacta": [],
+   "exacta_payout": 350,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 460
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-3-4",
+    "1-4-6"
+   ],
+   "key": "20261028-16-06",
+   "venue_name": "児島",
+   "race": 6,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-4-2",
+    "1-2-4",
+    "4-1-2"
+   ],
+   "actual": "4-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1070,
+   "exacta": [],
+   "exacta_payout": 400,
+   "tansho_payout": 170
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 370
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-5",
+    "1-5-6",
+    "1-3-5"
+   ],
+   "key": "20261028-16-07",
+   "venue_name": "児島",
+   "race": 7,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-5-6",
+    "1-3-5"
+   ],
+   "actual": "5-1-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2570,
+   "exacta": [],
+   "exacta_payout": 710,
+   "tansho_payout": 180
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 190
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 300
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-5",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-16-08",
+   "venue_name": "児島",
+   "race": 8,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-5-3",
+    "3-1-5"
+   ],
+   "actual": "5-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3080,
+   "exacta": [],
+   "exacta_payout": 1510,
+   "tansho_payout": 420
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 720
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 190
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-6",
+    "1-2-3",
+    "1-2-6"
+   ],
+   "key": "20261028-16-09",
+   "venue_name": "児島",
+   "race": 9,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-6",
+    "3-1-6",
+    "1-3-2"
+   ],
+   "actual": "3-1-6",
+   "verdict": "的中",
+   "win_hit": false,
+   "tri_hit": true,
+   "pay_win": 0,
+   "pay_tri": 720,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 720,
+   "exacta": [],
+   "exacta_payout": 340,
+   "tansho_payout": 340
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-2-4"
+   ],
+   "key": "20261028-16-10",
+   "venue_name": "児島",
+   "race": 10,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "1-3-2"
+   ],
+   "actual": "3-2-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 21200,
+   "exacta": [],
+   "exacta_payout": 4600,
+   "tansho_payout": 1270
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 1640
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 800
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "key": "20261028-16-11",
+   "venue_name": "児島",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 110,
+   "pay_tri": 1640,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 1640,
+   "exacta": [],
+   "exacta_payout": 310,
+   "tansho_payout": 110
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-5",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-16-12",
+   "venue_name": "児島",
+   "race": 12,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "4-1-5",
+    "1-4-2"
+   ],
+   "actual": "4-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2510,
+   "exacta": [],
+   "exacta_payout": 380,
+   "tansho_payout": 290
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 890
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-4-5",
+    "1-2-5"
+   ],
+   "key": "20261028-15-01",
+   "venue_name": "丸亀",
+   "race": 1,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "1-2-5"
+   ],
+   "actual": "1-4-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 1620,
+   "exacta": [],
+   "exacta_payout": 260,
+   "tansho_payout": 120
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 230
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 350
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-4",
+    "1-2-3",
+    "2-3-4"
+   ],
+   "key": "20261028-15-02",
+   "venue_name": "丸亀",
+   "race": 2,
+   "tier": "B",
+   "pick": 2,
+   "trifecta": [
+    "2-1-4",
+    "1-2-4",
+    "2-4-1"
+   ],
+   "actual": "2-4-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 230,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1330,
+   "exacta": [],
+   "exacta_payout": 500,
+   "tansho_payout": 230
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 570
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 180
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-5",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-15-03",
+   "venue_name": "丸亀",
+   "race": 3,
+   "tier": "C",
+   "pick": 2,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "2-1-5"
+   ],
+   "actual": "2-4-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 570,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3030,
+   "exacta": [],
+   "exacta_payout": 1540,
+   "tansho_payout": 570
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 5,
+   "trio": [
+    "4-5-6",
+    "1-5-6",
+    "1-2-5"
+   ],
+   "key": "20261028-15-04",
+   "venue_name": "丸亀",
+   "race": 4,
+   "tier": "C",
+   "pick": 5,
+   "trifecta": [
+    "5-4-6",
+    "5-1-6",
+    "5-6-4"
+   ],
+   "actual": "1-5-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 190,
+   "lane1_won": true,
+   "trifecta_payout": 6070,
+   "exacta": [],
+   "exacta_payout": 820,
+   "tansho_payout": 190
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 5,
+   "trio": [
+    "2-3-5",
+    "3-4-5",
+    "2-4-5"
+   ],
+   "key": "20261028-15-05",
+   "venue_name": "丸亀",
+   "race": 5,
+   "tier": "C",
+   "pick": 5,
+   "trifecta": [
+    "5-2-3",
+    "3-2-5",
+    "3-5-2"
+   ],
+   "actual": "2-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2420,
+   "exacta": [],
+   "exacta_payout": 700,
+   "tansho_payout": 150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 330
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-5"
+   ],
+   "key": "20261028-15-06",
+   "venue_name": "丸亀",
+   "race": 6,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-3-4"
+   ],
+   "actual": "3-4-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4450,
+   "exacta": [],
+   "exacta_payout": 1870,
+   "tansho_payout": 410
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 460
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "3-4-5",
+    "1-3-5",
+    "1-3-4"
+   ],
+   "key": "20261028-15-07",
+   "venue_name": "丸亀",
+   "race": 7,
+   "tier": "B",
+   "pick": 3,
+   "trifecta": [
+    "3-4-5",
+    "3-1-5",
+    "3-1-4"
+   ],
+   "actual": "5-3-4",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5600,
+   "exacta": [],
+   "exacta_payout": 2020,
+   "tansho_payout": 410
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 200
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "2-3-4"
+   ],
+   "key": "20261028-15-08",
+   "venue_name": "丸亀",
+   "race": 8,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "2-1-3",
+    "1-2-4"
+   ],
+   "actual": "3-2-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2860,
+   "exacta": [],
+   "exacta_payout": 1460,
+   "tansho_payout": 540
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 210
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 740
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 270
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-15-09",
+   "venue_name": "丸亀",
+   "race": 9,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-2-6",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 210,
+   "pay_tri": 740,
+   "base_pay": 210,
+   "lane1_won": true,
+   "trifecta_payout": 740,
+   "exacta": [],
+   "exacta_payout": 310,
+   "tansho_payout": 210
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 630
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 290
+    }
+   },
+   "star": true,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-3-5"
+   ],
+   "key": "20261028-15-10",
+   "venue_name": "丸亀",
+   "race": 10,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 630,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 630,
+   "exacta": [],
+   "exacta_payout": 260,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-6",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-15-11",
+   "venue_name": "丸亀",
+   "race": 11,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-6",
+    "1-3-2",
+    "1-2-3"
+   ],
+   "actual": "1-4-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 13740,
+   "exacta": [],
+   "exacta_payout": 2390,
+   "tansho_payout": 120
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-15-12",
+   "venue_name": "丸亀",
+   "race": 12,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-2"
+   ],
+   "actual": "1-4-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 2090,
+   "exacta": [],
+   "exacta_payout": 650,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "1-2-5"
+   ],
+   "key": "20261028-13-01",
+   "venue_name": "尼崎",
+   "race": 1,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-3-5"
+   ],
+   "actual": "2-3-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6390,
+   "exacta": [],
+   "exacta_payout": 1140,
+   "tansho_payout": 350
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 180
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 600
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 220
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-13-02",
+   "venue_name": "尼崎",
+   "race": 2,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-3-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 180,
+   "pay_tri": 600,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 600,
+   "exacta": [],
+   "exacta_payout": 300,
+   "tansho_payout": 180
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-2-4"
+   ],
+   "key": "20261028-13-03",
+   "venue_name": "尼崎",
+   "race": 3,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "actual": "1-5-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 150,
+   "pay_tri": 0,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 1900,
+   "exacta": [],
+   "exacta_payout": 610,
+   "tansho_payout": 150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-5",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "key": "20261028-13-04",
+   "venue_name": "尼崎",
+   "race": 4,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-5",
+    "1-2-5",
+    "1-5-3"
+   ],
+   "actual": "1-6-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 26550,
+   "exacta": [],
+   "exacta_payout": 5370,
+   "tansho_payout": 140
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-5"
+   ],
+   "key": "20261028-13-05",
+   "venue_name": "尼崎",
+   "race": 5,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-2"
+   ],
+   "actual": "2-5-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 13240,
+   "exacta": [],
+   "exacta_payout": 5380,
+   "tansho_payout": 500
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-4-5",
+    "1-2-3"
+   ],
+   "key": "20261028-13-06",
+   "venue_name": "尼崎",
+   "race": 6,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-2",
+    "1-2-3"
+   ],
+   "actual": "1-4-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1680,
+   "exacta": [],
+   "exacta_payout": 270,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 1780
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-13-07",
+   "venue_name": "尼崎",
+   "race": 7,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "2-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5260,
+   "exacta": [],
+   "exacta_payout": 830,
+   "tansho_payout": 350
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "1-2-5"
+   ],
+   "key": "20261028-13-08",
+   "venue_name": "尼崎",
+   "race": 8,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-3-5"
+   ],
+   "actual": "5-4-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 39330,
+   "exacta": [],
+   "exacta_payout": 9970,
+   "tansho_payout": 1590
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 170
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 1360
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-13-09",
+   "venue_name": "尼崎",
+   "race": 9,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "2-1-3"
+   ],
+   "actual": "1-2-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 170,
+   "pay_tri": 0,
+   "base_pay": 170,
+   "lane1_won": true,
+   "trifecta_payout": 4230,
+   "exacta": [],
+   "exacta_payout": 420,
+   "tansho_payout": 170
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 780
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 380
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "key": "20261028-13-10",
+   "venue_name": "尼崎",
+   "race": 10,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 120,
+   "pay_tri": 780,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 780,
+   "exacta": [],
+   "exacta_payout": 300,
+   "tansho_payout": 120
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "1-2-5"
+   ],
+   "key": "20261028-13-11",
+   "venue_name": "尼崎",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-5",
+    "1-2-5"
+   ],
+   "actual": "3-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 11840,
+   "exacta": [],
+   "exacta_payout": 3120,
+   "tansho_payout": 2080
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-13-12",
+   "venue_name": "尼崎",
+   "race": 12,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "actual": "1-3-5",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 940,
+   "exacta": [],
+   "exacta_payout": 310,
+   "tansho_payout": 130
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-5",
+    "1-2-4",
+    "1-4-5"
+   ],
+   "key": "20261028-10-01",
+   "venue_name": "三国",
+   "race": 1,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-2-4",
+    "1-5-2"
+   ],
+   "actual": "1-5-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 2370,
+   "exacta": [],
+   "exacta_payout": 370,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 840
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 260
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-5",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-10-02",
+   "venue_name": "三国",
+   "race": 2,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 150,
+   "pay_tri": 840,
+   "base_pay": 150,
+   "lane1_won": true,
+   "trifecta_payout": 840,
+   "exacta": [],
+   "exacta_payout": 390,
+   "tansho_payout": 150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-5"
+   ],
+   "key": "20261028-10-03",
+   "venue_name": "三国",
+   "race": 3,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "2-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4880,
+   "exacta": [],
+   "exacta_payout": 1230,
+   "tansho_payout": 1500
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 220
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 450
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-6",
+    "1-4-5",
+    "1-3-4"
+   ],
+   "key": "20261028-10-04",
+   "venue_name": "三国",
+   "race": 4,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-4-6",
+    "1-6-4",
+    "1-4-5"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 220,
+   "pay_tri": 0,
+   "base_pay": 220,
+   "lane1_won": true,
+   "trifecta_payout": 6390,
+   "exacta": [],
+   "exacta_payout": 1280,
+   "tansho_payout": 220
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 4,
+   "trio": [
+    "4-5-6",
+    "1-2-4",
+    "2-4-5"
+   ],
+   "key": "20261028-10-05",
+   "venue_name": "三国",
+   "race": 5,
+   "tier": "C",
+   "pick": 4,
+   "trifecta": [
+    "4-5-6",
+    "4-2-6",
+    "1-2-4"
+   ],
+   "actual": "2-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5260,
+   "exacta": [],
+   "exacta_payout": 1080,
+   "tansho_payout": 390
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-5",
+    "1-3-5",
+    "1-2-3"
+   ],
+   "key": "20261028-10-06",
+   "venue_name": "三国",
+   "race": 6,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-5-2",
+    "1-3-5"
+   ],
+   "actual": "3-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 22680,
+   "exacta": [],
+   "exacta_payout": 5080,
+   "tansho_payout": 1490
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 380
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 1200
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 360
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-3-4",
+    "1-4-6"
+   ],
+   "key": "20261028-10-07",
+   "venue_name": "三国",
+   "race": 7,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-6",
+    "1-2-4"
+   ],
+   "actual": "1-2-4",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 380,
+   "pay_tri": 1200,
+   "base_pay": 380,
+   "lane1_won": true,
+   "trifecta_payout": 1200,
+   "exacta": [],
+   "exacta_payout": 640,
+   "tansho_payout": 380
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 190
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-10-08",
+   "venue_name": "三国",
+   "race": 8,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 190,
+   "pay_tri": 0,
+   "base_pay": 190,
+   "lane1_won": true,
+   "trifecta_payout": 1790,
+   "exacta": [],
+   "exacta_payout": 790,
+   "tansho_payout": 190
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-2-6"
+   ],
+   "key": "20261028-10-09",
+   "venue_name": "三国",
+   "race": 9,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "1-2-6"
+   ],
+   "actual": "1-2-4",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 110,
+   "lane1_won": true,
+   "trifecta_payout": 970,
+   "exacta": [],
+   "exacta_payout": 230,
+   "tansho_payout": 110
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "key": "20261028-10-10",
+   "venue_name": "三国",
+   "race": 10,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "3-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5230,
+   "exacta": [],
+   "exacta_payout": 1610,
+   "tansho_payout": 560
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 390
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "key": "20261028-10-11",
+   "venue_name": "三国",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "3-2-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 28300,
+   "exacta": [],
+   "exacta_payout": 9290,
+   "tansho_payout": 3510
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 4,
+   "trio": [
+    "2-3-4",
+    "2-4-5",
+    "3-4-5"
+   ],
+   "key": "20261028-10-12",
+   "venue_name": "三国",
+   "race": 12,
+   "tier": "C",
+   "pick": 3,
+   "trifecta": [
+    "2-3-4",
+    "3-2-4",
+    "3-4-5"
+   ],
+   "actual": "2-3-5",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5310,
+   "exacta": [],
+   "exacta_payout": 1170,
+   "tansho_payout": 450
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 460
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-09-01",
+   "venue_name": "津",
+   "race": 1,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-2"
+   ],
+   "actual": "2-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2200,
+   "exacta": [],
+   "exacta_payout": 710,
+   "tansho_payout": 150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "2-3-4"
+   ],
+   "key": "20261028-09-02",
+   "venue_name": "津",
+   "race": 2,
+   "tier": "C",
+   "pick": 2,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "2-1-3"
+   ],
+   "actual": "1-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 400,
+   "lane1_won": true,
+   "trifecta_payout": 7330,
+   "exacta": [],
+   "exacta_payout": 1380,
+   "tansho_payout": 400
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 540
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-3",
+    "2-4-5"
+   ],
+   "key": "20261028-09-03",
+   "venue_name": "津",
+   "race": 3,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-3",
+    "1-4-2"
+   ],
+   "actual": "4-2-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3170,
+   "exacta": [],
+   "exacta_payout": 1470,
+   "tansho_payout": 1050
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 270
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-2-4",
+    "1-4-6"
+   ],
+   "key": "20261028-09-04",
+   "venue_name": "津",
+   "race": 4,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-4-3",
+    "1-3-4",
+    "1-4-2"
+   ],
+   "actual": "4-3-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3470,
+   "exacta": [],
+   "exacta_payout": 1240,
+   "tansho_payout": 410
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 1290
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 260
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 550
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-09-05",
+   "venue_name": "津",
+   "race": 5,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "actual": "1-2-5",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 1290,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1290,
+   "exacta": [],
+   "exacta_payout": 350,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 730
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 220
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "2-4-6",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-09-06",
+   "venue_name": "津",
+   "race": 6,
+   "tier": "A",
+   "pick": 2,
+   "trifecta": [
+    "2-4-6",
+    "2-3-6",
+    "2-1-4"
+   ],
+   "actual": "2-4-6",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 100,
+   "pay_tri": 730,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 730,
+   "exacta": [],
+   "exacta_payout": 500,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 170
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-4-5",
+    "1-3-5"
+   ],
+   "key": "20261028-09-07",
+   "venue_name": "津",
+   "race": 7,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "1-4-5"
+   ],
+   "actual": "1-2-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 170,
+   "pay_tri": 0,
+   "base_pay": 170,
+   "lane1_won": true,
+   "trifecta_payout": 1340,
+   "exacta": [],
+   "exacta_payout": 370,
+   "tansho_payout": 170
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 470
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 210
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-09-08",
+   "venue_name": "津",
+   "race": 8,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 130,
+   "pay_tri": 470,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 470,
+   "exacta": [],
+   "exacta_payout": 290,
+   "tansho_payout": 130
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-09-09",
+   "venue_name": "津",
+   "race": 9,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-2",
+    "1-2-3"
+   ],
+   "actual": "1-3-6",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 2690,
+   "exacta": [],
+   "exacta_payout": 210,
+   "tansho_payout": 120
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-09-10",
+   "venue_name": "津",
+   "race": 10,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "2-1-3"
+   ],
+   "actual": "2-1-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 5390,
+   "exacta": [],
+   "exacta_payout": 570,
+   "tansho_payout": 750
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 520
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-5",
+    "1-4-5"
+   ],
+   "key": "20261028-09-11",
+   "venue_name": "津",
+   "race": 11,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "actual": "4-2-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 9190,
+   "exacta": [],
+   "exacta_payout": 2780,
+   "tansho_payout": 460
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 430
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-3-4"
+   ],
+   "key": "20261028-09-12",
+   "venue_name": "津",
+   "race": 12,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "1-4-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1530,
+   "exacta": [],
+   "exacta_payout": 700,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": true,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-5",
+    "1-3-5"
+   ],
+   "key": "20261028-08-01",
+   "venue_name": "常滑",
+   "race": 1,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-5"
+   ],
+   "actual": "1-5-6",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 1890,
+   "exacta": [],
+   "exacta_payout": 450,
+   "tansho_payout": 130
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 5,
+   "trio": [
+    "1-3-5",
+    "3-4-5",
+    "1-4-5"
+   ],
+   "key": "20261028-08-02",
+   "venue_name": "常滑",
+   "race": 2,
+   "tier": "C",
+   "pick": 5,
+   "trifecta": [
+    "3-5-4",
+    "1-3-5",
+    "1-5-3"
+   ],
+   "actual": "2-4-5",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 13680,
+   "exacta": [],
+   "exacta_payout": 3830,
+   "tansho_payout": 1480
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "1-3-4",
+    "3-4-5",
+    "2-3-4"
+   ],
+   "key": "20261028-08-03",
+   "venue_name": "常滑",
+   "race": 3,
+   "tier": "C",
+   "pick": 3,
+   "trifecta": [
+    "1-3-4",
+    "3-4-5",
+    "4-3-5"
+   ],
+   "actual": "5-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 14070,
+   "exacta": [],
+   "exacta_payout": 6890,
+   "tansho_payout": 4820
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-5",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "key": "20261028-08-04",
+   "venue_name": "常滑",
+   "race": 4,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "2-1-5",
+    "1-2-5",
+    "1-5-2"
+   ],
+   "actual": "4-3-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 30960,
+   "exacta": [],
+   "exacta_payout": 6050,
+   "tansho_payout": 970
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 210
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 200
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "1-3-6"
+   ],
+   "key": "20261028-08-05",
+   "venue_name": "常滑",
+   "race": 5,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-5",
+    "1-2-3"
+   ],
+   "actual": "1-6-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 210,
+   "pay_tri": 0,
+   "base_pay": 210,
+   "lane1_won": true,
+   "trifecta_payout": 24160,
+   "exacta": [],
+   "exacta_payout": 3190,
+   "tansho_payout": 210
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-4",
+    "1-3-5"
+   ],
+   "key": "20261028-08-06",
+   "venue_name": "常滑",
+   "race": 6,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-4",
+    "1-2-3"
+   ],
+   "actual": "1-4-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 120,
+   "pay_tri": 0,
+   "base_pay": 120,
+   "lane1_won": true,
+   "trifecta_payout": 1140,
+   "exacta": [],
+   "exacta_payout": 440,
+   "tansho_payout": 120
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 840
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-5",
+    "2-3-5",
+    "1-2-3"
+   ],
+   "key": "20261028-08-07",
+   "venue_name": "常滑",
+   "race": 7,
+   "tier": "C",
+   "pick": 5,
+   "trifecta": [
+    "1-2-5",
+    "2-1-5",
+    "1-5-2"
+   ],
+   "actual": "2-1-3",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3250,
+   "exacta": [],
+   "exacta_payout": 950,
+   "tansho_payout": 280
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "1-3-4"
+   ],
+   "key": "20261028-08-08",
+   "venue_name": "常滑",
+   "race": 8,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-2-3",
+    "3-1-2"
+   ],
+   "actual": "3-4-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3620,
+   "exacta": [],
+   "exacta_payout": 740,
+   "tansho_payout": 140
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-4",
+    "2-3-4",
+    "2-4-5"
+   ],
+   "key": "20261028-08-09",
+   "venue_name": "常滑",
+   "race": 9,
+   "tier": "C",
+   "pick": 2,
+   "trifecta": [
+    "2-4-3",
+    "4-2-5",
+    "2-4-5"
+   ],
+   "actual": "5-3-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 10420,
+   "exacta": [],
+   "exacta_payout": 5910,
+   "tansho_payout": 860
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 210
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 430
+    }
+   },
+   "star": false,
+   "fukusho": 4,
+   "trio": [
+    "4-5-6",
+    "1-4-5",
+    "3-4-5"
+   ],
+   "key": "20261028-08-10",
+   "venue_name": "常滑",
+   "race": 10,
+   "tier": "B",
+   "pick": 4,
+   "trifecta": [
+    "4-5-6",
+    "4-5-1",
+    "4-5-3"
+   ],
+   "actual": "4-6-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 210,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1750,
+   "exacta": [],
+   "exacta_payout": 840,
+   "tansho_payout": 210
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": true,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-4-5",
+    "1-2-5"
+   ],
+   "key": "20261028-08-11",
+   "venue_name": "常滑",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-4-5",
+    "1-2-5"
+   ],
+   "actual": "1-3-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 100,
+   "lane1_won": true,
+   "trifecta_payout": 1090,
+   "exacta": [],
+   "exacta_payout": 430,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "key": "20261028-08-12",
+   "venue_name": "常滑",
+   "race": 12,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-5"
+   ],
+   "actual": "5-4-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 12840,
+   "exacta": [],
+   "exacta_payout": 4820,
+   "tansho_payout": 1610
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 240
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 1840
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 310
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "1-2-3",
+    "1-3-5",
+    "2-3-5"
+   ],
+   "key": "20261028-07-01",
+   "venue_name": "蒲郡",
+   "race": 1,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-3-2",
+    "1-3-5",
+    "1-2-3"
+   ],
+   "actual": "1-2-3",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 240,
+   "pay_tri": 1840,
+   "base_pay": 240,
+   "lane1_won": true,
+   "trifecta_payout": 1840,
+   "exacta": [],
+   "exacta_payout": 930,
+   "tansho_payout": 240
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 610
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-07-02",
+   "venue_name": "蒲郡",
+   "race": 2,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "2-1-3"
+   ],
+   "actual": "2-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2450,
+   "exacta": [],
+   "exacta_payout": 660,
+   "tansho_payout": 390
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 370
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "2-3-4"
+   ],
+   "key": "20261028-07-03",
+   "venue_name": "蒲郡",
+   "race": 3,
+   "tier": "A",
+   "pick": 2,
+   "trifecta": [
+    "2-1-3",
+    "1-2-3",
+    "2-3-1"
+   ],
+   "actual": "2-1-4",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 160,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 920,
+   "exacta": [],
+   "exacta_payout": 320,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 6,
+   "trio": [
+    "1-4-6",
+    "3-4-6",
+    "2-4-6"
+   ],
+   "key": "20261028-07-04",
+   "venue_name": "蒲郡",
+   "race": 4,
+   "tier": "C",
+   "pick": 6,
+   "trifecta": [
+    "6-4-3",
+    "6-4-1",
+    "4-6-1"
+   ],
+   "actual": "6-4-5",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 110,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1690,
+   "exacta": [],
+   "exacta_payout": 340,
+   "tansho_payout": 110
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 280
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-6",
+    "1-3-4",
+    "1-2-3"
+   ],
+   "key": "20261028-07-05",
+   "venue_name": "蒲郡",
+   "race": 5,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-6-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 280,
+   "pay_tri": 0,
+   "base_pay": 280,
+   "lane1_won": true,
+   "trifecta_payout": 5540,
+   "exacta": [],
+   "exacta_payout": 2090,
+   "tansho_payout": 280
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 450
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "2-3-5",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "key": "20261028-07-06",
+   "venue_name": "蒲郡",
+   "race": 6,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-2-5",
+    "5-2-3"
+   ],
+   "actual": "2-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1620,
+   "exacta": [],
+   "exacta_payout": 690,
+   "tansho_payout": 150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 240
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 340
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-3-5",
+    "3-4-5"
+   ],
+   "key": "20261028-07-07",
+   "venue_name": "蒲郡",
+   "race": 7,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "3-1-4"
+   ],
+   "actual": "1-5-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 240,
+   "pay_tri": 0,
+   "base_pay": 240,
+   "lane1_won": true,
+   "trifecta_payout": 1590,
+   "exacta": [],
+   "exacta_payout": 1000,
+   "tansho_payout": 240
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 250
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-6",
+    "1-3-4",
+    "1-4-5"
+   ],
+   "key": "20261028-07-08",
+   "venue_name": "蒲郡",
+   "race": 8,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-4-6",
+    "1-4-3",
+    "1-3-4"
+   ],
+   "actual": "1-6-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 160,
+   "pay_tri": 0,
+   "base_pay": 160,
+   "lane1_won": true,
+   "trifecta_payout": 5710,
+   "exacta": [],
+   "exacta_payout": 910,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 140
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-6",
+    "1-2-4",
+    "1-2-3"
+   ],
+   "key": "20261028-07-09",
+   "venue_name": "蒲郡",
+   "race": 9,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-4",
+    "2-1-6"
+   ],
+   "actual": "2-6-1",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 990,
+   "exacta": [],
+   "exacta_payout": 550,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-5",
+    "1-4-5"
+   ],
+   "key": "20261028-07-10",
+   "venue_name": "蒲郡",
+   "race": 10,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "1-4-2"
+   ],
+   "actual": "4-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2720,
+   "exacta": [],
+   "exacta_payout": 530,
+   "tansho_payout": 200
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "key": "20261028-07-11",
+   "venue_name": "蒲郡",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-6",
+    "1-2-3",
+    "1-2-4"
+   ],
+   "actual": "1-6-3",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 140,
+   "pay_tri": 0,
+   "base_pay": 140,
+   "lane1_won": true,
+   "trifecta_payout": 5750,
+   "exacta": [],
+   "exacta_payout": 650,
+   "tansho_payout": 140
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 370
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-5",
+    "1-4-5"
+   ],
+   "key": "20261028-07-12",
+   "venue_name": "蒲郡",
+   "race": 12,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-5",
+    "1-2-3"
+   ],
+   "actual": "1-4-2",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 1080,
+   "exacta": [],
+   "exacta_payout": 340,
+   "tansho_payout": 130
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-6",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-03-01",
+   "venue_name": "江戸川",
+   "race": 1,
+   "tier": "B",
+   "pick": 1,
+   "trifecta": [
+    "1-3-6",
+    "1-3-2",
+    "1-2-3"
+   ],
+   "actual": "6-1-4",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 4190,
+   "exacta": [],
+   "exacta_payout": 1160,
+   "tansho_payout": 310
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 1970
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 500
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "3-5-6",
+    "1-3-6",
+    "1-3-5"
+   ],
+   "key": "20261028-03-02",
+   "venue_name": "江戸川",
+   "race": 2,
+   "tier": "C",
+   "pick": 3,
+   "trifecta": [
+    "3-5-6",
+    "3-6-5",
+    "1-3-6"
+   ],
+   "actual": "3-6-5",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 150,
+   "pay_tri": 1970,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1970,
+   "exacta": [],
+   "exacta_payout": 810,
+   "tansho_payout": 150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-5",
+    "1-3-4",
+    "1-2-4"
+   ],
+   "key": "20261028-03-03",
+   "venue_name": "江戸川",
+   "race": 3,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-4-5",
+    "1-5-4",
+    "4-5-1"
+   ],
+   "actual": "3-1-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 18720,
+   "exacta": [],
+   "exacta_payout": 2180,
+   "tansho_payout": 960
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 180
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "1-3-4",
+    "3-4-6",
+    "1-3-6"
+   ],
+   "key": "20261028-03-04",
+   "venue_name": "江戸川",
+   "race": 4,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "3-4-6",
+    "1-3-6"
+   ],
+   "actual": "1-2-4",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 180,
+   "pay_tri": 0,
+   "base_pay": 180,
+   "lane1_won": true,
+   "trifecta_payout": 6020,
+   "exacta": [],
+   "exacta_payout": 1610,
+   "tansho_payout": 180
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 350
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "2-3-5",
+    "1-2-3",
+    "2-3-6"
+   ],
+   "key": "20261028-03-05",
+   "venue_name": "江戸川",
+   "race": 5,
+   "tier": "B",
+   "pick": 2,
+   "trifecta": [
+    "2-3-5",
+    "2-3-6",
+    "3-2-5"
+   ],
+   "actual": "3-5-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3080,
+   "exacta": [],
+   "exacta_payout": 1520,
+   "tansho_payout": 720
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 350
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-3-4",
+    "1-3-5",
+    "1-2-3"
+   ],
+   "key": "20261028-01-01",
+   "venue_name": "桐生",
+   "race": 1,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "1-3-5",
+    "1-3-2"
+   ],
+   "actual": "4-1-3",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 3340,
+   "exacta": [],
+   "exacta_payout": 1170,
+   "tansho_payout": 390
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 160
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 150
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-4-6",
+    "1-2-4",
+    "1-4-5"
+   ],
+   "key": "20261028-01-02",
+   "venue_name": "桐生",
+   "race": 2,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-4-6",
+    "1-4-2",
+    "1-2-4"
+   ],
+   "actual": "1-3-2",
+   "verdict": "1着的中",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 160,
+   "pay_tri": 0,
+   "base_pay": 160,
+   "lane1_won": true,
+   "trifecta_payout": 5330,
+   "exacta": [],
+   "exacta_payout": 1040,
+   "tansho_payout": 160
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 210
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 4,
+   "trio": [
+    "1-3-4",
+    "3-4-6",
+    "3-4-5"
+   ],
+   "key": "20261028-01-03",
+   "venue_name": "桐生",
+   "race": 3,
+   "tier": "C",
+   "pick": 4,
+   "trifecta": [
+    "1-3-4",
+    "1-4-3",
+    "3-1-4"
+   ],
+   "actual": "2-4-1",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 24820,
+   "exacta": [],
+   "exacta_payout": 8430,
+   "tansho_payout": 2380
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 290
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "1-2-3",
+    "2-3-5",
+    "2-3-4"
+   ],
+   "key": "20261028-01-04",
+   "venue_name": "桐生",
+   "race": 4,
+   "tier": "A",
+   "pick": 2,
+   "trifecta": [
+    "2-3-5",
+    "2-3-4",
+    "2-1-3"
+   ],
+   "actual": "1-3-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 490,
+   "lane1_won": true,
+   "trifecta_payout": 3760,
+   "exacta": [],
+   "exacta_payout": 1970,
+   "tansho_payout": 490
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "2-4-5",
+    "1-2-5",
+    "2-3-5"
+   ],
+   "key": "20261028-01-05",
+   "venue_name": "桐生",
+   "race": 5,
+   "tier": "S",
+   "pick": 2,
+   "trifecta": [
+    "2-4-5",
+    "2-5-4",
+    "2-1-5"
+   ],
+   "actual": "2-4-3",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 100,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 1960,
+   "exacta": [],
+   "exacta_payout": 420,
+   "tansho_payout": 100
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 110
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-4",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-01-06",
+   "venue_name": "桐生",
+   "race": 6,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-4",
+    "1-2-3",
+    "1-4-2"
+   ],
+   "actual": "4-1-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 6030,
+   "exacta": [],
+   "exacta_payout": 2080,
+   "tansho_payout": 1110
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 170
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 880
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 140
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 290
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "1-3-4",
+    "1-2-3",
+    "1-3-5"
+   ],
+   "key": "20261028-01-07",
+   "venue_name": "桐生",
+   "race": 7,
+   "tier": "C",
+   "pick": 1,
+   "trifecta": [
+    "1-3-4",
+    "3-1-4",
+    "1-3-2"
+   ],
+   "actual": "1-3-2",
+   "verdict": "的中",
+   "win_hit": true,
+   "tri_hit": true,
+   "pay_win": 170,
+   "pay_tri": 880,
+   "base_pay": 170,
+   "lane1_won": true,
+   "trifecta_payout": 880,
+   "exacta": [],
+   "exacta_payout": 280,
+   "tansho_payout": 170
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 120
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 260
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-5",
+    "1-4-5",
+    "1-2-4"
+   ],
+   "key": "20261028-01-08",
+   "venue_name": "桐生",
+   "race": 8,
+   "tier": "A",
+   "pick": 1,
+   "trifecta": [
+    "1-2-5",
+    "1-5-2",
+    "1-2-4"
+   ],
+   "actual": "5-1-2",
+   "verdict": "惜しい",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 2180,
+   "exacta": [],
+   "exacta_payout": 1170,
+   "tansho_payout": 590
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 2,
+   "trio": [
+    "2-4-5",
+    "1-2-4",
+    "2-3-4"
+   ],
+   "key": "20261028-01-09",
+   "venue_name": "桐生",
+   "race": 9,
+   "tier": "C",
+   "pick": 4,
+   "trifecta": [
+    "4-5-2",
+    "4-2-5",
+    "2-4-5"
+   ],
+   "actual": "1-3-6",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 320,
+   "lane1_won": true,
+   "trifecta_payout": 24110,
+   "exacta": [],
+   "exacta_payout": 2430,
+   "tansho_payout": 320
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 0
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 0
+    }
+   },
+   "star": false,
+   "fukusho": 3,
+   "trio": [
+    "1-3-5",
+    "1-2-3",
+    "1-3-4"
+   ],
+   "key": "20261028-01-10",
+   "venue_name": "桐生",
+   "race": 10,
+   "tier": "B",
+   "pick": 3,
+   "trifecta": [
+    "3-1-5",
+    "1-3-5",
+    "1-3-2"
+   ],
+   "actual": "4-1-2",
+   "verdict": "外れ",
+   "win_hit": false,
+   "tri_hit": false,
+   "pay_win": 0,
+   "pay_tri": 0,
+   "base_pay": 0,
+   "lane1_won": false,
+   "trifecta_payout": 20280,
+   "exacta": [],
+   "exacta_payout": 4150,
+   "tansho_payout": 1150
+  },
+  {
+   "bets": {
+    "tansho": {
+     "stake": 100,
+     "return": 130
+    },
+    "trifecta3": {
+     "stake": 300,
+     "return": 0
+    },
+    "fukusho": {
+     "stake": 100,
+     "return": 100
+    },
+    "trio3": {
+     "stake": 300,
+     "return": 340
+    }
+   },
+   "star": false,
+   "fukusho": 1,
+   "trio": [
+    "1-2-3",
+    "1-2-4",
+    "1-2-6"
+   ],
+   "key": "20261028-01-11",
+   "venue_name": "桐生",
+   "race": 11,
+   "tier": "S",
+   "pick": 1,
+   "trifecta": [
+    "1-2-3",
+    "1-3-2",
+    "1-2-4"
+   ],
+   "actual": "1-2-6",
+   "verdict": "惜しい",
+   "win_hit": true,
+   "tri_hit": false,
+   "pay_win": 130,
+   "pay_tri": 0,
+   "base_pay": 130,
+   "lane1_won": true,
+   "trifecta_payout": 740,
+   "exacta": [],
+   "exacta_payout": 210,
+   "tansho_payout": 130
+  }
+ ],
+ "ana": [
+  {
+   "key": "20261028-07-04",
+   "venue_name": "蒲郡",
+   "race": 4,
+   "combos": [
+    "4-6-1",
+    "4-6-5",
+    "4-6-3"
+   ],
+   "actual": "6-4-5",
+   "trifecta_payout": 1690,
+   "hit": false,
+   "pay": 0,
+   "stake": 300,
+   "manshu": false
+  },
+  {
+   "key": "20261028-15-05",
+   "venue_name": "丸亀",
+   "race": 5,
+   "combos": [
+    "3-2-5",
+    "3-5-2",
+    "3-5-4"
+   ],
+   "actual": "2-1-5",
+   "trifecta_payout": 2420,
+   "hit": false,
+   "pay": 0,
+   "stake": 300,
+   "manshu": false
+  }
+ ]
+}
