@@ -112,6 +112,8 @@ jobs:
           cp kyotei/site/index.html /tmp/kyotei_index.html
           mkdir -p /tmp/kyotei_html && cp kyotei/site/terms.html kyotei/site/join.html /tmp/kyotei_html/ 2>/dev/null || true   # 有料版の利用規約・会員のメール登録
           mkdir -p /tmp/kyotei_img && cp kyotei/site/*.jpg /tmp/kyotei_img/ 2>/dev/null || true   # 見出し写真
+          # 検索の入口のページ(場ごと・日付ごと・レースごと)と sitemap。予想と答え合わせのファイルから毎回作り直す。失敗しても本体のページは出す
+          rm -rf /tmp/kyotei_pages && (python3 kyotei/seo_pages.py && cp -r kyotei/site_pages /tmp/kyotei_pages) || echo "seo_pages skipped"
           git fetch origin gh-pages
           git worktree add /tmp/pages origin/gh-pages
           cd /tmp/pages
@@ -120,7 +122,9 @@ jobs:
           cp /tmp/kyotei_index.html kyotei/index.html
           cp /tmp/kyotei_img/*.jpg kyotei/ 2>/dev/null || true
           cp /tmp/kyotei_html/*.html kyotei/ 2>/dev/null || true
-          git add kyotei/*.html kyotei/*.jpg 2>/dev/null || git add kyotei/index.html
+          if [ -d /tmp/kyotei_pages ]; then cp -r /tmp/kyotei_pages/. kyotei/; fi   # 上書きだけ(消さない)
+          grep -q "kyotei/sitemap.xml" robots.txt 2>/dev/null || printf "\nSitemap: https://zeroichiworks.net/kyotei/sitemap.xml\n" >> robots.txt
+          git add -A kyotei robots.txt 2>/dev/null || git add kyotei/index.html
           if git commit -m "kyotei page: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
             for i in 1 2 3; do git pull --rebase -X theirs origin gh-pages && git push origin HEAD:gh-pages && break; git rebase --abort 2>/dev/null; sleep 5; done
           fi

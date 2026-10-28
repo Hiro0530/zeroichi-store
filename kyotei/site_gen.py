@@ -28,6 +28,10 @@ HELP_URL = "https://www.gaprsc.or.jp/"
 VENUES = ["桐生", "戸田", "江戸川", "平和島", "多摩川", "浜名湖", "蒲郡", "常滑", "津", "三国", "びわこ", "住之江",
           "尼崎", "鳴門", "丸亀", "児島", "宮島", "徳山", "下関", "若松", "芦屋", "福岡", "唐津", "大村"]
 VORDER = {n: i for i, n in enumerate(VENUES)}
+# 場ごとのページの住所(/kyotei/kiryu/ など。seo_pages.py と共通。変えると検索の入口が切れるので変えない)
+SLUGS = ["kiryu", "toda", "edogawa", "heiwajima", "tamagawa", "hamanako", "gamagori", "tokoname", "tsu", "mikuni", "biwako", "suminoe",
+         "amagasaki", "naruto", "marugame", "kojima", "miyajima", "tokuyama", "shimonoseki", "wakamatsu", "ashiya", "fukuoka", "karatsu", "omura"]
+SLUG = dict(zip(VENUES, SLUGS))
 WD = "月火水木金土日"
 MANSHU = 10000
 
@@ -228,6 +232,9 @@ footer p+p{margin-top:5px}
  #kotae,.recs,.calm,.how{max-width:760px}
  h2{font-size:26px}
 }
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;margin-top:10px}
+.vgrid a{display:block;text-align:center;border:1px solid var(--ink);padding:9px 4px;text-decoration:none;color:var(--ink);font-weight:700;font-size:15px}
+.vgrid a.off{border-color:var(--rule2);color:var(--sub);font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 """
 
@@ -300,6 +307,26 @@ def group(rows):
     for x in rows:
         g.setdefault(x["venue_name"], []).append(x)
     return dict(sorted(g.items(), key=lambda kv: vkey(kv[0])))
+
+
+def rlink(d: str, vn: str, n) -> str:
+    """レースごとのページ(seo_pages.py が作る /kyotei/{日付}/{場}/{R}r/)へのリンク"""
+    sl = SLUG.get(vn)
+    return f"<a href='{esc(d)}/{sl}/{int(n)}r/' style='color:inherit'>{int(n)}</a>" if sl else str(n)
+
+
+def venues_nav_html(p: dict | None) -> str:
+    """場ごとのページ(/kyotei/kiryu/ など)と過去の一覧への入口。今日開催の場を先に。"""
+    on = [v for v in VENUES if p and any(x["venue_name"] == v for x in p["races"])]
+    known = set()   # ページがある場(予想を出したことのある場)だけ
+    for f in (ROOT / "predictions").glob("*.json"):
+        known |= {x.get("venue_name") for x in json.loads(f.read_text(encoding="utf-8"))["races"]}
+    rest = [v for v in VENUES if v not in on and v in known]
+    a = "".join(f"<a href='{SLUG[v]}/'>{esc(v)}</a>" for v in on)
+    b = "".join(f"<a class=off href='{SLUG[v]}/'>{esc(v)}</a>" for v in rest)
+    return ("<section class=vnav aria-labelledby=h-vnav><h2 id=h-vnav>場ごとの予想と成績</h2>"
+            "<p class=cap>場の名前から、その場の今日の本命と展開の見立て、前回の答え合わせ、通算の成績へ。</p>"
+            f"<div class=vgrid>{a}{b}</div><p class=cap><a href='kako/'>過去の予想と結果(日付・場から探す)</a></p></section>")
 
 
 def tier_mark(t) -> str:
@@ -437,7 +464,7 @@ def today_html(p: dict) -> str:
         for x in xs:
             tri = "".join(f"<span>{esc(c)}</span>" for c, _ in x["trifecta"])
             note = "" if x.get("scored", True) else "<span class=closed style='display:block'>公開前に締切(採点外)</span>"
-            o.append(f"<tr data-close='{esc(x['close'])}' data-r='{x['race']}'><td class='t-race'><span class=n>{x['race']}</span></td>"
+            o.append(f"<tr data-close='{esc(x['close'])}' data-r='{x['race']}'><td class='t-race'><span class=n>{rlink(p['date'], vn, x['race'])}</span></td>"
                      f"<td class=t-time>{esc(hm(x['close']))}{note}</td><td class=mks>{marks(x['probs'])}</td>"
                      f"<td class='r pr'>{max(x['probs'])*100:.0f}<small>%</small>{tier_mark(x.get('tier'))}</td><td class=tri3>{tri}</td></tr>")
         o.append("</tbody></table></div></details>")
@@ -526,7 +553,7 @@ def results_html(r: dict, prev: dict | None = None) -> str:
             hit = bool(x.get("tri_hit"))
             pays = (f"<span class='pay{' hit' if hit else ''}'><span class={'man' if big else ''}>{int(pay):,}</span><small>円</small></span>" if pay else "—")
             tri = "".join(f"<span>{esc(c)}</span>" for c in x["trifecta"])
-            o.append(f"<tr{' class=hit' if hit else ''}><td class=t-race><span class=n>{x['race']}</span></td><td>{combo(x['actual'])}</td>"
+            o.append(f"<tr{' class=hit' if hit else ''}><td class=t-race><span class=n>{rlink(s['date'], vn, x['race'])}</span></td><td>{combo(x['actual'])}</td>"
                      f"<td class=tri3>{tri}</td><td>{verdict(x)}</td><td class=r>{pays}</td></tr>")
         o.append("</tbody></table></div></details>")
     o.append("</div></section>")
@@ -618,7 +645,7 @@ def build():
     h = ["<!doctype html><html lang=ja><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
          f"<title>{TITLE}</title><meta name=description content='{desc}'>"
          f"<meta property=og:title content='{TITLE}'><meta property=og:description content='{desc}'><meta property=og:type content=website>"
-         f"<meta property=og:url content='{PAGE_URL}'><meta name=twitter:card content=summary>"
+         f"<meta property=og:url content='{PAGE_URL}'><meta name=twitter:card content=summary><link rel=canonical href='{PAGE_URL}'>"
          "<meta name=theme-color content='#ffffff'>"
          f"{FONTS}<style>{CSS}{paid.CSS}</style></head><body>"]
     prev = load_pred(r["summary"]["date"]) if r else None
@@ -641,6 +668,7 @@ def build():
     h.append(today_html(p) if p else "")
     h.append(hits_html(r) if r else "")
     h.append("</div>")
+    h.append(venues_nav_html(p))
     h.append(paid.mail_box_html())
     if r:
         h.append(results_html(r, prev))

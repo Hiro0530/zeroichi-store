@@ -227,6 +227,12 @@ def make_predictions(d: date, model: dict) -> dict | None:
             x["star"] = True   # 今日の自信あり(ページ・Xと同じ決め方: ◎の1着率が高い順に5つ)
     except Exception as e:  # noqa
         print("extra picks skipped:", e)
+    try:   # ◎の根拠(モデルの各項の効き目。レースごとのページで言葉にする)。公開時に決めて書く
+        import why
+        for x, w in zip(preds, why.pick_reasons(model, np.array(Xs), np.array(Vs), ALLF, [x["pick"] - 1 for x in preds])):
+            x["why"] = w
+    except Exception as e:  # noqa  (根拠が作れなくても予想は公開する)
+        print("why skipped:", e)
     try:
         out["ana"] = ana_picks_today(d, preds, Ts)
     except Exception as e:  # noqa  (穴が作れなくても本命の予想は公開する)
