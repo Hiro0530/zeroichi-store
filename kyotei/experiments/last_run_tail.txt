@@ -1,3 +1,26 @@
-  morn_0: 144s
-fadj: model 252s
-fadj {"missed": false, "gap_confirm": {"mean": -0.0193, "lo": -0.0342, "hi": -0.0045, "n": 3777}}
+2024-04-20 156 races 156 results
+2024-04-19 132 races 115 results
+2024-04-18 144 races 144 results
+2024-04-17 156 races 156 results
+2024-04-16 156 races 156 results
+2024-04-15 132 races 132 results
+2024-04-14 144 races 144 results
+2024-04-13 120 races 120 results
+2024-04-12 108 races 108 results
+2024-04-11 108 races 108 results
+2024-04-10 120 races 120 results
+2024-04-09 132 races 104 results
+2024-04-08 144 races 144 results
+2024-04-07 168 races 168 results
+2024-04-06 168 races 168 results
+2024-04-05 156 races 156 results
+2024-04-04 144 races 144 results
+2024-04-03 144 races 144 results
+2024-04-02 144 races 144 results
+2024-04-01 132 races 128 results
+history: +20 days, missing 154 (files fetched this run: 40)
+amedas 2026-10-29T06:50:00+09:00: 24 venues
+predictions 2026-10-29: 120 races, scored 120
+cumulative {"days": 6, "graded_races": 937, "win_hits": 508, "tri_hits": 221, "near": 148, "stake_win": 93700, "return_win": 81060, "stake_tri": 281100, "return_tri": 208170, "base_hits": 498, "base_return": 86380, "win_rate": 0.5422, "base_win_rate": 0.5315, "tri_rate": 0.2359, "roi_win": 0.8651, "roi_tri": 0.7406, "roi_base": 0.9219, "ana": {"days": 2, "races": 4, "hits": 1, "stake": 1200, "return": 1230, "manshu_hits": 0, "manshu_races": 1, "roi": 1.025}, "by_bet": {"tansho": {"days": 3, "races": 434, "hits": 222, "stake": 43400, "return": 36030, "pnl": -7370, "roi": 0.8302}, "trifecta3": {"days": 3, "races": 434, "hits": 99, "stake": 130200, "return": 92640, "pnl": -37560, "roi": 0.7115}, "fukusho": {"days": 2, "races": 292, "hits": 206, "stake": 29200, "return": 25780, "pnl": -3420, "roi": 0.8829}, "trio3": {"days": 2, "races": 292, "hits": 143, "stake": 87600, "return": 60640, "pnl": -26960, "roi": 0.6922}}, "star_by_bet": {"tansho": {"days": 2, "races": 10, "hits": 10, "stake": 1000, "return": 1190, "pnl": 190, "roi": 1.19}, "trifecta3": {"days": 2, "races": 10, "hits": 6, "stake": 3000, "return": 3670, "pnl": 670, "roi": 1.2233}, "fukusho": {"days": 2, "races": 10, "hits": 10, "stake": 1000, "return": 1010, "pnl": 10, "roi": 1.01}, "trio3": {"days": 2, "races": 10, "hits": 7, "stake": 3000, "return": 1970, "pnl": -1030, "roi": 0.6567}}}
+metrics rolling30 {"from": "2026-10-23", "to": "2026-10-28", "races": 937, "days": 6, "honmei_win_rate": 0.5422, "honmei_win_ci": [0.5101, 0.5738], "naive_lane1_rate": 0.5315, "vs_naive_pt": 1.07, "vs_naive_ci_pt": [-0.96, 3.2], "logloss_win": 1.2046, "logloss_win_ci": [1.1434, 1.2639], "trifecta_top3_hit": 0.2359, "trifecta_top3_ci": [0.2098, 0.2641], "roi_tansho": 0.8651, "roi_tansho_ci": [0.8013, 0.9349], "roi_l
+site built /home/runner/work/zeroichi-store/zeroichi-store/kyotei/site/index.html

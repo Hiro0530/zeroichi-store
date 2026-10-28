@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_at": "2026-10-28T01:28+09:00",
+ "generated_at": "2026-10-29T07:03+09:00",
  "note": "公開後の実績だけ(公開時刻より後に締切のレース)。毎回100円の仮の回収率で、利益を約束しない。[ ]は95%区間。",
  "definitions": {
   "honmei_win_rate": "◎(1着の確率が最も高い艇)の1着率",
@@ -16,150 +16,150 @@
  },
  "rolling30": {
   "from": "2026-10-23",
-  "to": "2026-10-27",
-  "races": 813,
-  "days": 5,
-  "honmei_win_rate": 0.551,
+  "to": "2026-10-28",
+  "races": 937,
+  "days": 6,
+  "honmei_win_rate": 0.5422,
   "honmei_win_ci": [
-   0.5167,
-   0.5849
+   0.5101,
+   0.5738
   ],
-  "naive_lane1_rate": 0.5437,
-  "vs_naive_pt": 0.74,
+  "naive_lane1_rate": 0.5315,
+  "vs_naive_pt": 1.07,
   "vs_naive_ci_pt": [
-   -1.35,
-   2.83
+   -0.96,
+   3.2
   ],
-  "logloss_win": 1.1932,
+  "logloss_win": 1.2046,
   "logloss_win_ci": [
-   1.1275,
-   1.2552
+   1.1434,
+   1.2639
   ],
-  "trifecta_top3_hit": 0.246,
+  "trifecta_top3_hit": 0.2359,
   "trifecta_top3_ci": [
-   0.2176,
-   0.2768
+   0.2098,
+   0.2641
   ],
-  "roi_tansho": 0.8808,
+  "roi_tansho": 0.8651,
   "roi_tansho_ci": [
-   0.8106,
-   0.9564
+   0.8013,
+   0.9349
   ],
-  "roi_lane1_tansho": 0.9491,
-  "roi_trifecta_top3": 0.7697,
+  "roi_lane1_tansho": 0.9219,
+  "roi_trifecta_top3": 0.7406,
   "roi_trifecta_top3_ci": [
-   0.6574,
-   0.8959
+   0.6389,
+   0.8421
   ],
-  "exacta_races": 168,
-  "exacta_top3_hit": 0.5179,
+  "exacta_races": 292,
+  "exacta_top3_hit": 0.4829,
   "exacta_top3_ci": [
-   0.4427,
-   0.5922
+   0.4262,
+   0.54
   ],
-  "exacta_top1_hit": 0.2024,
-  "roi_exacta_top1": 0.6435,
+  "exacta_top1_hit": 0.1815,
+  "roi_exacta_top1": 0.5733,
   "roi_exacta_top1_ci": [
-   0.4381,
-   0.8596
+   0.4253,
+   0.7295
   ]
  },
  "rolling30_tier_S": {
-  "races": 95,
-  "days": 2,
-  "honmei_win_rate": 0.7684,
+  "races": 131,
+  "days": 3,
+  "honmei_win_rate": 0.771,
   "honmei_win_ci": [
-   0.6742,
-   0.8418
+   0.6919,
+   0.8346
   ],
-  "naive_lane1_rate": 0.7684,
-  "vs_naive_pt": 0.0,
+  "naive_lane1_rate": 0.7634,
+  "vs_naive_pt": 0.76,
   "vs_naive_ci_pt": [
    0.0,
-   0.0
+   2.29
   ],
-  "logloss_win": 0.8452,
+  "logloss_win": 0.816,
   "logloss_win_ci": [
-   0.6246,
-   1.083
+   0.6398,
+   1.0094
   ],
-  "trifecta_top3_hit": 0.3789,
+  "trifecta_top3_hit": 0.3435,
   "trifecta_top3_ci": [
-   0.2879,
-   0.4794
+   0.2677,
+   0.4282
   ],
-  "roi_tansho": 0.9347,
+  "roi_tansho": 0.9359,
   "roi_tansho_ci": [
-   0.8221,
-   1.0411
+   0.8412,
+   1.0267
   ],
-  "roi_lane1_tansho": 0.9347,
-  "roi_trifecta_top3": 0.8653,
+  "roi_lane1_tansho": 0.9282,
+  "roi_trifecta_top3": 0.844,
   "roi_trifecta_top3_ci": [
-   0.6144,
-   1.1295
+   0.6234,
+   1.0825
   ],
-  "exacta_races": 52,
-  "exacta_top3_hit": 0.7308,
+  "exacta_races": 88,
+  "exacta_top3_hit": 0.6932,
   "exacta_top3_ci": [
-   0.5975,
-   0.8323
+   0.5904,
+   0.7798
   ],
-  "exacta_top1_hit": 0.4038,
-  "roi_exacta_top1": 1.0154,
+  "exacta_top1_hit": 0.3182,
+  "roi_exacta_top1": 0.8455,
   "roi_exacta_top1_ci": [
-   0.6788,
-   1.3827
+   0.5761,
+   1.1159
   ]
  },
  "since_start": {
   "from": "2026-10-23",
-  "to": "2026-10-27",
-  "races": 813,
-  "days": 5,
-  "honmei_win_rate": 0.551,
+  "to": "2026-10-28",
+  "races": 937,
+  "days": 6,
+  "honmei_win_rate": 0.5422,
   "honmei_win_ci": [
-   0.5167,
-   0.5849
+   0.5101,
+   0.5738
   ],
-  "naive_lane1_rate": 0.5437,
-  "vs_naive_pt": 0.74,
+  "naive_lane1_rate": 0.5315,
+  "vs_naive_pt": 1.07,
   "vs_naive_ci_pt": [
-   -1.35,
-   2.83
+   -0.96,
+   3.2
   ],
-  "logloss_win": 1.1932,
+  "logloss_win": 1.2046,
   "logloss_win_ci": [
-   1.1275,
-   1.2552
+   1.1434,
+   1.2639
   ],
-  "trifecta_top3_hit": 0.246,
+  "trifecta_top3_hit": 0.2359,
   "trifecta_top3_ci": [
-   0.2176,
-   0.2768
+   0.2098,
+   0.2641
   ],
-  "roi_tansho": 0.8808,
+  "roi_tansho": 0.8651,
   "roi_tansho_ci": [
-   0.8106,
-   0.9564
+   0.8013,
+   0.9349
   ],
-  "roi_lane1_tansho": 0.9491,
-  "roi_trifecta_top3": 0.7697,
+  "roi_lane1_tansho": 0.9219,
+  "roi_trifecta_top3": 0.7406,
   "roi_trifecta_top3_ci": [
-   0.6574,
-   0.8959
+   0.6389,
+   0.8421
   ],
-  "exacta_races": 168,
-  "exacta_top3_hit": 0.5179,
+  "exacta_races": 292,
+  "exacta_top3_hit": 0.4829,
   "exacta_top3_ci": [
-   0.4427,
-   0.5922
+   0.4262,
+   0.54
   ],
-  "exacta_top1_hit": 0.2024,
-  "roi_exacta_top1": 0.6435,
+  "exacta_top1_hit": 0.1815,
+  "roi_exacta_top1": 0.5733,
   "roi_exacta_top1_ci": [
-   0.4381,
-   0.8596
+   0.4253,
+   0.7295
   ]
  },
  "daily": [
@@ -235,6 +235,23 @@
    "exacta_top3_hit": 0.5179,
    "exacta_top1_hit": 0.2024,
    "roi_exacta_top1": 0.6435
+  },
+  {
+   "date": "2026-10-28",
+   "races": 124,
+   "days": 1,
+   "honmei_win_rate": 0.4839,
+   "naive_lane1_rate": 0.4516,
+   "vs_naive_pt": 3.23,
+   "logloss_win": 1.2791,
+   "trifecta_top3_hit": 0.1694,
+   "roi_tansho": 0.7621,
+   "roi_lane1_tansho": 0.7435,
+   "roi_trifecta_top3": 0.5497,
+   "exacta_races": 124,
+   "exacta_top3_hit": 0.4355,
+   "exacta_top1_hit": 0.1532,
+   "roi_exacta_top1": 0.4782
   }
  ]
 }

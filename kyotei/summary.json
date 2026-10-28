@@ -1,133 +1,133 @@
 {
  "total": {
-  "days": 5,
-  "graded_races": 813,
-  "win_hits": 448,
-  "tri_hits": 200,
-  "near": 123,
-  "stake_win": 81300,
-  "return_win": 71610,
-  "stake_tri": 243900,
-  "return_tri": 187720,
-  "base_hits": 442,
-  "base_return": 77160,
-  "win_rate": 0.551,
-  "base_win_rate": 0.5437,
-  "tri_rate": 0.246,
-  "roi_win": 0.8808,
-  "roi_tri": 0.7697,
-  "roi_base": 0.9491,
+  "days": 6,
+  "graded_races": 937,
+  "win_hits": 508,
+  "tri_hits": 221,
+  "near": 148,
+  "stake_win": 93700,
+  "return_win": 81060,
+  "stake_tri": 281100,
+  "return_tri": 208170,
+  "base_hits": 498,
+  "base_return": 86380,
+  "win_rate": 0.5422,
+  "base_win_rate": 0.5315,
+  "tri_rate": 0.2359,
+  "roi_win": 0.8651,
+  "roi_tri": 0.7406,
+  "roi_base": 0.9219,
   "ana": {
-   "days": 1,
-   "races": 2,
+   "days": 2,
+   "races": 4,
    "hits": 1,
-   "stake": 600,
+   "stake": 1200,
    "return": 1230,
    "manshu_hits": 0,
    "manshu_races": 1,
-   "roi": 2.05
+   "roi": 1.025
   },
   "by_bet": {
    "tansho": {
-    "days": 2,
-    "races": 310,
-    "hits": 162,
-    "stake": 31000,
-    "return": 26580,
-    "pnl": -4420,
-    "roi": 0.8574
+    "days": 3,
+    "races": 434,
+    "hits": 222,
+    "stake": 43400,
+    "return": 36030,
+    "pnl": -7370,
+    "roi": 0.8302
    },
    "trifecta3": {
-    "days": 2,
-    "races": 310,
-    "hits": 78,
-    "stake": 93000,
-    "return": 72190,
-    "pnl": -20810,
-    "roi": 0.7762
+    "days": 3,
+    "races": 434,
+    "hits": 99,
+    "stake": 130200,
+    "return": 92640,
+    "pnl": -37560,
+    "roi": 0.7115
    },
    "fukusho": {
-    "days": 1,
-    "races": 168,
-    "hits": 120,
-    "stake": 16800,
-    "return": 14760,
-    "pnl": -2040,
-    "roi": 0.8786
+    "days": 2,
+    "races": 292,
+    "hits": 206,
+    "stake": 29200,
+    "return": 25780,
+    "pnl": -3420,
+    "roi": 0.8829
    },
    "trio3": {
-    "days": 1,
-    "races": 168,
-    "hits": 88,
-    "stake": 50400,
-    "return": 36700,
-    "pnl": -13700,
-    "roi": 0.7282
+    "days": 2,
+    "races": 292,
+    "hits": 143,
+    "stake": 87600,
+    "return": 60640,
+    "pnl": -26960,
+    "roi": 0.6922
    }
   },
   "star_by_bet": {
    "tansho": {
-    "days": 1,
-    "races": 5,
-    "hits": 5,
-    "stake": 500,
-    "return": 600,
-    "pnl": 100,
-    "roi": 1.2
+    "days": 2,
+    "races": 10,
+    "hits": 10,
+    "stake": 1000,
+    "return": 1190,
+    "pnl": 190,
+    "roi": 1.19
    },
    "trifecta3": {
-    "days": 1,
-    "races": 5,
-    "hits": 4,
-    "stake": 1500,
-    "return": 2240,
-    "pnl": 740,
-    "roi": 1.4933
+    "days": 2,
+    "races": 10,
+    "hits": 6,
+    "stake": 3000,
+    "return": 3670,
+    "pnl": 670,
+    "roi": 1.2233
    },
    "fukusho": {
-    "days": 1,
-    "races": 5,
-    "hits": 5,
-    "stake": 500,
-    "return": 500,
-    "pnl": 0,
-    "roi": 1.0
+    "days": 2,
+    "races": 10,
+    "hits": 10,
+    "stake": 1000,
+    "return": 1010,
+    "pnl": 10,
+    "roi": 1.01
    },
    "trio3": {
-    "days": 1,
-    "races": 5,
-    "hits": 5,
-    "stake": 1500,
-    "return": 1430,
-    "pnl": -70,
-    "roi": 0.9533
+    "days": 2,
+    "races": 10,
+    "hits": 7,
+    "stake": 3000,
+    "return": 1970,
+    "pnl": -1030,
+    "roi": 0.6567
    }
   }
  },
  "tiers": {
   "S": {
-   "races": 95,
-   "win_hits": 73,
-   "base_hits": 73,
-   "return_win": 8880
+   "races": 131,
+   "win_hits": 101,
+   "base_hits": 100,
+   "return_win": 12260
   },
   "A": {
-   "races": 113,
-   "win_hits": 53,
-   "base_hits": 55,
-   "return_win": 8510
+   "races": 153,
+   "win_hits": 69,
+   "base_hits": 70,
+   "return_win": 10990
   },
   "C": {
-   "races": 57,
-   "win_hits": 19,
-   "base_hits": 19,
-   "return_win": 4800
+   "races": 84,
+   "win_hits": 28,
+   "base_hits": 28,
+   "return_win": 7030
   },
   "B": {
-   "races": 45,
-   "win_hits": 17,
-   "base_hits": 17,
-   "return_win": 4390
+   "races": 66,
+   "win_hits": 24,
+   "base_hits": 22,
+   "return_win": 5750
   }
  },
  "daily": [
@@ -289,6 +289,95 @@
     "return": 1230,
     "manshu_hits": 0,
     "manshu_races": 1
+   }
+  },
+  {
+   "date": "2026-10-28",
+   "graded_races": 124,
+   "win_hits": 60,
+   "tri_hits": 21,
+   "near": 25,
+   "stake_win": 12400,
+   "return_win": 9450,
+   "stake_tri": 37200,
+   "return_tri": 20450,
+   "base_hits": 56,
+   "base_return": 9220,
+   "by_bet": {
+    "tansho": {
+     "races": 124,
+     "hits": 60,
+     "stake": 12400,
+     "return": 9450,
+     "pnl": -2950,
+     "roi": 0.7621
+    },
+    "trifecta3": {
+     "races": 124,
+     "hits": 21,
+     "stake": 37200,
+     "return": 20450,
+     "pnl": -16750,
+     "roi": 0.5497
+    },
+    "fukusho": {
+     "races": 124,
+     "hits": 86,
+     "stake": 12400,
+     "return": 11020,
+     "pnl": -1380,
+     "roi": 0.8887
+    },
+    "trio3": {
+     "races": 124,
+     "hits": 55,
+     "stake": 37200,
+     "return": 23940,
+     "pnl": -13260,
+     "roi": 0.6435
+    }
+   },
+   "star_by_bet": {
+    "tansho": {
+     "races": 5,
+     "hits": 5,
+     "stake": 500,
+     "return": 590,
+     "pnl": 90,
+     "roi": 1.18
+    },
+    "trifecta3": {
+     "races": 5,
+     "hits": 2,
+     "stake": 1500,
+     "return": 1430,
+     "pnl": -70,
+     "roi": 0.9533
+    },
+    "fukusho": {
+     "races": 5,
+     "hits": 5,
+     "stake": 500,
+     "return": 510,
+     "pnl": 10,
+     "roi": 1.02
+    },
+    "trio3": {
+     "races": 5,
+     "hits": 2,
+     "stake": 1500,
+     "return": 540,
+     "pnl": -960,
+     "roi": 0.36
+    }
+   },
+   "ana": {
+    "races": 2,
+    "hits": 0,
+    "stake": 600,
+    "return": 0,
+    "manshu_hits": 0,
+    "manshu_races": 0
    }
   }
  ]
