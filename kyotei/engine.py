@@ -516,6 +516,11 @@ def main(mode: str):
         # モデルと締切前の市場(単勝オッズ)の混ぜ方の重みを、紙の上の記録から(新しい取得なし)
         import exp_blend
         exp_blend.main(hist_dir())
+    elif mode == "are":
+        # 荒れるレース(1号艇の負け・万舟)を見分けられるかと、荒れたときの買い方の検証(新しい取得なし。予想は作らない)
+        import exp_are
+        exp_are.main(hist_dir())
+        return
     elif mode == "exp":
         # 改良候補の検証(v3_ablation.json と model_config.json を作る)→ その構成で学習し直す
         ensure_jma()
