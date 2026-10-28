@@ -1,0 +1,28 @@
+Wed Oct 28 21:48:03 UTC 2026
+== https://zeroichiworks.net/
+200  ssl=0
+== https://zeroichiworks.net/sedori/
+200  ssl=0
+== https://zeroichiworks.net/kyotei/
+200  ssl=0
+== https://zeroichiworks.net/works/
+200  ssl=0
+== http://zeroichiworks.net/
+200  ssl=0
+== https://www.zeroichiworks.net/
+301 https://zeroichiworks.net/ ssl=0
+== cert
+subject=CN=zeroichiworks.net
+issuer=C=US, O=Let's Encrypt, CN=YR1
+notBefore=Oct 28 10:12:08 2026 GMT
+notAfter=Jan 26 10:12:07 2027 GMT
+== dig
+185.199.111.153
+185.199.108.153
+185.199.109.153
+185.199.110.153
+hiro0530.github.io.
+185.199.111.153
+185.199.110.153
+185.199.109.153
+185.199.108.153
