@@ -9,13 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          {
+          set +e; {
             date -u
             for u in https://zeroichiworks.net/ https://zeroichiworks.net/sedori/ https://zeroichiworks.net/kyotei/ https://zeroichiworks.net/works/ http://zeroichiworks.net/ https://www.zeroichiworks.net/; do
               echo "== $u"; curl -sS -o /dev/null -w "%{http_code} %{redirect_url} ssl=%{ssl_verify_result}\n" -m 20 "$u" 2>&1
             done
-            echo "== cert"; echo | openssl s_client -connect zeroichiworks.net:443 -servername zeroichiworks.net 2>/dev/null | openssl x509 -noout -subject -issuer -dates
-          } > ops/site_check.txt 2>&1
+            echo "== cert"; echo | openssl s_client -connect zeroichiworks.net:443 -servername zeroichiworks.net 2>/dev/null | openssl x509 -noout -subject -issuer -dates; echo "== dig"; dig +short zeroichiworks.net; dig +short www.zeroichiworks.net
+          } > ops/site_check.txt 2>&1; true
       - run: |
           git config user.name "site-check"; git config user.email "site-check@users.noreply.github.com"
           git add ops/site_check.txt && git commit -m "site-check" && git pull --rebase && git push || echo none
