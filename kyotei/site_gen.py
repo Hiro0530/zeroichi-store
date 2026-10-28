@@ -240,7 +240,7 @@ footer p+p{margin-top:5px}
 
 JS = """
 (function(){var now=Date.now();
-document.querySelectorAll('tr[data-close],.srow[data-close]').forEach(function(r){if(Date.parse(r.dataset.close)<now)r.classList.add('past')});
+document.querySelectorAll('tr[data-close],.srow[data-close],.ac[data-close]').forEach(function(r){if(Date.parse(r.dataset.close)<now)r.classList.add('past')});
 document.querySelectorAll('details.v[data-pred]').forEach(function(d){var nx=null;d.querySelectorAll('tr[data-close]').forEach(function(r){if(!nx&&Date.parse(r.dataset.close)>=now)nx=r});
 var m=d.querySelector('.next');if(!m)return;m.textContent=nx?('次 '+nx.dataset.r+'R '+nx.dataset.close.slice(11,16).replace(/^0/,'')):'本日終了'});})();
 """
@@ -422,6 +422,260 @@ def star_answer_html(r: dict, prev: dict | None, label: str) -> str:
             f"<div class=star>{''.join(rows)}</div></section>")
 
 
+# ---------- 荒れ予報(2026-10-29〜。are.py が予想ファイルに書いた荒れ度・理由・組み合わせ候補を見せる) ----------
+ARE_NAMES = {1: ("晴れ", "堅め"), 2: ("くもり", "ふつう"), 3: ("雨", "荒れ気味"), 4: ("嵐", "大荒れ注意")}
+ARE_NOTE = "試験中。荒れ予報は1号艇以外が来やすいかの目安で、的中や利益を保証するものではありません。舟券は20歳から。"
+ARE_EVID = ("過去半年(2026年4月30日〜10月28日・28,325レース)の検証では、混戦度が1日の上位3レースは"
+            "万舟(3連単1万円以上)が26%(全体は16%)、1号艇の1着が30%(全体は55%)でした。それでも4レースに3レースは万舟になっていません。")
+ARE_PRE = ("締切前に公式の直前情報で「風5m以上」「波5cm以上」「1号艇の展示タイムが5・6番手」「進入の乱れ」があれば、"
+           "朝の見立てよりさらに1号艇が苦しくなりやすい傾向です(同じ検証で1号艇の1着が2〜7ポイント下がる)。この予報は朝の数字だけで作っています。")
+ARE_CSS = """
+:root{--sun:#e9a100;--cloud:#a9b1ba;--cloud2:#7d8792;--rain:#2f6fd1;--storm:#3b4250;--bolt:#ffc93d;--lv1:#e9a100;--lv2:#8d97a2;--lv3:#2f6fd1;--lv4:#3a2f6b;--lvs:#f4f1fb}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--cloud:#8e98a3;--cloud2:#6d7782;--storm:#c9cfd8;--lv4:#a99bf0;--lvs:#24213a}}
+:root[data-theme=dark]{--cloud:#8e98a3;--cloud2:#6d7782;--storm:#c9cfd8;--lv4:#a99bf0;--lvs:#24213a}
+.wxi{display:inline-block;vertical-align:middle;flex:none}
+.arek{padding-top:22px}
+.are-hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.beta{font-size:11px;font-weight:700;border:1px solid var(--ink);padding:2px 5px 1px;border-radius:2px;line-height:1.2}
+.are-cards{display:grid;gap:12px;margin-top:12px}
+@media (min-width:760px){.are-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ac{position:relative;border:1px solid var(--rule2);border-top:5px solid var(--lvc,var(--lv3));padding:12px 14px 12px;background:var(--paper);display:flex;flex-direction:column;gap:9px}
+.ac.lv1{--lvc:var(--lv1)}.ac.lv2{--lvc:var(--lv2)}.ac.lv3{--lvc:var(--lv3)}.ac.lv4{--lvc:var(--lv4)}
+.ac-top{display:flex;align-items:center;gap:10px}
+.ac-lv b{display:block;font:900 26px/1 var(--jp);color:var(--lvc)}
+.ac-lv span{font-size:12px;color:var(--sub)}
+.meter{margin-left:auto;display:flex;gap:3px;align-items:flex-end}
+.meter i{display:block;width:9px;background:var(--rule);border-radius:1px}
+.meter i:nth-child(1){height:8px}.meter i:nth-child(2){height:13px}.meter i:nth-child(3){height:18px}.meter i:nth-child(4){height:23px}
+.meter i.on{background:var(--lvc,var(--lv3))}
+.ac-race{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ac-race a{font-weight:900;font-size:20px;color:var(--ink);text-decoration:none}
+.ac-race a .n{font-size:24px;margin-left:2px}
+.ac-race .when{font-size:12.5px;color:var(--sub)}.ac-race .when .n{font-size:16px;color:var(--ink)}
+.ac .closedtag{display:none;font-size:11px;font-weight:700;border:1px solid var(--rule2);padding:1px 4px;color:var(--sub)}
+.ac.past{opacity:.55}.ac.past .closedtag{display:inline-block}
+.ac-type{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.ac-type .tp{font-weight:900;font-size:13px;color:var(--paper);background:var(--lvc,var(--lv3));padding:3px 7px 2px;border-radius:2px}
+.ac-type .tp.hon{background:none;color:var(--ink);border:1px solid var(--ink)}
+.ac-type b{font:700 18px/1 var(--num);color:var(--ink)}
+.ac-why{margin:0;padding:0;list-style:none;font-size:13px;line-height:1.45}
+.ac-why li{padding-left:12px;position:relative}.ac-why li:before{content:"";position:absolute;left:2px;top:.6em;width:5px;height:5px;background:var(--lvc,var(--lv3));border-radius:50%}
+.mot{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;align-items:end;max-width:440px}
+.mot>span{display:flex;flex-direction:column;align-items:center;gap:2px;font:600 13px/1 var(--num);color:var(--sub);padding:3px 0 2px;border-radius:2px}
+.mot>span.low{background:var(--lvs);color:var(--ink);box-shadow:inset 0 0 0 1px var(--lvc,var(--lv3))}
+.mot .ml{font:500 10.5px/1.2 var(--jp);color:var(--sub)}
+.k2{font-size:11.5px;color:var(--sub);display:flex;justify-content:space-between;gap:6px}
+.cands{display:grid;gap:4px}
+.cand{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:2px 8px;border-top:1px dashed var(--rule);padding-top:5px}
+.cand .ap{font:700 16px/1 var(--num)}
+.cand .hs{grid-column:1/4;font-size:11.5px;color:var(--sub);line-height:1.35}
+.ac-go{font-size:13px;margin-top:auto}
+.ly{display:inline-block;font-size:11px;font-weight:900;color:var(--paper);background:var(--ink);padding:2px 5px 1px;border-radius:2px;margin-right:6px;line-height:1.3}
+.ly.sub{background:none;color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.lys{display:grid;gap:5px}
+.lyr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lyr .ap{font:700 15px/1 var(--num);color:var(--sub);margin-right:6px}
+.are-note{font-size:12.5px;color:var(--sub);margin-top:10px;line-height:1.6}
+.are-note b{color:var(--ink)}
+.are-note p+p{margin-top:6px}
+.are-res{margin-top:18px;max-width:820px}
+.are-res .score b{color:var(--ink)}
+.are-res .score b.hit{color:var(--shu)}
+.are-sec{border:1px solid var(--rule2);border-top:5px solid var(--lvc,var(--lv3));padding:12px 14px;margin-top:16px}
+.are-sec .ac-top{margin-bottom:6px}
+.are-sec h2{font-size:18px}
+.are-sec .out{font-size:14px;margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
+td .wxi{margin-left:3px;vertical-align:-3px}
+.art .wxi{margin:0 4px 0 0}.art .vdl{display:block;font-size:12px;margin-top:2px}.art td{padding:7px 4px}.art .t-race .tag{margin-left:4px}
+@media (max-width:599px){.art .t-race .tag{display:block;width:max-content;margin:3px 0 0}.art .pay{font-size:17px}}
+"""
+
+
+def wx_icon(lv: int, s: int = 40) -> str:
+    """荒れ度の天気の絵(SVG)。1 晴れ・2 くもり・3 雨・4 嵐。"""
+    lv = int(lv or 1)
+    cloud = lambda f, dy=0: (f"<path fill='{f}' d='M13 {29+dy}h20a7 7 0 0 0 0-14 9.5 9.5 0 0 0-18-2.4A6.6 6.6 0 0 0 13 {29+dy}z'/>")  # noqa: E731
+    if lv == 1:
+        rays = "".join(f"<line x1='20' y1='4' x2='20' y2='8' transform='rotate({a} 20 20)'/>" for a in range(0, 360, 45))
+        body = f"<g stroke='var(--sun)' stroke-width='2.6' stroke-linecap='round'>{rays}</g><circle cx='20' cy='20' r='8' fill='var(--sun)'/>"
+    elif lv == 2:
+        body = ("<circle cx='14' cy='14' r='6' fill='var(--sun)' opacity='.85'/>" + cloud("var(--cloud)", 2))
+    elif lv == 3:
+        body = (cloud("var(--cloud2)", -3) + "<g stroke='var(--rain)' stroke-width='2.4' stroke-linecap='round'>"
+                "<line x1='15' y1='30' x2='13' y2='35'/><line x1='21' y1='30' x2='19' y2='35'/><line x1='27' y1='30' x2='25' y2='35'/></g>")
+    else:
+        body = (cloud("var(--storm)", -4) + "<path fill='var(--bolt)' d='M21 23l-6 9h5l-2 7 8-10h-5l3-6z'/>"
+                "<g stroke='var(--rain)' stroke-width='2.2' stroke-linecap='round'><line x1='12' y1='29' x2='10' y2='34'/><line x1='31' y1='29' x2='29' y2='34'/></g>")
+    return f"<svg class=wxi width={s} height={s} viewBox='0 0 40 40' role=img aria-label='{ARE_NAMES[lv][0]}'>{body}</svg>"
+
+
+def are_meter(lv: int) -> str:
+    return "<span class=meter aria-hidden=true>" + "".join(f"<i{' class=on' if i < lv else ''}></i>" for i in range(4)) + "</span>"
+
+
+def are_head(a: dict, size: int = 44) -> str:
+    lv = int(a.get("lv") or 1)
+    nm, sub = ARE_NAMES[lv]
+    return (f"<div class=ac-top>{wx_icon(lv, size)}<div class=ac-lv><b>{nm}</b><span>荒れ度{lv}/4・{sub}</span></div>{are_meter(lv)}</div>")
+
+
+def are_motor(x: dict, a: dict) -> str:
+    rs = x.get("racers") or []
+    if len(rs) != 6:
+        return ""
+    cells = []
+    for i, b in enumerate(rs):
+        low = i == 0 and a.get("motor_low")
+        m = f"{b['motor_2']:.0f}%" if b.get("motor_2") else "—"
+        cells.append(f"<span{' class=low' if low else ''}>{lane(i + 1, True)}{m}" + ("<span class=ml>下位</span>" if low else "") + "</span>")
+    return "<div><div class=k2><span>モーター2連率(番組表)</span></div><div class=mot>" + "".join(cells) + "</div></div>"
+
+
+def are_cands(a: dict, vn: str) -> str:
+    cs = a.get("cands") or []
+    if not cs:
+        return ""
+    o = ["<div><div class=k2><span><b class=ly>狙い</b>万舟の組み合わせ候補(参考)</span><span>1号艇抜き・AIの確率順</span></div><div class=cands>"]
+    for c in cs:
+        k, p, fa, pa, fv, pv = (list(c) + [None] * 6)[:6]
+        hs = []
+        if fa is not None:
+            hs.append(f"全国 {fa*100:.2f}%" + (f"・平均{int(pa):,}円" if pa else ""))
+        if fv is not None:
+            hs.append(f"{esc(vn)} {fv*100:.2f}%" + (f"・平均{int(pv):,}円" if pv else ""))
+        o.append(f"<div class=cand>{combo(k)}<span class=ap>{p*100:.1f}<small>%</small></span><span class=cap style='margin:0'>AIの確率</span>"
+                 + (f"<span class=hs>過去1年の出た割合 {' / '.join(hs)}</span>" if hs else "") + "</div>")
+    o.append("</div></div>")
+    return "".join(o)
+
+
+def are_layers(x: dict, a: dict, vn: str) -> str:
+    """買い目の3層: 本線=AIの本命(3連単の1番手)、抑え=次点(2・3番手)、狙い=本命なしのレースだけ万舟の組み合わせ候補。"""
+    tri = x.get("trifecta") or []
+    o = ["<div class=lys>"]
+    if tri:
+        c0, p0_ = tri[0]
+        o.append(f"<div class=lyr><b class=ly>本線</b><span>◎{lane(x['pick'], True)}</span>{combo(c0)}<span class=ap>{p0_*100:.1f}<small>%</small></span></div>")
+    if len(tri) > 1:
+        o.append("<div class=lyr><b class='ly sub'>抑え</b>" + "".join(f"{combo(c)}<span class=ap>{p*100:.1f}<small>%</small></span>" for c, p in tri[1:3]) + "</div>")
+    o.append("</div>")
+    if a.get("cands"):
+        o.append(are_cands(a, vn))
+    else:
+        o.append("<p class=cap style='margin:0'><b class='ly sub'>狙い</b>本命ありのレースなので、万舟の候補は出していません。</p>")
+    return "".join(o)
+
+
+def are_type(x: dict, a: dict) -> str:
+    if a.get("nashi"):
+        return f"<div class=ac-type><span class=tp>本命なし=荒れ予想</span><span>1号艇の1着 AI <b>{x['probs'][0]*100:.0f}%</b></span></div>"
+    return (f"<div class=ac-type><span class='tp hon'>本命あり</span><span>◎{lane(x['pick'], True)} AI <b>{max(x['probs'])*100:.0f}%</b></span></div>")
+
+
+def are_card(d: str, x: dict) -> str:
+    a = x.get("are") or {}
+    lv = int(a.get("lv") or 1)
+    vn = x["venue_name"]
+    why = "".join(f"<li>{esc(t)}</li>" for t in a.get("reasons") or [])
+    return (f"<article class='ac lv{lv}' data-close='{esc(x['close'])}'>{are_head(a)}"
+            f"<div class=ac-race><a href='{rlink_url(d, vn, x['race'])}'>{esc(vn)}<span class=n>{x['race']}R</span></a>"
+            f"<span class=when>締切 <span class=n>{esc(hm(x['close']))}</span></span><span class=closedtag>締切済</span></div>"
+            + are_type(x, a) + (f"<ul class=ac-why>{why}</ul>" if why else "") + are_motor(x, a) + are_layers(x, a, vn)
+            + f"<a class=ac-go href='{rlink_url(d, vn, x['race'])}'>出走表と確率を見る</a></article>")
+
+
+def rlink_url(d: str, vn: str, n) -> str:
+    sl = SLUG.get(vn)
+    return f"{esc(d)}/{sl}/{int(n)}r/" if sl else "#"
+
+
+def are_today_html(p: dict | None, r: dict | None, total: dict | None, label: str) -> str:
+    """トップの「今日の荒れ予報 TOP3」と、前日の結果・通算。are が無い(出さない日)は空。"""
+    a = (p or {}).get("are")
+    races = {x["key"]: x for x in (p or {}).get("races", [])}
+    top = [races[z["key"]] for z in (a or {}).get("races", []) if z["key"] in races and races[z["key"]].get("are")]
+    res_html = are_result_html(r, total, label, placeholder=bool(top))
+    if not top and not res_html:
+        return ""
+    o = ["<section class=arek aria-labelledby=h-are><div class=are-hd><h2 id=h-are>今日の荒れ予報<small>TOP3</small></h2><span class=beta>試験中</span></div>"]
+    if top:
+        n_nashi = len((a or {}).get("nashi") or [])
+        o.append("<p class=cap>AIの予想が割れている(混戦の)レースほど荒れ度が上がります。今日いちばん割れている3レースを締切順に。"
+                 + (f"全レースのうち「本命なし」は{n_nashi}レース。" if n_nashi else "") + "</p><div class=are-cards>")
+        o += [are_card(p["date"], x) for x in top]
+        o.append("</div>")
+    else:
+        o.append("<p class=cap>今日の荒れ予報はまだ出ていません。毎朝7時ごろ、予想と一緒に出ます。</p>")
+    o.append(f"<div class=are-note><p><b>{esc(ARE_NOTE)}</b></p><p>{esc(ARE_EVID)}</p><p>{esc(ARE_PRE)}</p>"
+             "<p>買い目は3つの層で見せています。本線=AIの本命(3連単の1番手)、抑え=次点(2・3番手)、狙い=本命なしのレースだけ、1号艇を含まない3連単をAIの確率が高い順に3つ。買い方の指南ではなく、回収率が100%を超えることも確かめていません。</p></div>")
+    o.append(res_html)
+    o.append("</section>")
+    return "".join(o)
+
+
+def are_result_html(r: dict | None, total: dict | None, label: str, placeholder: bool = False) -> str:
+    """前日の荒れ予報の結果(TOP3 と本命なしの組み合わせ候補。外れも全部)と通算。"""
+    rows = (r or {}).get("are") or []
+    s = ((r or {}).get("summary") or {}).get("are")
+    t = total or {}
+    o = []
+    if rows and s:
+        t3 = [z for z in rows if z.get("top3")]
+        b = s.get("best")
+        o.append(f"<div class=are-res><h3>{esc(label)}の荒れ予報、結果<small style='font-weight:400;color:var(--sub);margin-left:6px'>{esc(jday(r['summary']['date']))}</small></h3>"
+                 f"<p class='score'>TOP3のうち、1号艇が負けたのは<b>{s['lane1_lost']}</b>レース、万舟は<b class={'hit' if s['manshu_races'] else ''}>{s['manshu_races']}</b>本。")
+        if b and b.get("pay"):
+            o.append(f"いちばん高い3連単は{esc(b['venue_name'])}{b['race']}Rの{int(b['pay']):,}円でした。")
+        o.append("</p><div class=tw><table class=art><thead><tr><th>レース</th><th>結果</th><th>1号艇</th><th class=r>3連単・買い目</th></tr></thead><tbody>")
+        for z in sorted(rows, key=lambda z: (not z.get("top3"), z["venue_name"], z["race"])):
+            pay = z.get("trifecta_payout") or 0
+            big = pay >= MANSHU
+            o.append(f"<tr{' class=hit' if z.get('cand_hit') or z.get('layer') else ''}><td class=t-race>{wx_icon(z.get('lv') or 1, 20)}{esc(z['venue_name'])}<span class=n>{rlink(r['summary']['date'], z['venue_name'], z['race'])}R</span>"
+                     + ("<span class=tag>TOP3</span>" if z.get("top3") else "") + f"</td><td>{combo(z['actual'])}</td>"
+                     f"<td>{'勝ち' if z.get('lane1_won') else '<b>負け</b>'}</td>"
+                     f"<td class=r>" + (f"<span class='pay{' hit' if z.get('cand_hit') else ''}'><span class={'man' if big else ''}>{int(pay):,}</span><small>円</small></span>" if pay else "—")
+                     + (f"<span class=vdl style='color:var(--shu);font-weight:700'>{esc(z.get('layer') or '狙い')}が的中</span>" if z.get('layer') or z.get('cand_hit') else "<span class='vdl miss'>本線・抑え・狙いとも外れ</span>") + "</td></tr>")
+        o.append("</tbody></table></div>")
+        nb = s.get("nashi") or {}
+        if nb.get("races"):
+            o.append(f"<p class=cap>本命なしの{nb['races']}レースで出した狙い(万舟の組み合わせ候補・各3点)は、的中{nb['cand_hits']}本。"
+                     f"仮に100円ずつなら{nb['cand_stake']:,}円が{nb['cand_return']:,}円。TOP3以外の本命なし(嵐)のレースも全部載せています。</p>")
+        o.append("</div>")
+    if t.get("races"):
+        nb = t.get("nashi") or {}
+        o.append(f"<div class=are-res><h3>荒れ予報の通算<small style='font-weight:400;color:var(--sub);margin-left:6px'>{t['days']}日</small></h3>"
+                 "<div class=tw><table class=rec><thead><tr><th></th><th class=r>レース</th><th class=r>1号艇の負け</th><th class=r>万舟</th></tr></thead><tbody>"
+                 f"<tr><td>荒れ予報TOP3</td><td class='r n'>{t['races']}</td><td class='r n'>{t['lane1_lost']}({t['lane1_lost']/t['races']*100:.0f}%)</td>"
+                 f"<td class='r n'>{t['manshu_races']}({t['manshu_races']/t['races']*100:.0f}%)</td></tr>")
+        if nb.get("races"):
+            o.append(f"<tr><td>本命なし(全部)</td><td class='r n'>{nb['races']}</td><td class='r n'>{nb['lane1_lost']}({nb['lane1_lost']/nb['races']*100:.0f}%)</td>"
+                     f"<td class='r n'>{nb['manshu_races']}({nb['manshu_races']/nb['races']*100:.0f}%)</td></tr>")
+        o.append("</tbody></table></div>")
+        lv = t.get("levels") or {}
+        if lv:
+            o.append("<div class=tw style='margin-top:8px'><table class=rec><thead><tr><th>荒れ度(全レース)</th><th class=r>レース</th><th class=r>1号艇の1着</th><th class=r>万舟</th></tr></thead><tbody>")
+            for k in ("1", "2", "3", "4"):
+                v = lv.get(k)
+                if v and v.get("races"):
+                    o.append(f"<tr><td>{wx_icon(int(k), 22)} {ARE_NAMES[int(k)][0]}</td><td class='r n'>{v['races']}</td>"
+                             f"<td class='r n'>{v['lane1_won']/v['races']*100:.0f}%</td><td class='r n'>{v['manshu']/v['races']*100:.0f}%</td></tr>")
+            o.append("</tbody></table></div>")
+        if nb.get("cand_stake"):
+            o.append(f"<p class=cap>組み合わせ候補は通算 的中{nb['cand_hits']}本、仮の回収率{nb['cand_return']/nb['cand_stake']*100:.0f}%"
+                     f"(100円ずつ・{nb['cand_stake']:,}円)。100%を切っていれば、そのまま買うと平均では負けていたということです。</p>")
+        o.append("</div>")
+    if not o and placeholder:
+        o.append("<p class=cap style='margin-top:14px'>荒れ予報の答え合わせは翌朝から。1号艇が負けたか・万舟になったか・組み合わせ候補の当たり外れを、外れも含めて全部ここに載せます。</p>")
+    return "".join(o)
+
+
+def are_mark(x: dict) -> str:
+    """表の中の小さな天気(雨・嵐だけ)。"""
+    a = x.get("are") or {}
+    lv = int(a.get("lv") or 0)
+    return wx_icon(lv, 18) if lv >= 3 else ""
+
+
 # ---------- 各ブロック ----------
 def hook_html(p, r, prev) -> str:
     """題字の下の一行。前日の自信ありの成績と、3連単の本数・最高払戻。毎日ここを見に来てもらう場所。"""
@@ -464,7 +718,7 @@ def today_html(p: dict) -> str:
         for x in xs:
             tri = "".join(f"<span>{esc(c)}</span>" for c, _ in x["trifecta"])
             note = "" if x.get("scored", True) else "<span class=closed style='display:block'>公開前に締切(採点外)</span>"
-            o.append(f"<tr data-close='{esc(x['close'])}' data-r='{x['race']}'><td class='t-race'><span class=n>{rlink(p['date'], vn, x['race'])}</span></td>"
+            o.append(f"<tr data-close='{esc(x['close'])}' data-r='{x['race']}'><td class='t-race'><span class=n>{rlink(p['date'], vn, x['race'])}</span>{are_mark(x)}</td>"
                      f"<td class=t-time>{esc(hm(x['close']))}{note}</td><td class=mks>{marks(x['probs'])}</td>"
                      f"<td class='r pr'>{max(x['probs'])*100:.0f}<small>%</small>{tier_mark(x.get('tier'))}</td><td class=tri3>{tri}</td></tr>")
         o.append("</tbody></table></div></details>")
@@ -647,7 +901,7 @@ def build():
          f"<meta property=og:title content='{TITLE}'><meta property=og:description content='{desc}'><meta property=og:type content=website>"
          f"<meta property=og:url content='{PAGE_URL}'><meta name=twitter:card content=summary><link rel=canonical href='{PAGE_URL}'>"
          "<meta name=theme-color content='#ffffff'>"
-         f"{FONTS}<style>{CSS}{paid.CSS}</style></head><body>"]
+         f"{FONTS}<style>{CSS}{ARE_CSS}{paid.CSS}</style></head><body>"]
     prev = load_pred(r["summary"]["date"]) if r else None
     label = "昨日" if (p and r and (date.fromisoformat(p["date"]) - date.fromisoformat(r["summary"]["date"])).days == 1) else (sday(r["summary"]["date"]) if r else "")
     lead = "毎朝、その日の全レースの予想を締切前に出しています。翌朝に全部答え合わせ。当たりも外れも、払戻金もそのまま載せています。"
@@ -662,6 +916,10 @@ def build():
                  f"<h1>{TITLE}</h1><p class=lead>{lead}</p>"
                  "<div class=waku aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i></div>"
                  + hook_html(p, r, prev) + atari_html(r, label) + paid.slim_html() + "</div></header><main class=wrap>")
+    try:   # 荒れ予報(試験中)。作れなくてもほかは出す
+        h.append(are_today_html(p, r, t.get("are"), label))
+    except Exception as e:  # noqa
+        print("are section skipped:", e)
     h.append("<div class=top2>")
     h.append(star_today_html(p) if p else "<section class=st><h2>今日の自信あり</h2><p class=cap>今日の予想はまだ出ていません。毎朝7時ごろに出ます。</p></section>")
     h.append(star_answer_html(r, prev, label) if r else "")

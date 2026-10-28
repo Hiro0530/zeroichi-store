@@ -482,3 +482,68 @@ def main(hist: Path, weeks: int = 52):
 
 if __name__ == "__main__":
     main(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "hist", int(sys.argv[2]) if len(sys.argv) > 2 else 52)
+
+
+# ------------------------------------------------------------------ 追加(2026-10-29): 2号艇のF持ち(1号艇の隣)
+def main_fadj(hist: Path, weeks: int = 52):
+    """「2号艇(1号艇の隣)にF持ちがいると1号艇が逃げにくい」を、朝のモデルの見積もりと比べる(exp_are と同じ52週の学習外)。
+    → experiments/are_fadj.json。判定: 選ぶ期間・確かめる期間の両方で「実際 − 朝のモデル」の95%区間の上端が0未満なら
+    「モデルが見落としている」(missed=true)。are.py はこの判定で理由の言い方を変える。"""
+    t0 = time.time()
+    cfg = load_config()
+    days = load_days(hist, max_days=1095)
+    data, _ = build(days, load_fan(hist), tides=Tides(hist / "jma"))
+    by_key = {k: v for _, _, res in days for k, v in res.items()}
+    D = data["D"]
+    last = int(np.unique(D)[-1])
+    starts = [last - 7 * k + 1 for k in range(weeks, 0, -1)]
+    half = weeks // 2
+    R = Runner(data, starts)
+    c = Ctx(data, R.te_idx, by_key)
+    fold = np.concatenate([np.full(((D >= s) & (D < s + 7)).sum(), i) for i, s in enumerate(starts)])
+    SEL, CONF = fold < half, fold >= half
+    td = cfg.get("train_days") or 365
+    ens = cfg.get("ensemble") or [[td, 30.0]]
+    Us = [R.run(f"morn_{i}", cfg["feats"], cfg.get("vx") or [], t or td, l2_) for i, (t, l2_) in enumerate(ens)]
+    P = probs(sum(Us) / len(Us))
+    print(f"fadj: model {time.time()-t0:.0f}s", flush=True)
+    Xo = data["X"][c.idx]
+    F = lambda L: Xo[:, L, FI["s_Fper"]].astype(float)  # noqa: E731
+    f1, f2, f3 = F(0), F(1), F(2)
+    y = c.y
+    man = c.pay_tri >= 10000
+    groups = {
+        "2号艇に今期のF": {"あり": f2 > 0, "なし": f2 == 0},
+        "2号艇にFあり・1号艇はFなし": {"該当": (f2 > 0) & (f1 == 0)},
+        "2号艇のF2本以上": {"該当": f2 >= 2},
+        "参考: 3号艇に今期のF": {"あり": f3 > 0, "なし": f3 == 0},
+        "参考: 1号艇に今期のF": {"あり": f1 > 0, "なし": f1 == 0},
+    }
+    out = {}
+    for name, gs in groups.items():
+        out[name] = {}
+        for g, mk in gs.items():
+            out[name][g] = {}
+            for ph, m in (("select", SEL), ("confirm", CONF)):
+                mm = mk & m
+                k = int(mm.sum())
+                if k < 50:
+                    out[name][g][ph] = {"races": k}
+                    continue
+                act = (y[mm] == 0).astype(float)
+                out[name][g][ph] = {"races": k, "lane1_win": r4(act.mean()), "model_morning": r4(P[mm, 0].mean()),
+                                    "gap_morning": boot_mean(act - P[mm, 0]), "lane2_win": r4((y[mm] == 1).mean()),
+                                    "manshu_rate": r4(man[mm].mean())}
+    g = out["2号艇に今期のF"]["あり"]
+    missed = all(isinstance(g[ph].get("gap_morning"), dict) and g[ph]["gap_morning"]["hi"] < 0 for ph in ("select", "confirm"))
+    rep = {"generated_at": datetime.now(JST).isoformat(timespec="minutes"),
+           "select_window": [date.fromordinal(starts[0]).isoformat(), date.fromordinal(starts[half] - 1).isoformat(), int(SEL.sum())],
+           "confirm_window": [date.fromordinal(starts[half]).isoformat(), date.fromordinal(starts[-1] + 6).isoformat(), int(CONF.sum())],
+           "feature": "s_Fper(今期のフライング数。レーサー期別成績と前日までの競走成績から)",
+           "diagnostics": out, "missed": bool(missed),
+           "gap_confirm": (g.get("confirm") or {}).get("gap_morning"),
+           "rule": "両方の期間で 実際の1号艇の1着率 − 朝のモデル の95%区間の上端が0未満なら missed=true",
+           "runtime_min": round((time.time() - t0) / 60, 1)}
+    (ROOT / "experiments").mkdir(exist_ok=True)
+    (ROOT / "experiments" / "are_fadj.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1, default=_js), encoding="utf-8")
+    print("fadj", json.dumps({"missed": missed, "gap_confirm": rep["gap_confirm"]}, ensure_ascii=False, default=_js), flush=True)

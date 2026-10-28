@@ -43,17 +43,25 @@ def _load(p: Path):
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
+def are_shown(a: dict | None) -> bool:
+    """荒れ予報をページ・Xに出すか(予想ファイルの are.show。are_config.json の show が true の日だけ true)。"""
+    return bool(a and a.get("show"))
+
+
 def _today(p: dict | None) -> dict | None:
     if not p:
         return None
+    show = are_shown(p.get("are"))
     races = []
     for x in p["races"]:
         races.append({k: x.get(k) for k in ("key", "venue", "venue_name", "race", "close", "scored", "tier", "pick", "probs", "trifecta", "title", "racers")}
-                     | {"p_pick": max(x["probs"])})
+                     | {"p_pick": max(x["probs"])} | ({"are": x.get("are")} if show and x.get("are") else {}))
     feat = sorted([x for x in races if x["scored"] is not False], key=lambda x: -x["p_pick"])[:6]
     return {"date": p["date"], "published_at": p["published_at"], "proof_url": f"{PROOF}{p['date']}.json",
             "model_fitted_at": p.get("model_fitted_at"), "races": races,
             "featured": [x["key"] for x in sorted(feat, key=lambda x: x["close"])],
+            # 荒れ予報: {"levels": {...}, "races": TOP3 [{key, venue_name, race, close, score, lv}], "nashi": [本命なしのkey]}。各レースの "are" に荒れ度・理由・組み合わせ候補
+            "are": ({k: v for k, v in p["are"].items() if k != "races"} | {"races": [{k: v for k, v in z.items() if k != "plans"} for z in p["are"]["races"]]}) if show else None,
             "ana": p.get("ana")}   # 今日の穴(万舟ねらい): {"rule", "races": [{key, venue_name, race, close, p_manshu, combos: [[組番, 確率, 過去の平均払戻]]}]}
 
 
@@ -77,6 +85,8 @@ def _yesterday(r: dict | None) -> dict | None:
     hits = sorted([x for x in races if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
     best = {k: hits[0].get(k) for k in ("key", "venue_name", "race", "actual", "pay_tri")} if hits else None
     return {"date": s["date"], "proof_url": f"{PROOF}{s['date']}.json", "summary": s, "best_tri_hit": best, "races": races,
+            # 前日の荒れ予報の結果(本命なしの全レース。外れも): [{key, venue_name, race, lv, top3, actual, lane1_won, trifecta_payout, cands, cand_hit, cand_pay}]
+            "are": [{k: v for k, v in z.items() if k != "bets"} for z in (r.get("are") or [])] if s.get("are") else [],
             "ana": r.get("ana") or []}   # 前日の穴の結果: [{key, venue_name, race, combos, actual, trifecta_payout, hit, pay, stake, manshu}]
 
 

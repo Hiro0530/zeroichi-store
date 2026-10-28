@@ -26,7 +26,8 @@ import shutil
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from site_gen import (CSS, MANSHU, SLUG, VENUES, WD, combo, esc, hm, lane, marks, stars, tier_mark)
+from site_gen import (ARE_CSS, ARE_NOTE, ARE_PRE, CSS, MANSHU, SLUG, VENUES, WD, are_head, are_layers, are_mark, are_motor, are_type, combo, esc, hm,
+                      lane, marks, stars, tier_mark)
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "site_pages"
@@ -381,6 +382,33 @@ def picks_html(x: dict) -> str:
             "答え合わせは3連単の3点で数えています。</p><div class=picks>" + "".join(blocks) + "</div></section>")
 
 
+def are_shown(D: "Data", d: str) -> bool:
+    return bool((D.preds.get(d, {}).get("are") or {}).get("show"))
+
+
+def are_section(D: "Data", d: str, x: dict, y: dict | None) -> str:
+    """荒れ予報(試験中)。荒れ度・本命あり/なし・理由・モーター・組み合わせ候補、結果が出ていれば当たり外れ。"""
+    a = x.get("are")
+    if not a or not are_shown(D, d):
+        return ""
+    lv = int(a.get("lv") or 1)
+    why = "".join(f"<li>{esc(t)}</li>" for t in a.get("reasons") or [])
+    o = [f"<section class='are-sec ac lv{lv}' aria-labelledby=h-are><div class=are-hd><h2 id=h-are>荒れ予報</h2><span class=beta>試験中</span>"
+         + (f"<span class=tag style='margin:0'>{'今日' if d == D.today else 'この日'}の荒れ予報TOP3</span>" if a.get("top3") else "") + "</div>" + are_head(a, 48) + are_type(x, a)
+         + (f"<div><div class=k2><span>荒れの材料(番組表の数字と、AIの確率から)</span></div><ul class=ac-why>{why}</ul></div>" if why else "") + are_motor(x, a) + are_layers(x, a, venue_of(x))]
+    if y and y.get("actual"):
+        pay = y.get("trifecta_payout") or 0
+        cs = [c[0] for c in a.get("cands") or []]
+        t = f"結果は{y['actual']}。1号艇は" + ("1着でした。" if y.get("lane1_won") else "1着を逃しました。")
+        t += f"3連単は{int(pay):,}円" + ("で万舟。" if pay >= MANSHU else "(万舟ではありません)。") if pay else ""
+        tri = [c for c, _ in x.get("trifecta") or []]
+        lay = "本線" if tri[:1] == [y["actual"]] else "抑え" if y["actual"] in tri[1:3] else "狙い" if y["actual"] in cs else None
+        t += (f"{lay}が的中。" if lay else "本線・抑え" + ("・狙い" if cs else "") + "とも外れ。")
+        o.append(f"<p class=out>{esc(t)}</p>")
+    o.append(f"<p class=are-note>{esc(ARE_NOTE)}{esc(ARE_PRE)}</p></section>")
+    return "".join(o)
+
+
 # ---------- レースのページ ----------
 def race_page(D: Data, d: str, x: dict, siblings: list) -> None:
     vn = venue_of(x)
@@ -407,6 +435,10 @@ def race_page(D: Data, d: str, x: dict, siblings: list) -> None:
          f"<p class=sub>{esc(jd(d, True, True))}・締切 <span class=n>{esc(hm(x['close']))}</span>"
          + (f"・{esc(ttl)}" if ttl else "") + (tier_mark(x.get("tier")) if x.get("tier") else "") + "</p>"
          f"<p class=warn>予想は{esc(jd(pub, False))} {esc(hm(pub))}に公開(<a href='{COMMITS}{d}.json'>記録の履歴</a>)。{DISC_SHORT}</p></header>", box]
+    try:
+        o.append(are_section(D, d, x, y))
+    except Exception as e:  # noqa  (荒れ予報が作れなくてもページは出す)
+        print("are section skipped:", e)
     o.append(f"<section aria-labelledby=h-mi><h2 id=h-mi>AIの見立て</h2><p class=lead2>◎は<b>{x['pick']}号艇{('の' + esc(nm)) if nm else ''}</b>、1着の確率は<b>{p*100:.1f}%</b>"
              + (f"(自信度{esc(x['tier'])})" if x.get("tier") else "") + f"。{esc(tenkai(x))}</p>{entry_table(x)}</section>")
     o.append(picks_html(x))
@@ -440,7 +472,7 @@ def races_table(D: Data, d: str, xs: list, with_tenkai: bool = False) -> str:
          + ("<th>結果</th><th class=r>3連単</th>" if any_res else "<th>3連単の上位</th>") + "</tr></thead><tbody>"]
     for x in xs:
         y = D.result(d, x["key"])
-        link = f"<a href='{url(d, sl, str(x['race']) + 'r')}'>{x['race']}R</a>"
+        link = f"<a href='{url(d, sl, str(x['race']) + 'r')}'>{x['race']}R</a>" + (are_mark(x) if are_shown(D, d) else "")
         ten = f"<span class=tenkai>{esc(tenkai_short(x))}</span>" if with_tenkai else ""
         mk = lane(x["pick"]) if any_res else marks(x["probs"])
         head = (f"<tr{' class=hit' if y and y.get('tri_hit') else ''}><td class=t-race><span class=n>{link}</span><span class=tm>{esc(hm(x['close']))}</span></td>"
@@ -746,7 +778,7 @@ def build() -> dict:
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
-    (OUT / "p.css").write_text(CSS + EXTRA_CSS, encoding="utf-8")
+    (OUT / "p.css").write_text(CSS + ARE_CSS + EXTRA_CSS, encoding="utf-8")
     n = {"race": 0, "venue_day": 0, "date": 0, "venue": 0, "record": 0}
     for d in D.dates:
         date_page(D, d)

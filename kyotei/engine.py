@@ -237,9 +237,14 @@ def make_predictions(d: date, model: dict) -> dict | None:
         out["ana"] = ana_picks_today(d, preds, Ts)
     except Exception as e:  # noqa  (穴が作れなくても本命の予想は公開する)
         print("ana skipped:", e)
-    try:   # 荒れ注意(記録だけ。are_config.json の show が false の間はページ・Xに出さない)
+    try:   # 荒れ予報(全レースの荒れ度・TOP3・本命なしの組み合わせ候補。are_config.json の show が true のときページ・Xに出す)
         import are
-        a = are.today(preds, Ts)
+        try:
+            are_days = load_days(hist_dir(), are.STAT_DAYS, before=d)   # 組み合わせの出現率・前日の風(前日まで)
+        except Exception as e:  # noqa
+            print("are days skipped:", e)
+            are_days = []
+        a = are.today(preds, Ts, are_days, Xs)
         if a:
             out["are"] = a
     except Exception as e:  # noqa
@@ -537,6 +542,11 @@ def main(mode: str):
         # モデルと締切前の市場(単勝オッズ)の混ぜ方の重みを、紙の上の記録から(新しい取得なし)
         import exp_blend
         exp_blend.main(hist_dir())
+    elif mode == "fadj":
+        # 2号艇(1号艇の隣)のF持ちで1号艇が逃げにくいか(朝のモデルの見積もりと比べる。新しい取得なし。予想は作らない)
+        import exp_are
+        exp_are.main_fadj(hist_dir())
+        return
     elif mode == "are":
         # 荒れるレース(1号艇の負け・万舟)を見分けられるかと、荒れたときの買い方の検証(新しい取得なし。予想は作らない)
         import exp_are
