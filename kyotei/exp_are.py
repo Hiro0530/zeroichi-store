@@ -15,7 +15,7 @@ python kyotei/exp_are.py [hist_dir] [weeks=52]
   選ぶ期間でいちばん回収率の高い組み合わせを選び、確かめる期間で評価。決まった条件(ライバル型など)は選ばずにそのまま評価。
   3連複は払戻の記録が直近182日分しか無いので確かめる期間だけ(参考)。
 - 直前の「スタート展示のST」は競走成績ファイルに無く、過去分で検証できない(直前情報ページの読み取りは紙の上の検証で貯めている)。
-出力: experiments/are_v1.json(集計の数字だけ)。毎朝の設定(are_config.json)は書かない(採否は人が見て決める)。
+出力: experiments/are_v1.json(集計の数字だけ。2026-10-29 の2回目から混戦度の点数を追加)。毎朝の設定(are_config.json)は書かない(採否は人が見て決める)。
 """
 from __future__ import annotations
 
@@ -247,6 +247,10 @@ def eval_bet(ret, stake, D=None):
     return r
 
 
+def tri_entropy(T):
+    return -(T * np.log(np.clip(T, 1e-12, 1))).sum(1)
+
+
 def per_day_top(score, D, n):
     sel = np.zeros(len(score), bool)
     for d in np.unique(D):
@@ -368,12 +372,14 @@ def main(hist: Path, weeks: int = 52):
         vo = np.eye(24)[c.V]
         Z = np.column_stack(cols + [vo])
         mu, sd = Z[SEL].mean(0), Z[SEL].std(0) + 1e-9
-        return (Z - mu) / sd
+        return (Z - mu) / sd, mu, sd
 
-    scores = {"朝: 1−1号艇の1着の確率": 1 - P_m[:, 0], "直前: 1−1号艇の1着の確率": 1 - P_p[:, 0]}
+    scores = {"朝: 1−1号艇の1着の確率": 1 - P_m[:, 0], "直前: 1−1号艇の1着の確率": 1 - P_p[:, 0],
+              # 混戦度: 3連単の確率の散らばり(エントロピー)。万舟の回帰でいちばん効いた項だけを取り出した、学習の要らない点数
+              "朝: 混戦度(3連単の確率の散らばり)": tri_entropy(T_m), "直前: 混戦度(3連単の確率の散らばり)": tri_entropy(T_p)}
     clf = {}
     for tag, names, P, T in (("朝", MORNING_COV, P_m, T_m), ("直前", PRE_COV, P_p, T_p)):
-        Z = zfeat(names, P, T)
+        Z, zmu, zsd = zfeat(names, P, T)
         # 万舟になるか
         w = logit_fit(Z[SEL], man[SEL].astype(float), l2=10.0)
         pm = logit_pred(w, Z)
@@ -391,7 +397,7 @@ def main(hist: Path, weeks: int = 52):
                     "lane1_lost_ll_diff": boot_mean(ll_new - ll_mod),
                     "lane1_coef_top": sorted([[n_, r4(x)] for n_, x in zip(names_all, w1[1:])], key=lambda t: -abs(t[1]))[:12]}
         if tag == "朝":
-            clf_m = {"w": w.tolist(), "names": names_all}
+            clf_m = {"w": w.tolist(), "names": names_all, "mu": zmu.tolist(), "sd": zsd.tolist()}
     rep["classifiers"] = clf
     # 今までの穴の決め方(exp_ana): 万舟らしさ = 平均払戻1万円以上の組番の確率の合計
     old = np.zeros(len(y))
