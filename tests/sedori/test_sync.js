@@ -118,6 +118,10 @@ eq(S.firstSync('u2', 'u1', 0), 'merge', '別のアカウントでも空なら');
   eq(S.planState({ status: 'active', planKey: 'total_month' }, now).tier, 'total', '総合');
   eq(S.planState({ status: 'active' }, now).tier, 'total', 'プランが分からない時は総合(機能を減らさない)');
   eq(S.planState({ status: 'paused', planKey: 'total_month' }, now).tier, 'free', '一時停止中は無料と同じ');
+  // カード(Stripe)の契約: Worker が同じ形で書く。期間末の解約が決まったら canceled + paidThrough(秒の値も読む)
+  const card = S.planState({ provider: 'stripe', status: 'canceled', planKey: 'business_month', paidThrough: Math.floor((now + 9 * 864e5) / 1000) }, now);
+  eq([card.key, card.paid, card.canCancel, card.tier], ['ending', true, false, 'business'], 'カードの期間末の解約: 終わりまで業務のまま');
+  eq(S.planState({ provider: 'stripe', status: 'trialing', planKey: 'light_month', trialEnd: new Date(now + 3 * 864e5).toISOString() }, now).until, now + 3 * 864e5, 'カードの無料期間の終わり');
   eq(S.planState({ status: 'canceled', planKey: 'light_month', paidThrough: now + 864e5 }, now).tier, 'light', '解約後も期間の終わりまではそのプラン');
   // ライトの月100件: 仕入日の月で、作った順に数える
   const mk = (i, date) => ({ id: (1e12 + i).toString(36), date });

@@ -19,7 +19,20 @@ FOUNDER_LIMIT = "100"
 # PayPal のプランID → アプリのプラン(金額は sedori/assets/config.js の PLAN_CATALOG と同じにする)
 PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amount":"月4,980円"},"P-TOTAL-YEAR":{"key":"total_year","name":"総合(年払い)","amount":"年49,800円"},"P-FOUNDER-MONTH":{"key":"founder_month","name":"総合 先着100名の価格(月払い)","amount":"月3,980円","founder":true},"P-FOUNDER-YEAR":{"key":"founder_year","name":"総合 先着100名の価格(年払い)","amount":"年39,800円","founder":true},"P-LIGHT-MONTH":{"key":"light_month","name":"ライト(月払い)","amount":"月2,980円"},"P-LIGHT-YEAR":{"key":"light_year","name":"ライト(年払い)","amount":"年29,800円"},"P-BUSINESS-MONTH":{"key":"business_month","name":"業務(月払い)","amount":"月7,980円"},"P-BUSINESS-YEAR":{"key":"business_year","name":"業務(年払い)","amount":"年79,800円"}}'
 
+# Stripe の価格ID(price_ で始まる)。カードで申し込めるのは、ここに ID が入っているプランだけ(空欄のプランは料金ページで「準備中」)。
+# テストモードの ID → 確認が済んだら本番の ID に入れ替える。手順は README の「Stripe の設定」。
+STRIPE_PRICE_LIGHT_MONTH = ""      # ライト 月2,980円
+STRIPE_PRICE_LIGHT_YEAR = ""       # ライト 年29,800円
+STRIPE_PRICE_TOTAL_MONTH = ""      # 総合 月4,980円
+STRIPE_PRICE_TOTAL_YEAR = ""       # 総合 年49,800円
+STRIPE_PRICE_FOUNDER_MONTH = ""    # 総合 先着100名 月3,980円
+STRIPE_PRICE_FOUNDER_YEAR = ""     # 総合 先着100名 年39,800円
+STRIPE_PRICE_BUSINESS_MONTH = ""   # 業務 月7,980円
+STRIPE_PRICE_BUSINESS_YEAR = ""    # 業務 年79,800円
+
 # 秘密の値は次のコマンドで入れる(このファイルには書かない)
+#   wrangler secret put STRIPE_SECRET_KEY      … Stripe のシークレットキー(テストは sk_test_ / 本番は sk_live_。制限付きキー rk_ でもよい)
+#   wrangler secret put STRIPE_WEBHOOK_SECRET  … Stripe の Webhook の署名シークレット(whsec_)
 #   wrangler secret put FIREBASE_SA_KEY     … サービスアカウントの private_key(-----BEGIN PRIVATE KEY----- から)
 #   wrangler secret put PAYPAL_SECRET       … PayPal の Secret
 #   wrangler secret put PAYPAL_WEBHOOK_ID   … PayPal の Webhook ID

@@ -1,7 +1,7 @@
 rules_version = '2';
 // せどり 利益チェック: Cloud Firestore のセキュリティルール
 // - 自分の文書(users/{uid} とその下の ledger)だけ読み書きできる。他人の台帳は誰も読めない。
-// - subscription(契約の状態)と paypal の項目は、サーバー(Cloudflare Worker のサービスアカウント)だけが書く。
+// - subscription(契約の状態。カード=Stripe と PayPal のどちらも同じ形)は、サーバー(Cloudflare Worker のサービスアカウント)だけが書く。
 //   サービスアカウントはルールを通らないので、ここでは利用者からの書き込みを禁止するだけでよい。
 // - 台帳の書き込みは有料(無料期間・支払い済みの期間)の間だけ。読む・消すは、解約後もいつでもできる。
 // - 帳簿(users/{uid}/books/{種類~行のid})の書き込みは、その機能を使えるプランの間だけ。
@@ -76,7 +76,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // それ以外(paypalSubs など Worker 用の対応表)は利用者からは読み書きできない
+    // それ以外(paypalSubs・stripeSubs・stripeEvents・founderSeats など Worker 用の対応表)は利用者からは読み書きできない
     match /{document=**} {
       allow read, write: if false;
     }

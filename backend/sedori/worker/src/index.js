@@ -1,19 +1,28 @@
 /**
  * せどり 利益チェック — 契約の受け口(Cloudflare Worker・無料枠)
  *
- * 役目
- *  1. PayPal の Webhook を受け、署名を PayPal に確かめてから、契約の状態を Firestore の users/{uid}.subscription に書く。
- *     受ける出来事: BILLING.SUBSCRIPTION.ACTIVATED / UPDATED / RE-ACTIVATED / CANCELLED / SUSPENDED / EXPIRED / PAYMENT.FAILED、PAYMENT.SALE.COMPLETED
- *     どの出来事でも PayPal から契約を読み直して書くので、同じ通知が2回来ても結果は同じ。
- *  2. ログイン中の利用者からの頼み(Firebase の ID トークンで本人を確かめる)
- *     POST /paypal/link    申し込み直後の反映 { subscriptionID }
- *     POST /paypal/pause   1か月の一時停止
- *     POST /paypal/resume  再開
- *     POST /paypal/revise  プランの変更(月払い⇔年払い・ライト⇔総合⇔業務)。PayPal の承認画面の URL を返す
- *     POST /paypal/cancel  解約 { reason }
- *  3. 毎日1回(cron): 無料期間の終了3日前のメール、一時停止の自動再開、解約から3年たった台帳の削除
+ * お支払いは Stripe(カード・Apple Pay・Google Pay)が本命、PayPal は2つ目の選択肢(2026-10-28 決定)。
+ * どちらも契約の状態を Firestore の users/{uid}.subscription に同じ形で書く(provider: "stripe" | "paypal")。
  *
- * 秘密の値は wrangler secret で入れる(README)。ここには書かない。
+ * 役目
+ *  1. Stripe の Webhook(POST /stripe/webhook)。署名(Stripe-Signature の t と v1・HMAC-SHA256・許容5分)を確かめ、
+ *     受ける出来事: checkout.session.completed / customer.subscription.updated / customer.subscription.deleted / invoice.paid / invoice.payment_failed
+ *     どの出来事でも Stripe から契約を読み直して書くので、届く順が前後しても、同じ通知が2回来ても結果は同じ。処理済みの出来事は stripeEvents に残す。
+ *  2. PayPal の Webhook。署名を PayPal に確かめてから同じように書く。
+ *     受ける出来事: BILLING.SUBSCRIPTION.ACTIVATED / UPDATED / RE-ACTIVATED / CANCELLED / SUSPENDED / EXPIRED / PAYMENT.FAILED、PAYMENT.SALE.COMPLETED
+ *  3. ログイン中の利用者からの頼み(Firebase の ID トークンで本人を確かめる)
+ *     POST /stripe/checkout { planKey }  Stripe の申し込み画面(Checkout)の URL を返す
+ *     POST /stripe/link     { sessionId } 申し込み直後の反映
+ *     POST /stripe/pause    1か月の一時停止 / POST /stripe/resume 再開
+ *     POST /stripe/revise   { planKey }  プランの変更(その場で変わり、差額は日割り)
+ *     POST /stripe/cancel   { reason }   解約(期間の終わりで終了。日割りの返金なし)
+ *     POST /stripe/portal   { flow }     カードの変更・請求の履歴(Stripe のカスタマーポータル)
+ *     POST /paypal/link | pause | resume | revise | cancel  PayPal の契約の同じ操作
+ *     GET  /stripe/plans    カードで申し込めるプラン(料金ページが「準備中」かどうかを決める。ログイン不要)
+ *  4. 毎日1回(cron): 無料期間の終了3日前のメール、一時停止の自動再開、解約から3年たった台帳の削除
+ *
+ * 先着100名(総合 3,980円)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。
+ * 秘密の値は wrangler secret で入れる(README)。ここには書かない。Stripe の SDK は使わず、REST を fetch で呼ぶ。
  */
 
 const DAY = 864e5;
@@ -233,21 +242,306 @@ export async function syncSubscription(env, subId, uidHint) {
   const sub = normalize(s, prev, env);
   await patchDoc(env, 'users/' + uid, { subscription: sub });
   await patchDoc(env, 'paypalSubs/' + subId, { uid, status: sub.status, updatedAt: new Date() });
-  if (sub.founder && ['trialing', 'active', 'past_due'].includes(sub.status) && !(link && link.counted)) await countFounder(env, subId);
+  // 先着100名は1回目のお支払いが済んだ順に数える(PayPal は無料期間の後に ACTIVE のまま請求が通ると active になる)
+  if (sub.founder && sub.status === 'active' && !(link && link.counted)) await countFounder(env, 'paypal', subId);
   return { uid, sub };
 }
 
-/** 先着100名: お申し込みの順に数え、上限に達したら先着のプランを止める */
-async function countFounder(env, subId) {
+/**
+ * 先着100名: 1回目のお支払いが済んだ契約を1回だけ数える。上限に達したら受付を閉じる(public/founders.open=false)。
+ * 同じ契約の通知が同時に2つ来ても2回数えないよう、founderSeats/{provider}_{契約番号} の作成(無い時だけ)と
+ * taken の加算を1つの書き込み(:commit)でまとめる。受付中に申し込んだ方(無料期間中の方を含む)は、その価格のまま続く。
+ */
+export async function countFounder(env, provider, subId) {
   const limit = Number(env.FOUNDER_LIMIT || 100);
+  const root = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+  try {
+    await fs(env, 'POST', ':commit', { writes: [
+      { update: { name: `${root}/founderSeats/${provider}_${subId}`, fields: toFields({ provider, subId, at: new Date() }) }, currentDocument: { exists: false } },
+      { transform: { document: `${root}/public/founders`, fieldTransforms: [{ fieldPath: 'taken', increment: { integerValue: '1' } }] } }
+    ] });
+  } catch (e) {
+    if (/ (400|409)$/.test(e.message)) return false; // もう数えてある
+    throw e;
+  }
   const f = (await getDoc(env, 'public/founders')) || {};
-  const taken = Number(f.taken || 0) + 1;
-  const open = taken < limit;
-  await patchDoc(env, 'public/founders', { taken, limit, open, updatedAt: new Date() });
-  await patchDoc(env, 'paypalSubs/' + subId, { counted: true });
-  if (!open) {
+  const taken = Number(f.taken || 0), open = taken < limit && f.open !== false;
+  await patchDoc(env, 'public/founders', { limit, open, updatedAt: new Date() });
+  await patchDoc(env, (provider === 'stripe' ? 'stripeSubs/' : 'paypalSubs/') + subId, { counted: true });
+  if (!open && env.PAYPAL_CLIENT_ID && env.PAYPAL_SECRET) {
     for (const [id, p] of Object.entries(plansOf(env))) if (p.founder) await pp(env, 'POST', `/v1/billing/plans/${id}/deactivate`).catch(() => {});
   }
+  return true;
+}
+
+/* ------------------------------------------------------------------ Stripe(SDK を使わず REST を fetch で) */
+const STRIPE_API = 'https://api.stripe.com/v1';
+/** 料金ページ・Firestore で使うプランのキー。Stripe の価格ID は wrangler.toml の STRIPE_PRICE_<キーの大文字> に入れる */
+export const PLAN_KEYS = ['light_month', 'light_year', 'total_month', 'total_year', 'founder_month', 'founder_year', 'business_month', 'business_year'];
+const LIVE = ['trialing', 'active', 'past_due', 'paused'];
+/** プランのキー → Stripe の価格ID(空欄のものは入れない) */
+export function stripePrices(env) {
+  const m = {};
+  for (const k of PLAN_KEYS) { const id = String(env['STRIPE_PRICE_' + k.toUpperCase()] || '').trim(); if (id) m[k] = id; }
+  return m;
+}
+function keyOfPrice(env, priceId) { const m = stripePrices(env); return Object.keys(m).find(k => m[k] === priceId) || ''; }
+/** プランのキー → 名前・金額。wrangler.toml の PLANS にあればそれ、無ければ下の既定(sedori/assets/config.js の PLAN_CATALOG と同じ金額) */
+const PLAN_INFO = {
+  light_month: { name: 'ライト(月払い)', amount: '月2,980円' }, light_year: { name: 'ライト(年払い)', amount: '年29,800円' },
+  total_month: { name: '総合(月払い)', amount: '月4,980円' }, total_year: { name: '総合(年払い)', amount: '年49,800円' },
+  founder_month: { name: '総合 先着100名の価格(月払い)', amount: '月3,980円', founder: true }, founder_year: { name: '総合 先着100名の価格(年払い)', amount: '年39,800円', founder: true },
+  business_month: { name: '業務(月払い)', amount: '月7,980円' }, business_year: { name: '業務(年払い)', amount: '年79,800円' }
+};
+function planByKey(env, key) {
+  for (const p of Object.values(plansOf(env))) if (p.key === key) return p;
+  return PLAN_INFO[key] ? { key, ...PLAN_INFO[key] } : null;
+}
+const secMs = v => (v ? Number(v) * 1000 : null);
+const err = (msg, status, code) => { const e = new Error(msg); e.status = status; if (code) e.code = code; return e; };
+
+/** Stripe の REST に渡す形(a[b][0][c]=…)にする。空文字は「消す」の意味でそのまま送る */
+export function formEncode(obj, prefix = '', out = []) {
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined || v === null) continue;
+    const key = prefix ? `${prefix}[${k}]` : k;
+    if (Array.isArray(v)) v.forEach((x, i) => (x && typeof x === 'object') ? formEncode(x, `${key}[${i}]`, out) : out.push(encodeURIComponent(`${key}[${i}]`) + '=' + encodeURIComponent(String(x))));
+    else if (typeof v === 'object') formEncode(v, key, out);
+    else out.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(v)));
+  }
+  return out.join('&');
+}
+async function stripe(env, method, path, params) {
+  if (!env.STRIPE_SECRET_KEY) throw err('カードのお支払いは準備中です', 503);
+  const headers = { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY };
+  let url = STRIPE_API + path, body;
+  if (params && method === 'GET') url += '?' + formEncode(params);
+  else if (params) { body = formEncode(params); headers['Content-Type'] = 'application/x-www-form-urlencoded'; }
+  const r = await fetch(url, { method, headers, body });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw err(`stripe ${method} ${path} ${r.status} ${String((j.error && j.error.message) || '').slice(0, 200)}`, 502);
+  return j;
+}
+
+/**
+ * Stripe-Signature(t=時刻,v1=署名[,v1=…])を確かめる。署名は HMAC-SHA256(Webhook の署名シークレット, `${t}.${本文}`) の16進。
+ * 時刻のずれが tolerance 秒(既定5分)を超えたら受けない(送り直しの悪用を防ぐ)。
+ */
+export async function verifyStripeSignature(payload, header, secret, now = Date.now(), tolerance = 300) {
+  if (!header || !secret) return false;
+  let t = null; const v1 = [];
+  for (const part of String(header).split(',')) {
+    const i = part.indexOf('='); if (i < 0) continue;
+    const k = part.slice(0, i).trim(), v = part.slice(i + 1).trim();
+    if (k === 't') t = v; else if (k === 'v1') v1.push(v);
+  }
+  if (!t || !/^\d+$/.test(t) || !v1.length) return false;
+  if (Math.abs(Math.floor(now / 1000) - Number(t)) > tolerance) return false;
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(t + '.' + payload)));
+  const hex = Array.from(mac, b => b.toString(16).padStart(2, '0')).join('');
+  return v1.some(s => sameText(s, hex));
+}
+function sameText(a, b) { // 時間で中身を推し量られないように、最後まで比べる
+  if (a.length !== b.length) return false;
+  let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+
+/**
+ * Stripe の契約 → アプリの契約の状態(PayPal と同じ形)。prev は今までの値。
+ * 期間の終わりでの解約(cancel_at_period_end)が決まった契約は canceled + paidThrough(その日まで使える)にする。
+ * 新しい API(2025-03 以降)は期間の終わりを items.data[0].current_period_end に持つので、両方を見る。
+ */
+export function normalizeStripe(s, prev, env, now = Date.now()) {
+  prev = prev || {};
+  const item = ((s.items || {}).data || [])[0] || {};
+  const priceId = (item.price || {}).id || (s.plan || {}).id || '';
+  const key = keyOfPrice(env, priceId) || (s.metadata || {}).planKey || prev.planKey || '';
+  const plan = planByKey(env, key) || {};
+  const periodEnd = secMs(item.current_period_end || s.current_period_end);
+  const trialEnd = secMs(s.trial_end);
+  const pause = s.pause_collection || null;
+  let status;
+  switch (s.status) {
+    case 'trialing': status = 'trialing'; break;
+    case 'active': status = pause ? 'paused' : 'active'; break;
+    case 'past_due': status = 'past_due'; break;
+    case 'unpaid': case 'paused': status = 'suspended'; break;
+    case 'canceled': status = 'canceled'; break;
+    case 'incomplete_expired': status = 'expired'; break;
+    default: status = 'incomplete';
+  }
+  const ending = LIVE.includes(status) && !!(s.cancel_at_period_end || s.cancel_at);
+  const out = {
+    id: s.id, provider: 'stripe', customerId: (typeof s.customer === 'string' ? s.customer : (s.customer || {}).id) || prev.customerId || '', itemId: item.id || prev.itemId || '',
+    status: ending ? 'canceled' : status, planId: priceId, planKey: key, planName: plan.name || prev.planName || '総合', amount: plan.amount || prev.amount || '',
+    founder: key ? !!plan.founder : !!prev.founder,
+    trialEnd: trialEnd ? new Date(trialEnd) : (toMs(prev.trialEnd) ? new Date(toMs(prev.trialEnd)) : null),
+    nextBillingAt: status === 'trialing' ? (trialEnd ? new Date(trialEnd) : null) : (periodEnd ? new Date(periodEnd) : null),
+    payerEmail: prev.payerEmail || '',
+    pausedByUser: status === 'paused', resumeAt: status === 'paused' && pause && pause.resumes_at ? new Date(secMs(pause.resumes_at)) : null,
+    reminderSent: !!prev.reminderSent, cancelReason: (s.metadata || {}).cancel_reason || prev.cancelReason || '', updatedAt: new Date(now)
+  };
+  if (ending || status === 'canceled' || status === 'expired') {
+    // 期間の終わり(無料期間中ならその終わり)まで使える。そこから3年間、台帳を保管する
+    const through = ending
+      ? (secMs(s.cancel_at) || periodEnd || now)
+      : Math.max(toMs(prev.paidThrough) || 0, secMs(s.ended_at) || 0, status === 'canceled' ? 0 : now) || now;
+    out.paidThrough = new Date(through);
+    out.canceledAt = new Date(secMs(s.canceled_at) || toMs(prev.canceledAt) || now);
+    out.retainUntil = new Date(addYears(Math.max(through, now), RETAIN_YEARS));
+    out.nextBillingAt = null; out.pausedByUser = false; out.resumeAt = null;
+  } else { out.paidThrough = null; out.canceledAt = null; out.retainUntil = null; }
+  return out;
+}
+
+/** 契約を Stripe から読み直して Firestore に書く。hint: { uid, email, paid(1回目の入金の通知) } */
+export async function syncStripe(env, subId, hint = {}) {
+  const s = await stripe(env, 'GET', '/subscriptions/' + encodeURIComponent(subId));
+  const link = await getDoc(env, 'stripeSubs/' + subId);
+  const uid = (s.metadata || {}).uid || hint.uid || (link && link.uid) || '';
+  if (!uid) return { skipped: 'no-uid' };
+  const user = (await getDoc(env, 'users/' + uid)) || {};
+  const cur = user.subscription || {};
+  const prev = cur.id === subId ? cur : {};
+  const sub = normalizeStripe(s, prev, env);
+  if (!sub.payerEmail) sub.payerEmail = hint.email || user.email || '';
+  // 同じ人の別の契約(古い契約の遅れて届いた通知など)で、いま有効な契約を上書きしない
+  if (cur.id && cur.id !== subId && LIVE.includes(cur.status) && !LIVE.includes(sub.status)) {
+    await patchDoc(env, 'stripeSubs/' + subId, { uid, status: sub.status, updatedAt: new Date() });
+    return { uid, sub, kept: cur.id };
+  }
+  await patchDoc(env, 'users/' + uid, { subscription: sub });
+  await patchDoc(env, 'stripeSubs/' + subId, { uid, status: sub.status, updatedAt: new Date() });
+  if (sub.founder && (hint.paid || sub.status === 'active') && !(link && link.counted)) await countFounder(env, 'stripe', subId);
+  return { uid, sub };
+}
+
+const STRIPE_EVENTS = ['checkout.session.completed', 'customer.subscription.updated', 'customer.subscription.deleted', 'invoice.paid', 'invoice.payment_failed'];
+/** Webhook の出来事を1つ処理する(署名は確認済み)。同じ出来事が2回来たら2回目は何もしない */
+export async function handleStripeEvent(env, ev) {
+  if (!ev || !STRIPE_EVENTS.includes(ev.type)) return { ignored: ev && ev.type };
+  const evId = String(ev.id || '');
+  if (!/^[\w-]{1,200}$/.test(evId)) return { ignored: 'no-id' };
+  const seen = await getDoc(env, 'stripeEvents/' + evId);
+  if (seen && seen.done) return { duplicate: true };
+  const o = (ev.data || {}).object || {};
+  let subId = null; const hint = {};
+  if (ev.type === 'checkout.session.completed') {
+    if (o.mode !== 'subscription') return { ignored: 'not-subscription' };
+    subId = typeof o.subscription === 'string' ? o.subscription : (o.subscription || {}).id;
+    hint.uid = o.client_reference_id || (o.metadata || {}).uid || '';
+    hint.email = (o.customer_details || {}).email || o.customer_email || '';
+  } else if (/^customer\.subscription\./.test(ev.type)) {
+    subId = o.id; hint.uid = (o.metadata || {}).uid || '';
+  } else { // invoice.*(古い API は invoice.subscription、新しい API は invoice.parent.subscription_details)
+    const det = ((o.parent || {}).subscription_details) || o.subscription_details || {};
+    subId = (typeof o.subscription === 'string' ? o.subscription : (o.subscription || {}).id) || det.subscription;
+    hint.uid = (det.metadata || {}).uid || '';
+    hint.paid = ev.type === 'invoice.paid' && Number(o.amount_paid || 0) > 0;
+  }
+  if (!subId) return { ignored: 'no-subscription' };
+  const r = await syncStripe(env, subId, hint);
+  await patchDoc(env, 'stripeEvents/' + evId, { type: ev.type, subId, done: true, at: new Date() });
+  return { ok: true, status: r.sub ? r.sub.status : r.skipped };
+}
+
+/** 料金ページの「お申し込み内容の確認」と同じことを、Stripe の画面のボタンの下にも書く */
+function checkoutNote(plan, key, trial, env, now = Date.now()) {
+  const price = String(plan.amount || '').replace(/^(月|年)/, '');
+  const cyc = /_year$/.test(key) ? '毎年' : '毎月';
+  const head = trial
+    ? `${Number(env.TRIAL_DAYS || 14)}日間は無料です。${jd(now + Number(env.TRIAL_DAYS || 14) * DAY)}に1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`
+    : `今日、1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`;
+  return head + '解約はマイページの「契約内容」からいつでもできます' + (trial ? '(無料期間中の解約は0円)。' : '。');
+}
+
+/** ログイン中の利用者からの Stripe の頼み */
+export async function handleStripeUser(path, body, who, env) {
+  const uid = who.uid, app = appUrl(env);
+  if (path === '/stripe/checkout') {
+    const key = String(body.planKey || '');
+    const prices = stripePrices(env);
+    if (!prices[key]) throw err('このプランは、いまカードで申し込めません', 400, 'no-price');
+    const user = (await getDoc(env, 'users/' + uid)) || {};
+    const cur = user.subscription || null;
+    const curPaid = cur && (LIVE.includes(cur.status) || cur.status === 'suspended' || (cur.status === 'canceled' && toMs(cur.paidThrough) > Date.now()));
+    if (curPaid) throw err('このアカウントには、いまの契約があります。マイページの契約内容をご確認ください', 409, 'has-sub');
+    if (/^founder_/.test(key)) {
+      const f = (await getDoc(env, 'public/founders')) || {};
+      if (f.open === false || Number(f.taken || 0) >= Number(env.FOUNDER_LIMIT || 100)) throw err('先着100名の価格の受付は終わりました', 409, 'founder-closed');
+    }
+    const trial = !cur; // 無料期間は、初めてのお申し込みの時だけ
+    const plan = planByKey(env, key) || {};
+    const meta = { uid, planKey: key };
+    const params = {
+      mode: 'subscription', locale: 'ja', client_reference_id: uid,
+      line_items: [{ price: prices[key], quantity: 1 }],
+      payment_method_types: ['card'], // Apple Pay・Google Pay はカードの中に出る(Stripe の管理画面で有効にしておく)
+      success_url: app + 'mypage/?subscribed=1&session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
+      metadata: meta,
+      subscription_data: trial ? { metadata: meta, trial_period_days: Number(env.TRIAL_DAYS || 14) } : { metadata: meta },
+      custom_text: { submit: { message: checkoutNote(plan, key, trial, env) } }
+    };
+    if (cur && cur.provider === 'stripe' && cur.customerId) params.customer = cur.customerId;
+    else if (who.email) params.customer_email = who.email;
+    const s = await stripe(env, 'POST', '/checkout/sessions', params);
+    return { url: s.url, trial };
+  }
+  if (path === '/stripe/link') {
+    const s = await stripe(env, 'GET', '/checkout/sessions/' + encodeURIComponent(String(body.sessionId || '')));
+    if (s.client_reference_id !== uid) throw err('別のアカウントのお申し込みです', 403);
+    const subId = typeof s.subscription === 'string' ? s.subscription : (s.subscription || {}).id;
+    if (!subId) return { status: 'incomplete' };
+    const r = await syncStripe(env, subId, { uid, email: (s.customer_details || {}).email || '' });
+    return { status: r.sub ? r.sub.status : 'incomplete' };
+  }
+  const u = (await getDoc(env, 'users/' + uid)) || {};
+  const sub = u.subscription || null;
+  if (!sub || !sub.id || sub.provider !== 'stripe') throw err('カードの契約がありません', 404);
+  const id = encodeURIComponent(sub.id);
+  const after = async () => { const r = await syncStripe(env, sub.id, { uid }); return r.sub; };
+  if (path === '/stripe/cancel') {
+    if (!LIVE.includes(sub.status) && sub.status !== 'suspended') throw err('解約の手続きは済んでいます', 409);
+    const reason = String(body.reason || '').slice(0, 120) || '利用者による解約';
+    // 期間の終わりで終える(日割りの返金はなし)。無料期間中なら無料期間の終わりで終わり、請求はしない
+    await stripe(env, 'POST', '/subscriptions/' + id, { cancel_at_period_end: 'true', metadata: { cancel_reason: reason } });
+    const s2 = await after();
+    return { status: s2.status, paidThrough: s2.paidThrough };
+  }
+  if (path === '/stripe/pause') {
+    if (sub.status !== 'active') throw err('いまは一時停止できません', 409);
+    const resumeAt = addMonths(Date.now(), 1);
+    await stripe(env, 'POST', '/subscriptions/' + id, { pause_collection: { behavior: 'void', resumes_at: Math.floor(resumeAt / 1000) } });
+    const s2 = await after();
+    return { status: s2.status, resumeAt: new Date(resumeAt).toISOString() };
+  }
+  if (path === '/stripe/resume') {
+    await stripe(env, 'POST', '/subscriptions/' + id, { pause_collection: '' });
+    return { status: (await after()).status };
+  }
+  if (path === '/stripe/revise') {
+    const key = String(body.planKey || ''), price = stripePrices(env)[key];
+    if (!price) throw err('プランがありません', 400);
+    if (/^founder_/.test(key) && !sub.founder) throw err('先着100名の価格には変えられません', 400);
+    if (!['trialing', 'active'].includes(sub.status)) throw err('いまはプランを変えられません', 409);
+    const s = await stripe(env, 'GET', '/subscriptions/' + id);
+    const itemId = ((((s.items || {}).data) || [])[0] || {}).id;
+    if (!itemId) throw err('契約の中身を読めませんでした', 502);
+    await stripe(env, 'POST', '/subscriptions/' + id, { items: [{ id: itemId, price }], proration_behavior: 'create_prorations', metadata: { planKey: key } });
+    const s2 = await after();
+    return { status: s2.status, planKey: s2.planKey };
+  }
+  if (path === '/stripe/portal') {
+    if (!sub.customerId) throw err('契約の中身を読めませんでした', 404);
+    const params = { customer: sub.customerId, locale: 'ja', return_url: app + 'mypage/' };
+    if (body.flow === 'card') params.flow_data = { type: 'payment_method_update', after_completion: { type: 'redirect', redirect: { return_url: app + 'mypage/?card=1' } } };
+    const p = await stripe(env, 'POST', '/billing_portal/sessions', params);
+    return { url: p.url };
+  }
+  throw err('not found', 404);
 }
 
 /* ------------------------------------------------------------------ メール(Apps Script 経由で事業用の Gmail から送る) */
@@ -257,6 +551,15 @@ export function trialReminderMail(sub, email, env) {
   const end = toMs(sub.trialEnd), app = appUrl(env);
   const price = (sub.amount || '月4,980円').replace(/^(月|年)/, '');
   const cyc = /^年/.test(sub.amount || '') ? '毎年' : '毎月';
+  const card = sub.provider === 'stripe';
+  const how = card
+    ? `1. マイページ → 契約内容 → 「解約について」 → 「解約する」
+   ${app}mypage/#cancel
+2. このメールに「解約」とご返信`
+    : `1. マイページ → 契約内容 → 「解約について」 → 「解約する」
+   ${app}mypage/#cancel
+2. PayPal → 右上の歯車(設定) → 支払い → 自動支払いを管理 → ZEROICHI WORKS → キャンセル
+3. このメールに「解約」とご返信`;
   return {
     to: email,
     subject: `【せどり 利益チェック】無料期間は${jd(end)}までです`,
@@ -265,15 +568,12 @@ export function trialReminderMail(sub, email, env) {
 せどり 利益チェックをお使いいただき、ありがとうございます。
 無料期間は、${jd(end)}で終わります(無料期間中は、業務のすべての機能を使えます)。
 
-・${jd(end)}から「${sub.planName || '総合'}」で続き、1回目の料金 ${price}(税込)をPayPalでお支払いいただきます。以後は${cyc}同じ日に自動で請求します。
+・${jd(end)}から「${sub.planName || '総合'}」で続き、1回目の料金 ${price}(税込)を${card ? 'ご登録のカード' : 'PayPal'}でお支払いいただきます。以後は${cyc}同じ日に自動で請求します。
 ・続ける場合、お手続きは要りません。ライト・総合・業務の切り替えは、マイページの「契約内容」からできます。
 ・続けない場合は、${jd(end - DAY)}までに解約してください。無料期間中の解約は0円です。
 
 解約の方法(どれでもできます)
-1. マイページ → 契約内容 → 「解約について」 → 「解約する」
-   ${app}mypage/#cancel
-2. PayPal → 右上の歯車(設定) → 支払い → 自動支払いを管理 → ZEROICHI WORKS → キャンセル
-3. このメールに「解約」とご返信
+${how}
 
 解約しても、クラウドの台帳は3年間保管し、マイページから書き出せます。
 
@@ -307,6 +607,7 @@ export async function handleUser(path, body, who, env) {
     return { status: r.sub.status };
   }
   const { user, sub } = await userSub(env, uid);
+  if (sub.provider === 'stripe') { const e = new Error('カードの契約です'); e.status = 400; throw e; }
   const id = encodeURIComponent(sub.id);
   if (path === '/paypal/pause') {
     if (sub.status !== 'active') { const e = new Error('いまは一時停止できません'); e.status = 409; throw e; }
@@ -360,6 +661,14 @@ export async function daily(env, now = Date.now()) {
   for (const { uid, data } of await runQuery(env, { fieldFilter: { field: { fieldPath: 'subscription.status' }, op: 'EQUAL', value: { stringValue: 'paused' } } })) {
     const sub = data.subscription || {};
     if (!sub.resumeAt || toMs(sub.resumeAt) > now) continue;
+    if (sub.provider === 'stripe') {
+      // Stripe は resumes_at で自分で再開する。届いていなければ、ここで止めを外して読み直す
+      const s = await stripe(env, 'GET', '/subscriptions/' + encodeURIComponent(sub.id));
+      if (s.pause_collection) await stripe(env, 'POST', '/subscriptions/' + encodeURIComponent(sub.id), { pause_collection: '' });
+      await syncStripe(env, sub.id, { uid });
+      done.resumed++;
+      continue;
+    }
     await pp(env, 'POST', `/v1/billing/subscriptions/${encodeURIComponent(sub.id)}/activate`, { reason: '一時停止の期間の終わり' });
     await patchDoc(env, 'users/' + uid, { subscription: { ...sub, pausedByUser: false, resumeAt: null } });
     await syncSubscription(env, sub.id, uid);
@@ -389,14 +698,27 @@ async function purgeLedger(env, uid) {
 function cors(env, req) {
   const origin = req.headers.get('Origin') || '';
   const allow = (env.ALLOWED_ORIGIN || 'https://hiro0530.github.io').split(',').map(s => s.trim());
-  return allow.includes(origin) ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Vary': 'Origin' } : {};
+  return allow.includes(origin) ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Vary': 'Origin' } : {};
 }
 export default {
   async fetch(req, env) {
     const url = new URL(req.url), c = cors(env, req);
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: c });
     if (url.pathname === '/health') return json({ ok: true });
+    // カードで申し込めるプラン(価格IDが入っているもの)。料金ページはこれが空なら「準備中」と出す
+    if (url.pathname === '/stripe/plans' && req.method === 'GET') {
+      const ready = env.STRIPE_SECRET_KEY ? Object.keys(stripePrices(env)) : [];
+      return json({ ready, trialDays: Number(env.TRIAL_DAYS || 14) }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
+    }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
+    if (url.pathname === '/stripe/webhook') {
+      const text = await req.text();
+      const ok = await verifyStripeSignature(text, req.headers.get('Stripe-Signature'), env.STRIPE_WEBHOOK_SECRET).catch(() => false);
+      if (!ok) return json({ error: 'bad-signature' }, 400);
+      let ev; try { ev = JSON.parse(text); } catch { return json({ error: 'bad-json' }, 400); }
+      try { return json(await handleStripeEvent(env, ev)); }
+      catch (e) { return json({ error: String(e.message || e) }, 500); } // 500 なら Stripe が送り直す
+    }
     if (url.pathname === '/paypal/webhook') {
       const text = await req.text();
       let ok = false;
@@ -408,13 +730,14 @@ export default {
       try { const out = await syncSubscription(env, subId, r.custom_id); return json({ ok: true, status: out.sub ? out.sub.status : out.skipped }); }
       catch (e) { return json({ error: String(e.message || e) }, 500); } // 500 なら PayPal が送り直す
     }
-    if (url.pathname.startsWith('/paypal/')) {
+    if (url.pathname.startsWith('/paypal/') || url.pathname.startsWith('/stripe/')) {
       try {
         const m = (req.headers.get('Authorization') || '').match(/^Bearer (.+)$/);
         const who = await verifyIdToken(m && m[1], env).catch(() => { const e = new Error('ログインし直してください'); e.status = 401; throw e; });
         const body = await req.json().catch(() => ({}));
-        return json(await handleUser(url.pathname, body, who, env), 200, c);
-      } catch (e) { return json({ error: String(e.message || e) }, e.status || 500, c); }
+        const out = url.pathname.startsWith('/stripe/') ? await handleStripeUser(url.pathname, body, who, env) : await handleUser(url.pathname, body, who, env);
+        return json(out, 200, c);
+      } catch (e) { return json({ error: String(e.message || e), code: e.code || undefined }, e.status || 500, c); }
     }
     return json({ error: 'not found' }, 404, c);
   },
