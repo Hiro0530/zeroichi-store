@@ -1,2 +1,2 @@
-are
-# 2026-10-29(2回目): 混戦度(3連単の確率の散らばり)の点数を足し、万舟の回帰の標準化の値も記録(exp_are.py → experiments/are_v1.json)。予想は作らない
+fadj
+# 2026-10-29: 2号艇(1号艇の隣)のF持ちで1号艇が逃げにくいか、朝のモデルの見積もりと比べる(exp_are.main_fadj → experiments/are_fadj.json)。予想は作らない
