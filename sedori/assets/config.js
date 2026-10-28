@@ -1,6 +1,9 @@
 /* せどり 利益チェック — ログイン・クラウド保存・お支払いの設定(公開して問題のない値だけ)。
    ここが null のあいだは、ログインと有料の機能を「準備中」と表示し、無料版(この端末に保存)はそのまま使える。
-   値の取り方は本部の docs/sedori_app/muse_setup.md。秘密の値(PayPal のシークレット・Webhook ID・サービスアカウントの鍵)はここに入れない。 */
+   値の取り方は本部の docs/sedori_app/muse_setup.md と zeroichi-store の backend/sedori/README.md(Stripe)。
+   秘密の値(Stripe のシークレットキー・Webhook の署名シークレット、PayPal のシークレット・Webhook ID、サービスアカウントの鍵)はここに入れない。
+   お支払いはカード(Stripe)が本命、PayPal が2つ目。カードの価格IDは Worker の変数(STRIPE_PRICE_…)にだけ入れる。
+   料金ページは Worker の /stripe/plans を見て、価格IDの入ったプランだけ「カードで申し込む」を押せるようにする(空なら「準備中」)。 */
 window.ZW_CONFIG = {
   /* サイトの住所(最後は /)。独自ドメインに移す時はここだけ直し、tools/sedori/build_pages.py と本部の guide_build.py を流し直す。
      ページ同士のリンクは相対なので、ここを使うのは canonical・OGP・サイトマップ・楽天の「許可するWebサイト」の案内だけ。
@@ -21,10 +24,10 @@ window.ZW_CONFIG = {
     light_month: null,     // ライト 月2,980円
     light_year: null       // ライト 年29,800円
   },
-  /* Cloudflare Worker の URL(契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
+  /* Cloudflare Worker の URL(カードの申し込み・契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
   WORKER_URL: null,
   /* 料金(税込・円)。ここだけ直せば、料金ページ・トップの料金表・お申し込みの確認の金額が変わる
-     (ページの書き出し tools/sedori/build_pages.py もここを読む)。PayPal のプランの金額と Worker の PLANS も同じ値にそろえる。
+     (ページの書き出し tools/sedori/build_pages.py もここを読む)。Stripe の価格・PayPal のプランの金額と Worker の PLANS も同じ値にそろえる。
      open: false は「受付前」(申し込めない)。founder: true は先着100名の価格(総合だけ)。tier はできることの段(light/total/business)。
      badge は料金表の小さな印。有料の機能ができたかどうかは下の FEATURES_READY。
      2026-10-27 決定(安売りしない): ライト 月2,980円・年29,800円/総合 月4,980円・年49,800円(おすすめ)/先着100名は総合を月3,980円・年39,800円(続けている間ずっと)/業務 月7,980円・年79,800円(確定申告まで全部)。
@@ -39,7 +42,7 @@ window.ZW_CONFIG = {
     "light_month": { "name": "ライト", "tier": "light", "cycle": "month", "price": 2980, "badge": "まずは記録だけ" },
     "light_year": { "name": "ライト", "tier": "light", "cycle": "year", "price": 29800, "badge": "まずは記録だけ" }
   }/*/PLANS*/,
-  /* 無料期間(日)。PayPal のプランの無料期間と同じ値にする */
+  /* 無料期間(日)。Worker の TRIAL_DAYS(Stripe はここで決まる)と PayPal のプランの無料期間と同じ値にする */
   TRIAL_DAYS: 14,
   /* ライトでクラウドに保存できる台帳の件数(1か月あたり。仕入日の月で数える) */
   LIGHT_MONTHLY_LIMIT: 100,

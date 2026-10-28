@@ -684,6 +684,17 @@ p.pc-sub[data-c="year"]{color:var(--good);font-weight:700}
 .pay .hint{margin-top:8px}
 .pay-who{margin:0 0 8px;font-size:12.5px;color:var(--sub)}
 .pp{min-height:48px;max-width:480px}
+.pay-card{flex-wrap:wrap;gap:0 8px;white-space:normal;line-height:1.25;text-align:center}
+.pay-card small{font-size:12px;font-weight:400;opacity:.92}
+.pay-card[aria-busy="true"]{cursor:progress;opacity:.8}
+.pay-prep{margin:8px 0 0;font-size:12.5px;color:var(--sub)}
+.pay-prep .dlg-st{margin:0 6px 0 0}
+#pl-pay-err{margin:10px 0 0;max-width:480px}
+.pay-alt{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);max-width:480px}
+.pay-alt .lnk{font-size:12.5px}
+.pay-alt .pp{margin-top:4px}
+.pay-alt .pp:empty{display:none}
+.mp-sec .kv.wide .meta .lnk{margin-right:12px}
 .pl-legal{margin-top:12px}
 @media(max-width:860px){
   .pl-head .pg-h{font-size:20px}

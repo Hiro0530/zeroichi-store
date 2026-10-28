@@ -1,7 +1,9 @@
 /* せどり 利益チェック — ログイン(Firebase Auth: メールのリンク・Google)と、台帳のクラウド保存(Cloud Firestore)。
    - config.js の FIREBASE_CONFIG が null のあいだは「準備中」と表示し、何も読み込まない(無料版はそのまま)。
    - 台帳はいつもこの端末(localStorage)が先。有料(無料期間を含む)の間だけ、変わった行をクラウドへ送り、他の端末の変更を受け取る。
-   - お支払いは PayPal のサブスクリプション(JS SDK のボタン)。契約の状態は Worker が PayPal の Webhook を受けて users/{uid}.subscription に書く。
+   - お支払いはカード(Stripe の申し込み画面。Apple Pay・Google Pay も)が本命、PayPal のサブスクリプション(JS SDK のボタン)が2つ目。
+     契約の状態は Worker が Stripe・PayPal の Webhook を受けて users/{uid}.subscription に書く(provider で見分ける)。
+     カードで申し込めるかは Worker の GET /stripe/plans(価格IDが入っているプラン)で決まり、空なら「準備中」。
    - データの形: users/{uid}(email・settings・subscription ※subscription は Worker だけが書く)、users/{uid}/ledger/{行のid}、
      users/{uid}/books/{種類~行のid}(帳簿の記録。帳簿のページで books-sync.js を読んだ時だけ。総合・業務の機能ごとに送る)
    - Firebase の部品は、ログインしたことのある端末と、マイページ・料金ページでだけ読み込む。 */
@@ -14,7 +16,9 @@
   var FB_VER = '10.12.2';
   var ready = !!(cfg.FIREBASE_CONFIG && cfg.FIREBASE_CONFIG.apiKey);
   var plans = cfg.PAYPAL_PLANS || {};
-  var billingReady = ready && !!cfg.PAYPAL_CLIENT_ID && Object.keys(plans).some(function (k) { return !!plans[k]; });
+  var ppReady = ready && !!cfg.PAYPAL_CLIENT_ID && Object.keys(plans).some(function (k) { return !!plans[k]; });
+  // 受付中: ログインの設定があり、Worker(カード)か PayPal のどちらかが入っている
+  var billingReady = ready && (!!cfg.WORKER_URL || ppReady);
 
   var st = { phase: ready ? 'idle' : 'off', user: null, sub: null, plan: S.planState(null), sync: 'local', pending: 0, lastSync: store.get('sync-last', null), error: '' };
   var fb = null, fbPromise = null, unsubLedger = null, unsubUser = null, flushTimer = null, settingsTimer = null, applyingSettings = false, pausedFor = null, switchedFor = null;
@@ -306,10 +310,28 @@
     }, 1000);
   }
 
-  /* ---------- お申し込み(PayPal のサブスクリプション)・契約の変更 ---------- */
+  /* ---------- お申し込み(カード=Stripe・PayPal)・契約の変更 ---------- */
+  /** カードで申し込めるプランのキーの一覧(Worker に価格IDが入っているもの。読めなければ空=準備中) */
+  var spPromise = null;
+  function stripePlans() {
+    if (!ready || !cfg.WORKER_URL) return Promise.resolve([]);
+    if (spPromise) return spPromise;
+    spPromise = fetch(cfg.WORKER_URL.replace(/\/$/, '') + '/stripe/plans').then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (j) { return Array.isArray(j.ready) ? j.ready : []; })
+      .catch(function () { spPromise = null; return []; });
+    return spPromise;
+  }
+  function paypalReady(planKey) { return ppReady && !!plans[planKey]; }
+  /** カードで申し込む: Worker が Stripe の申し込み画面を作り、そこへ移る */
+  function checkout(planKey) {
+    return worker('/stripe/checkout', { planKey: planKey }).then(function (j) { if (j.url) location.href = j.url; return j; });
+  }
+  /** いまの契約の支払い方法(stripe / paypal)。一時停止・変更・解約の行き先を分ける */
+  function prov() { return st.sub && st.sub.provider === 'stripe' ? 'stripe' : 'paypal'; }
+
   var ppPromise = null;
   function loadPayPal() {
-    if (!billingReady) return Promise.reject(new Error('not-ready'));
+    if (!ppReady) return Promise.reject(new Error('not-ready'));
     if (ppPromise) return ppPromise;
     ppPromise = new Promise(function (ok, ng) {
       var sc = document.createElement('script');
@@ -325,7 +347,7 @@
     if (!cfg.WORKER_URL || !fb || !fb.auth.currentUser) return Promise.reject(new Error('no-worker'));
     return fb.auth.currentUser.getIdToken().then(function (tok) {
       return fetch(cfg.WORKER_URL.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
-    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e = new Error(j.error || ('worker ' + r.status)); e.status = r.status; throw e; } return j; }); });
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e = new Error(j.error || ('worker ' + r.status)); e.status = r.status; e.code = j.code || ''; throw e; } return j; }); });
   }
   /**
    * PayPal のボタンを box に描く。planKey は config の PAYPAL_PLANS のキー。
@@ -350,11 +372,16 @@
       }).render(box);
     });
   }
-  /** 一時停止(1か月)・再開・プランの変更・解約(どれも Worker から PayPal に頼む) */
-  function pause() { return worker('/paypal/pause', { months: 1 }); }
-  function resume() { return worker('/paypal/resume', {}); }
-  function revise(planKey) { return worker('/paypal/revise', { planKey: planKey, return_url: new URL(U.base() + 'mypage/?revised=1', location.href).href }).then(function (j) { if (j.approve) location.href = j.approve; return j; }); }
-  function cancel(reason) { return worker('/paypal/cancel', { reason: reason || '' }); }
+  /** 一時停止(1か月)・再開・プランの変更・解約(Worker から Stripe か PayPal に頼む)。
+      プランの変更は、カードならその場で変わり(差額は日割り)、PayPal なら PayPal の承認の画面へ移る */
+  function pause() { return worker('/' + prov() + '/pause', { months: 1 }); }
+  function resume() { return worker('/' + prov() + '/resume', {}); }
+  function revise(planKey) { return worker('/' + prov() + '/revise', { planKey: planKey, return_url: new URL(U.base() + 'mypage/?revised=1', location.href).href }).then(function (j) { if (j.approve) location.href = j.approve; return j; }); }
+  function cancel(reason) { return worker('/' + prov() + '/cancel', { reason: reason || '' }); }
+  /** カードの変更(flow='card')・請求の履歴と領収書(Stripe の画面) */
+  function portal(flow) { return worker('/stripe/portal', { flow: flow || '' }).then(function (j) { if (j.url) location.href = j.url; return j; }); }
+  /** カードで申し込んだ直後(Stripe から戻った時)に、Webhook を待たずに反映する */
+  function linkStripe(sessionId) { return worker('/stripe/link', { sessionId: sessionId }); }
 
   /* ---------- 削除・ログアウト ---------- */
   function deleteCloud(alsoLocal) {
@@ -419,6 +446,7 @@
 
   window.SedoriAccount = {
     state: state, open: openLogin, signOut: signOut, paid: function () { return !!st.plan.paid; }, renderPayButton: renderPayButton, pause: pause, resume: resume, revise: revise, cancel: cancel, worker: worker,
+    stripePlans: stripePlans, checkout: checkout, paypalReady: paypalReady, provider: prov, portal: portal, linkStripe: linkStripe,
     tier: function () { return st.plan.tier || "free"; }, lightCap: capNow,
     deleteCloud: deleteCloud, cloudRows: cloudRows, deleteAccount: deleteAccount, syncNow: flush, cfg: cfg, ready: ready, billingReady: billingReady
   };
