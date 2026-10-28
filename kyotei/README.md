@@ -1,6 +1,6 @@
 # kyotei — AI舟券 答え合わせ帳
 
-公開ページ: https://hiro0530.github.io/zeroichi-store/kyotei/
+公開ページ: https://zeroichiworks.net/kyotei/
 
 - 毎朝 06:45 JST(`.github/workflows/kyotei.yml`): 前日の全レースを答え合わせ → 学習用の履歴を少し足す → (月曜・履歴が育つ間は毎日)学習し直し → 当日の予想 → このフォルダにコミット → gh-pages の `kyotei/index.html` だけを更新。
 - `predictions/`(公開時刻つき・公開後は書き換えない。締切が公開時刻より前のレースは採点しない)/ `results/` / `summary.json` / `model.json`(係数と、学習に使っていない期間での検証結果 `eval`)

@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 JST = timezone(timedelta(hours=9))
 SCHEMA = 1
-PAGE = "https://hiro0530.github.io/zeroichi-store/kyotei/"
+PAGE = "https://zeroichiworks.net/kyotei/"
 PROOF = "https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei/predictions/"
 EVAL_KEYS = ("races", "top1", "logloss", "brier", "ece", "roi_win", "tri3_hit", "pick_lane1_share")
 

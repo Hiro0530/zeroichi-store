@@ -12,8 +12,8 @@ FIREBASE_PROJECT_ID = "ここに Firebase のプロジェクトID"
 FIREBASE_SA_EMAIL = "ここに サービスアカウントのメールアドレス"
 PAYPAL_ENV = "sandbox"            # 本番は "live"
 PAYPAL_CLIENT_ID = "ここに PayPal の Client ID"
-ALLOWED_ORIGIN = "https://hiro0530.github.io"   # 独自ドメインに移す時は新しい住所を足す(カンマ区切り。docs/sedori_app/domain.md)
-APP_URL = "https://hiro0530.github.io/zeroichi-store/sedori/"
+ALLOWED_ORIGIN = "https://hiro0530.github.io,https://zeroichiworks.net"   # 独自ドメインに移す時は新しい住所を足す(カンマ区切り。docs/sedori_app/domain.md)
+APP_URL = "https://zeroichiworks.net/sedori/"
 TRIAL_DAYS = "14"
 FOUNDER_LIMIT = "100"
 # PayPal のプランID → アプリのプラン(金額は sedori/assets/config.js の PLAN_CATALOG と同じにする)

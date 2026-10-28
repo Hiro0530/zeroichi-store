@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "site"
 HERO = SITE / "hero.jpg"  # 見出し写真(生成画像)。gh-pages の kyotei/ にも同じものを置く
-PAGE_URL = "https://hiro0530.github.io/zeroichi-store/kyotei/"
+PAGE_URL = "https://zeroichiworks.net/kyotei/"
 COMMITS = "https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei/predictions/"
 HELP_URL = "https://www.gaprsc.or.jp/"
 

@@ -21,7 +21,7 @@ async function idToken(claims, kid = 'k1') {
 const env = {
   FIREBASE_PROJECT_ID: 'demo-zw', FIREBASE_SA_EMAIL: 'sa@demo-zw.iam.gserviceaccount.com', FIREBASE_SA_KEY: pem,
   PAYPAL_ENV: 'sandbox', PAYPAL_CLIENT_ID: 'cid', PAYPAL_SECRET: 'sec', PAYPAL_WEBHOOK_ID: 'WH-1',
-  ALLOWED_ORIGIN: 'https://hiro0530.github.io', APP_URL: 'https://hiro0530.github.io/zeroichi-store/sedori/', TRIAL_DAYS: '14', FOUNDER_LIMIT: '2',
+  ALLOWED_ORIGIN: 'https://hiro0530.github.io', APP_URL: 'https://zeroichiworks.net/sedori/', TRIAL_DAYS: '14', FOUNDER_LIMIT: '2',
   MAIL_HOOK_URL: 'https://script.example/exec', MAIL_HOOK_SECRET: 'm',
   PLANS: JSON.stringify({ 'P-SM': { key: 'total_month', name: '総合(月払い)', amount: '月4,980円' }, 'P-SY': { key: 'total_year', name: '総合(年払い)', amount: '年49,800円' }, 'P-FM': { key: 'founder_month', name: '総合 先着100名の価格(月払い)', amount: '月3,980円', founder: true }, 'P-LM': { key: 'light_month', name: 'ライト(月払い)', amount: '月2,980円' } }),
 };

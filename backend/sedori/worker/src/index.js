@@ -47,7 +47,7 @@ function toMs(v) {
   const n = Date.parse(v); return isNaN(n) ? null : n;
 }
 /* サイトの住所の既定値(本番は wrangler.toml の APP_URL・ALLOWED_ORIGIN で決める。独自ドメインに移す時は docs/sedori_app/domain.md) */
-const DEFAULT_APP_URL = 'https://hiro0530.github.io/zeroichi-store/sedori/';
+const DEFAULT_APP_URL = 'https://zeroichiworks.net/sedori/';
 const appUrl = (env) => env.APP_URL || DEFAULT_APP_URL;
 function plansOf(env) { try { return JSON.parse(env.PLANS || '{}'); } catch { return {}; } }
 
