@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          set +e; {
+          set +e; mkdir -p ops; {
             date -u
             for u in https://zeroichiworks.net/ https://zeroichiworks.net/sedori/ https://zeroichiworks.net/kyotei/ https://zeroichiworks.net/works/ http://zeroichiworks.net/ https://www.zeroichiworks.net/; do
               echo "== $u"; curl -sS -o /dev/null -w "%{http_code} %{redirect_url} ssl=%{ssl_verify_result}\n" -m 20 "$u" 2>&1
