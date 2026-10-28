@@ -1,0 +1,249 @@
+{
+ "generated_at": "2026-10-29T01:20+09:00",
+ "select_window": [
+  "2025-10-30",
+  "2026-04-29",
+  27155
+ ],
+ "confirm_window": [
+  "2026-04-30",
+  "2026-10-28",
+  28325
+ ],
+ "feature": "s_Fper(今期のフライング数。レーサー期別成績と前日までの競走成績から)",
+ "diagnostics": {
+  "2号艇に今期のF": {
+   "あり": {
+    "select": {
+     "races": 2887,
+     "lane1_win": 0.5331,
+     "model_morning": 0.5438,
+     "gap_morning": {
+      "mean": -0.0108,
+      "lo": -0.028,
+      "hi": 0.0058,
+      "n": 2887
+     },
+     "lane2_win": 0.1365,
+     "manshu_rate": 0.1663
+    },
+    "confirm": {
+     "races": 3777,
+     "lane1_win": 0.5319,
+     "model_morning": 0.5512,
+     "gap_morning": {
+      "mean": -0.0193,
+      "lo": -0.0342,
+      "hi": -0.0045,
+      "n": 3777
+     },
+     "lane2_win": 0.1295,
+     "manshu_rate": 0.171
+    }
+   },
+   "なし": {
+    "select": {
+     "races": 24268,
+     "lane1_win": 0.5567,
+     "model_morning": 0.5432,
+     "gap_morning": {
+      "mean": 0.0136,
+      "lo": 0.0081,
+      "hi": 0.0194,
+      "n": 24268
+     },
+     "lane2_win": 0.1331,
+     "manshu_rate": 0.1634
+    },
+    "confirm": {
+     "races": 24548,
+     "lane1_win": 0.5486,
+     "model_morning": 0.5474,
+     "gap_morning": {
+      "mean": 0.0012,
+      "lo": -0.0048,
+      "hi": 0.0073,
+      "n": 24548
+     },
+     "lane2_win": 0.1401,
+     "manshu_rate": 0.1616
+    }
+   }
+  },
+  "2号艇にFあり・1号艇はFなし": {
+   "該当": {
+    "select": {
+     "races": 2454,
+     "lane1_win": 0.5318,
+     "model_morning": 0.5477,
+     "gap_morning": {
+      "mean": -0.0159,
+      "lo": -0.0343,
+      "hi": 0.0029,
+      "n": 2454
+     },
+     "lane2_win": 0.1365,
+     "manshu_rate": 0.1646
+    },
+    "confirm": {
+     "races": 3048,
+     "lane1_win": 0.5381,
+     "model_morning": 0.5572,
+     "gap_morning": {
+      "mean": -0.0191,
+      "lo": -0.0354,
+      "hi": -0.0035,
+      "n": 3048
+     },
+     "lane2_win": 0.1253,
+     "manshu_rate": 0.1722
+    }
+   }
+  },
+  "2号艇のF2本以上": {
+   "該当": {
+    "select": {
+     "races": 42
+    },
+    "confirm": {
+     "races": 110,
+     "lane1_win": 0.4455,
+     "model_morning": 0.5377,
+     "gap_morning": {
+      "mean": -0.0922,
+      "lo": -0.1757,
+      "hi": -0.0036,
+      "n": 110
+     },
+     "lane2_win": 0.1364,
+     "manshu_rate": 0.1545
+    }
+   }
+  },
+  "参考: 3号艇に今期のF": {
+   "あり": {
+    "select": {
+     "races": 2904,
+     "lane1_win": 0.5582,
+     "model_morning": 0.5546,
+     "gap_morning": {
+      "mean": 0.0036,
+      "lo": -0.0126,
+      "hi": 0.0195,
+      "n": 2904
+     },
+     "lane2_win": 0.1281,
+     "manshu_rate": 0.1708
+    },
+    "confirm": {
+     "races": 3764,
+     "lane1_win": 0.5351,
+     "model_morning": 0.5503,
+     "gap_morning": {
+      "mean": -0.0152,
+      "lo": -0.0305,
+      "hi": 0.0003,
+      "n": 3764
+     },
+     "lane2_win": 0.1387,
+     "manshu_rate": 0.1682
+    }
+   },
+   "なし": {
+    "select": {
+     "races": 24251,
+     "lane1_win": 0.5538,
+     "model_morning": 0.5419,
+     "gap_morning": {
+      "mean": 0.0119,
+      "lo": 0.0063,
+      "hi": 0.0176,
+      "n": 24251
+     },
+     "lane2_win": 0.1341,
+     "manshu_rate": 0.1629
+    },
+    "confirm": {
+     "races": 24561,
+     "lane1_win": 0.5481,
+     "model_morning": 0.5475,
+     "gap_morning": {
+      "mean": 0.0006,
+      "lo": -0.0049,
+      "hi": 0.0063,
+      "n": 24561
+     },
+     "lane2_win": 0.1386,
+     "manshu_rate": 0.162
+    }
+   }
+  },
+  "参考: 1号艇に今期のF": {
+   "あり": {
+    "select": {
+     "races": 2899,
+     "lane1_win": 0.5367,
+     "model_morning": 0.5205,
+     "gap_morning": {
+      "mean": 0.0162,
+      "lo": -0.0008,
+      "hi": 0.0336,
+      "n": 2899
+     },
+     "lane2_win": 0.1338,
+     "manshu_rate": 0.1756
+    },
+    "confirm": {
+     "races": 3776,
+     "lane1_win": 0.5212,
+     "model_morning": 0.52,
+     "gap_morning": {
+      "mean": 0.0012,
+      "lo": -0.0138,
+      "hi": 0.0148,
+      "n": 3776
+     },
+     "lane2_win": 0.1465,
+     "manshu_rate": 0.1748
+    }
+   },
+   "なし": {
+    "select": {
+     "races": 24256,
+     "lane1_win": 0.5563,
+     "model_morning": 0.5459,
+     "gap_morning": {
+      "mean": 0.0104,
+      "lo": 0.0047,
+      "hi": 0.016,
+      "n": 24256
+     },
+     "lane2_win": 0.1334,
+     "manshu_rate": 0.1623
+    },
+    "confirm": {
+     "races": 24549,
+     "lane1_win": 0.5502,
+     "model_morning": 0.5522,
+     "gap_morning": {
+      "mean": -0.0019,
+      "lo": -0.0073,
+      "hi": 0.0039,
+      "n": 24549
+     },
+     "lane2_win": 0.1374,
+     "manshu_rate": 0.161
+    }
+   }
+  }
+ },
+ "missed": false,
+ "gap_confirm": {
+  "mean": -0.0193,
+  "lo": -0.0342,
+  "hi": -0.0045,
+  "n": 3777
+ },
+ "rule": "両方の期間で 実際の1号艇の1着率 − 朝のモデル の95%区間の上端が0未満なら missed=true",
+ "runtime_min": 4.2
+}
