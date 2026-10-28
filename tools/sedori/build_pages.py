@@ -15,7 +15,7 @@ import sys
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[3] / "kt-zs-sedori-ghp")
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261028s"
+VER = "20261030a"
 
 import re as _re
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
@@ -23,6 +23,10 @@ _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
 CAT = json.loads(_re.search(r"/\*PLANS\*/(.*?)/\*/PLANS\*/", _CONFIG, _re.S).group(1))
 # サイトの住所も config.js の SITE_URL だけで決める(独自ドメインに移す時はそこを直して、このスクリプトを流し直す)。
 # ページ同士のリンクは相対で書くので、絶対の住所が要るのは canonical・OGP・サイトマップ・楽天の「許可するWebサイト」の案内だけ
+# 年払いの決まりの文と、先着100名の価格の続く期間の言い方も config.js だけで決める(料金ページ・規約・Worker の YEAR_TEXT・特商法と同じ文)
+YEAR_TEXT = _re.search(r'YEAR_TEXT:\s*"([^"]+)"', _CONFIG).group(1)
+YEAR_DAYS = int(_re.search(r'YEAR_REFUND_DAYS:\s*(\d+)', _CONFIG).group(1))
+FOUNDER_KEEP = _re.search(r'FOUNDER_KEEP:\s*"([^"]+)"', _CONFIG).group(1)
 SITE_URL = _re.search(r'SITE_URL:\s*"([^"]+)"', _CONFIG).group(1).rstrip("/") + "/"
 SITE_ORIGIN = _re.match(r"https?://[^/]+", SITE_URL).group(0)
 BASE_URL = SITE_URL + "sedori/"
@@ -573,7 +577,7 @@ def founder_line() -> str:
     if not f or f.get("open") is False:
         return '<div class="pc-fd"></div>'
     return (f'<div class="pc-fd"><p class="pc-founder" id="pc-founder"><span data-c="month">先着100名は <b>月{yen(P_FM)}</b></span>'
-            f'<span data-c="year" hidden>先着100名は <b>年{yen(P_FY)}</b></span>(続けている間ずっと)<span class="pc-left" id="pl-founder-left"></span></p></div>')
+            f'<span data-c="year" hidden>先着100名は <b>年{yen(P_FY)}</b></span><span class="pc-keep">。{FOUNDER_KEEP}</span><span class="pc-left" id="pl-founder-left"></span></p></div>')
 
 
 def plan_card(c: dict) -> str:
@@ -633,7 +637,7 @@ TOP_BODY = f"""<div class="lay2">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
     <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
       <table class="kv"><tr><th>ライト</th><td>月{yen(P_LM)}</td></tr><tr><th>総合<span class="pill">おすすめ</span></th><td>月{yen(P_TM)}</td></tr><tr><th>業務</th><td>月{yen(P_BM)}</td></tr></table>
-      <p class="hint">税込。どれも14日無料<span data-bill="prep">(受付は準備中)</span>。先着100名は総合が月{yen(P_FM)}。計算と、この端末の台帳は無料です。</p>
+      <p class="hint">税込。月払いは14日無料・年払いは30日以内の解約で全額返金<span data-bill="prep">(受付は準備中)</span>。先着100名は総合が月{yen(P_FM)}。計算と、この端末の台帳は無料です。</p>
       <p class="row-links"><a href="plans/">料金を見る</a></p>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳のつけ方を週1回お届けします。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
@@ -672,7 +676,7 @@ TOP_BODY = f"""<div class="lay2">
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
     <h2 class="sec-h" id="plans">料金</h2>
-    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。どれも<b>14日無料</b>です<span data-bill="prep">(受付は準備中)</span>。</p>
+    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>30日以内の解約で全額返金</b>です<span data-bill="prep">(受付は準備中)</span>。</p>
     <div class="mini-plans">{top_plans}</div>
     <p class="row-links"><a href="plans/">機能を比べて申し込む</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
@@ -720,8 +724,8 @@ CONF = [
     ("申込みの期間", '<span id="cf-period">期限はありません</span>'),
     ("契約の期間", '<span id="cf-term">1か月ごとに自動で更新し、解約するまで続きます</span>'),
     ("解約の方法", f"マイページの「契約内容」→「解約について」→「解約する」。メール({MAIL_A})でも解約できます。PayPalでお支払いの方は、PayPalの自動支払いの管理画面からも止められます"),
-    ("解約の期限", "次の請求日の前日まで。無料期間中に解約すれば0円です"),
-    ("返金", "途中で解約しても日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します"),
+    ("解約の期限", '<span id="cf-limit">次の請求日の前日まで。無料期間中に解約すれば0円です</span>'),
+    ("返金", '<span id="cf-refund">途中で解約しても日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します</span>'),
     ("解約後の台帳", "クラウドの台帳は3年間保管し、マイページから書き出せます(古物台帳は3年間の保存が必要なため)"),
 ]
 conf_dl = "\n".join(f'          <div class="cf-r"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in CONF)
@@ -732,7 +736,7 @@ cmp_note = '<p class="hint">※は11月中に追加します。追加した日�
 PLANS_BODY = f"""<div class="pl">
   <div class="pl-head">
     <h1 class="pg-h">料金</h1>
-    <p class="pl-lead">3つのプランから選べます。どれも<b>14日無料</b>で、その間は業務のすべてを使えます。プランはあとから変えられます。</p>
+    <p class="pl-lead">3つのプランから選べます。月払いは<b>14日無料</b>で、その間は業務のすべてを使えます。年払いは無料期間なしでお申し込みの日にお支払いいただき、<b>1回目のお支払いから{YEAR_DAYS}日以内の解約は全額返金</b>です。プランはあとから変えられます。</p>
   </div>
 
   <section class="pl-s1" id="pl-step1" aria-labelledby="pl-s1h">
@@ -799,7 +803,7 @@ PLANS_BODY = f"""<div class="pl">
   </section>
 </div>"""
 
-out = head("料金", f"せどり 利益チェックの料金。ライト 月{yen(P_LM)}/総合 月{yen(P_TM)}(先着100名は月{yen(P_FM)})/業務 月{yen(P_BM)}(税込)。どれも14日無料。年払いは2か月分お得。",
+out = head("料金", f"せどり 利益チェックの料金。ライト 月{yen(P_LM)}/総合 月{yen(P_TM)}(先着100名は月{yen(P_FM)})/業務 月{yen(P_BM)}(税込)。月払いは14日無料。年払いは2か月分お得で、30日以内の解約は全額返金。",
            "plans/", "../", 'data-page="plans"')
 out += header("../", "plans", "rakuten") + crumb("../", "料金") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
 write("plans", out)
@@ -888,7 +892,7 @@ def doc_page(slug: str, title: str, desc: str, body: str) -> None:
 
 
 TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年10月29日(年払いを無料期間なし・30日以内の全額返金に。先着100名の価格の続く期間の書き方。サービスをやめる時の返金)</p>
 <p>この規約は、ZEROICHI WORKS(以下「当方」)が提供する「せどり 利益チェック」(以下「本サービス」)の利用条件です。本サービスを使う方(以下「利用者」)は、この規約に同意したうえで使ってください。有料プランは、ログインしてお申し込みいただいた時に、この規約に同意したものとします。</p>
 
 <h2>第1条(本サービスの内容)</h2>
@@ -907,15 +911,16 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <h2>第3条(料金と支払い)</h2>
 <ol>
 <li>有料プランの料金(税込)、支払いの時期と方法は、料金ページのお申し込み内容の確認に表示したとおりです。支払いは、クレジットカード・デビットカード(決済代行: Stripe)またはPayPalによる自動の定期支払いで行います。</li>
-<li>初めてのお申し込みには14日間の無料期間があります。無料期間が終わる日に1回目の料金を請求し、以後は月払いなら毎月、年払いなら毎年、同じ日に自動で請求します(前払い)。無料期間中に解約した場合、料金はかかりません。解約後に申し込み直した場合は、カードでのお申し込みには無料期間がなく、お申し込みの日に1回目を請求します。</li>
-<li>先着100名の価格は、1回目のお支払いが済んだ方が100名に達するまで受け付け、その契約が続いている間は上げません。受付中にお申し込みの方は、無料期間中の方を含めて、この価格のままです。解約後に申し込み直した場合は、その時の価格になります。</li>
+<li>月払いの初めてのお申し込みには14日間の無料期間があります。無料期間が終わる日に1回目の料金を請求し、以後は毎月同じ日に自動で請求します(前払い)。無料期間中に解約した場合、料金はかかりません。解約後に申し込み直した場合は、カードでのお申し込みには無料期間がなく、お申し込みの日に1回目を請求します。</li>
+<li>{YEAR_TEXT}以後は毎年同じ日に自動で請求します(前払い)。全額返金の対象は、年払いでお申し込みいただいた1回目のお支払いです(2年目以降の更新の分と、月払いから年払いへ変えた分は対象外です)。返金すると、その日で有料プランは終わります(台帳は第6条のとおり保管し、書き出せます)。</li>
+<li>先着100名の価格は、1回目のお支払いが済んだ方が100名に達するまで受け付け、その契約は{FOUNDER_KEEP}この価格のままです。受付中にお申し込みの方は、無料期間中の方を含めて、この価格のままです。解約後に申し込み直した場合は、その時の価格になります。</li>
 <li>支払いが確認できない時は、当方は有料プランの機能(クラウドへの保存)を止めることがあります。その間も、保存済みの台帳の閲覧と書き出しはできます。</li>
 </ol>
 
 <h2>第4条(解約)</h2>
 <ol>
 <li>利用者は、いつでも解約できます。方法は、マイページの「契約内容」にある「解約について」から「解約する」を押して確認する方法と、メールで申し出る方法です。PayPalでお支払いの場合は、PayPalの自動支払いの管理画面から止めることもできます。</li>
-<li>次回の請求日の前日までに解約すれば、次回からは請求しません。支払い済みの期間の途中で解約しても日割りの返金はなく、その期間の終わりまで有料プランを使えます。</li>
+<li>次回の請求日の前日までに解約すれば、次回からは請求しません。支払い済みの期間の途中で解約しても日割りの返金はなく、その期間の終わりまで有料プランを使えます。ただし、年払いの1回目のお支払いから{YEAR_DAYS}日以内の解約は、前条第3項のとおり全額を返金します。</li>
 <li>当方の不具合で有料プランを使えなかった期間があるときは、その分を返金します。</li>
 </ol>
 
@@ -952,7 +957,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <h2>第10条(サービスの変更・停止)</h2>
 <ol>
 <li>当方は、機能を追加・変更することがあります。有料プランの機能を減らす時や、料金を変える時は、30日前までにメールとこのページでお知らせします。</li>
-<li>設備の保守・障害・天災などで、本サービスを止めることがあります。本サービスをやめる時は、90日前までにお知らせし、台帳を書き出せる期間を設けます。</li>
+<li>設備の保守・障害・天災などで、本サービスを止めることがあります。本サービスをやめる時は、90日前までにお知らせし、台帳を書き出せる期間を設けます。前払いの料金のうち、本サービスをやめる日より後の分は、日割りで返金します。</li>
 </ol>
 
 <h2>第11条(責任の範囲)</h2>
@@ -1034,7 +1039,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <p>ZEROICHI WORKS(事業者の名前・住所等は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
 
 TERMS_LATER = "業務の機能のうち、料金ページに「11月中に追加」と示したものは順に追加します。" if ANY_LATER else ""
-doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS.replace("{TERMS_LATER}", TERMS_LATER))
+doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS.replace("{TERMS_LATER}", TERMS_LATER).replace("{YEAR_TEXT}", YEAR_TEXT).replace("{YEAR_DAYS}", str(YEAR_DAYS)).replace("{FOUNDER_KEEP}", FOUNDER_KEEP))
 doc_page("privacy", "プライバシーポリシー", "せどり 利益チェックのプライバシーポリシー(利用目的・安全管理・第三者提供の制限とクラウドへの保存・解約後の保存期間)。", PRIVACY)
 
 

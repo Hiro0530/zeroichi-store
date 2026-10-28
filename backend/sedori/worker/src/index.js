@@ -15,13 +15,15 @@
  *     POST /stripe/link     { sessionId } 申し込み直後の反映
  *     POST /stripe/pause    1か月の一時停止 / POST /stripe/resume 再開
  *     POST /stripe/revise   { planKey }  プランの変更(その場で変わり、差額は日割り)
- *     POST /stripe/cancel   { reason }   解約(期間の終わりで終了。日割りの返金なし)
+ *     POST /stripe/cancel   { reason }   解約(期間の終わりで終了。日割りの返金なし)。
+ *                                         ただし年払いの1回目のお支払いから30日以内なら、全額を返金してその場で終える(2026-10-30 決定)
  *     POST /stripe/portal   { flow }     カードの変更・請求の履歴(Stripe のカスタマーポータル)
  *     POST /paypal/link | pause | resume | revise | cancel  PayPal の契約の同じ操作
  *     GET  /stripe/plans    カードで申し込めるプラン(料金ページが「準備中」かどうかを決める。ログイン不要)
  *  4. 毎日1回(cron): 無料期間の終了3日前のメール、一時停止の自動再開、解約から3年たった台帳の削除
  *
- * 先着100名(総合 3,980円)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。
+ * 先着100名(総合 3,980円)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。解約しない限りずっと(サービス提供中)その価格。
+ * 年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(YEAR_TEXT。料金ページ・規約・特商法と同じ文)。
  * 秘密の値は wrangler secret で入れる(README)。ここには書かない。Stripe の SDK は使わず、REST を fetch で呼ぶ。
  */
 
@@ -276,6 +278,10 @@ export async function countFounder(env, provider, subId) {
 
 /* ------------------------------------------------------------------ Stripe(SDK を使わず REST を fetch で) */
 const STRIPE_API = 'https://api.stripe.com/v1';
+/** 年払いの決まり(料金ページの確認の欄・利用規約・特商法・Stripe の画面と同じ文。変える時は全部そろえる) */
+export const YEAR_REFUND_DAYS = 30;
+export const YEAR_TEXT = '年払いは無料期間なしで、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します。';
+const isYearKey = k => /_year$/.test(String(k || ''));
 /** 料金ページ・Firestore で使うプランのキー。Stripe の価格ID は wrangler.toml の STRIPE_PRICE_<キーの大文字> に入れる */
 export const PLAN_KEYS = ['light_month', 'light_year', 'total_month', 'total_year', 'founder_month', 'founder_year', 'business_month', 'business_year'];
 const LIVE = ['trialing', 'active', 'past_due', 'paused'];
@@ -311,9 +317,9 @@ export function formEncode(obj, prefix = '', out = []) {
   }
   return out.join('&');
 }
-async function stripe(env, method, path, params) {
+async function stripe(env, method, path, params, extraHeaders) {
   if (!env.STRIPE_SECRET_KEY) throw err('カードのお支払いは準備中です', 503);
-  const headers = { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY };
+  const headers = { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, ...(extraHeaders || {}) };
   let url = STRIPE_API + path, body;
   if (params && method === 'GET') url += '?' + formEncode(params);
   else if (params) { body = formEncode(params); headers['Content-Type'] = 'application/x-www-form-urlencoded'; }
@@ -381,8 +387,12 @@ export function normalizeStripe(s, prev, env, now = Date.now()) {
     nextBillingAt: status === 'trialing' ? (trialEnd ? new Date(trialEnd) : null) : (periodEnd ? new Date(periodEnd) : null),
     payerEmail: prev.payerEmail || '',
     pausedByUser: status === 'paused', resumeAt: status === 'paused' && pause && pause.resumes_at ? new Date(secMs(pause.resumes_at)) : null,
-    reminderSent: !!prev.reminderSent, cancelReason: (s.metadata || {}).cancel_reason || prev.cancelReason || '', updatedAt: new Date(now)
+    reminderSent: !!prev.reminderSent, cancelReason: (s.metadata || {}).cancel_reason || prev.cancelReason || '', updatedAt: new Date(now),
+    refundUntil: null, refunded: (s.metadata || {}).refunded === '1' || !!prev.refunded
   };
+  // 年払いの全額返金の期限(1回目のお支払いから30日)。マイページの解約の案内がこれを見る
+  const ru = refundDeadline(s, key);
+  if (ru && status === 'active' && !ending && now <= ru) out.refundUntil = new Date(ru);
   if (ending || status === 'canceled' || status === 'expired') {
     // 期間の終わり(無料期間中ならその終わり)まで使える。そこから3年間、台帳を保管する
     const through = ending
@@ -394,6 +404,35 @@ export function normalizeStripe(s, prev, env, now = Date.now()) {
     out.nextBillingAt = null; out.pausedByUser = false; out.resumeAt = null;
   } else { out.paidThrough = null; out.canceledAt = null; out.retainUntil = null; }
   return out;
+}
+
+/**
+ * 年払いの全額返金の期限(ミリ秒)。対象でなければ null。
+ * 対象は、申し込み画面(Checkout)で年払いを申し込んだ契約(metadata.refundDays が付く)。1回目のお支払いはお申し込みの日なので、契約の開始から数える。
+ * 更新の分(2年目以降)は期限を過ぎているので対象外。月払いから年払いへ変えた契約は metadata.refundDays が無いので対象外。
+ */
+export function refundDeadline(s, key) {
+  const days = Number((s.metadata || {}).refundDays || 0);
+  const start = secMs(s.start_date || s.created);
+  if (!days || !start || !isYearKey(key || (s.metadata || {}).planKey)) return null;
+  return start + days * DAY;
+}
+
+/** 返金する支払いを探す(古い API: invoice.payment_intent / charge、新しい API: invoice_payments) */
+async function yearPayment(env, subId) {
+  const list = await stripe(env, 'GET', '/invoices', { subscription: subId, status: 'paid', limit: 10 });
+  const inv = ((list && list.data) || []).filter(i => Number(i.amount_paid || 0) > 0).sort((a, b) => (a.created || 0) - (b.created || 0))[0];
+  if (!inv) return null;
+  const id = v => (typeof v === 'string' ? v : (v && v.id) || '');
+  if (id(inv.payment_intent)) return { invoice: inv, ref: { payment_intent: id(inv.payment_intent) } };
+  if (id(inv.charge)) return { invoice: inv, ref: { charge: id(inv.charge) } };
+  const ps = await stripe(env, 'GET', '/invoice_payments', { invoice: inv.id, limit: 3 });
+  for (const p of (ps && ps.data) || []) {
+    const pay = p.payment || {};
+    if (id(pay.payment_intent)) return { invoice: inv, ref: { payment_intent: id(pay.payment_intent) } };
+    if (id(pay.charge)) return { invoice: inv, ref: { charge: id(pay.charge) } };
+  }
+  return null;
 }
 
 /** 契約を Stripe から読み直して Firestore に書く。hint: { uid, email, paid(1回目の入金の通知) } */
@@ -453,7 +492,9 @@ function checkoutNote(plan, key, trial, env, now = Date.now()) {
   const cyc = /_year$/.test(key) ? '毎年' : '毎月';
   const head = trial
     ? `${Number(env.TRIAL_DAYS || 14)}日間は無料です。${jd(now + Number(env.TRIAL_DAYS || 14) * DAY)}に1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`
-    : `今日、1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`;
+    : isYearKey(key)
+      ? `${YEAR_TEXT}今日${price}(税込)を請求し、以後は毎年同じ日に自動で請求します。`
+      : `今日、1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`;
   return head + '解約はマイページの「契約内容」からいつでもできます' + (trial ? '(無料期間中の解約は0円)。' : '。');
 }
 
@@ -472,9 +513,11 @@ export async function handleStripeUser(path, body, who, env) {
       const f = (await getDoc(env, 'public/founders')) || {};
       if (f.open === false || Number(f.taken || 0) >= Number(env.FOUNDER_LIMIT || 100)) throw err('先着100名の価格の受付は終わりました', 409, 'founder-closed');
     }
-    const trial = !cur; // 無料期間は、初めてのお申し込みの時だけ
+    const year = isYearKey(key);
+    const trial = !cur && !year; // 無料期間は、初めてのお申し込みの月払いだけ。年払いは無料期間なしでその場で決済(30日以内は全額返金)
     const plan = planByKey(env, key) || {};
     const meta = { uid, planKey: key };
+    const subMeta = year ? { ...meta, refundDays: String(YEAR_REFUND_DAYS) } : meta;
     const params = {
       mode: 'subscription', locale: 'ja', client_reference_id: uid,
       line_items: [{ price: prices[key], quantity: 1 }],
@@ -482,7 +525,7 @@ export async function handleStripeUser(path, body, who, env) {
       success_url: app + 'mypage/?subscribed=1&session_id={CHECKOUT_SESSION_ID}',
       cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
       metadata: meta,
-      subscription_data: trial ? { metadata: meta, trial_period_days: Number(env.TRIAL_DAYS || 14) } : { metadata: meta },
+      subscription_data: trial ? { metadata: subMeta, trial_period_days: Number(env.TRIAL_DAYS || 14) } : { metadata: subMeta },
       custom_text: { submit: { message: checkoutNote(plan, key, trial, env) } }
     };
     if (cur && cur.provider === 'stripe' && cur.customerId) params.customer = cur.customerId;
@@ -506,6 +549,21 @@ export async function handleStripeUser(path, body, who, env) {
   if (path === '/stripe/cancel') {
     if (!LIVE.includes(sub.status) && sub.status !== 'suspended') throw err('解約の手続きは済んでいます', 409);
     const reason = String(body.reason || '').slice(0, 120) || '利用者による解約';
+    // 年払いの1回目のお支払いから30日以内: 全額を返金して、その場で終える。返金が通らなければ解約もしない(お金だけ取って止めることはしない)
+    if (isYearKey(sub.planKey) && sub.status === 'active') {
+      const live = await stripe(env, 'GET', '/subscriptions/' + id);
+      const until = refundDeadline(live, sub.planKey);
+      if (until && Date.now() <= until && !live.cancel_at_period_end && live.status === 'active') {
+        const pay = await yearPayment(env, sub.id);
+        if (!pay) throw err('返金するお支払いが見つかりませんでした。お手数ですがメールでご連絡ください(全額を返金します)', 502, 'refund-not-found');
+        const rf = await stripe(env, 'POST', '/refunds', { ...pay.ref, reason: 'requested_by_customer', metadata: { uid, subscription: sub.id, rule: 'year-30days' } },
+          { 'Idempotency-Key': 'zw-year-refund-' + sub.id });
+        await stripe(env, 'POST', '/subscriptions/' + id, { metadata: { cancel_reason: reason, refunded: '1', refund_id: rf.id || '' } });
+        await stripe(env, 'DELETE', '/subscriptions/' + id);
+        const s3 = await after();
+        return { status: s3.status, refunded: true, amount: Number(rf.amount || pay.invoice.amount_paid || 0), paidThrough: s3.paidThrough };
+      }
+    }
     // 期間の終わりで終える(日割りの返金はなし)。無料期間中なら無料期間の終わりで終わり、請求はしない
     await stripe(env, 'POST', '/subscriptions/' + id, { cancel_at_period_end: 'true', metadata: { cancel_reason: reason } });
     const s2 = await after();

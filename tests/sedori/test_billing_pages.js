@@ -40,4 +40,27 @@ const row = th => text((toku.match(new RegExp('<th>' + th.replace(/[()]/g, '\\$&
 eq([row('事業者の氏名(運営責任者)'), row('所在地')], ['ご請求があれば遅滞なく開示します。', 'ご請求があれば遅滞なく開示します。'], '氏名・所在地は請求で開示');
 eq(/〒\s?\d{3}-?\d{4}/.test(toku + privacy + terms), false, '郵便番号つきの住所を出さない');
 
+// 年払い(2026-10-30 決定): 無料期間なし・その場で決済、1回目のお支払いから30日以内の解約は全額返金。
+// Worker・設定・料金ページ(最終確認)・利用規約・特商法・紹介ページが同じ文。「一生」とは書かず「解約しない限りずっと(サービス提供中)」
+{
+  const cfgSrc = read('sedori/assets/config.js');
+  const cfgYear = (cfgSrc.match(/YEAR_TEXT:\s*"([^"]+)"/) || [])[1];
+  const keep = (cfgSrc.match(/FOUNDER_KEEP:\s*"([^"]+)"/) || [])[1];
+  const worker = fs.readFileSync(path.join(__dirname, '../../backend/sedori/worker/src/index.js'), 'utf8');
+  const wYear = (worker.match(/export const YEAR_TEXT = '([^']+)'/) || [])[1];
+  eq([!!cfgYear, cfgYear === wYear, keep], [true, true, '解約しない限りずっと(サービス提供中)'], '設定と Worker の年払いの文が同じ');
+  const lp = read('sedori/lp/index.html'), top = read('sedori/index.html');
+  eq([text(terms).includes(cfgYear), text(toku).includes(cfgYear), text(lp).includes(cfgYear)], [true, true, true], '利用規約・特商法・紹介ページに同じ文');
+  eq([/id="cf-refund"/.test(plans), /id="cf-limit"/.test(plans), /cfg\.YEAR_TEXT/.test(read('sedori/assets/plans.js')), /1回目のお支払いから30日以内の解約は全額返金/.test(text(plans))], [true, true, true, true], '料金ページの最終確認: 返金と解約の期限を年払いで書き換える');
+  eq(/cfg\.PAYPAL_YEAR === true/.test(read('sedori/assets/plans.js')) && /PAYPAL_YEAR:\s*false/.test(cfgSrc), true, '年払いは PayPal(無料期間つきのプラン)を出さない');
+  eq(/年払いは当面クレジットカードのみ/.test(text(toku)), true, '特商法: 年払いの支払い方法');
+  eq([/月払いは14日無料/.test(text(top)), /どれも14日無料/.test(text(top) + text(plans) + text(lp))], [true, false], '「どれも14日無料」と書かない(年払いは無料期間なし)');
+  const all = pages.map(p => text(read(p))).join('') + text(toku);
+  eq([/一生/.test(all), /続けている間ずっと/.test(all)], [false, false], '「一生」「続けている間ずっと」を使わない');
+  eq([text(plans).includes(keep), text(terms).includes(keep), text(lp).includes(keep), text(toku).includes(keep)], [true, true, true, true], '先着100名の続く期間は同じ言い方');
+  eq([/対象外/.test(text(terms)), /やめる日より後の分は、日割りで返金/.test(text(terms))], [true, true], '規約: 返金の対象外と、サービスをやめる時の返金');
+  const my = read('sedori/assets/mypage.js');
+  eq([/refundUntil/.test(my), /全額を返金しました/.test(my), /30日以内の全額返金の対象外/.test(my)], [true, true, true], 'マイページ: 返金の期限・解約の確認・年払いへの変更の注意');
+}
+
 console.log('OK ' + n + '件');

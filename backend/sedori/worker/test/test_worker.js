@@ -1,7 +1,7 @@
 // Worker の検算(Stripe・PayPal・Firestore・Google をすべて偽物に置き換える)。実行: node test/test_worker.js
 import assert from 'node:assert';
 import { createHmac } from 'node:crypto';
-import W, { normalize, normalizeStripe, verifyIdToken, verifyStripeSignature, formEncode, stripePrices, toFields, fromFields, trialReminderMail, daily, _resetCaches } from '../src/index.js';
+import W, { normalize, normalizeStripe, refundDeadline, YEAR_TEXT, YEAR_REFUND_DAYS, verifyIdToken, verifyStripeSignature, formEncode, stripePrices, toFields, fromFields, trialReminderMail, daily, _resetCaches } from '../src/index.js';
 
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
@@ -37,6 +37,10 @@ const stripeSubs = {}; // Stripe の subId → subscription
 const stripeSessions = {}; // Checkout Session
 const stripeSent = []; // Stripe に送った { method, path, form }
 let stripeDown = false;
+const stripeInvoices = {}; // subId → 請求書の一覧
+const stripeInvPays = {};  // 請求書ID → invoice_payments(新しい API)
+const stripeRefunds = [];
+let refundFail = false;
 const calls = [];
 let verifyResult = 'SUCCESS';
 const mails = [];
@@ -65,11 +69,13 @@ globalThis.fetch = async (url, init = {}) => {
     if (stripeDown) return res({ error: { message: 'down' } }, 500);
     const path = url.slice('https://api.stripe.com/v1'.length).replace(/\?.*$/, '');
     const form = Object.fromEntries(new URLSearchParams(body));
-    stripeSent.push({ method, path, form });
+    stripeSent.push({ method, path, form, idem: (init.headers || {})['Idempotency-Key'] || '' });
     let m2 = path.match(/^\/subscriptions\/([^/]+)$/);
     if (m2) {
       const sub = stripeSubs[decodeURIComponent(m2[1])]; if (!sub) return res({ error: { message: 'No such subscription' } }, 404);
+      if (method === 'DELETE') { sub.status = 'canceled'; sub.ended_at = sec(Date.now()); sub.canceled_at = sec(Date.now()); return res(sub); }
       if (method === 'POST') {
+        if (form['metadata[refunded]']) { sub.metadata.refunded = form['metadata[refunded]']; sub.metadata.refund_id = form['metadata[refund_id]']; }
         if (form.cancel_at_period_end === 'true') sub.cancel_at_period_end = true;
         if (form['metadata[cancel_reason]']) sub.metadata.cancel_reason = form['metadata[cancel_reason]'];
         if (form['metadata[planKey]']) sub.metadata.planKey = form['metadata[planKey]'];
@@ -83,6 +89,12 @@ globalThis.fetch = async (url, init = {}) => {
     m2 = path.match(/^\/checkout\/sessions\/([^/]+)$/);
     if (m2) return stripeSessions[m2[1]] ? res(stripeSessions[m2[1]]) : res({ error: { message: 'no' } }, 404);
     if (path === '/billing_portal/sessions') return res({ url: 'https://billing.stripe.com/p/session/x' });
+    if (path === '/invoices' && method === 'GET') { const q = Object.fromEntries(new URL(url).searchParams); return res({ data: stripeInvoices[q.subscription] || [] }); }
+    if (path === '/invoice_payments' && method === 'GET') { const q = Object.fromEntries(new URL(url).searchParams); return res({ data: stripeInvPays[q.invoice] || [] }); }
+    if (path === '/refunds' && method === 'POST') {
+      if (refundFail) return res({ error: { message: 'charge_already_refunded' } }, 400);
+      const r = { id: 're_' + (stripeRefunds.length + 1), amount: 49800, ...form }; stripeRefunds.push(r); return res(r);
+    }
   }
   if (url.startsWith(env.MAIL_HOOK_URL)) { mails.push(JSON.parse(body)); return new Response('{"ok":true}'); }
   const base = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
@@ -417,6 +429,88 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
   eq([r.status, (await r.json()).status], [200, 'active'], '申し込み直後の反映');
   r = await scall('u10', '/stripe/link', { sessionId: 'cs_9' });
   eq(r.status, 403, '他人のお申し込みは結びつけない');
+}
+
+/* ---------- 11b. 年払い: 無料期間なし・その場で決済、1回目のお支払いから30日以内の解約は全額返金(2026-10-30) ---------- */
+{
+  eq([YEAR_REFUND_DAYS, /無料期間なし/.test(YEAR_TEXT), /30日以内に解約すれば、全額を返金します/.test(YEAR_TEXT)], [30, true, true], '年払いの決まりの文');
+  // 初めてのお申し込みでも、年払いには無料期間を付けない
+  const cs = Object.keys(stripeSessions).length;
+  let r = await scall('u30', '/stripe/checkout', { planKey: 'total_year' });
+  let j = await r.json();
+  const f = stripeSessions['cs_' + (cs + 1)].form;
+  eq([r.status, j.trial, f['subscription_data[trial_period_days]'], f['subscription_data[metadata][refundDays]'], f['subscription_data[metadata][planKey]'], f['line_items[0][price]']],
+    [200, false, undefined, '30', 'total_year', 'price_ty'], '年払い: 初めてでも無料期間なし・返金の印つき');
+  const note = f['custom_text[submit][message]'];
+  eq([note.startsWith(YEAR_TEXT), /今日49,800円\(税込\)を請求/.test(note), /毎年同じ日/.test(note), /14日間は無料/.test(note)], [true, true, true, false], 'Stripe の画面: 年払いの決まりの文と今日の請求');
+  r = await scall('u31', '/stripe/checkout', { planKey: 'total_month' });
+  j = await r.json();
+  const fm = stripeSessions['cs_' + (cs + 2)].form;
+  eq([j.trial, fm['subscription_data[trial_period_days]'], fm['subscription_data[metadata][refundDays]']], [true, '14', undefined], '月払いは今までどおり14日無料・返金の印なし');
+  r = await scall('u32', '/stripe/checkout', { planKey: 'founder_year' });
+  eq((await r.json()).code, 'founder-closed', '先着の年払いも、受付が終わっていれば断る(前のテストで上限)');
+
+  // 返金の期限の計算
+  const now = Date.now();
+  eq(refundDeadline({ start_date: sec(now), metadata: { refundDays: '30' } }, 'total_year'), sec(now) * 1000 + 30 * DAY, '期限は開始から30日');
+  eq(refundDeadline({ start_date: sec(now), metadata: {} }, 'total_year'), null, '月払いから変えた年払い(印なし)は対象外');
+  eq(refundDeadline({ start_date: sec(now), metadata: { refundDays: '30' } }, 'total_month'), null, '月払いは対象外');
+
+  // 10日目の解約 → 全額返金・その場で終わる(古い API: invoice.payment_intent)
+  mkSub('sub_30', 'u30', 'price_ty', 'active', { start_date: sec(now - 10 * DAY), metadata: { uid: 'u30', planKey: 'total_year', refundDays: '30' } });
+  stripeInvoices.sub_30 = [{ id: 'in_30', amount_paid: 49800, created: sec(now - 10 * DAY), payment_intent: 'pi_30' }];
+  await stripeHook(ev('customer.subscription.updated', stripeSubs.sub_30));
+  let s = get('users/u30').subscription;
+  eq([s.status, s.planKey, s.refundUntil instanceof Date, Math.round((s.refundUntil.getTime() - now) / DAY)], ['active', 'total_year', true, 20], 'マイページ用: 返金の期限(あと20日)');
+  r = await scall('u30', '/stripe/cancel', { reason: '使う機会が減った' });
+  j = await r.json(); s = get('users/u30').subscription;
+  const rf = stripeRefunds[stripeRefunds.length - 1], sent = stripeSent.filter(x => x.path === '/subscriptions/sub_30');
+  eq([r.status, j.refunded, j.amount, j.status], [200, true, 49800, 'canceled'], '30日以内: 全額返金して解約');
+  eq([rf.payment_intent, rf.reason, rf['metadata[rule]'], stripeSent.find(x => x.path === '/refunds').idem], ['pi_30', 'requested_by_customer', 'year-30days', 'zw-year-refund-sub_30'], '返金は1回目の支払いを全額・二重に返さない鍵つき');
+  eq([sent.some(x => x.method === 'DELETE'), stripeSubs.sub_30.cancel_at_period_end, stripeSubs.sub_30.metadata.refunded], [true, false, '1'], 'その場で契約を終える(期間の終わりまで待たない)');
+  eq([s.status, s.refunded, s.refundUntil, s.nextBillingAt, Math.abs(s.paidThrough.getTime() - now) < 60e3, s.cancelReason], ['canceled', true, null, null, true, '使う機会が減った'], 'アプリの状態: 返金済み・今日で終わり・台帳は保管');
+  const refundsBefore = stripeRefunds.length;
+  r = await scall('u30', '/stripe/cancel', {});
+  eq([r.status, stripeRefunds.length], [409, refundsBefore], '2回目の解約は断る・二重に返金しない');
+
+  // 新しい API(invoice_payments)でも支払いを見つける
+  mkSub('sub_33', 'u33', 'price_ty', 'active', { start_date: sec(now - 29 * DAY), metadata: { uid: 'u33', planKey: 'total_year', refundDays: '30' } });
+  stripeInvoices.sub_33 = [{ id: 'in_33', amount_paid: 49800, created: sec(now - 29 * DAY) }];
+  stripeInvPays.in_33 = [{ payment: { type: 'payment_intent', payment_intent: 'pi_33' } }];
+  await stripeHook(ev('customer.subscription.updated', stripeSubs.sub_33));
+  r = await scall('u33', '/stripe/cancel', {});
+  eq([(await r.json()).refunded, stripeRefunds[stripeRefunds.length - 1].payment_intent, stripeSubs.sub_33.status], [true, 'pi_33', 'canceled'], '29日目・新しい API の形でも返金');
+
+  // 31日目 → 返金なし。期間の終わりで終える(今までの解約と同じ)
+  mkSub('sub_34', 'u34', 'price_ty', 'active', { start_date: sec(now - 31 * DAY), metadata: { uid: 'u34', planKey: 'total_year', refundDays: '30' } });
+  stripeInvoices.sub_34 = [{ id: 'in_34', amount_paid: 49800, created: sec(now - 31 * DAY), payment_intent: 'pi_34' }];
+  await stripeHook(ev('customer.subscription.updated', stripeSubs.sub_34));
+  eq(get('users/u34').subscription.refundUntil, null, '31日目: 返金の期限なし');
+  const nr = stripeRefunds.length;
+  r = await scall('u34', '/stripe/cancel', {});
+  j = await r.json();
+  eq([r.status, j.refunded, stripeRefunds.length, stripeSubs.sub_34.cancel_at_period_end, stripeSubs.sub_34.status], [200, undefined, nr, true, 'active'], '31日目: 返金なし・期間の終わりで止める');
+
+  // 月払いから変えた年払い(印なし)は、30日以内でも返金しない
+  mkSub('sub_35', 'u35', 'price_ty', 'active', { start_date: sec(now - 3 * DAY), metadata: { uid: 'u35', planKey: 'total_year' } });
+  await stripeHook(ev('customer.subscription.updated', stripeSubs.sub_35));
+  r = await scall('u35', '/stripe/cancel', {});
+  eq([r.status, stripeRefunds.length, stripeSubs.sub_35.cancel_at_period_end], [200, nr, true], '月払いから変えた年払いは返金の対象外');
+
+  // 返金が通らなければ、解約もしない(お金だけ取って止めない)
+  mkSub('sub_36', 'u36', 'price_ty', 'active', { start_date: sec(now - 2 * DAY), metadata: { uid: 'u36', planKey: 'total_year', refundDays: '30' } });
+  stripeInvoices.sub_36 = [{ id: 'in_36', amount_paid: 49800, created: sec(now - 2 * DAY), charge: 'ch_36' }];
+  await stripeHook(ev('customer.subscription.updated', stripeSubs.sub_36));
+  refundFail = true;
+  r = await scall('u36', '/stripe/cancel', {});
+  refundFail = false;
+  eq([r.status, stripeSubs.sub_36.status, stripeSubs.sub_36.cancel_at_period_end, get('users/u36').subscription.status], [502, 'active', false, 'active'], '返金が失敗したら契約はそのまま');
+  stripeInvoices.sub_36 = [];
+  r = await scall('u36', '/stripe/cancel', {});
+  eq([r.status, (await r.json()).code, stripeSubs.sub_36.status], [502, 'refund-not-found', 'active'], '支払いが見つからなければ解約せず、メールでの返金を案内');
+  stripeInvoices.sub_36 = [{ id: 'in_36', amount_paid: 49800, created: sec(now - 2 * DAY), charge: 'ch_36' }];
+  r = await scall('u36', '/stripe/cancel', {});
+  eq([(await r.json()).refunded, stripeRefunds[stripeRefunds.length - 1].charge], [true, 'ch_36'], '古い API の charge でも返金');
 }
 
 /* ---------- 12. Stripe の状態の読み替えと毎日の仕事 ---------- */
