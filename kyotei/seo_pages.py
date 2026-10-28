@@ -8,9 +8,14 @@ gh-pages の kyotei/ に上書きコピーする。predictions/ と results/ か
 - kiryu/kiroku/             場の通算成績(日ごとの一覧から過去のページへ)
 - 2026-10-29/               その日の全場のまとめ
 - 2026-10-29/kiryu/         その日のその場の全レース
-- 2026-10-29/kiryu/12r/     レースごと(出走表の要点・確率の上位・根拠・答え合わせ)
+- 2026-10-29/kiryu/12r/     レースごと(出走表の要点・確率の上位・根拠・答え合わせ)。検索の索引には載せない(noindex)
 - kako/                     過去の日付の一覧
-- sitemap.xml               サイトマップの索引(sitemap-base.xml と月ごとの sitemap-YYYY-MM.xml)
+- sitemap.xml               サイトマップの索引(sitemap-base.xml=トップ・過去の一覧・場ごと、sitemap-days.xml=日ごとの一覧)
+
+検索に載せる範囲(2026-10-29 作戦室の決定)
+- 載せる: トップ・場ごと(24)・日ごとの一覧・過去の一覧。サイトマップもこれだけ。
+- 載せない: レースごとのページ(毎日約180の自動生成。量産と見なされるとドメイン全体の評価に響くため noindex)。
+  ページ自体は残し、リンクもそのまま(人が見る分には今までどおり)。
 
 決めごと
 - 中身は必ずそのレース・その日の数字で変わる。数字の無いページは作らない。
@@ -37,6 +42,7 @@ JST = timezone(timedelta(hours=9))
 SITE_NAME = "AI舟券 答え合わせ帳"
 COMMITS = "https://github.com/Hiro0530/zeroichi-store/commits/main/kyotei/predictions/"
 HELP_URL = "https://www.gaprsc.or.jp/"
+RACE_NOINDEX = True   # レースごとのページは検索の索引に載せない(サイトマップにも入れない)
 
 WHY_TEXT = {
     "lane": "枠の有利さ(この場でその枠がどれだけ1着になりやすいか)",
@@ -460,7 +466,7 @@ def race_page(D: Data, d: str, x: dict, siblings: list) -> None:
         links.append(f"<li><a href='{url(prev_d[-1], sl, str(n) + 'r')}'>前の開催日({esc(jd(prev_d[-1], False))})の{esc(vn)}{n}R</a></li>")
     o.append(f"<section aria-labelledby=h-nx><h2 id=h-nx>{esc(vn)}のほかのレース</h2><ul class=rnav>{''.join(nav)}</ul><ul class=links>{''.join(links)}</ul></section>")
     crumbs = [(SITE_NAME, BASE), (jd(d, False), url(d)), (vn, url(d, sl)), (f"{n}R", None)]
-    page(url(d, sl, f"{n}r"), title, desc, crumbs, "".join(o))
+    page(url(d, sl, f"{n}r"), title, desc, crumbs, "".join(o), noindex=RACE_NOINDEX)
 
 
 # ---------- その日のその場 ----------
@@ -746,24 +752,15 @@ def sitemaps(D: Data) -> list[str]:
     base = [(BASE, t), (url("kako"), t)]
     for vn in VENUES:
         if D.venue_dates(vn):
-            base += [(url(SLUG[vn]), t), (url(SLUG[vn], "kiroku"), lm(D.venue_dates(vn)[-1]))]
-    months: dict[str, list] = {}
-    for d in D.dates:
-        m = months.setdefault(d[:7], [])
-        m.append((url(d), lm(d)))
-        for vn in D.venues_on(d):
-            m.append((url(d, SLUG[vn]), lm(d)))
-            for x in D.venue_races(d, vn):
-                m.append((url(d, SLUG[vn], f"{x['race']}r"), lm(d)))
+            base.append((url(SLUG[vn]), t))   # 場ごと(最大24)。通算成績のページは索引には残すがサイトマップには入れない
+    days = [(url(d), lm(d)) for d in D.dates]   # 日ごとの一覧(全場まとめ)だけ。場×日・レースごとは入れない
 
     def urlset(rows):
         return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 + "\n".join(f"<url><loc>{HOST}{u}</loc><lastmod>{m}</lastmod></url>" for u, m in rows) + "\n</urlset>\n")
     (OUT / "sitemap-base.xml").write_text(urlset(base), encoding="utf-8")
-    files = ["sitemap-base.xml"]
-    for mo, rows in months.items():
-        (OUT / f"sitemap-{mo}.xml").write_text(urlset(rows), encoding="utf-8")
-        files.append(f"sitemap-{mo}.xml")
+    (OUT / "sitemap-days.xml").write_text(urlset(days), encoding="utf-8")
+    files = ["sitemap-base.xml", "sitemap-days.xml"]
     (OUT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "\n".join(f"<sitemap><loc>{HOST}{BASE}{f}</loc><lastmod>{t}</lastmod></sitemap>" for f in files) + "\n</sitemapindex>\n", encoding="utf-8")

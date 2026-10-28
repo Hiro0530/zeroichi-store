@@ -122,7 +122,7 @@ jobs:
           cp /tmp/kyotei_index.html kyotei/index.html
           cp /tmp/kyotei_img/*.jpg kyotei/ 2>/dev/null || true
           cp /tmp/kyotei_html/*.html kyotei/ 2>/dev/null || true
-          if [ -d /tmp/kyotei_pages ]; then cp -r /tmp/kyotei_pages/. kyotei/; fi   # 上書きだけ(消さない)
+          if [ -d /tmp/kyotei_pages ]; then rm -f kyotei/sitemap-20??-??.xml; cp -r /tmp/kyotei_pages/. kyotei/; fi   # 上書きだけ(ページは消さない)。古い月ごとのサイトマップ(レースごとのURL入り)だけ消す
           grep -q "kyotei/sitemap.xml" robots.txt 2>/dev/null || printf "\nSitemap: https://zeroichiworks.net/kyotei/sitemap.xml\n" >> robots.txt
           git add -A kyotei robots.txt 2>/dev/null || git add kyotei/index.html
           if git commit -m "kyotei page: $(TZ=Asia/Tokyo date +'%F %H:%M') JST"; then
