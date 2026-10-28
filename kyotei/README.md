@@ -85,6 +85,7 @@
   `eval`(学習外の検証): `test_from`, `test_to`, `test_days`, `full`/`base`/`prior`/`oracle`(`top1`, `logloss`, `roi_win`, `tri3_hit` など。`full.calibration` は `[平均の確率, 実際の1着率, 艇数]`), `lane1`, `diff_vs_lane1`(的中率の差と95%区間), `beats_lane1`, `tiers[]`(`tier`, `p_from`, `p_to`, `races`, `per_day`, `hit`, `hit_lo`, `hit_hi`, `lane1`, `roi_win`, `roi_lo`, `roi_hi`)
 - 券種ごとの仮の収支(2026-10-27の予想から): `yesterday.summary.by_bet` / `yesterday.summary.star_by_bet`(自信ありの5レースだけ)/ `record.total.by_bet` / `record.total.star_by_bet` = `{券種: {races, hits, stake, return, pnl, roi}}`。券種は `bet_names`(`tansho` 単勝◎100円、`fukusho` 複勝◎100円、`trio3` 3連複3点300円、`trifecta3` 3連単3点300円)。どれも予想の公開時に決めた買い目だけで計算(複勝◎=2着以内の確率が最も高い艇、3連複3点=3連複の確率の上位3つ)。各レースの `yesterday.races[].bets` にも同じ形で入る。`today.races[]` には `fukusho`, `trio`, `star`(自信あり)を足した。
 - `today.ana` / `yesterday.ana` / `record.total.ana`: 今日の穴(万舟ねらい)の記録。検証で働かなかったのでページ・Xには出さない(RESEARCH.md)。
+- 荒れ注意(`are.py`、2026-10-29から): 予想ファイルの `are`(混戦度の上位3レースと買い目案3つ)、答え合わせの `are`、`summary.json` の `total.are`。検証で回収率100%を超えると確かめられていないので、`are_config.json` の `show` が false の間はページ・Xに出さない(`site_data.json` にも入れない)。検証は RESEARCH.md。
 - `disclaimers[]`(必ずページに出す注意書き), `sources[]`(出典)
 
 ## 自信度(しきい値は学習外で決める)

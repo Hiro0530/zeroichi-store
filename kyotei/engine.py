@@ -237,6 +237,13 @@ def make_predictions(d: date, model: dict) -> dict | None:
         out["ana"] = ana_picks_today(d, preds, Ts)
     except Exception as e:  # noqa  (穴が作れなくても本命の予想は公開する)
         print("ana skipped:", e)
+    try:   # 荒れ注意(記録だけ。are_config.json の show が false の間はページ・Xに出さない)
+        import are
+        a = are.today(preds, Ts)
+        if a:
+            out["are"] = a
+    except Exception as e:  # noqa
+        print("are skipped:", e)
     pd = ROOT / "predictions"
     pd.mkdir(exist_ok=True)
     (pd / f"{d:%Y-%m-%d}.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -381,7 +388,15 @@ def grade(d: date) -> dict | None:
     ana_s, ana_rows = grade_ana(pred, res)
     if ana_s:
         summ["ana"] = ana_s
-    (gd / f"{d:%Y-%m-%d}.json").write_text(json.dumps({"summary": summ, "races": rows, "ana": ana_rows},
+    are_rows = []
+    try:
+        import are
+        are_s, are_rows = are.grade(pred, res)
+        if are_s:
+            summ["are"] = are_s
+    except Exception as e:  # noqa
+        print("are grade skipped:", e)
+    (gd / f"{d:%Y-%m-%d}.json").write_text(json.dumps({"summary": summ, "races": rows, "ana": ana_rows, **({"are": are_rows} if are_rows else {})},
                                                       ensure_ascii=False, indent=1), encoding="utf-8")
     print("graded", json.dumps(summ, ensure_ascii=False))
     # オッズを使った紙の上だけの検証(止めてあるときは記録が無いので何もしない。結果は非公開)
@@ -422,6 +437,12 @@ def cumulative() -> dict:
                     ana[k] += s_["ana"].get(k, 0)
     ana["roi"] = round(ana["return"] / max(ana["stake"], 1), 4)
     tot["ana"] = ana
+    try:
+        import are
+        if any(s_.get("are") for s_ in daily):
+            tot["are"] = are.total(daily)
+    except Exception as e:  # noqa
+        print("are total skipped:", e)
     for key in ("by_bet", "star_by_bet"):
         agg = {}
         for s_ in daily:
