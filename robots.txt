@@ -1,2 +1,4 @@
 User-agent: *
 Disallow: /dl/
+
+Sitemap: https://zeroichiworks.net/kyotei/sitemap.xml
