@@ -1,7 +1,8 @@
 /* 料金: 1) 月払い/年払いと3枚のカードからプランを選ぶ 2) 同じ画面の「お申し込み内容の確認」(特商法の最終確認の表示事項)を、選んだプランに合わせて書き換え、
    申し込みのボタンを出す。主は「カードで申し込む」(Stripe の申し込み画面へ1回で移る)、その下に小さく「PayPalで払う」。
    受付前は事前登録、カードの価格IDが Worker に無いプランは「準備中」。料金は config.js の PLAN_CATALOG だけで決める。
-   無料期間は初めてのお申し込みの時だけ(解約後の申し込み直しはカードのみ・無料期間なしで、確認の欄もそう書き換える)。
+   無料期間は初めてのお申し込みの月払いだけ(解約後の申し込み直しはカードのみ・無料期間なしで、確認の欄もそう書き換える)。
+   年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(cfg.YEAR_TEXT。2026-10-30)。
    総合を選ぶと、先着100名の受付中は先着の価格(founder_*)で申し込む(カードと確認の両方にそう書く)。 */
 (function () {
   'use strict';
@@ -9,6 +10,9 @@
   var cfg = window.ZW_CONFIG || {}, SA = window.SedoriAccount;
   var CAT = cfg.PLAN_CATALOG || {};
   var DAYS = Number(cfg.TRIAL_DAYS) || 14;
+  var YEAR_TEXT = cfg.YEAR_TEXT || '年払いは無料期間なしで、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します。';
+  var RDAYS = Number(cfg.YEAR_REFUND_DAYS) || 30;
+  var KEEP = cfg.FOUNDER_KEEP || '解約しない限りずっと(サービス提供中)';
   var WD = '日月火水木金土';
   function jdate(d, y) { return (y === false ? '' : d.getFullYear() + '年') + (d.getMonth() + 1) + '月' + d.getDate() + '日(' + WD[d.getDay()] + ')'; }
   function yen(n) { return Number(n).toLocaleString('ja-JP') + '円'; }
@@ -49,7 +53,7 @@
       var on = st.chosen && card.getAttribute('data-base') === st.base;
       card.classList.toggle('on', on);
       var b = $('.pc-go', card);
-      if (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.href = '?plan=' + card.getAttribute('data-base') + '_' + st.cyc + '#pl-step2'; }
+      if (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.href = '?plan=' + card.getAttribute('data-base') + '_' + st.cyc + '#pl-step2'; b.textContent = st.cyc === 'year' ? 'このプランを年払いで申し込む' : 'このプランで14日無料'; }
     });
     var fl = $('#pc-founder'); if (fl) fl.hidden = !founder.open;
     // 2) 最終確認
@@ -61,7 +65,20 @@
     $('#cf-price2').textContent = per + yen(c.price);
     $$('#cf-amount [data-tier]').forEach(function (el) { el.hidden = el.getAttribute('data-tier') !== (c.tier || 'total'); });
     var every = st.cyc === 'month' ? '毎月' : '毎年';
-    if (again) {
+    var year = st.cyc === 'year';
+    $('#cf-refund').textContent = year
+      ? '1回目のお支払いから' + RDAYS + '日以内に解約すれば、全額を返金します(その日で使えなくなります。台帳は書き出せます)。' + (RDAYS + 1) + '日目からの解約は日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します'
+      : '途中で解約しても日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します';
+    $('#cf-limit').textContent = year
+      ? '次の請求日の前日まで。1回目のお支払いから' + RDAYS + '日以内の解約は全額を返金します'
+      : '次の請求日の前日まで。無料期間中に解約すれば0円です';
+    if (year) {
+      $('#cf-t1').textContent = '無料期間なし・' + RDAYS + '日以内の解約は全額返金';
+      $('#cf-trial').textContent = 'ありません。' + YEAR_TEXT;
+      $('#cf-trial2').hidden = true;
+      var cpy = $('#cf-pay-pp'); if (cpy) cpy.hidden = !(cfg.PAYPAL_YEAR === true && !again); // 年払いは PayPal の年払い(無料期間なし)を用意した時だけ
+      $('#cf-when').textContent = 'お申し込みの日に1回目の' + yen(c.price) + 'を請求し、以後は毎年同じ日に自動で請求します(前払い)';
+    } else if (again) {
       $('#cf-t1').textContent = '無料期間なし(2回目のお申し込み)';
       $('#cf-trial').textContent = 'ありません。無料期間は初めてのお申し込みの時だけです';
       $('#cf-trial2').hidden = true;
@@ -76,7 +93,7 @@
     }
     $('#cf-term').textContent = (st.cyc === 'month' ? '1か月' : '1年') + 'ごとに自動で更新し、解約するまで続きます';
     $('#cf-period').textContent = isF
-      ? '1回目のお支払いが済んだ方が100名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、無料期間中でもこの価格のまま。続けている間は上がりません'
+      ? '1回目のお支払いが済んだ方が100名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、無料期間中でもこの価格のまま。' + KEEP + 'この価格です'
       : '期限はありません';
     // 事前登録のメールに、選んだプランを書き添える
     var pr = $('#pl-prereg');
@@ -150,7 +167,8 @@
     if (CARD_HTML == null) CARD_HTML = cb.innerHTML;
     payErr('');
     // PayPal は初めてのお申し込みの時だけ(PayPal のプランには無料期間が付いているため)。押した時に読み込む
-    var ppOk = !again && SA.paypalReady(k);
+    // 年払いは無料期間なしなので、PayPal の年払い(無料期間なしのプラン)を用意した時だけ(cfg.PAYPAL_YEAR)
+    var ppOk = !again && (st.cyc !== 'year' || cfg.PAYPAL_YEAR === true) && SA.paypalReady(k);
     alt.hidden = !ppOk; box.hidden = true; box.innerHTML = ''; open.hidden = false; open.setAttribute('aria-expanded', 'false');
     cb.disabled = true; prep.hidden = true;
     SA.stripePlans().then(function (list) {
@@ -190,7 +208,7 @@
       paint();
       if (code === 'has-sub') payErr('このアカウントには、いまの契約があります。マイページの契約内容をご確認ください。');
       else if (e && e.status === 401) payErr('ログインの期限が切れました。ページを開き直して、もう一度お試しください。');
-      else payErr('カードの画面を開けませんでした。通信を確かめて、もう一度お試しください。' + (SA.paypalReady(key()) && !returning() ? '下の「PayPalで払う」からも申し込めます。' : ''));
+      else payErr('カードの画面を開けませんでした。通信を確かめて、もう一度お試しください。' + (SA.paypalReady(key()) && !returning() && (st.cyc !== 'year' || cfg.PAYPAL_YEAR === true) ? '下の「PayPalで払う」からも申し込めます。' : ''));
     });
   });
   // Stripe の画面から「戻る」で帰ってきた時(ページが保存から戻る)に、ボタンを元に戻す
