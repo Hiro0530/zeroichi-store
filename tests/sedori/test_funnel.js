@@ -7,7 +7,8 @@
 // - 年払いの返金: 31日目からは返金なし・次の更新の停止として扱う(規約・特商法・料金ページ)
 const path = require('path'), fs = require('fs'), assert = require('assert'), vm = require('vm');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
-const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+const SD = require('./_dir')(root);  // 準備中の間はテスト用の写しを読む
+const read = p => fs.readFileSync(path.join(root, p.replace(/^sedori\//, SD + '/')), 'utf8');
 const text = h => h.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
@@ -33,7 +34,7 @@ const priv = text(read('sedori/privacy/index.html'));
 eq([/事前登録の方へ、有料版の受付開始のご案内を1通/.test(priv), /事前登録のメール/.test(priv)], [true, true], 'プライバシーポリシー: 事前登録の利用目的と保存期間');
 
 // D3
-const C = require(path.join(root, 'sedori/assets/calc.js'));
+const C = require(path.join(root, SD, 'assets/calc.js'));
 const fees = JSON.parse(read('sedori/data/fees.json'));
 const shk = text(read('sedori/shikumi/index.html')), shkRaw = read('sedori/shikumi/index.html');
 const ship = fees.mercari.shipping.find(s => s.id === 'tq60');

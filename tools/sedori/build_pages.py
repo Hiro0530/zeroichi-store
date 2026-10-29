@@ -13,12 +13,38 @@ import json
 import pathlib
 import sys
 
+import os
+
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[3] / "kt-zs-sedori-ghp")
-S = ROOT / "sedori"
-FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261030b"
+
+
+def out_dir(root: pathlib.Path, env: dict | None = None) -> str:
+    """書き出す先のフォルダの名前(公開フォルダの中)。tests/sedori/_dir.js と同じ決め方。
+    1) 環境変数 SEDORI_OUT  2) sedori/MAINTENANCE.txt がある間(準備中)は、そこに書いてあるテスト用の写し  3) それ以外は sedori。
+    準備中の間に sedori へ書こうとしたら止める(公開側の「準備中」を上書きしないため)。"""
+    env = os.environ if env is None else env
+    maint = root / "sedori" / "MAINTENANCE.txt"
+    name = (env.get("SEDORI_OUT") or "").strip("/")
+    if not name and maint.exists():
+        m = _re.search(r"テスト用の写し\s*[:：]\s*/?([A-Za-z0-9_.-]+)/?", maint.read_text(encoding="utf-8"))
+        if not m:
+            raise SystemExit("sedori/MAINTENANCE.txt にテスト用の写しの場所がありません。SEDORI_OUT で書き出し先を指定してください")
+        name = m.group(1)
+    name = name or "sedori"
+    if name == "sedori" and maint.exists():
+        raise SystemExit("準備中(sedori/MAINTENANCE.txt あり)なので、公開側の sedori/ には書き出しません")
+    return name
+
 
 import re as _re
+OUT = out_dir(ROOT)
+S = ROOT / OUT
+# テスト用の写し(sedori 以外)は、全ページを検索エンジンに載せない
+NOINDEX = OUT != "sedori"
+ROBOTS = '<meta name="robots" content="noindex,nofollow">'
+FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
+VER = "20261030c"
+
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
 # 料金は sedori/assets/config.js の PLAN_CATALOG だけで決める(/*PLANS*/ と /*/PLANS*/ の間の JSON)
 CAT = json.loads(_re.search(r"/\*PLANS\*/(.*?)/\*/PLANS\*/", _CONFIG, _re.S).group(1))
@@ -263,13 +289,20 @@ def write(slug: str, html_text: str) -> None:
     d.mkdir(exist_ok=True)
     # 受付が始まってから見せる部分は、最初は隠しておく(account.js が config を見て出す)
     html_text = html_text.replace('data-bill="ready"', 'data-bill="ready" hidden').replace('data-acct="ready"', 'data-acct="ready" hidden')
-    (d / "index.html").write_text(html_text, encoding="utf-8")
+    (d / "index.html").write_text(with_noindex(html_text), encoding="utf-8")
+
+
+def with_noindex(html_text: str) -> str:
+    """テスト用の写しなら、<head> の直後に noindex を入れる(もう入っていれば何もしない)"""
+    if not NOINDEX or 'content="noindex' in html_text[:3000]:
+        return html_text
+    return html_text.replace("<head>", "<head>" + ROBOTS, 1)
 
 
 def route_page(slug: str, title: str, desc: str, src: str, route_attr: str, body: str, scripts: list[str]) -> None:
     label = dict(ROUTES)[slug]
     out = head(title, desc, f"{slug}/", "../", f'data-route="{route_attr}" data-route-label="{esc(label)}" data-page="{slug}"')
-    out += header("../", slug, src) + crumb("../", esc(title)) + f'<main class="wrap">\n{body}\n</main>\n' + footer("../", scripts)
+    out += header("../", slug, src) + crumb("../", esc(title)) + f'<main class="wrap">\n{NOJS}\n{body}\n</main>\n' + footer("../", scripts)
     write(slug, out)
 
 
@@ -321,6 +354,92 @@ DETAIL_ACTIONS = """<div class="acts">
 
 
 # ------------------------------------------------------------------
+# 初期表示分を HTML にも入れる部品(JavaScript が動かない環境・読み上げ・テキスト取得でも中身が分かるように)。
+# JavaScript が動けば、同じ内容で描き直す(選択肢は ui.js / ra.js / mz.js / market.js、表は market.js)
+# ------------------------------------------------------------------
+def _opts(items, sel: str) -> str:
+    return "".join(f'<option value="{esc(i)}"{" selected" if i == sel else ""}>{esc(l)}</option>' for i, l in items)
+
+
+def cat_options(sel: str = "toys") -> str:
+    return _opts([(c["id"], c["label"]) for c in FEES["amazon"]["categories"]], sel)
+
+
+def tier_options(sel: str = "std2c") -> str:
+    return _opts([(x["id"], x["label"]) for x in FEES["amazon"]["fba_tiers"]], sel)
+
+
+def carrier_options(sel: str = "yp60") -> str:
+    # ui.js の carrierOptions と同じ形(グループごと・料金は送料+資材)
+    groups: dict[str, list] = {}
+    for c in FEES.get("self_ship", {}).get("carriers", []):
+        groups.setdefault(c["group"], []).append(c)
+    return "".join(f'<optgroup label="{esc(g)}">' + "".join(
+        f'<option value="{c["id"]}"{" selected" if c["id"] == sel else ""}>{esc(c["label"])}{"" if c["id"] == "custom" else " " + format(c["fee"] + c["material"], ",") + "円"}</option>'
+        for c in cs) + "</optgroup>" for g, cs in groups.items())
+
+
+def venue_options() -> str:
+    ps = FEES["auctions"]["presets"]
+    return _opts([(x["id"], x["label"]) for x in ps], ps[0]["id"])
+
+
+# 目標の利益の初期値(ui.js の target() と同じ: 利益率15%)
+DEFAULT_TARGET_PCT = 15
+
+
+def _need(p: int, pct: int) -> int:
+    return -(-p * pct // 100)  # 切り上げ(calc.js の needProfit と同じ)
+
+
+def market_price_for(fixed: int, rate: float, pct: int) -> int | None:
+    """calc.js の marketPriceFor と同じ(手数料は1円未満切り捨て)。目標の利益率 pct% を残せる最安の売値"""
+    def ok(v: int) -> bool:
+        return v - int(v * rate + 1e-9) - fixed >= _need(v, pct)
+    denom = 1 - rate - pct / 100
+    if denom <= 0:
+        return None
+    p = max(1, int(fixed / denom) - 3)
+    for _ in range(100000):
+        if ok(p):
+            while p > 1 and ok(p - 1):
+                p -= 1
+            return p
+        p += 1
+    return None
+
+
+def market_rows_initial() -> str:
+    """メルカリの表の初期表示(仕入れ値0円・メルカリ・自分で発送・目標 利益率15%・実際の売値は未入力)。market.js の render と同じ並び"""
+    rate = FEES["mercari"]["rate"]
+    out, grp = [], ""
+    for sh in FEES["mercari"]["shipping"]:
+        if sh["group"] != grp:
+            grp = sh["group"]
+            out.append(f'<tr class="grp"><td colspan="7">{esc(grp)}</td></tr>')
+        fixed = (0 if sh["id"] == "custom" else sh["fee"]) + sh["material"]
+        be, tp = market_price_for(fixed, rate, 0), market_price_for(fixed, rate, DEFAULT_TARGET_PCT)
+        on = ' class="on"' if sh["id"] == "tq60" else ""
+        out.append(f'<tr data-i="{esc(sh["id"])}"{on}><td><div class="nm">{esc(sh["label"])}</div></td>'
+                   f'<td class="r fee" data-k="送料・資材">{fixed:,}</td><td class="r c-fee fee">{be:,}</td>'
+                   f'<td class="r" data-k="目標の売値"><span class="yen">{tp:,}<i>円</i></span></td>'
+                   f'<td class="r c-fee fee">{int(tp * rate + 1e-9):,}</td>'
+                   '<td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr>')
+    return "".join(out)
+
+
+def empty_row(cols: int, text: str) -> str:
+    return f'<tr><td colspan="{cols}" class="empty">{text}</td></tr>'
+
+
+NOJS = ('<noscript><p class="nojs">この計算ページは JavaScript で動きます。JavaScript を有効にすると、入れた数字で利益がその場で出ます。'
+        '利益は「実際の売値 − 仕入れ値 − 手数料 − 送料」で、ポイントはその後に上乗せとして足します。</p></noscript>')
+
+# ポイント還元率の目安とヒント(計算は 仕入れ値÷1.1×率。率はご自身の実際の率が正)
+PT_HINT_RA = ('<p class="hint pt-hint">ポイントの率の目安: 楽天の通常分は1%(ショップの倍率がP1倍の時)。SPU・お買い物マラソンなどのキャンペーンや、カードの分は人によって違うので、'
+              'ご自身の実際の率を入れてください。ポイントは 仕入れ値÷1.1×率 で計算し、利益には上乗せとして後から足します。</p>')
+
+# ------------------------------------------------------------------
 # 楽天・Yahoo!→Amazon
 # ------------------------------------------------------------------
 RA_BODY = f"""<div class="lay3">
@@ -333,11 +452,12 @@ RA_BODY = f"""<div class="lay3">
         </div>''')}
       {box("Amazon側の条件", '''<p class="hint">一覧の全行にこの条件で計算します。</p>
         <div class="fl">
-          <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat"></select></label>
-          <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier"></select></label>
-          ''' + fld("納品送料", num("c-inbound", "100"), "円", "資材込み・1個") + fld("その他", num("c-other", "0"), "円", "1個") + fld("ポイント上乗せ", dec("c-pt-mine", "0"), "%", "SPU・カード") +
-          chk("c-usept", "ポイントを利益に含める", True) + chk("c-self", "FBAを使わない(自分か代行が発送)") +
-          '<div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier"></select></label>' + fld("送料", num("c-selfship", "0"), "円", "自分で入力の時") + '''</div>
+          <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat">''' + cat_options() + '''</select></label>
+          <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier">''' + tier_options() + '''</select></label>
+          ''' + fld("納品送料", num("c-inbound", "100"), "円", "資材込み・1個") + fld("その他", num("c-other", "0"), "円", "1個") + fld("ポイント上乗せ", dec("c-pt-mine", "0"), "%", "SPU・キャンペーン・カード") +
+          '<p class="hint">ショップの倍率に足す分です。人によって違うので、ご自身の実際の率を入れてください(分からなければ0のまま)。</p>' +
+          chk("c-usept", "ポイントを利益に含める(上乗せとして)", True) + chk("c-self", "FBAを使わない(自分か代行が発送)") +
+          '<div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier">' + carrier_options() + '</select></label>' + fld("送料", num("c-selfship", "0"), "円", "自分で入力の時") + '''</div>
         </div>''')}
       {box("APIキー", '''<p class="hint">ご自身のIDとキーをこの端末だけに保存し、楽天・Keepaへ直接問い合わせます。</p>
         <div class="fl">
@@ -351,39 +471,39 @@ RA_BODY = f"""<div class="lay3">
 
   <section class="res" aria-label="一覧">
     <div class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="s" aria-selected="false">検索結果<span class="n" id="n-s">0</span></button>
-      <button type="button" role="tab" data-tab="t" aria-selected="true">今日のポイント高還元<span class="n" id="n-t">0</span></button>
+      <button type="button" role="tab" data-tab="s" aria-selected="true">検索結果<span class="n" id="n-s">0</span></button>
       <button type="button" role="tab" data-tab="w" aria-selected="false">ウォッチ<span class="n" id="n-w">0</span></button>
     </div>
     <div class="tbar">
-      <p class="tbar-t" id="res-title">今日のポイント高還元(楽天)</p>
+      <p class="tbar-t" id="res-title">検索結果<small>上の検索欄から探せます</small></p>
       <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
     </div>
     <div id="res-msg"></div>
     <div class="gridwrap">
       <table class="grid mc" id="grid">
         <colgroup><col class="c-img"><col><col class="c-n"><col class="c-pt"><col class="c-n"><col class="c-n c-fee"><col class="c-n"><col class="c-rt"></colgroup>
-        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r">利益</th><th class="r">利益率</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r" title="ポイント抜きの利益。+Pはポイントの上乗せ">利益</th><th class="r">利益率</th></tr></thead>
+        <tbody id="rows">{empty_row(8, "検索欄にキーワードかJANコードを入れて、検索してください。")}</tbody>
       </table>
     </div>
-    <p class="credit" id="credit"></p>
+    <p class="credit" id="credit">「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益から逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。</p>
   </section>
 
   <aside class="det" id="calc" aria-label="選んだ商品">
     <div class="det-in">
       <div class="det-h"><p class="det-k">選んだ商品</p><p class="det-name" id="d-name">一覧の行を選ぶと、ここに内訳が出ます。</p><p class="det-sub" id="d-sub"></p></div>
       <div class="dg">
+        <label class="cell w2 act"><span class="ck2">Amazonの実際の売値(税込)<small>Amazonで確かめた今の価格。利益はこの値段で見ます</small></span><span class="cv">{num("c-sell", "", ' placeholder="Amazonで見た価格"')}<span class="u">円</span></span></label>
         {cell("仕入れ値(税込)", num("c-cost"), "円")}
         {cell("仕入れの送料", num("c-inship", "0"), "円")}
         {cell("ショップのポイント", dec("c-pt-shop", "1"), "%")}
         {cell("仕入れる個数", num("c-qty", "1"), "個")}
-        <label class="cell"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
-        {cell("Amazon売値(税込)", num("c-sell"), "円")}
+        <label class="cell w2"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
       </div>
+      {PT_HINT_RA}
       <div id="wh"></div>
       <div id="kp-out"></div>
-      <div id="c-out" aria-live="polite"></div>
+      <div id="c-out" aria-live="polite"><p class="note">仕入れ値を入れると、目標の利益に届く売値の目安と、損益分岐が出ます。Amazonの実際の売値を入れると、利益の内訳が出ます。</p></div>
       {DETAIL_ACTIONS}
       <p class="det-links"><button type="button" class="lnk" id="c-watch">ウォッチに追加</button><a id="amz-link" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a><a id="kp-link" href="https://keepa.com/" target="_blank" rel="noopener">Keepaで見る</a></p>
       <details class="dims"><summary>寸法と重さからFBAのサイズを出す</summary>
@@ -409,8 +529,8 @@ MZ_BODY = f"""<div class="lay3">
           <label class="fr col"><span class="fk">JAN・ASIN</span><span class="fv"><input id="mz-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="mz-go">Keepa</button></span></label>
           <div id="mz-kp"></div>
           <label class="fr col"><span class="fk">商品名</span><input id="mz-name"></label>
-          ''' + fld("新品の価格", num("mz-new"), "円", "Amazon") + '''
-          <label class="fr col"><span class="fk">カテゴリー</span><select id="mz-cat"></select></label>
+          ''' + fld("中古の実際の売値", num("mz-actual"), "円", "Amazonで確かめた今の中古の価格") + fld("新品の価格", num("mz-new"), "円", "Amazon") + '''
+          <label class="fr col"><span class="fk">カテゴリー</span><select id="mz-cat">''' + cat_options() + '''</select></label>
         </div>''')}
       {box("ヤフオクの価格", '''<div class="fl">
           <label class="fr col"><span class="fk">検索する言葉</span><input id="mz-q"></label>
@@ -420,7 +540,7 @@ MZ_BODY = f"""<div class="lay3">
           <label class="fr col"><span class="sr">終了日時の文字を貼り付け</span><input id="mz-yend-paste" type="text" autocomplete="off" placeholder="終了日時の文字を貼り付け"></label>
         </div>''')}
       {box("発送", '''<div class="fl">
-          ''' + '''<label class="fr col"><span class="fk">運送会社・サイズ</span><select id="mz-carrier"></select></label>''' + fld("送料", num("mz-outship", "0"), "円", "自分で入力の時") + fld("その他", num("mz-other", "0"), "円") + '''
+          ''' + '''<label class="fr col"><span class="fk">運送会社・サイズ</span><select id="mz-carrier">''' + carrier_options() + '''</select></label>''' + fld("送料", num("mz-outship", "0"), "円", "自分で入力の時") + fld("その他", num("mz-other", "0"), "円") + '''
           <p class="hint">FBAは使いません。自分か発送代行が、お客様へ直接送ります。</p>
         </div>''', "", True)}
       {box("APIキー", '''<div class="fl"><label class="fr col"><span class="fk">Keepa APIキー</span><input id="mz-key" autocomplete="off" spellcheck="false"></label>
@@ -433,7 +553,7 @@ MZ_BODY = f"""<div class="lay3">
     <div class="gridwrap">
       <table class="grid nimg mc" id="grid">
         <thead><tr><th>出品価格の決め方</th><th class="r">出品価格</th><th class="r c-fee">販売手数料</th><th class="r c-fee">発送</th><th class="r">利益</th><th class="r">利益率</th><th class="r">ヤフオク上限</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <tbody id="rows">{empty_row(7, "新品の価格がまだありません。<br>「JAN・ASIN」で Keepa を押すか、「新品の価格」に入れてください。")}</tbody>
       </table>
     </div>
     <p class="credit">ヤフオク上限は、目標の利益を残せるヤフオクの価格(送料別)です。行を選ぶと出品価格に入ります。</p>
@@ -446,7 +566,7 @@ MZ_BODY = f"""<div class="lay3">
         {cell("出品価格(中古)", num("mz-sell"), "円")}
       </div>
       <div id="wh"></div>
-      <div id="mz-out" aria-live="polite"></div>
+      <div id="mz-out" aria-live="polite"><p class="note">一覧の行を選ぶか、出品価格を入れてください。Amazon(中古)の実際の売値を入れると、その値段で売れた時の利益が先に出ます。</p></div>
       {DETAIL_ACTIONS}
       <p class="det-links"><a id="mz-amz" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a></p>
     </div>
@@ -461,7 +581,7 @@ route_page("muzaiko-amazon", "無在庫 Amazon中古×ヤフオク 価格差チ�
 # ------------------------------------------------------------------
 # メルカリ系(3ページ共通の右側)
 # ------------------------------------------------------------------
-def market_body(side: str, title_hint: str) -> str:
+def market_body(side: str, title_hint: str, rows: str = "") -> str:
     return f"""<div class="lay3">
   <aside class="side" aria-label="仕入れ">
       {side}
@@ -477,16 +597,16 @@ def market_body(side: str, title_hint: str) -> str:
       <p class="tbar-t">{title_hint}</p>
       <span class="tbar-r">
         <label class="inl" id="s-rate-w" hidden>手数料率 {dec("s-rate", "10")}%</label>
-        <label class="inl">販売価格 {num("s-price")}円</label>
+        <label class="inl act">実際の売値 {num("s-price", "", ' placeholder="売れた値段" title="同じ品が実際に売れた値段(売り切れ・落札相場で確かめた価格)"')}円</label>
       </span>
     </div>
     <div class="gridwrap">
       <table class="grid nimg mc" id="grid">
         <thead><tr><th>配送方法</th><th class="r">送料・資材</th><th class="r c-fee">損益分岐</th><th class="r">目標の売値</th><th class="r c-fee">手数料</th><th class="r">利益</th><th class="r">利益率</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <tbody id="rows">{rows}</tbody>
       </table>
     </div>
-    <p class="credit">利益と手数料は、上の販売価格で売れた場合です(未入力なら目標の売値で計算)。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
+    <p class="credit">利益(ポイント抜き)は、上の「実際の売値」で売れた場合です。未入力の間は、目標の売値(目標の利益から逆算した目安)だけを出します。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
   </section>
 
   <aside class="det" id="sell" aria-label="内訳">
@@ -499,7 +619,7 @@ def market_body(side: str, title_hint: str) -> str:
         <div id="s-shipfee-w" class="w2" hidden>{cell("送料(自分で入力)", num("s-shipfee", "0"), "円")}</div>
       </div>
       <div id="wh"></div>
-      <div id="m-out" aria-live="polite"></div>
+      <div id="m-out" aria-live="polite"><p class="note">配送方法を選び、実際の売値を入れると、利益の内訳が出ます。</p></div>
       {DETAIL_ACTIONS}
     </div>
   </aside>
@@ -514,18 +634,19 @@ MC_SIDE = box("仕入れ", '<div class="fl">' + fld("仕入れ値", num("b-cost"
     box("メモ", '<ul class="memo"><li>手数料は販売価格の10%(1円未満切り捨て)。</li><li>らくらくメルカリ便の集荷は別に100円(「その他」へ)。</li><li>売上金の振込申請は1回200円(計算に含めません)。</li></ul>', "", False)
 route_page("mercari-calc", "メルカリ 手数料・送料・利益の計算",
            "メルカリの販売手数料10%と、らくらくメルカリ便・ゆうゆうメルカリ便の全サイズの送料(資材代込み)から、配送方法ごとの利益と、目標の利益を残す売値を一覧で計算。無料・登録不要。",
-           "mercari-sold", "mercari", market_body(MC_SIDE, "配送方法ごとの売値と利益"), ["calc.js", "ui.js", "market.js"])
+           "mercari-sold", "mercari", market_body(MC_SIDE, "配送方法ごとの売値と利益", market_rows_initial()), ["calc.js", "ui.js", "market.js"])
 
 YM_SIDE = box("仕入れ(ヤフオク)", '<div class="fl">' + fld("落札価格", num("b-bid"), "円") + fld("送料", num("b-ship", "0"), "円", "出品者→自分") +
               fld("その他", num("b-other", "0"), "円", "支払い手数料など") + fld("ポイント", dec("b-pt", "0"), "%", "落札価格に対して") +
+              '<p class="hint">もらえる率は、支払い方法やキャンペーンで人によって違います。ご自身の実際の率を入れてください(分からなければ0のまま)。利益には上乗せとして後から足します。</p>' +
               fld("個数", num("b-qty", "1", ' min="1"'), "個", "まとめ落札") + chk("b-media", MEDIA_LABEL) + "</div>" + unit_line() +
               '<p class="hint" id="guard" hidden><span class="badge">売り手の確認が必要</span> 合計1万円以上(またはゲーム等)の中古品です。仕入れた後、台帳で売り手の確認を入力してください。</p>')
 route_page("yahuoku-mercari", "ヤフオク→メルカリ 利益計算",
            "Yahoo!オークションで落札した品をメルカリで売った時の、配送方法ごとの利益と損益分岐を一覧で計算。まとめ落札の1個原価、ポイント。仕入れると古物台帳に自動で記録。無料・登録不要。",
-           "yahuoku-closed", "yahuoku", market_body(YM_SIDE, "配送方法ごとの売値と利益"), ["calc.js", "ui.js", "market.js"])
+           "yahuoku-closed", "yahuoku", market_body(YM_SIDE, "配送方法ごとの売値と利益", empty_row(7, "「仕入れ」に落札価格を入れると、配送方法ごとの売値と利益が並びます。")), ["calc.js", "ui.js", "market.js"])
 
 AU_SIDE = box("仕入れ(業者オークション)", '<div class="fl">' +
-              '<label class="fr col"><span class="fk">市場</span><select id="b-venue"></select></label><p class="hint" id="b-venue-note"></p>' +
+              '<label class="fr col"><span class="fk">市場</span><select id="b-venue">' + venue_options() + '</select></label><p class="hint" id="b-venue-note"></p>' +
               fld("落札価格", num("b-bid"), "円") + chk("b-bidex", "落札価格は税別", True) +
               '<div id="b-rate-w" hidden>' + fld("手数料率", dec("b-rate", "5"), "%") + "</div>" +
               fld("落札手数料", num("b-fee", "0"), "円", "自動。上書き可") + chk("b-feeex", "手数料は税別", True) +
@@ -535,7 +656,7 @@ AU_SIDE = box("仕入れ(業者オークション)", '<div class="fl">' +
               '<p class="hint">入会金・年会費は含みません。</p>')
 route_page("auction-mercari", "業者オークション→メルカリ 利益計算",
            "古物市場(業者オークション)で落札したブランド中古品を、メルカリ等で売った時の配送方法ごとの利益を一覧で計算。落札手数料・参加費の按分・税別落札の換算・ロットの1個原価。古物台帳に自動で記録。",
-           "mercari-sold", "auction", market_body(AU_SIDE, "配送方法ごとの売値と利益"), ["calc.js", "ui.js", "market.js"])
+           "mercari-sold", "auction", market_body(AU_SIDE, "配送方法ごとの売値と利益", empty_row(7, "「仕入れ」に落札価格を入れると、配送方法ごとの売値と利益が並びます。")), ["calc.js", "ui.js", "market.js"])
 
 # ------------------------------------------------------------------
 # 台帳
@@ -691,13 +812,6 @@ TOP_BODY = f"""<div class="lay2">
       <thead><tr><th>ページ</th><th>仕入れ先</th><th>売り先</th><th>商品</th><th>古物商許可</th><th>計算する手数料</th></tr></thead>
       <tbody>{route_rows}</tbody>
     </table></div>
-
-    <h2 class="sec-h">今日のポイント高還元(楽天) <small id="today-time"></small></h2>
-    <div class="gridwrap"><table class="grid mc" id="today-grid">
-      <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">価格</th><th class="r c-pt">ポイント</th><th class="c-fee">期限</th><th></th></tr></thead>
-      <tbody id="today-rows"><tr><td colspan="6" class="empty">読み込み中</td></tr></tbody>
-    </table></div>
-    <p class="credit">楽天市場の公式APIで毎朝取得した見本です。Amazonで売れるかは判定していません。PR: 商品へのリンクは楽天アフィリエイトのリンクです(価格は変わりません)。<a href="https://developers.rakuten.com/" target="_blank" rel="noopener">Supported by Rakuten Developers</a></p>
 
     <h2 class="sec-h" id="shindan-sec">向いている仕入れルートを診断(6問)</h2>
     <form id="shindan" class="qtab">
@@ -1346,4 +1460,11 @@ HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tes
 urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")] + [(u, p) for u, p in HAND if (S / u / "index.html").exists()] + [("shikumi/", "0.8"), ("chigai/", "0.6"), ("plans/", "0.6"), ("terms/", "0.2"), ("privacy/", "0.2")]
 sm = "\n".join(f"<url><loc>{BASE_URL}{u}</loc><lastmod>{FEES['checked']}</lastmod><priority>{p}</priority></url>" for u, p in urls)
 (S / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{sm}\n</urlset>\n', encoding="utf-8")
-print("built", ["top"] + [slug for slug, _ in ROUTES] + ["daicho", "plans", "mypage", "terms", "privacy", "shikumi", "chigai"])
+# ---- テスト用の写しは、手書きのページも含めて全ページに noindex ----
+if NOINDEX:
+    for _f in S.rglob("*.html"):
+        _t = _f.read_text(encoding="utf-8")
+        _n = with_noindex(_t)
+        if _n != _t:
+            _f.write_text(_n, encoding="utf-8")
+print("built", OUT, ["top"] + [slug for slug, _ in ROUTES] + ["daicho", "plans", "mypage", "terms", "privacy", "shikumi", "chigai"])

@@ -2,7 +2,8 @@
 // 実行: node tests/sedori/test_rules.js [公開フォルダ]
 const path = require('path'), fs = require('fs'), assert = require('assert');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
-const BS = require(path.join(root, 'sedori/assets/books-sync.js'));
+const SD = require('./_dir')(root);  // 準備中の間はテスト用の写しを読む
+const BS = require(path.join(root, SD, 'assets/books-sync.js'));
 const rules = fs.readFileSync(path.join(__dirname, '../../backend/sedori/firestore.rules'), 'utf8');
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }

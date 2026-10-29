@@ -2,8 +2,9 @@
 // 実行: node tests/sedori/test_sync.js [公開フォルダ]
 const path = require('path'), assert = require('assert');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
-const S = require(path.join(root, 'sedori/assets/sync.js'));
-const C = require(path.join(root, 'sedori/assets/calc.js'));
+const SD = require('./_dir')(root);  // 準備中の間はテスト用の写しを読む
+const S = require(path.join(root, SD, 'assets/sync.js'));
+const C = require(path.join(root, SD, 'assets/calc.js'));
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
 const ids = rows => rows.map(r => r.id);
@@ -171,8 +172,8 @@ eq(S.firstSync('u2', 'u1', 0), 'merge', '別のアカウントでも空なら');
   const mem = {};
   global.localStorage = { getItem(k) { return k in mem ? mem[k] : null; }, setItem(k, v) { mem[k] = String(v); }, removeItem(k) { delete mem[k]; } };
   global.fetch = () => new Promise(() => {});
-  window.SedoriCalc = C; window.SedoriSync = S; window.SedoriSellerCheck = require(path.join(root, 'sedori/assets/seller-check.js'));
-  require(path.join(root, 'sedori/assets/ui.js'));
+  window.SedoriCalc = C; window.SedoriSync = S; window.SedoriSellerCheck = require(path.join(root, SD, 'assets/seller-check.js'));
+  require(path.join(root, SD, 'assets/ui.js'));
   const U = window.SedoriUI, Lg = U.ledger;
   const r = Lg.add({ name: 'ゲーム機', cond: '中古', unit: 15000 }, true);
   eq(typeof Lg.get(r.id).updatedAt, 'number', '追加した行に時刻');

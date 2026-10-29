@@ -2,8 +2,9 @@
 // 公開フォルダの既定は ../kt-zs-sedori-ghp(gh-pages の作業ツリー)。計算式の根拠は各行のコメント。
 const path = require('path'), fs = require('fs'), assert = require('assert');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
-const C = require(path.join(root, 'sedori/assets/calc.js'));
-const fees = JSON.parse(fs.readFileSync(path.join(root, 'sedori/data/fees.json'), 'utf8'));
+const SD = require('./_dir')(root);  // 準備中の間はテスト用の写しを読む
+const C = require(path.join(root, SD, 'assets/calc.js'));
+const fees = JSON.parse(fs.readFileSync(path.join(root, SD, 'data/fees.json'), 'utf8'));
 let n = 0;
 function eq(a, b, msg) { assert.strictEqual(a, b, `${msg}: 実際 ${a} / 期待 ${b}`); n++; }
 const cat = id => C.findCategory(fees, id);

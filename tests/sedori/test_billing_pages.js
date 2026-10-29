@@ -4,7 +4,8 @@
 // - Stripe で扱うページに、賭け事(競艇など)の内容を載せない(Stripe の禁止業種)。本名・住所を出さない
 const path = require('path'), fs = require('fs'), assert = require('assert');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
-const read = p => fs.readFileSync(path.join(root, p), 'utf8');
+const SD = require('./_dir')(root);  // 準備中の間はテスト用の写しを読む
+const read = p => fs.readFileSync(path.join(root, p.replace(/^sedori\//, SD + '/')), 'utf8');
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
 const text = h => h.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
@@ -30,7 +31,7 @@ eq([/Stripe/.test(terms), /PayPal/.test(terms), /1回目のお支払いが済ん
 // Stripe で扱うページ(せどりの全ページと特商法・規約)に、賭け事の言葉を出さない
 const BET = /競艇|ボートレース|舟券|競馬|競輪|オートレース|パチンコ|パチスロ|賭け|ギャンブル|kyotei/i;
 const pages = [];
-(function walk(d) { for (const f of fs.readdirSync(path.join(root, d))) { const p = path.join(d, f), st = fs.statSync(path.join(root, p)); if (st.isDirectory()) walk(p); else if (/\.html$/.test(f)) pages.push(p); } })('sedori');
+(function walk(d) { for (const f of fs.readdirSync(path.join(root, d))) { const p = path.join(d, f), st = fs.statSync(path.join(root, p)); if (st.isDirectory()) walk(p); else if (/\.html$/.test(f)) pages.push(p); } })(SD);
 const bad = pages.filter(p => BET.test(text(read(p))));
 eq(bad, [], 'せどりのページに賭け事の内容が無い');
 const tokuSedori = toku.split('<br>').filter(x => /せどり/.test(x)).join('');

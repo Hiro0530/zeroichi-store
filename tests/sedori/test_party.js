@@ -1,6 +1,7 @@
 // 取引相手の情報の取り出し(貼り付け)と、売り手の確認の判定の検算。実行: node tests/sedori/test_party.js [公開フォルダ]
 const path = require('path'), assert = require('assert');
 const root = process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp');
+const SD = require('./_dir')(root);  // 準備中の間はテスト用の写しを読む
 // ブラウザの最小の代わり(ui.js は画面の部品なので、読み込めるだけの形を用意する)
 global.window = { matchMedia: () => ({ matches: false }) };
 global.location = { hash: '', search: '', protocol: 'http:' };
@@ -9,9 +10,9 @@ global.document = { readyState: 'complete', body: { getAttribute: () => null }, 
 const mem = {};
 global.localStorage = { getItem(k) { return k in mem ? mem[k] : null; }, setItem(k, v) { mem[k] = String(v); }, removeItem(k) { delete mem[k]; } };
 global.fetch = () => new Promise(() => {});
-window.SedoriCalc = require(path.join(root, 'sedori/assets/calc.js'));
-window.SedoriSellerCheck = require(path.join(root, 'sedori/assets/seller-check.js'));
-require(path.join(root, 'sedori/assets/ui.js'));
+window.SedoriCalc = require(path.join(root, SD, 'assets/calc.js'));
+window.SedoriSellerCheck = require(path.join(root, SD, 'assets/seller-check.js'));
+require(path.join(root, SD, 'assets/ui.js'));
 const U = window.SedoriUI;
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
