@@ -138,3 +138,5 @@ https://zeroichiworks.net/sedori/plans/
 ご案内はこの1通だけです。このメールに返信いただければ、ご質問にお答えします。
 ZEROICHI WORKS zeroichi.works.jp@gmail.com
 ```
+
+<!-- 2026-10-29: Cloudflare Workers の Git 連携の初回ビルド用 -->
