@@ -3,7 +3,7 @@
    受付前は事前登録、カードの価格IDが Worker に無いプランは「準備中」。料金は config.js の PLAN_CATALOG だけで決める。
    無料期間は初めてのお申し込みの月払いだけ(解約後の申し込み直しはカードのみ・無料期間なしで、確認の欄もそう書き換える)。
    年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(cfg.YEAR_TEXT。2026-10-30)。
-   総合を選ぶと、先着100名の受付中は先着の価格(founder_*)で申し込む(カードと確認の両方にそう書く)。 */
+   総合を選ぶと、先着(cfg.FOUNDER_LIMIT 名)の受付中は先着の価格(founder_*)で申し込む(カードと確認の両方にそう書く)。 */
 (function () {
   'use strict';
   var U = window.SedoriUI, $ = U.$, $$ = U.$$, esc = U.esc;
@@ -12,6 +12,7 @@
   var DAYS = Number(cfg.TRIAL_DAYS) || 14;
   var YEAR_TEXT = cfg.YEAR_TEXT || '年払いは無料期間なしで、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します。';
   var RDAYS = Number(cfg.YEAR_REFUND_DAYS) || 30;
+  var FN = Number(cfg.FOUNDER_LIMIT) || 200;  // 先着の定員(2026-10-28 決定 200名)
   var KEEP = cfg.FOUNDER_KEEP || '解約しない限りずっと(サービス提供中)';
   var WD = '日月火水木金土';
   function jdate(d, y) { return (y === false ? '' : d.getFullYear() + '年') + (d.getMonth() + 1) + '月' + d.getDate() + '日(' + WD[d.getDay()] + ')'; }
@@ -59,7 +60,7 @@
     $('#pl-step2').hidden = !st.chosen;
     $('#cf-plan').textContent = name + '(' + cycl + ')';
     var fd = $('#cf-fd'); fd.hidden = !isF;
-    if (isF) fd.textContent = '先着100名の価格' + (founder.left != null ? '(残り' + founder.left + '名)' : '');
+    if (isF) fd.textContent = '先着' + FN + '名の価格' + (founder.left != null ? '(残り' + founder.left + '名)' : '');
     $('#cf-price').textContent = per + yen(c.price);
     $('#cf-price2').textContent = per + yen(c.price);
     $$('#cf-amount [data-tier]').forEach(function (el) { el.hidden = el.getAttribute('data-tier') !== (c.tier || 'total'); });
@@ -92,7 +93,7 @@
     }
     $('#cf-term').textContent = (st.cyc === 'month' ? '1か月' : '1年') + 'ごとに自動で更新し、解約するまで続きます';
     $('#cf-period').textContent = isF
-      ? '1回目のお支払いが済んだ方が100名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、無料期間中でもこの価格のまま。' + KEEP + 'この価格です'
+      ? '1回目のお支払いが済んだ方が' + FN + '名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、無料期間中でもこの価格のまま。' + KEEP + 'この価格です'
       : '期限はありません';
     // 事前登録のメールに、選んだプランを書き添える
     if (U.setPreregPlan) U.setPreregPlan(name + '(' + cycl + ')');
@@ -123,13 +124,13 @@
   var back = $('.pl-back');
   if (back) back.addEventListener('click', function (e) { e.preventDefault(); var s1 = $('#pl-step1'); s1.scrollIntoView({ block: 'start' }); var b = $('#pl-cards .pc.on .pc-go'); if (b) b.focus({ preventScroll: true }); });
 
-  /* 先着100名の残り(Worker が public/founders に書く。誰でも読める) */
+  /* 先着の残り(Worker が public/founders に書く。誰でも読める) */
   function loadFounders() {
     var fc = cfg.FIREBASE_CONFIG; if (!fc || !fc.projectId) return;
     fetch('https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(fc.projectId) + '/databases/(default)/documents/public/founders?key=' + encodeURIComponent(fc.apiKey))
       .then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
         if (!j || !j.fields) return;
-        var f = j.fields, taken = Number((f.taken || {}).integerValue || 0), limit = Number((f.limit || {}).integerValue || 100), on = !(f.open && f.open.booleanValue === false);
+        var f = j.fields, taken = Number((f.taken || {}).integerValue || 0), limit = Number((f.limit || {}).integerValue || FN), on = !(f.open && f.open.booleanValue === false);
         if (cfg.FOUNDER_DEADLINE && Date.now() > new Date(cfg.FOUNDER_DEADLINE + 'T23:59:59').getTime()) on = false;
         founder = { open: on && taken < limit && open('founder_month'), left: Math.max(0, limit - taken) };
         var l = $('#pl-founder-left'); if (l) l.textContent = founder.open ? '・残り' + founder.left + '名' : '';
@@ -196,7 +197,7 @@
         founder = { open: false, left: 0 };
         var l = $('#pl-founder-left'); if (l) l.textContent = '';
         paint();
-        payErr('先着100名の価格の受付は、たったいま終わりました。上の金額が変わったので、ご確認のうえ、もう一度お申し込みください。');
+        payErr('先着' + FN + '名の価格の受付は、たったいま終わりました。上の金額が変わったので、ご確認のうえ、もう一度お申し込みください。');
         var s2 = $('#pl-step2'); if (s2) s2.scrollIntoView({ block: 'start' });
         return;
       }

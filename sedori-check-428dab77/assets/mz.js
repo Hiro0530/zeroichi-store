@@ -112,7 +112,7 @@
     var keyRows = [['ヤフオクで払ってよい上限(出品価格' + yen(x.sell) + '円の時)', maxc == null ? '届かない' : yen(maxc) + '円', 'key go']];
     if (x.cost > 0) keyRows.push(['損益分岐の出品価格', be ? yen(be) + '円' : '—', 'key']);
     if (!(x.cost > 0)) {
-      U.result(out, '<div class="pfbox">' + (act > 0 ? U.compareHTML({ actual: act, target: null, where: 'Amazon(中古)', tgLabel: U.targetLabel(tg) }) : '') + U.brkRows(keyRows) + '</div><p class="note">ヤフオクの価格を入れると、利益と内訳が出ます。上限は送料別です。</p>', null, '');
+      U.result(out, '<div class="pfbox">' + (act > 0 ? U.compareHTML({ actual: act, target: null, where: 'Amazon(中古)', tgLabel: U.targetLabel(tg), plain: true }) : '') + U.brkRows(keyRows) + '</div><p class="note">ヤフオクの価格を入れると、利益と内訳が出ます。上限は送料別です。</p>', null, '');
       return;
     }
     var r = C.amazonProfit(fees, x); lastR = r;
@@ -125,7 +125,7 @@
     rows.push(['利益(1個)', m.profit, 't']);
     var nw = val('mz-new'), top;
     if (ra) {
-      top = U.compareHTML({ actual: act, target: sug, where: 'Amazon(中古)', tgLabel: U.targetLabel(tg) }) + U.gateHTML({ noPt: ra.profit, title: '実際の売値で売れた時の利益', sub: '売値−仕入れ−手数料−送料', plain: true });
+      top = U.compareHTML({ actual: act, target: sug, where: 'Amazon(中古)', tgLabel: U.targetLabel(tg), plain: true }) + U.gateHTML({ noPt: ra.profit, title: '実際の売値で売れた時の利益', sub: '売値−仕入れ−手数料−送料', plain: true });
       if (x.sell !== act) {
         top += U.brkRows([['選んだ出品価格 ' + yen(x.sell) + '円の時の利益', yen(r.profit) + '円', 'key']]) +
           (x.sell > act ? '<p class="warn-line">出品価格が実際の売値より' + yen(x.sell - act) + '円高く、売れにくい値段です</p>' : '');

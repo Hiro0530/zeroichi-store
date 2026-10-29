@@ -55,7 +55,7 @@
       var key = t + cyc, c = cat[key]; if (!c || c.open === false) return null;
       var up = TIER_RANK[t] > TIER_RANK[cur.tier];
       return { key: key, up: up, tier: t, label: c.name + 'に変える(' + (cyc === '_year' ? '年' : '月') + c.price.toLocaleString('ja-JP') + '円)',
-        note: cur.founder ? '先着100名の価格から変えると、元の価格には戻せません' : '' };
+        note: cur.founder ? '先着' + (Number(cfg.FOUNDER_LIMIT) || 200) + '名の価格から変えると、元の価格には戻せません' : '' };
     }).filter(Boolean);
   }
   function isCard(sub) { return !!(sub && sub.provider === 'stripe'); }
@@ -121,7 +121,7 @@
     if (/_month$/.test(pk)) items.push('<div class="alt-i"><b>年払いに変える</b><p>' + yearText(pk.replace('_month', '_year')) + '。' + (card ? reviseText(pk.replace('_month', '_year'), p) : 'PayPalの画面で承認すると、次の請求から変わります。') + '</p><button type="button" class="btn sm ghost" id="mp-year">年払いに変える</button></div>');
     var swc = switchList(pk).filter(function (x) { return x.tier === 'light'; })[0];
     if (swc) items.push('<div class="alt-i"><b>ライトに変える</b><p>台帳のクラウド保存(月' + (Number(cfg.LIGHT_MONTHLY_LIMIT) || 100) + '件まで)・バーコードの同期・終了前の通知は、そのまま使えます。' + esc(swc.note) + '</p><button type="button" class="btn sm ghost" id="mp-light">' + esc(swc.label) + '</button></div>');
-    if (/^founder/.test(pk)) items.push('<div class="alt-i"><p class="hint">先着100名の価格は、' + esc(cfg.FOUNDER_KEEP || '解約しない限りずっと(サービス提供中)') + 'の価格です。解約して申し込み直すと、その時の価格になります。</p></div>');
+    if (/^founder/.test(pk)) items.push('<div class="alt-i"><p class="hint">先着' + (Number(cfg.FOUNDER_LIMIT) || 200) + '名の価格は、' + esc(cfg.FOUNDER_KEEP || '解約しない限りずっと(サービス提供中)') + 'の価格です。解約して申し込み直すと、その時の価格になります。</p></div>');
     if (p.key === 'trial') items.push('<div class="alt-i"><p class="hint">いまは無料期間中です。' + jd(p.until) + 'より前に解約すれば、料金はかかりません。</p></div>');
     alt.innerHTML = items.join('');
     doBox.innerHTML = '<label class="inl">解約の理由(任意) <select id="mp-reason"><option value="">選ばない</option><option>使う機会が減った</option><option>料金が合わない</option><option>機能が足りない</option><option>ほかの道具にした</option><option>その他</option></select></label>' +

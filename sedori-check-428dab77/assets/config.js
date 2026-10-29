@@ -18,8 +18,8 @@ window.ZW_CONFIG = {
   PAYPAL_PLANS: {
     total_month: null,     // 総合 月4,980円
     total_year: null,      // 総合 年49,800円
-    founder_month: null,   // 総合 先着100名 月3,980円
-    founder_year: null,    // 総合 先着100名 年39,800円
+    founder_month: null,   // 総合 先着200名 月3,980円
+    founder_year: null,    // 総合 先着200名 年39,800円
     business_month: null,  // 業務 月7,980円
     business_year: null,   // 業務 年79,800円
     light_month: null,     // ライト 月2,980円
@@ -31,22 +31,26 @@ window.ZW_CONFIG = {
   /* 年払いの決まり(料金ページの確認の欄・マイページ・利用規約・特商法・Worker の YEAR_TEXT と同じ文。変える時は全部そろえる) */
   YEAR_TEXT: "年払いは無料期間なしで、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します。",
   YEAR_REFUND_DAYS: 30,
-  /* 先着100名の価格の続く期間の言い方(「一生」とは書かない。2026-10-30) */
+  /* 先着の定員(人数)。ここだけ直せば、料金ページ・トップ・規約・AIに相談の前提・事前登録のメールの数が変わる
+     (ページの書き出し tools/sedori/build_pages.py もここを読む)。Worker の FOUNDER_LIMIT(wrangler.toml)と特商法も同じ数にそろえる。
+     2026-10-28 オーナー決定で 100名 → 200名 */
+  FOUNDER_LIMIT: 200,
+  /* 先着200名の価格の続く期間の言い方(「一生」とは書かない。2026-10-30) */
   FOUNDER_KEEP: "解約しない限りずっと(サービス提供中)",
   /* Cloudflare Worker の URL(カードの申し込み・契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
   WORKER_URL: null,
   /* 料金(税込・円)。ここだけ直せば、料金ページ・トップの料金表・お申し込みの確認の金額が変わる
      (ページの書き出し tools/sedori/build_pages.py もここを読む)。Stripe の価格・PayPal のプランの金額と Worker の PLANS も同じ値にそろえる。
-     open: false は「受付前」(申し込めない)。founder: true は先着100名の価格(総合だけ)。tier はできることの段(light/total/business)。
+     open: false は「受付前」(申し込めない)。founder: true は先着200名の価格(総合だけ)。tier はできることの段(light/total/business)。
      badge は料金表の小さな印。有料の機能ができたかどうかは下の FEATURES_READY。
-     2026-10-27 決定(安売りしない): ライト 月2,980円・年29,800円/総合 月4,980円・年49,800円(おすすめ)/先着100名は総合を月3,980円・年39,800円(解約しない限りずっと。サービス提供中)/業務 月7,980円・年79,800円(確定申告まで全部)。
+     2026-10-27 決定(安売りしない): ライト 月2,980円・年29,800円/総合 月4,980円・年49,800円(おすすめ)/先着200名は総合を月3,980円・年39,800円(解約しない限りずっと。サービス提供中)/業務 月7,980円・年79,800円(確定申告まで全部)。
      14日間の無料期間は月払いだけ(初めてのお申し込みの時)。どのプランで申し込んでも業務のすべてを使え、終わる日から選んだプランで続く。
      年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(2026-10-30 決定) */
   PLAN_CATALOG: /*PLANS*/{
     "total_month": { "name": "総合", "tier": "total", "cycle": "month", "price": 4980, "badge": "おすすめ" },
     "total_year": { "name": "総合", "tier": "total", "cycle": "year", "price": 49800, "badge": "おすすめ" },
-    "founder_month": { "name": "総合 先着100名の価格", "tier": "total", "cycle": "month", "price": 3980, "founder": true },
-    "founder_year": { "name": "総合 先着100名の価格", "tier": "total", "cycle": "year", "price": 39800, "founder": true },
+    "founder_month": { "name": "総合 先着200名の価格", "tier": "total", "cycle": "month", "price": 3980, "founder": true },
+    "founder_year": { "name": "総合 先着200名の価格", "tier": "total", "cycle": "year", "price": 39800, "founder": true },
     "business_month": { "name": "業務", "tier": "business", "cycle": "month", "price": 7980, "badge": "確定申告まで全部" },
     "business_year": { "name": "業務", "tier": "business", "cycle": "year", "price": 79800, "badge": "確定申告まで全部", "note": "確定申告の時期だけでなく、毎月の棚卸と集計に使えます" },
     "light_month": { "name": "ライト", "tier": "light", "cycle": "month", "price": 2980, "badge": "まずは記録だけ" },
@@ -69,8 +73,11 @@ window.ZW_CONFIG = {
     policepdf: false  // 業務: 警察提出用の台帳PDF
   },
   /* 事前登録(件名「せどりアプリ事前登録」のメール1通)。open は有料の受付を始める日、notice はご案内を送る日(画面とメールの本文に出す)。
-     受付が始まって WORKER_URL が入ると、事前登録の欄(data-bill="prep")は自動で隠れる */
-  PREREG: { open: "11月4日(水)", notice: "11月3日(火)" },
-  /* 先着100名の価格の受付終了日("2026-12-31" のように。決めていなければ null。人数で終わる) */
+     日付が決まっていない間は null(画面は「有料版の受付開始日は、決まりしだいこのページでお知らせします」)。
+     決まったら、下の1行の null を  open: "11月4日(水)", notice: "11月3日(火)"  のように日付の文字に直して tools/sedori/build_pages.py を流し直せば、全ページに出る。
+     受付が始まって WORKER_URL が入ると、事前登録の欄(data-bill="prep")は自動で隠れる。
+     2026-10-29: 11月4日はテストの結果を見てオーナーが決め直すので、いったん日付を外した */
+  PREREG: { open: null, notice: null },
+  /* 先着200名の価格の受付終了日("2026-12-31" のように。決めていなければ null。人数で終わる) */
   FOUNDER_DEADLINE: null
 };

@@ -212,7 +212,7 @@
       c.notice + 'に、このメールアドレスへ受付開始のご案内を1通だけお送りします。\n\n' +
       (plan ? '気になっているプラン: ' + plan + '\n' : '') +
       '(任意)いま一番手間に感じている作業:\n\n' +
-      '有料版: ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円(先着100名は月' + catPrice('founder_month', '3,980') + '円)/業務 月' + catPrice('business_month', '7,980') + '円(税込)。' +
+      '有料版: ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円(先着' + (Number((window.ZW_CONFIG || {}).FOUNDER_LIMIT) || 200) + '名は月' + catPrice('founder_month', '3,980') + '円)/業務 月' + catPrice('business_month', '7,980') + '円(税込)。' +
       '月払いは14日無料、年払いは10か月分の料金で1年(30日以内の解約は全額返金)。\n' +
       '登録の取り消しは、このメールに「取り消し」と返信するだけでできます。';
   }
@@ -649,10 +649,12 @@
     }
     return h + '</div>';
   }
-  /** 実際の売値(判断の主役)と、目標の売値(目標の利益から逆算した目安)を並べ、差を出す */
+  /** 実際の売値(判断の主役)と、目標の売値(目標の利益から逆算した目安)を並べ、差を出す。
+      ポイントのあるルート(plain でない)では、目標の売値はポイント抜きで逆算した値(価格差が先、ポイントは後) */
+  function tgSub(o) { return esc(o.tgLabel || '') + (o.plain ? 'から逆算した目安' : 'からポイント抜きで逆算した目安'); }
   function compareHTML(o) {
     var h = '<table class="cmp"><tr class="act"><th>実際の売値<small>' + esc(o.where || '売り先') + 'で確かめた今の価格</small></th><td>' + yen(o.actual) + '<i>円</i></td></tr>' +
-      '<tr><th>目標の売値<small>' + esc(o.tgLabel || '') + 'から逆算した目安</small></th><td>' + (o.target ? yen(o.target) + '<i>円</i>' : '届かない') + '</td></tr>';
+      '<tr><th>目標の売値<small>' + tgSub(o) + '</small></th><td>' + (o.target ? yen(o.target) + '<i>円</i>' : '届かない') + '</td></tr>';
     if (o.target) {
       var d = o.actual - o.target;
       h += '<tr class="diff ' + (d >= 0 ? 'good' : 'bad') + '"><th>差</th><td>' + (d >= 0 ? '目標より' + yen(d) + '円高い' : '目標に' + yen(-d) + '円足りない') + '</td></tr>';
@@ -663,8 +665,8 @@
   function askActualHTML(o) {
     return '<div class="ask"><p class="ask-h">' + esc(o.where || '売り先') + 'の実際の売値を入れてください</p>' +
       '<p>利益は、実際に売れている値段で決まります。' + (o.how || '') + '</p></div>' +
-      brkRows([['目標の売値(' + esc(o.tgLabel || '') + 'から逆算した目安)', o.target ? yen(o.target) + '円' : '届かない', 'key'], ['損益分岐の売値' + (o.plain ? '' : '(ポイント抜き)'), o.be ? yen(o.be) + '円' : '—', 'key']]) +
-      '<p class="note">目標の売値は、目標の利益から逆算した値です。その値段で売れるという意味ではありません。</p>';
+      brkRows([['目標の売値(' + tgSub(o) + ')', o.target ? yen(o.target) + '円' : '届かない', 'key'], ['損益分岐の売値' + (o.plain ? '' : '(ポイント抜き)'), o.be ? yen(o.be) + '円' : '—', 'key']]) +
+      '<p class="note">目標の売値は、目標の利益から' + (o.plain ? '' : 'ポイントを足さずに(価格差だけで)') + '逆算した値です。その値段で売れるという意味ではありません。</p>';
   }
   function profitClass(profit, sell, tg) {
     if (profit < 0) return 'bad';

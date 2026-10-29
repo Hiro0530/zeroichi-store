@@ -56,11 +56,12 @@
       selfShip: $('#c-self').checked, selfShipCost: $('#c-self').checked ? C.carrierCost(fees, $('#c-carrier').value, val('c-selfship')) : 0
     };
   }
-  /** 1行ぶんの計算。Amazon売値が無い時は、目標を満たす売値で計算して est=true */
+  /** 1行ぶんの計算。Amazon売値が無い時は、目標を満たす売値で計算して est=true。
+      目標の売値はポイント抜きで逆算する(価格差が先、ポイントは後。ポイントを足して目標に届く売値は出さない) */
   function compute(it) {
     if (!fees || !(Number(it.price) > 0)) return null;
     var x = input(it), tg = U.target();
-    var sug = C.amazonPriceFor(fees, x, tg);
+    var sug = C.amazonPriceFor(fees, Object.assign({}, x, { usePoints: false }), tg);
     var est = !(x.sell > 0);
     if (est) { if (!sug) return { sug: null, est: true }; x.sell = sug; }
     var r = C.amazonProfit(fees, x);
@@ -96,7 +97,7 @@
     } else if (r && r.sell) {
       sellCell = '<span class="yen">' + yen(r.sell) + '<i>円</i></span>';
       feeCell = yen(r.fee);
-      var np = r.profitNoPoints, cls = np <= 0 ? 'bad' : (r.profit >= r.need ? 'good' : '');
+      var np = r.profitNoPoints, cls = np <= 0 ? 'bad' : (np >= r.need ? 'good' : '');  // 目標に届いたかもポイント抜きで見る
       pfCell = '<span class="pf ' + cls + '">' + yen(np) + '</span>' + (r.x.usePoints && r.points ? '<small class="ptadd">+P' + yen(r.points) + '</small>' : '');
       rtCell = '<span class="rt ' + cls + '">' + U.pct(r.sell > 0 ? np / r.sell : 0) + '</span>';
     } else sellCell = r && r.est ? '<span class="yen est">届かない</span>' : '—';
@@ -119,7 +120,7 @@
       w: '気になる商品は、右の「ウォッチに追加」で残せます。' }[tab];
     $('#rows').innerHTML = v.length ? v.map(rowHTML).join('') : '<tr><td colspan="8" class="empty">' + (cur().length ? '絞り込みの条件に合う商品がありません。' : empty) + '</td></tr>';
     $('#credit').innerHTML = (tab === 'w' ? '' : CREDIT + '。価格・在庫・ポイントは取得時点のものです。') +
-      ' 「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益から逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。';
+      ' 「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益からポイント抜きで逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。';
     paintBulk();
   }
   function paintBulk() {

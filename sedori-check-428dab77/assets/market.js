@@ -53,13 +53,13 @@
   }
   function rowCalc(sh, b) {
     var tg = U.target(), x = input(sh, b.unit, val('s-price'));
-    var be = C.marketPriceFor(x, 0), tp = C.marketPriceFor(x, tg);
-    var est = !(x.sell > 0);
-    if (est) x.sell = tp || 0;
-    var r = x.sell ? C.marketProfit(x) : null;
-    // ポイント抜きの利益と損益分岐(価格差が先、ポイントは後)
+    // ポイント抜きの原価(価格差が先、ポイントは後)。損益分岐と目標の売値は、ポイント抜きで逆算する
     var x0 = Object.assign({}, x, { cost: b.unit0 == null ? b.unit : b.unit0 });
-    var r0 = x.sell ? C.marketProfit(x0) : null, be0 = C.marketPriceFor(x0, 0);
+    var be0 = C.marketPriceFor(x0, 0), be = be0, tp = C.marketPriceFor(x0, tg);
+    var est = !(x.sell > 0);
+    if (est) { x.sell = tp || 0; x0.sell = x.sell; }
+    var r = x.sell ? C.marketProfit(x) : null;
+    var r0 = x.sell ? C.marketProfit(x0) : null;
     return { x: x, be: be, be0: be0, tp: tp, r: r, r0: r0, est: est, need: x.sell ? C.needProfit(x.sell, tg) : 0 };
   }
 
@@ -74,7 +74,7 @@
       var c = rowCalc(sh, b), out = '';
       if (sh.group !== grp) { grp = sh.group; out += '<tr class="grp"><td colspan="7">' + esc(grp) + '</td></tr>'; }
       var np = c.r0 ? c.r0.profit : 0, pt = c.r && c.r0 ? c.r.profit - c.r0.profit : 0;
-      var cls = c.r ? (np <= 0 ? 'bad' : (c.r.profit >= c.need ? 'good' : '')) : '';
+      var cls = c.r ? (np <= 0 ? 'bad' : (np >= c.need ? 'good' : '')) : '';  // 目標に届いたかもポイント抜きで見る
       var cost = sh.id === 'custom' ? val('s-shipfee') + sh.material : sh.fee + sh.material;
       return out + '<tr data-i="' + esc(sh.id) + '"' + (sh.id === shipId ? ' class="on"' : '') + '><td><div class="nm">' + esc(sh.label) + '</div></td>' +
         '<td class="r fee" data-k="送料・資材">' + yen(cost) + '</td><td class="r c-fee fee">' + (c.be ? yen(c.be) : '—') + '</td>' +
@@ -109,7 +109,7 @@
     if (pt) rows.push(['ポイント(上乗せ・落札価格の' + val('b-pt') + '%)', pt], ['ポイント込みの利益(1個)', r.profit, 't']);
     var keyRows = [['損益分岐の売値' + (route === 'yahuoku' ? '(ポイント抜き)' : ''), c.be0 ? yen(c.be0) + '円' : '—', 'key']];
     if (b.qty > 1) keyRows.push([b.qty + '個すべて売れた時の利益(ポイント抜き)', yen(r0.profit * b.qty) + '円', 'key']);
-    var head = '<div class="pfbox">' + U.compareHTML({ actual: r.sell, target: c.tp, where: MK_LABEL[market], tgLabel: U.targetLabel(tg) }) +
+    var head = '<div class="pfbox">' + U.compareHTML({ actual: r.sell, target: c.tp, where: MK_LABEL[market], tgLabel: U.targetLabel(tg), plain: route !== 'yahuoku' }) +
       (route === 'yahuoku' ? U.gateHTML({ noPt: r0.profit, pt: pt, ptLabel: '落札価格の' + val('b-pt') + '%' }) : U.gateHTML({ noPt: r0.profit, title: '利益(1個)', plain: true })) +
       '<div class="kpi"><div><b>' + U.pct(r0.margin) + '</b>利益率' + (route === 'yahuoku' ? '(ポイント抜き)' : '') + '</div><div><b>' + U.pct(r0.roi, 0) + '</b>仕入れに対して</div><div><b>' + yen(r.payout) + '円</b>手数料を引いた売上</div></div>' + U.brkRows(keyRows);
     U.result(out, head + '</div>', rows,
