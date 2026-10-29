@@ -1,2 +1,2 @@
-fadj
-# 2026-10-29: 2号艇(1号艇の隣)のF持ちで1号艇が逃げにくいか、朝のモデルの見積もりと比べる(exp_are.main_fadj → experiments/are_fadj.json)。予想は作らない
+place
+# 2026-10-30: 自信ありレースの2着・3着、券種ごとの的中率・平均の倍率・回収率、荒れるレースの確率の作り直しの検証(exp_place → experiments/place_v1.json)。予想は作らない

@@ -63,8 +63,10 @@ PRE = {
     "pre_wx": ["p_wind_l1", "p_wave_l1", "p_wind_out"] + ORACLE3,          # 直前の風速・波高・風向(場ごとの係数つき)
     "pre_course": ["p_cshift", "p_c1"],                                    # 展示の進入(学習は実際の進入で代用=上限寄り)
 }
+# 2着・3着の候補(2026-10-30、exp_place.py で検証): 選手の枠別3連対率(前日までの競走成績)、期別成績のコース別3連対率
+PLACE = ["h_lane_t3", "fan_c_q3"]
 ALLF = FEATS + [f for g in GROUPS.values() for f in g] + ORACLE3 + [f for g in GROUPS4.values() for f in g] \
-    + [f for g in PRE.values() for f in g if f not in ORACLE3]
+    + [f for g in PRE.values() for f in g if f not in ORACLE3] + PLACE
 VX_CAND = {"tide": GROUPS["tide"], "wxdir": GROUPS["wxdir"], "oracle": ORACLE3,
            "venue_coef": ["rel_nat", "h_st_rel", "h_lane_win", "fan_c_win"]}   # 場ごとに係数を持たせる候補
 
@@ -314,6 +316,8 @@ def race_features(r: dict, d: date, h: History, fan: dict, res: dict | None = No
             n = s["ln"][L]
             x["h_lane_win"] = _logit((s["lw"][L] + k * pw) / (n + k)) - _logit(pw)
             x["h_lane_t2"] = _logit((s["l2"][L] + k * p2) / (n + k)) - _logit(p2)
+            p3 = h.lane_t3(L)
+            x["h_lane_t3"] = _logit((s["l3"][L] + k * p3) / (n + k)) - _logit(p3)
             x["h_lane_n"] = math.log1p(n)
             x["h_win_ewma"] = s["ew_w"] if s["ew_w"] is not None else 0.17
             x["h_t3_ewma"] = s["ew_3"] if s["ew_3"] is not None else 0.5
@@ -326,7 +330,7 @@ def race_features(r: dict, d: date, h: History, fan: dict, res: dict | None = No
             x["h_outer"] = (s["outer"] + 0.5) / (s["cobs"] + 10)
             p_rl = (s["lw"][L] + k * pw) / (n + k)
         else:
-            x.update({"h_lane_win": 0.0, "h_lane_t2": 0.0, "h_lane_n": 0.0, "h_win_ewma": 0.17,
+            x.update({"h_lane_win": 0.0, "h_lane_t2": 0.0, "h_lane_t3": 0.0, "h_lane_n": 0.0, "h_win_ewma": 0.17,
                       "h_t3_ewma": 0.5, "h_course_win": 0.0, "h_st": 0.17, "h_F180": 0.0,
                       "h_inner": 0.05, "h_outer": 0.05})
             p_rl = pw
@@ -339,8 +343,11 @@ def race_features(r: dict, d: date, h: History, fan: dict, res: dict | None = No
             x["fan_c_st"] = fc["st"] if fc["st"] else 0.17
             x["fan_c_sr"] = fc["sr"] if fc["sr"] else 3.5
             x["fan_has"] = 1.0
+            t3p = h.lane_t3(L)
+            x["fan_c_q3"] = ((fc.get("top3", t3p * fc["n"]) + 6 * t3p) / (fc["n"] + 6)) * 10 if "top3" in fc else 10 * t3p
         else:
-            x.update({"fan_c_win": 0.0, "fan_c_q2": 10 * T2_PRIOR[L], "fan_c_st": 0.17, "fan_c_sr": 3.5, "fan_has": 0.0})
+            x.update({"fan_c_win": 0.0, "fan_c_q2": 10 * T2_PRIOR[L], "fan_c_st": 0.17, "fan_c_sr": 3.5, "fan_has": 0.0,
+                      "fan_c_q3": 10 * h.lane_t3(L)})
         x["fan_ability"] = (f.get("ability") or 50.0) if f else 50.0
         x["wxp_wind_l1"] = wind_p * (L == 0)
         x["wxp_wave_l1"] = wave_p * (L == 0)

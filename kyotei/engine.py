@@ -547,6 +547,14 @@ def main(mode: str):
         import exp_are
         exp_are.main_fadj(hist_dir())
         return
+    elif mode == "place":
+        # 2026-10-30 オーナー指示: 自信ありレースの2着・3着、券種ごとの的中率・平均の倍率・回収率、荒れるレースの確率の作り直しの検証。
+        # 選ぶ期間(古い半年)にも2連複・3連複の払戻が要るので、全券種の払戻を上限つきで足す(1ファイル3秒)。予想は作らない
+        repay_history(days_back=372, cap_files=220)
+        ensure_jma()
+        import exp_place
+        exp_place.main(hist_dir())
+        return
     elif mode == "are":
         # 荒れるレース(1号艇の負け・万舟)を見分けられるかと、荒れたときの買い方の検証(新しい取得なし。予想は作らない)
         import exp_are

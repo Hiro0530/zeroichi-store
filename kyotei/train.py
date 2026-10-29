@@ -69,7 +69,7 @@ def pre_config(cfg: dict) -> dict | None:
     if not p or not p.get("feats"):
         return None
     return {"feats": p["feats"], "vx": p.get("vx", []), "train_days": cfg.get("train_days") or 365,
-            "ensemble": p.get("ensemble") or [[cfg.get("train_days") or 365, 30.0]], "cond_feats": p.get("cond_feats"),
+            "ensemble": p.get("ensemble") or [[cfg.get("train_days") or 365, 30.0]], "cond_feats": p.get("cond_feats"), "cond_opt": p.get("cond_opt"),
             "live": p.get("live", False)}
 
 
@@ -122,7 +122,8 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
         keep["idx"].append(np.where(te)[0])
         keep["full"].append(M.predict_model({"components": comps}, X[te], V[te], ALLF))
         try:   # 2着・3着の条件付きモデル(直近365日で学習)→ 学習外の3連単の確率
-            cm = C.fit(data, tr & (D >= s - 365), w_c2, w_c3)  # noqa: F841
+            ccfg = cfg.get("cond") or {}   # 2026-10-30: exp_place で残った2着・3着の構成(無ければ今までと同じ)
+            cm = C.fit(data, tr & (D >= s - 365), w_c2, w_c3, cols=ccfg.get("cols"), opt=ccfg)  # noqa: F841
             w_c2, w_c3 = np.array(cm["w2"]), np.array(cm["w3"])
             keep["T"].append(C.trifecta(cm, keep["full"][-1], X[te], V[te]))
         except Exception as e:  # noqa
@@ -134,8 +135,8 @@ def walk_forward(data: dict, weeks: int = 6, min_train_days: int = 21, cfg: dict
             keep["pre_P"].append(Pp)
             try:
                 pc = pcfg.get("cond_feats")
-                if pc and pc != C.CAND:
-                    cmp_ = C.fit(data, tr & (D >= s - 365), w_pc2, w_pc3, cols=pc)
+                if (pc and pc != C.CAND) or pcfg.get("cond_opt"):
+                    cmp_ = C.fit(data, tr & (D >= s - 365), w_pc2, w_pc3, cols=pc, opt=pcfg.get("cond_opt"))
                     w_pc2, w_pc3 = np.array(cmp_["w2"]), np.array(cmp_["w3"])
                 else:
                     cmp_ = cm
@@ -209,7 +210,8 @@ def train_all(hist: Path, weeks: int = 6) -> tuple[dict, dict]:
     comps = fit_components(data, np.ones(len(data["y"]), bool), cfg)
     import cond as C
     try:
-        cond_m = C.fit(data, data["D"] >= data["D"].max() - 365)
+        ccfg = cfg.get("cond") or {}
+        cond_m = C.fit(data, data["D"] >= data["D"].max() - 365, cols=ccfg.get("cols"), opt=ccfg)
     except Exception as e:  # noqa
         print("cond final fit skipped:", e)
         cond_m = None
@@ -221,7 +223,8 @@ def train_all(hist: Path, weeks: int = 6) -> tuple[dict, dict]:
         try:
             pcomps = fit_components(data, np.ones(len(data["y"]), bool), pcfg)
             pc = pcfg.get("cond_feats")
-            pcond = C.fit(data, data["D"] >= data["D"].max() - 365, cols=pc) if pc and pc != C.CAND else None
+            pcond = C.fit(data, data["D"] >= data["D"].max() - 365, cols=pc, opt=pcfg.get("cond_opt")) \
+                if (pc and pc != C.CAND) or pcfg.get("cond_opt") else None
             pre_m = {"components": pcomps, "cond": pcond, "calib": rep["pre"].pop("_calib", None),
                      "config": pcfg, "live": bool(pcfg.get("live", False))}
         except Exception as e:  # noqa

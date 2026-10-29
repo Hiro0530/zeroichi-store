@@ -38,13 +38,25 @@ IX_ST, IX_EX = CAND.index("h_st_rel"), CAND.index("e_racer_exh")
 
 
 class Cond:
-    """位置(1着・2着の枠)が決まったときの、残りの艇の中の条件付きロジット"""
+    """位置(1着・2着の枠)が決まったときの、残りの艇の中の条件付きロジット。
 
-    def __init__(self, stage: int):
+    2026-10-30 追加(exp_place.py で検証。既定は今までと同じ):
+    - nige_cols: 1着が1号艇のときだけ効き方を変える列(Z の列番号)
+    - lane_cols: 1着が1号艇のとき、候補の枠ごとに効き方を変える列(2コースの差し・3コースのまくり差しなどの相性)
+    - nr: レース単位の数字(風・波など。R の列数)を、候補の枠ごと×(1号艇が1着か)で効かせる
+    """
+
+    def __init__(self, stage: int, nige_cols=(), lane_cols=(), nr: int = 0):
         self.stage = stage      # 2 = 2着, 3 = 3着
+        self.nige_cols = list(nige_cols)
+        self.lane_cols = list(lane_cols)
+        self.nr = int(nr)
 
-    def feats(self, Z, V, i, j=None):
-        """Z:(n,6,c) 標準化した候補の数字, i:(n,) 1着の枠(0-5), j:(n,) 2着の枠 → (n,6,q)"""
+    def spec(self) -> dict:
+        return {"nige_cols": self.nige_cols, "lane_cols": self.lane_cols, "nr": self.nr}
+
+    def feats(self, Z, V, i, j=None, R=None):
+        """Z:(n,6,c) 標準化した候補の数字, i:(n,) 1着の枠(0-5), j:(n,) 2着の枠, R:(n,nr) → (n,6,q)"""
         n = len(Z)
         lanes = np.arange(6)
         oh_i = np.zeros((n, 6, 36))
@@ -56,6 +68,16 @@ class Cond:
             oh_j = np.zeros((n, 6, 36))
             oh_j[np.arange(n)[:, None], lanes[None, :], (j[:, None] * 6 + lanes[None, :])] = 1
             parts.append(oh_j)
+        if self.nige_cols:
+            parts.append(Z[:, :, self.nige_cols] * nige)
+        if self.lane_cols or self.nr:
+            E = np.eye(6)[None, :, :]
+            for c in self.lane_cols:
+                parts.append(Z[:, :, [c]] * E * nige)
+            for r in range(self.nr):
+                rv = R[:, r][:, None, None] * E
+                parts.append(rv * nige)
+                parts.append(rv * (1 - nige))
         return np.concatenate(parts, axis=2)
 
     def mask(self, i, j=None):
@@ -66,8 +88,8 @@ class Cond:
             m[np.arange(n), j] = False
         return m
 
-    def fit(self, Z, V, i, j, target, l2=5.0, l2_v=50.0, w0=None):
-        F = self.feats(Z, V, i, j)
+    def fit(self, Z, V, i, j, target, l2=5.0, l2_v=50.0, w0=None, R=None, maxiter=300):
+        F = self.feats(Z, V, i, j, R)
         msk = self.mask(i, j)
         n, _, q = F.shape
         yi = np.arange(n)
@@ -88,13 +110,13 @@ class Cond:
             np.add.at(gv, V, G)
             gv += l2_v * bv
             return -ll + 0.5 * (l2 * b @ b + l2_v * (bv * bv).sum()), np.concatenate([gb, gv.ravel()])
-        w = np.zeros(q + 144) if w0 is None else w0
-        self.w = minimize(f, w, jac=True, method="L-BFGS-B", options={"maxiter": 300}).x
+        w = np.zeros(q + 144) if w0 is None or len(w0) != q + 144 else w0
+        self.w = minimize(f, w, jac=True, method="L-BFGS-B", options={"maxiter": maxiter}).x
         self.q = q
         return self
 
-    def predict(self, Z, V, i, j=None):
-        F = self.feats(Z, V, i, j)
+    def predict(self, Z, V, i, j=None, R=None):
+        F = self.feats(Z, V, i, j, R)
         msk = self.mask(i, j)
         u = F @ self.w[:self.q] + self.w[self.q:].reshape(24, 6)[V]
         u = np.where(msk, u, -1e9)
@@ -103,18 +125,18 @@ class Cond:
         return e / e.sum(1, keepdims=True)
 
 
-def tri_cond(P1, Z, V, m2: Cond, m3: Cond):
+def tri_cond(P1, Z, V, m2: Cond, m3: Cond, R=None):
     """1着の確率 × 2着(条件付き) × 3着(条件付き) → (n,120) PERMS 順"""
     n = len(P1)
     P2 = np.zeros((n, 6, 6))
     for i in range(6):
-        P2[:, i, :] = m2.predict(Z, V, np.full(n, i))
+        P2[:, i, :] = m2.predict(Z, V, np.full(n, i), None, R)
     T = np.zeros((n, 120))
     P3 = {}
     for a in range(6):
         for b in range(6):
             if a != b:
-                P3[(a, b)] = m3.predict(Z, V, np.full(n, a), np.full(n, b))
+                P3[(a, b)] = m3.predict(Z, V, np.full(n, a), np.full(n, b), R)
     for idx, (a, b, c) in enumerate(EB.PERMS):
         T[:, idx] = P1[:, a] * P2[:, a, b] * P3[(a, b)][:, c]
     return T / T.sum(1, keepdims=True), P2
