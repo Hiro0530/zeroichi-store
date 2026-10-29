@@ -1,9 +1,10 @@
 """せどり 利益チェック: 共通の頭(検索バー・目標の利益・メニュー)と足(法律と規約の注意)を付けて、全ページのHTMLを書き出す。
 
 使い方: python3 tools/sedori/build_pages.py [公開フォルダ(既定 ../kt-zs-sedori-ghp)]
-- 書き出すページ: トップ、5つの計算ページ、台帳(daicho)、料金とお申し込み(plans)、マイページ(mypage)、利用規約(terms)、プライバシーポリシー(privacy)。
+- 書き出すページ: トップ、5つの計算ページ、台帳(daicho)、料金とお申し込み(plans)、マイページ(mypage)、利用規約(terms)、プライバシーポリシー(privacy)、
+  利益の仕組み(shikumi)、コンサル・スクールとの違い(chigai)。
 - 手数料の出典一覧(トップの #fees)は sedori/data/fees.json から作る。
-- 画面の部品は sedori/assets/ の ui.js(共通)・config.js(ログイン・お支払いの設定)・sync.js(同期の計算)・account.js(ログイン・同期)・ra.js・mz.js・market.js・ledger.js・top.js・plans.js・mypage.js。
+- 画面の部品は sedori/assets/ の ui.js(共通)・config.js(ログイン・お支払いの設定)・sync.js(同期の計算)・account.js(ログイン・同期)・ra.js・mz.js・market.js・ledger.js・top.js・plans.js・mypage.js・ai.js(AIに相談)。
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ import sys
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[3] / "kt-zs-sedori-ghp")
 S = ROOT / "sedori"
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261030a"
+VER = "20261030b"
 
 import re as _re
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
@@ -27,6 +28,8 @@ CAT = json.loads(_re.search(r"/\*PLANS\*/(.*?)/\*/PLANS\*/", _CONFIG, _re.S).gro
 YEAR_TEXT = _re.search(r'YEAR_TEXT:\s*"([^"]+)"', _CONFIG).group(1)
 YEAR_DAYS = int(_re.search(r'YEAR_REFUND_DAYS:\s*(\d+)', _CONFIG).group(1))
 FOUNDER_KEEP = _re.search(r'FOUNDER_KEEP:\s*"([^"]+)"', _CONFIG).group(1)
+_PRE = _re.search(r'PREREG:\s*\{\s*open:\s*"([^"]+)",\s*notice:\s*"([^"]+)"', _CONFIG)
+PREREG_OPEN, PREREG_NOTICE = _PRE.group(1), _PRE.group(2)
 SITE_URL = _re.search(r'SITE_URL:\s*"([^"]+)"', _CONFIG).group(1).rstrip("/") + "/"
 SITE_ORIGIN = _re.match(r"https?://[^/]+", SITE_URL).group(0)
 BASE_URL = SITE_URL + "sedori/"
@@ -55,6 +58,14 @@ def ready(*keys: str) -> bool:
 
 def save_months(m: str, y: str) -> int:
     return round((CAT[m]["price"] * 12 - CAT[y]["price"]) / CAT[m]["price"])
+
+
+# 年払いは「何か月分の料金で1年」か(ライト・総合・業務・先着で同じ。違えば料金を見直す合図なので止める)
+PAY_MONTHS = {12 - save_months(b + "_month", b + "_year") for b in ("light", "total", "business", "founder")}
+assert len(PAY_MONTHS) == 1, PAY_MONTHS
+PAY_MONTHS = PAY_MONTHS.pop()
+SAVE_MONTHS = 12 - PAY_MONTHS
+YEAR_DEAL = f"{PAY_MONTHS}か月分の料金で1年({SAVE_MONTHS}か月分お得)"
 
 
 # 未完成の機能の印(比べる表の中だけ。表の下に「※は11月中に追加」と1回だけ書く)
@@ -137,7 +148,7 @@ def esc(s: str) -> str:
 def header(base: str, current: str, src: str) -> str:
     opts = "".join(f'<option value="{v}"{" selected" if v == src else ""}>{t}</option>' for v, t in SOURCES)
     # 帳簿(/sedori/books/)は別の班が作る。ページがまだ無い間は、押すと「準備中」と出す(ui.js が確かめる)
-    nav = [("", "トップ")] + ROUTES + [("daicho", "台帳"), ("books", "帳簿")]
+    nav = [("", "トップ")] + ROUTES + [("daicho", "台帳"), ("books", "帳簿"), ("shikumi", "利益の仕組み"), ("chigai", "コンサルとの違い"), ("plans", "料金")]
     links = "".join(
         f'<a href="{base}{slug + "/" if slug else ""}"{" aria-current=\"page\"" if slug == current else ""}>{label}</a>'
         for slug, label in nav)
@@ -160,6 +171,7 @@ def header(base: str, current: str, src: str) -> str:
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
       <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
     </div>
+    <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
     <a class="hd-ledger" href="{base}daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
     <a class="hd-acct" id="hd-acct" href="{base}mypage/">ログイン</a>
   </div>
@@ -206,11 +218,11 @@ def footer(base: str, scripts: list[str]) -> str:
     # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む。
     # 帳簿の同期(books-sync.js)は account.js より前、売り手の確認の判定(seller-check.js)は ui.js より前
     first = ["books-sync.js"] if "books-sync.js" in scripts else []
-    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")]
+    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")] + ["ai.js"]
     sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in order)
     return f"""<footer class="ft">
   <div class="ft-in">
-    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}shikumi/">利益の仕組み</a><a href="{base}chigai/">コンサル・スクールとの違い</a><a href="{base}#ai" data-ai-open>AIに相談</a><a href="{base}guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     {LEGAL}
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
@@ -569,7 +581,8 @@ def price_block(base: str) -> str:
     sv = save_months(base + "_month", base + "_year")
     return (f'<div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>{m:,}</b><span class="pc-u">円</span><small>税込</small></p>'
             f'<p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>{y:,}</b><span class="pc-u">円</span><small>税込</small></p>'
-            f'<p class="pc-sub" data-c="year" hidden>月あたり{per_month(base + "_year")}・{sv}か月分お得</p></div>')
+            f'<p class="pc-sub" data-c="year" hidden>{PAY_MONTHS}か月分の料金で1年・{sv}か月分お得(月あたり{per_month(base + "_year")})</p>'
+            f'<p class="pc-sub pc-alt" data-c="month">年払いなら{y:,}円({PAY_MONTHS}か月分)</p></div>')
 
 
 def founder_line() -> str:
@@ -627,32 +640,50 @@ def _mini(c: dict) -> str:
     tag = '<span class="pill">おすすめ</span>' if b == "total" else ""
     fl = f'<span class="mp-f">先着100名は月{yen(P_FM)}</span>' if b == "total" and CAT.get("founder_month", {}).get("open", True) else ""
     return (f'<a class="mp-c{" rec" if b == "total" else ""}" href="plans/?plan={b}#pl-step2"><span class="mp-n">{m["name"]}{tag}</span><span class="mp-w">{c["who"]}</span>'
-            f'<span class="mp-p">月<b>{m["price"]:,}</b>円<small>税込</small></span>{fl}</a>')
+            f'<span class="mp-p">月<b>{m["price"]:,}</b>円<small>税込</small></span><span class="mp-y">年払いは{CAT[b + "_year"]["price"]:,}円({PAY_MONTHS}か月分)</span>{fl}</a>')
 
 
 top_plans = "".join(_mini(c) for c in CARDS)
+HERO_FOUNDER = (f'<tr class="fd"><th>総合 先着100名</th><td>{yen(P_FM)}</td><td>{yen(P_FY)}</td></tr>'
+                if CAT.get("founder_month", {}).get("open", True) is not False else "")
 
 TOP_BODY = f"""<div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
-    <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
-      <table class="kv"><tr><th>ライト</th><td>月{yen(P_LM)}</td></tr><tr><th>総合<span class="pill">おすすめ</span></th><td>月{yen(P_TM)}</td></tr><tr><th>業務</th><td>月{yen(P_BM)}</td></tr></table>
-      <p class="hint">税込。月払いは14日無料・年払いは30日以内の解約で全額返金<span data-bill="prep">(受付は準備中)</span>。先着100名は総合が月{yen(P_FM)}。計算と、この端末の台帳は無料です。</p>
-      <p class="row-links"><a href="plans/">料金を見る</a></p>
+    <div class="sbox"><p class="sbox-t">はじめての方へ</p><div class="sbox-b">
+      <ul class="side-links"><li><a href="shikumi/">せどりで利益が出る仕組み</a><small>計算の例・向き不向き・失敗のパターン</small></li><li><a href="chigai/">コンサル・スクールとの違い</a><small>申し込む前に確かめたい9つのこと</small></li><li><a href="#ai" data-ai-open>AIに相談</a><small>無料のAIに、当店の前提つきで相談</small></li></ul>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳のつけ方を週1回お届けします。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
   </aside>
 
   <section class="res">
     <h1 class="pg-h">せどりの利益計算と、古物台帳の自動記録</h1>
-    <div class="out-box" id="intro">
-      <p>仕入れ先と売り先を選ぶだけで、手数料・送料・ポイントを引いた利益が出ます。目標の利益に届く売値と、仕入れ値の上限も一緒に。「仕入れた」を押せば古物台帳に記録され、「売れた」で売却欄まで埋まります。</p>
-      <ul class="memo">
-        <li>5つの仕入れルートに対応。業者オークションの参加費も、まとめ落札の1個あたりの原価も計算します</li>
-        <li>台帳は古物台帳の項目どおりの並び。そのままExcel・CSVで書き出せます</li>
-        <li>無料・登録なしで使えます。入れた内容は、この端末にだけ保存されます</li>
-      </ul>
-      <div class="row-btns"><a class="btn" href="#shindan-sec">向いている仕入れルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a><a class="btn ghost" href="lp/">はじめての方へ</a></div>
+    <div class="hero" id="intro">
+      <div class="hero-m">
+        <p>仕入れ先と売り先を選ぶだけで、手数料・送料・ポイントを引いた利益が出ます。目標の利益に届く売値と、仕入れ値の上限も一緒に。「仕入れた」を押せば古物台帳に記録され、「売れた」で売却欄まで埋まります。</p>
+        <ul class="memo">
+          <li>5つの仕入れルートに対応。業者オークションの参加費も、まとめ落札の1個あたりの原価も計算します</li>
+          <li>台帳は古物台帳の項目どおりの並び。そのままExcel・CSVで書き出せます</li>
+          <li>計算と台帳は無料・登録なしで使えます。入れた内容は、この端末にだけ保存されます</li>
+        </ul>
+        <div class="row-btns"><a class="btn" href="#shindan-sec">向いている仕入れルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a></div>
+        <p class="hero-read"><a href="shikumi/">せどりで利益が出る仕組み(計算の例つき)</a><a href="chigai/">コンサル・スクールとの違い</a><a href="#ai" data-ai-open>AIに相談</a></p>
+      </div>
+      <aside class="hero-p" aria-labelledby="hero-p-h">
+        <p class="hero-p-h" id="hero-p-h">料金<small>税込</small></p>
+        <table class="hp-t">
+          <thead><tr><th></th><th>月払い</th><th>年払い<small>{PAY_MONTHS}か月分</small></th></tr></thead>
+          <tbody>
+            <tr><th>ライト</th><td>{yen(P_LM)}</td><td>{yen(P_LY)}</td></tr>
+            <tr class="rec"><th>総合<span class="pill">おすすめ</span></th><td>{yen(P_TM)}</td><td>{yen(P_TY)}</td></tr>
+            {HERO_FOUNDER}
+            <tr><th>業務</th><td>{yen(P_BM)}</td><td>{yen(P_BY)}</td></tr>
+          </tbody>
+        </table>
+        <p class="hp-n">年払いは{YEAR_DEAL}。月払いは14日無料、年払いは{YEAR_DAYS}日以内の解約で全額返金。計算と、この端末の台帳は0円です。<a href="plans/">条件を詳しく見る</a></p>
+        <div data-bill="prep" class="hp-pre"><p class="hp-pre-h">有料版の受付は{PREREG_OPEN}から</p><div data-prereg data-compact></div></div>
+        <div data-bill="ready"><a class="btn wide" href="plans/">プランを選ぶ(月払いは14日無料)</a></div>
+      </aside>
     </div>
 
     <h2 class="sec-h">仕入れ先と売り先で選ぶ</h2>
@@ -676,7 +707,7 @@ TOP_BODY = f"""<div class="lay2">
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
     <h2 class="sec-h" id="plans">料金</h2>
-    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>30日以内の解約で全額返金</b>です<span data-bill="prep">(受付は準備中)</span>。</p>
+    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>{YEAR_DEAL}</b>で、<b>{YEAR_DAYS}日以内の解約は全額返金</b>です<span data-bill="prep">(受付は{PREREG_OPEN}から)</span>。</p>
     <div class="mini-plans">{top_plans}</div>
     <p class="row-links"><a href="plans/">機能を比べて申し込む</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
@@ -690,7 +721,7 @@ TOP_BODY = f"""<div class="lay2">
       <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行入ります。台帳では状態を1クリックずつ進め、「売れた」を押すと売却日・売値・相手が入ります。</p></details>
       <details id="honnin"><summary>1万円以上の中古品を買うときの、売り手の確認はどう記録しますか。</summary><p>台帳に、相手の氏名・住所と確認の方法を入れる欄があります。個人から1万円以上で買った中古品など、法律で確認が必要な行は、入力するまで印が付きます。確認のやり方は<a href="guide/honnin-kakunin/">手引き「中古品を買うときの売り手の確認」</a>にまとめています。</p></details>
       <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
-      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">準備ができたら、事前登録の方へメールでご案内します。</span><span data-bill="ready">いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
+      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">{PREREG_OPEN}から受け付けます。事前登録(メール1通・無料)の方へは、{PREREG_NOTICE}にメールでご案内します。</span><span data-bill="ready">いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
       <details><summary>解約はどうしますか。</summary><p>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すれば完了です。メール1通でのお申し出でも解約できます(PayPalでお支払いの方は、PayPalの自動支払いの管理画面からも)。次の請求日の前日までに解約すれば、次回からは請求しません。</p></details>
     </div>
 
@@ -736,7 +767,7 @@ cmp_note = '<p class="hint">※は11月中に追加します。追加した日�
 PLANS_BODY = f"""<div class="pl">
   <div class="pl-head">
     <h1 class="pg-h">料金</h1>
-    <p class="pl-lead">3つのプランから選べます。月払いは<b>14日無料</b>で、その間は業務のすべてを使えます。年払いは無料期間なしでお申し込みの日にお支払いいただき、<b>1回目のお支払いから{YEAR_DAYS}日以内の解約は全額返金</b>です。プランはあとから変えられます。</p>
+    <p class="pl-lead">3つのプランから選べます。月払いは<b>14日無料</b>で、その間は業務のすべてを使えます。年払いは<b>{YEAR_DEAL}</b>。無料期間なしでお申し込みの日にお支払いいただき、<b>1回目のお支払いから{YEAR_DAYS}日以内の解約は全額返金</b>です。プランはあとから変えられます。</p>
   </div>
 
   <section class="pl-s1" id="pl-step1" aria-labelledby="pl-s1h">
@@ -744,7 +775,7 @@ PLANS_BODY = f"""<div class="pl">
       <h2 class="pl-step" id="pl-s1h"><span class="no" aria-hidden="true">1</span>プランを選ぶ</h2>
       <fieldset class="cyc" id="pl-cyc"><legend class="sr">お支払いの周期</legend>
         <label><input type="radio" name="cyc" value="month" checked><span>月払い</span></label>
-        <label><input type="radio" name="cyc" value="year"><span>年払い<small>2か月分お得</small></span></label>
+        <label><input type="radio" name="cyc" value="year"><span>年払い<small>{PAY_MONTHS}か月分で1年</small></span></label>
       </fieldset>
     </div>
     <div class="pcs" id="pl-cards">
@@ -779,8 +810,8 @@ PLANS_BODY = f"""<div class="pl">
       </dl>
       <div class="pay" id="pl-pay">
         <div data-bill="prep">
-          <p class="pay-st"><span class="dlg-st">準備中</span>お申し込みの受付はまだ始めていません。事前登録の方へ、受付の開始をメールでお知らせします(料金はかかりません)。</p>
-          <a class="btn wide" data-mail="prereg" href="#" id="pl-prereg">このプランで事前登録(メール1通・無料)</a>
+          <p class="pay-st"><span class="dlg-st">準備中</span>お申し込みの受付は<b>{PREREG_OPEN}</b>からです。いまは事前登録(無料・メール1通)を受け付けています。</p>
+          <div data-prereg data-compact id="pl-prereg"></div>
         </div>
         <div data-bill="ready">
           <div id="pl-login"><button type="button" class="btn wide" id="pl-login-btn">ログインして申し込む</button><p class="hint">申し込むアカウントを決めるため、先にログインします(メールのリンクかGoogle)。</p></div>
@@ -892,7 +923,7 @@ def doc_page(slug: str, title: str, desc: str, body: str) -> None:
 
 
 TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日・改定日 2026年10月29日(年払いを無料期間なし・30日以内の全額返金に。先着100名の価格の続く期間の書き方。サービスをやめる時の返金)</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年10月29日(年払いを無料期間なし・30日以内の全額返金に。31日目からの解約は返金なし・次回の更新の停止として扱うことを明記。先着100名の価格の続く期間の書き方。サービスをやめる時の返金)</p>
 <p>この規約は、ZEROICHI WORKS(以下「当方」)が提供する「せどり 利益チェック」(以下「本サービス」)の利用条件です。本サービスを使う方(以下「利用者」)は、この規約に同意したうえで使ってください。有料プランは、ログインしてお申し込みいただいた時に、この規約に同意したものとします。</p>
 
 <h2>第1条(本サービスの内容)</h2>
@@ -920,7 +951,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <h2>第4条(解約)</h2>
 <ol>
 <li>利用者は、いつでも解約できます。方法は、マイページの「契約内容」にある「解約について」から「解約する」を押して確認する方法と、メールで申し出る方法です。PayPalでお支払いの場合は、PayPalの自動支払いの管理画面から止めることもできます。</li>
-<li>次回の請求日の前日までに解約すれば、次回からは請求しません。支払い済みの期間の途中で解約しても日割りの返金はなく、その期間の終わりまで有料プランを使えます。ただし、年払いの1回目のお支払いから{YEAR_DAYS}日以内の解約は、前条第3項のとおり全額を返金します。</li>
+<li>次回の請求日の前日までに解約すれば、次回からは請求しません。支払い済みの期間の途中で解約しても月割り・日割りの返金はなく、解約は次回の自動更新を止めるものとして扱い、その期間の終わりまで有料プランを使えます。ただし、年払いの1回目のお支払いから{YEAR_DAYS}日以内の解約は、前条第3項のとおり全額を返金します。</li>
 <li>当方の不具合で有料プランを使えなかった期間があるときは、その分を返金します。</li>
 </ol>
 
@@ -976,7 +1007,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <p>ZEROICHI WORKS(事業者の名前・連絡先は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
 
 PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日・改定日 2026年10月28日(帳簿の記録のクラウド保存、カードでのお支払い(Stripe)を追加)</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年10月29日(事前登録・メールマガジンのメールの扱いを追加。前回 2026年10月28日: 帳簿の記録のクラウド保存、カードでのお支払い(Stripe)を追加)</p>
 <p>ZEROICHI WORKS(以下「当方」)は、「せどり 利益チェック」(以下「本サービス」)で扱う個人情報を、次のとおり取り扱います。事業者の氏名・住所等は、<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおり、ご請求があれば遅滞なく開示します。</p>
 
 <h2>1. 扱う情報</h2>
@@ -986,6 +1017,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <tr><th>帳簿(総合・業務)</th><td>取り込んだ売上(Amazonのレポート・メルカリの取引の内容)、経費と支払先、毎月の経費、取り込みの履歴、売れ残りの目安、棚卸の数、申告用の数字の設定(消費税の区分・棚卸高・登録番号の無い仕入れ先の印など)</td></tr>
 <tr><th>設定(有料プラン)</th><td>目標の利益、発送のしかた、発送代行の費用</td></tr>
 <tr><th>契約</th><td>Stripeの顧客ID・契約ID、またはPayPalのサブスクリプションID、プラン、契約の状態、無料期間の終わり・次回の請求日。カード番号・有効期限・セキュリティコード・口座番号は当方に届かず、決済代行会社(Stripe・PayPal)が直接受け取って扱います</td></tr>
+<tr><th>事前登録・メールマガジン</th><td>登録のメールの送信元のメールアドレスと、本文に書いていただいた内容(任意の質問への答え)。登録は事業用のメール(Gmail)に届いたメールとして保管し、ほかの場所には写しません</td></tr>
 <tr><th>お問い合わせ</th><td>メールでいただいた内容</td></tr>
 <tr><th>端末の中だけの情報</th><td>無料プランの台帳、入力した値、楽天・Keepaのキーは、利用者の端末のブラウザの中だけに保存し、当方には送られません</td></tr>
 </table>
@@ -995,6 +1027,8 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <li>ログインと、台帳・帳簿・設定のクラウドへの保存・端末間の同期・書き出しのため</li>
 <li>契約の管理(お申し込み・無料期間の終了のお知らせ・請求・一時停止・解約)のため</li>
 <li>お問い合わせへの返事、料金や規約の変更などの大切なお知らせのため</li>
+<li>事前登録の方へ、有料版の受付開始のご案内を1通お送りするため(それ以外のメールは送りません)。メールマガジンに登録の方へ、メールマガジンをお送りするため</li>
+<li>事前登録・メールマガジンの本文に書いていただいた内容を、本サービスの改善の参考にするため(個人を特定できる形で外に出しません)</li>
 <li>不正な利用を防ぐため</li>
 </ol>
 <p><b>台帳の中身は、上の1のためだけに扱います。</b>当方は台帳の中身を見たり、分析・営業・広告・AIの学習などに使ったりしません。障害の調査などで中身を見る必要が出た時は、事前に利用者の同意を得た範囲に限ります。</p>
@@ -1024,6 +1058,8 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <tr><th>アカウント</th><td>アカウントを削除するまで(解約後、マイページから削除できます)</td></tr>
 <tr><th>契約・請求の記録</th><td>税法などの法令で決められた期間(最長7年)</td></tr>
 <tr><th>お問い合わせのメール</th><td>対応が終わってから1年</td></tr>
+<tr><th>事前登録のメール</th><td>受付開始のご案内を送ってから3か月(その間に有料版にお申し込みの方は、契約の記録として上の期間)。取り消しのご連絡があれば、すぐ消します</td></tr>
+<tr><th>メールマガジンの登録</th><td>配信の停止のご連絡をいただくまで。停止後はすぐ配信先から外し、登録のメールは3か月以内に消します</td></tr>
 </table>
 
 <h2>6. 開示・訂正・利用停止など</h2>
@@ -1043,6 +1079,255 @@ doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(�
 doc_page("privacy", "プライバシーポリシー", "せどり 利益チェックのプライバシーポリシー(利用目的・安全管理・第三者提供の制限とクラウドへの保存・解約後の保存期間)。", PRIVACY)
 
 
+# ------------------------------------------------------------------
+# 読み物のページ: 利益の仕組み(/sedori/shikumi/)・コンサル・スクールとの違い(/sedori/chigai/)
+# 2026-10-29 本部承認(D3・D4)。表現は Gemini 093(法令チェック)に合わせる:
+#  - 利益を約束しない(「稼げる」「誰でも月○万円」「元手ゼロ」は使わない)。計算の例のすぐ下に「約束しない」旨を書く
+#  - 比べるのは、相手を名指しせず、こちらの事実だけ。相手側について根拠の無い言い切り(「多い」「後出し」など)はしない
+# ------------------------------------------------------------------
+def read_page(slug: str, title: str, desc: str, body: str, scripts: list[str] | None = None) -> None:
+    o = head(title, desc, f"{slug}/", "../", f'data-page="{slug}"')
+    o += header("../", slug, "rakuten") + crumb("../", title) + f'<main class="wrap">\n<article class="rdg">\n{body}\n</article>\n</main>\n' + footer("../", ["calc.js", "ui.js"] + (scripts or []))
+    write(slug, o)
+
+
+# 計算の例(ヤフオク→メルカリ)。数字は fees.json と同じ決まりで、ここで計算する(market.js・calc.js と同じ式。tests/sedori/test_funnel.js で照合)
+EX_SHIP = next(x for x in FEES["mercari"]["shipping"] if x["id"] == "tq60")
+EX_SHIP80 = next(x for x in FEES["mercari"]["shipping"] if x["id"] == "tq80")
+EX = {"bid": 3000, "in_ship": 750, "pt_pct": 1, "sell": 6500, "rate": FEES["mercari"]["rate"]}
+EX["points"] = EX["bid"] * EX["pt_pct"] // 100
+EX["unit"] = EX["bid"] + EX["in_ship"] - EX["points"]
+EX["fee"] = int(EX["sell"] * EX["rate"] + 1e-9)
+EX["ship"] = EX_SHIP["fee"] + EX_SHIP["material"]
+EX["profit"] = EX["sell"] - EX["fee"] - EX["ship"] - EX["unit"]
+
+
+def _ex_profit(sell: int, ship: int = EX["ship"]) -> int:
+    return sell - int(sell * EX["rate"] + 1e-9) - ship - EX["unit"]
+
+
+EX["be"] = next(p for p in range(1, 100000) if _ex_profit(p) >= 0)
+EX["low"] = EX["sell"] - 1000
+EX["profit_low"] = _ex_profit(EX["low"])
+EX["profit_80"] = _ex_profit(EX["sell"], EX_SHIP80["fee"] + EX_SHIP80["material"])
+EX_URL = ("../yahuoku-mercari/?b-bid={bid}&b-ship={in_ship}&b-pt={pt_pct}&b-other=0&b-qty=1&s-price={sell}&s-mat=0&s-other=0&ship=tq60&mk=mercari"
+          .format(**EX))
+
+
+def wf_row(label: str, note: str, amount: int, kind: str, left: int) -> str:
+    # 利益の内訳の1行。棒は「その時点の残り」の位置から伸び縮みする(滝の形)。長さと位置は売値に対する割合
+    w = max(0.6, abs(amount) / EX["sell"] * 100)
+    sign = {"in": "", "out": "−", "plus": "+", "total": "="}[kind]
+    return (f'<tr class="wf-{kind}"><th scope="row">{label}<small>{note}</small></th>'
+            f'<td class="wf-bar"><span style="margin-left:{left / EX["sell"] * 100:.2f}%;width:{w:.2f}%"></span></td><td class="wf-y">{sign}{amount:,}円</td></tr>')
+
+
+def _waterfall() -> str:
+    rows, rest = [wf_row("売値", "メルカリで売れた値段", EX["sell"], "in", 0)], EX["sell"]
+    for label, note, amt in (("販売手数料", f"売値の{int(EX['rate'] * 100)}%", EX["fee"]),
+                             ("送料", "らくらくメルカリ便 " + EX_SHIP["label"], EX["ship"]),
+                             ("仕入れ値", "ヤフオクの落札価格", EX["bid"]),
+                             ("仕入れの送料", "出品者から自分へ", EX["in_ship"])):
+        rest -= amt
+        rows.append(wf_row(label, note, amt, "out", rest))
+    rows.append(wf_row("ポイント", f"落札価格の{EX['pt_pct']}%", EX["points"], "plus", rest))
+    rest += EX["points"]
+    assert rest == EX["profit"], (rest, EX["profit"])
+    rows.append(wf_row("利益", f"売値の{EX['profit'] / EX['sell'] * 100:.1f}%", EX["profit"], "total", 0))
+    return "\n".join(rows)
+
+
+WATERFALL = _waterfall()
+
+ROUTE_FIT = [
+    ("rakuten-amazon", "新品をネットで仕入れたい。ポイントの付く日や倍率を調べるのが苦にならない", "在庫を持つのが不安な人。ブランドやカテゴリーによっては Amazon の出品の許可が要る"),
+    ("muzaiko-amazon", "在庫を持たずに始めたい。中古の状態を文字で正確に書ける", "仕入れ先の売り切れや遅れでキャンセルが出やすい。販売者は自分・同梱物の除去・返品の受け付けなど Amazon の方針を守る必要がある"),
+    ("mercari-calc", "まず家の不用品から始めて、売る流れを覚えたい", "不用品が尽きたら仕入れが要る。仕入れて売るのを繰り返すなら古物商許可が要る"),
+    ("yahuoku-mercari", "中古の状態を見極められる。写真と説明文を読み比べるのが苦にならない", "1回の取引で合計1万円以上なら売り手の確認が要る。状態の思い違いで返品になることがある"),
+    ("auction-mercari", "古物商許可があり、まとめて仕入れて手早く出品できる", "入会金・参加費がかかる。ブランド品は真贋の見極めが要る"),
+]
+_LIC = {slug: lic for slug, _n, _s, _d, _k, lic, _f in TOP_ROUTES}
+fit_rows = "\n".join(
+    f'<tr><th scope="row"><a href="../{slug}/">{dict(ROUTES)[slug]}</a></th><td>{good}</td><td>{bad}</td><td>{_LIC[slug]}</td></tr>'
+    for slug, good, bad in ROUTE_FIT)
+
+PREREG_BLOCK = f"""<div class="rd-pre" data-bill="prep">
+  <p class="rd-pre-h">有料版の受付は{PREREG_OPEN}から</p>
+  <div data-prereg data-compact></div>
+</div>"""
+
+SHIKUMI_BODY = f"""<header class="rd-h">
+  <p class="rd-k">はじめての方へ</p>
+  <h1>せどりで利益が出る仕組み</h1>
+  <p class="rd-lead">せどりの利益は「安く買って高く売る」の差だけでは決まりません。売れた値段から販売サイトの手数料と送料が引かれ、仕入れの時に付いたポイントが少し戻ります。手元に残るかどうかは、この足し引きで決まります。このページでは、その仕組みを実際の数字で説明します。</p>
+  <nav class="rd-toc" aria-label="このページの目次"><a href="#shiki">1. 利益の式</a><a href="#rei">2. 計算の例</a><a href="#route">3. 仕入れルートの向き不向き</a><a href="#tejun">4. 始める手順</a><a href="#risk">5. リスクとよくある失敗</a><a href="#okane">6. お金の出入りの時期</a><a href="#soft">7. このソフトがすること</a></nav>
+</header>
+
+<section class="rd-s" id="shiki">
+  <h2><span class="no">1</span>利益の式</h2>
+  <p class="rd-formula"><b>利益</b> = 売値 − 販売手数料 − 送料・資材 − 仕入れ値 − 仕入れの送料 − その他の経費 <span class="plus">+ ポイント</span></p>
+  <dl class="rd-dl">
+    <div><dt>売値</dt><dd>実際に売れた値段です。出品した値段ではありません。値下げして売れたら、下げた値段で計算します。</dd></div>
+    <div><dt>販売手数料</dt><dd>メルカリ・Yahoo!オークションは売値の10%。Amazonはカテゴリーごとの率と、FBAを使えば配送代行の手数料がかかります(<a href="../#fees">出典と確認日</a>)。</dd></div>
+    <div><dt>送料・資材</dt><dd>お客様へ送る送料と箱・袋の代金。箱が1サイズ大きくなるだけで、送料は100円以上変わります。</dd></div>
+    <div><dt>仕入れ値と仕入れの送料</dt><dd>買った値段と、手元に届くまでの送料。まとめて買った時は1個あたりに割ります。</dd></div>
+    <div><dt>その他の経費</dt><dd>発送代行の費用、市場の参加費、修理やクリーニングの代金など、その品物のためにかかったお金です。</dd></div>
+    <div><dt>ポイント</dt><dd>楽天市場・Yahoo!ショッピングなどで仕入れた時に付くポイント。足してよいのは、実際に使い切れる分だけです。</dd></div>
+  </dl>
+</section>
+
+<section class="rd-s" id="rei">
+  <h2><span class="no">2</span>計算の例</h2>
+  <p>中古のホットプレートを、ヤフオクで個人の出品者から落札し、メルカリで売った場合です。</p>
+  <div class="rd-ex">
+    <table class="wf" aria-label="利益の内訳">
+      <tbody>
+{WATERFALL}
+      </tbody>
+    </table>
+    <ul class="rd-exn">
+      <li>利益が0円になる売値(損益分岐)は <b>{EX['be']:,}円</b>。これより安く売ると赤字です。</li>
+      <li>相場が下がって {EX['low']:,}円で売れた場合、利益は <b>{EX['profit_low']:,}円</b> に減ります。</li>
+      <li>箱が1サイズ大きく(宅急便80サイズ)なると、同じ{EX['sell']:,}円で売れても利益は <b>{EX['profit_80']:,}円</b> です。</li>
+    </ul>
+    <p class="rd-note">上の数字は計算の例です。この値段で売れることや、この利益が出ることを約束するものではありません。手数料と送料は{FEES['checked_label']}に確認した料金表によります。</p>
+    <div class="row-btns"><a class="btn" href="{EX_URL}">この例を計算機で開く</a><span class="hint">「発送」が「自分で発送」の時の数字です。数字を変えると、その場で計算し直します。</span></div>
+  </div>
+</section>
+
+<section class="rd-s" id="route">
+  <h2><span class="no">3</span>仕入れルートの向き不向き</h2>
+  <p>仕入れ先と売り先の組み合わせで、必要なお金・時間・許可が変わります。迷ったら<a href="../#shindan-sec">6問の診断</a>で、合いそうなルートを1つ選んでください。</p>
+  <div class="gridwrap"><table class="grid nimg rd-t">
+    <thead><tr><th>ルート</th><th>向いている人</th><th>注意すること</th><th>古物商許可</th></tr></thead>
+    <tbody>
+{fit_rows}
+    </tbody>
+  </table></div>
+</section>
+
+<section class="rd-s" id="tejun">
+  <h2><span class="no">4</span>始める手順</h2>
+  <ol class="rd-steps">
+    <li><b>古物商許可が要るか確かめる</b><span>中古品を仕入れて売ることを繰り返すなら、古物商許可が必要です。自分の不用品を売るだけなら要りません。申請は、住んでいる所を受け持つ警察署で行います。</span></li>
+    <li><b>ルートを1つ選ぶ</b><span>最初は1つに絞ります。<a href="../#shindan-sec">診断(6問)</a>で、元手・時間・許可から合いそうなルートが出ます。</span></li>
+    <li><b>1件だけ計算する</b><span>売りたい品物の相場(売れた値段)を見て、計算ページに入れます。先に「目標の利益」を決めておくと、仕入れてよい値段の上限が出ます。</span></li>
+    <li><b>少しだけ仕入れて、台帳に残す</b><span>計算ページで「仕入れた」を押すと、古物台帳に1行入ります。1万円以上の中古品は、売り手の確認を入れるまで印が付きます。</span></li>
+    <li><b>売れたら記録して、月末に見直す</b><span>「売れた」を押すと売却の欄が埋まります。月末に、見込みと実際の利益の差を見て、次の仕入れを決めます。</span></li>
+  </ol>
+</section>
+
+<section class="rd-s" id="risk">
+  <h2><span class="no">5</span>リスクとよくある失敗</h2>
+  <div class="rd-risk">
+    <div><h3>値下がり</h3><p>同じ品物の出品が増えると相場は下がります。上の例では、1,000円下がるだけで利益は{EX['profit']:,}円から{EX['profit_low']:,}円になります。</p></div>
+    <div><h3>売れ残り</h3><p>売れるまで、仕入れたお金は戻りません。置き場所も要ります。売れない時の値下げの下限(損益分岐)を、仕入れる前に決めておきます。</p></div>
+    <div><h3>手数料・送料の見落とし</h3><p>箱のサイズ、仕入れの送料、振込の手数料。小さな費用の見落としが、薄い利益を消します。</p></div>
+    <div><h3>販売サイトの規約</h3><p>Amazonのカテゴリーごとの出品許可、無在庫の販売の方針、他人の写真や説明文を使わないこと。違反するとアカウントが止まることがあります。</p></div>
+    <div><h3>古物営業法</h3><p>許可、1万円以上(品物によっては金額を問わず)の売り手の確認、取引の記録。<a href="../guide/honnin-kakunin/">売り手の確認の手引き</a>にまとめています。</p></div>
+    <div><h3>状態の思い違い・偽物</h3><p>中古品は、写真で分からない傷や不具合があります。ブランド品は真贋の見極めが要ります。返品や悪い評価につながります。</p></div>
+  </div>
+</section>
+
+<section class="rd-s" id="okane">
+  <h2><span class="no">6</span>お金の出入りの時期</h2>
+  <p>仕入れのお金を払う日と、売上が入る日はずれます。売上は販売サイトごとに決まった周期で入金されるので、売れてもすぐには使えません。クレジットカードで仕入れる時は、引き落としの日までに売上が入るかを先に確かめてください。最初は、手元のお金で払える範囲で始めるのが安全です。台帳に仕入れ日と売却日を残しておくと、お金が戻るまでの日数が分かります。</p>
+</section>
+
+<section class="rd-s" id="soft">
+  <h2><span class="no">7</span>このソフトがすること・しないこと</h2>
+  <div class="rd-two">
+    <div><h3>すること</h3><ul>
+      <li>手数料・送料・ポイントを引いた利益の計算(5つのルート)</li>
+      <li>目標の利益に届く売値と、仕入れ値の上限</li>
+      <li>古物台帳への記録と、CSV・Excelへの書き出し</li>
+      <li>有料版: 台帳のクラウド保存、売上・経費・月ごとの利益、確定申告用の数字</li>
+    </ul></div>
+    <div><h3>しないこと</h3><ul>
+      <li>何を仕入れれば売れるかを教えること</li>
+      <li>メルカリ・ヤフオク・Amazonのページの自動の読み取り</li>
+      <li>利益や販売の保証</li>
+    </ul></div>
+  </div>
+  <p>迷った時は、ソフトの中の<a href="#ai" data-ai-open>AIに相談</a>で、このページの計算の決まりを前提に、無料のAIへ相談できます。人が教えるサービスとの違いは<a href="../chigai/">コンサル・スクールとの違い</a>にまとめています。</p>
+  <div class="row-btns rd-cta"><a class="btn" href="../">無料で計算してみる(登録なし)</a><a class="btn ghost" href="../daicho/">台帳を見る</a><a class="btn ghost" href="../plans/">料金を見る</a></div>
+  {PREREG_BLOCK}
+</section>"""
+
+CHIGAI_ROWS = [
+    ("料金", "総額・支払いの回数・追加の費用が、申し込む前に分かるか",
+     f'月{yen(P_LM)}から(税込)。ほかの費用はかかりません。金額と条件は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>に全部載せています。'),
+    ("成果の言い方", "収入の例を出している場合、その条件と根拠が書かれているか",
+     '利益を約束しません。利益が出る仕組みを、実際の数字の例で<a href="../shikumi/">説明</a>しているだけです。'),
+    ("試せる範囲", "お金を払う前に、中身を自分で確かめられるか",
+     '計算と台帳は、登録なしで全部使えます。有料版も、月払いは14日無料です。'),
+    ("数字の根拠", "手数料や送料の出典と、確かめた日が書かれているか",
+     f'計算に使う手数料・送料は、<a href="../#fees">出典と確認日</a>({FEES["checked_label"]})を公開しています。計算は手計算の例で検算し、目安には「目安」と書いています。'),
+    ("リスクの説明", "値下がり・売れ残り・規約・法律の注意が、先に書かれているか",
+     '<a href="../shikumi/#risk">リスクとよくある失敗</a>を、仕組みの説明と同じページに載せています。'),
+    ("申し込みの方法", "電話や面談なしで、条件を読んで自分で決められるか",
+     '電話や面談はしません。申し込みも解約も、このサイトの中で済みます。'),
+    ("解約と返金", "解約のやり方と返金の条件が、申し込む前に分かるか",
+     f'マイページの「解約する」か、メール1通で解約できます。年払いは1回目のお支払いから{YEAR_DAYS}日以内の解約で全額返金(その日で終了)。{YEAR_DAYS + 1}日目からは返金はなく、期間の終わりまで使えて、次の更新はされません。'),
+    ("データ", "やめた後も、自分のデータを持ち出せるか",
+     '台帳はいつでもCSV・Excelで書き出せます。解約後もクラウドの台帳は3年間保管し、書き出せます。'),
+    ("運営者", "事業者と連絡先が分かるか",
+     '<a href="../../tokushoho.html">特定商取引法に基づく表記</a>を公開しています(氏名・住所はご請求があれば遅滞なく開示)。お問い合わせは<a href="mailto:zeroichi.works.jp@gmail.com">メール</a>で受けています。'),
+]
+chigai_rows = "\n".join(
+    f'<tr><th scope="row"><span class="no">{i}</span>{k}</th><td>{q}</td><td>{a}</td></tr>'
+    for i, (k, q, a) in enumerate(CHIGAI_ROWS, 1))
+
+CHIGAI_BODY = f"""<header class="rd-h">
+  <p class="rd-k">申し込む前に</p>
+  <h1>コンサル・スクールと、このソフトの違い</h1>
+  <p class="rd-lead">せどりを始める時、人が教えるコンサルやスクールを考える方もいます。どちらが良い悪いではなく、売っているものが違います。比べて決められるように、このソフトの条件をこのページに全部出しています。</p>
+</header>
+
+<section class="rd-s">
+  <h2>売っているものの違い</h2>
+  <div class="rd-vs">
+    <div class="vs-a"><p class="vs-k">人が教えるサービス(コンサル・スクール)</p>
+      <dl><div><dt>売っているもの</dt><dd>講師の知識と時間(指導・相談・添削)</dd></div><div><dt>料金</dt><dd>講師の時間に対する料金。内容と期間で決まります</dd></div><div><dt>向いている人</dt><dd>人に直接教わりながら進めたい人</dd></div></dl></div>
+    <div class="vs-b"><p class="vs-k">このソフト(せどり 利益チェック)</p>
+      <dl><div><dt>売っているもの</dt><dd>毎日の計算と記録を受け持つ道具</dd></div><div><dt>料金</dt><dd>月{yen(P_LM)}〜{yen(P_BM)}(税込)。年払いは{PAY_MONTHS}か月分の料金で1年</dd></div><div><dt>向いている人</dt><dd>自分で調べて決め、計算と記録を間違えずに続けたい人</dd></div></dl></div>
+  </div>
+</section>
+
+<section class="rd-s">
+  <h2>申し込む前に確かめたい9つのこと</h2>
+  <p>どのサービスを選ぶ時にも使える確かめ方です。右の列は、このソフトの答えです。</p>
+  <div class="gridwrap"><table class="grid nimg rd-t rd-cmp">
+    <thead><tr><th>項目</th><th>確かめたいこと</th><th>このソフトの場合</th></tr></thead>
+    <tbody>
+{chigai_rows}
+    </tbody>
+  </table></div>
+</section>
+
+<section class="rd-s">
+  <h2>一人で決める時の手がかり</h2>
+  <div class="rd-two">
+    <div><h3>AIに相談</h3><p>ソフトの中の「AIに相談」から、当店の計算の決まりを前提にした相談文をコピーして、無料のGemini・ChatGPTに相談できます。計算ページの数字も相談文に入ります。<a href="#ai" data-ai-open>開いてみる</a></p></div>
+    <div><h3>仕組みと手引き</h3><p><a href="../shikumi/">利益が出る仕組み</a>(計算の例・失敗のパターン)と、<a href="../guide/">手引き</a>(手数料・古物台帳・売り手の確認)を、登録なしで読めます。</p></div>
+  </div>
+  <p class="hint">契約のことで困った時は、消費者ホットライン「188」に電話すると、お近くの消費生活センターなどの相談窓口につながります。</p>
+</section>
+
+<section class="rd-s rd-end">
+  <p class="rd-quote">私たちが売っているのは「稼げる情報」ではありません。毎日の計算と記録を、間違えずに続けるための道具です。合うかどうかは、登録なしの無料の範囲で確かめてから決めてください。</p>
+  <div class="row-btns rd-cta"><a class="btn" href="../">無料で計算してみる(登録なし)</a><a class="btn ghost" href="../plans/">料金と条件を見る</a></div>
+  {PREREG_BLOCK}
+</section>"""
+
+read_page("shikumi", "せどりで利益が出る仕組み",
+          "せどりの利益は、売値から販売手数料・送料・仕入れ値を引き、ポイントを足して決まります。実際の数字の計算例、5つの仕入れルートの向き不向き、始める手順、リスクとよくある失敗を説明します。",
+          SHIKUMI_BODY)
+read_page("chigai", "コンサル・スクールとの違い",
+          "人が教えるコンサル・スクールと、毎日の計算と記録を受け持つソフトの違い。申し込む前に確かめたい9つのこと(料金・成果の言い方・試せる範囲・数字の根拠・リスク・申し込み・解約と返金・データ・運営者)と、このソフトの答え。",
+          CHIGAI_BODY)
+
+
 # ---- 手書きのページ(紹介・読み取り・貼り付け用の計算機)の canonical・OGP を SITE_URL にそろえる ----
 # 絶対の住所が要るのはここだけ。ページ同士のリンクは相対で書いてあるので、独自ドメインに移っても直さなくてよい
 _ABS = _re.compile(r'(<(?:link rel="canonical"|meta property="og:(?:url|image)")[^>]*?(?:href|content)=")https?://[^"]*?/sedori/')
@@ -1058,7 +1343,7 @@ for _hp in ("lp/index.html", "scan/index.html", "widget/mercari/index.html"):
 # ---- サイトマップ ----
 # 手書きのページ(紹介・読み取り・手引き)もサイトマップに載せる(このスクリプトでは書き出さない)
 HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tesuryo/", "0.7"), ("guide/kobutsu-daicho-excel/", "0.7"), ("guide/honnin-kakunin/", "0.7"), ("guide/neduke/", "0.7")]
-urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")] + [(u, p) for u, p in HAND if (S / u / "index.html").exists()] + [("plans/", "0.6"), ("terms/", "0.2"), ("privacy/", "0.2")]
+urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")] + [(u, p) for u, p in HAND if (S / u / "index.html").exists()] + [("shikumi/", "0.8"), ("chigai/", "0.6"), ("plans/", "0.6"), ("terms/", "0.2"), ("privacy/", "0.2")]
 sm = "\n".join(f"<url><loc>{BASE_URL}{u}</loc><lastmod>{FEES['checked']}</lastmod><priority>{p}</priority></url>" for u, p in urls)
 (S / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{sm}\n</urlset>\n', encoding="utf-8")
-print("built", ["top"] + [slug for slug, _ in ROUTES] + ["daicho", "plans", "mypage", "terms", "privacy"])
+print("built", ["top"] + [slug for slug, _ in ROUTES] + ["daicho", "plans", "mypage", "terms", "privacy", "shikumi", "chigai"])
