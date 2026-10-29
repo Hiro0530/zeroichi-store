@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ja">
+<head><meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>せどり 利益チェック｜ZEROICHI WORKS</title>
+<meta name="description" content="楽天・Yahoo!・ヤフオク・業者オークションで仕入れて、Amazon・メルカリで売る時の手数料・送料・ポイント込みの利益を一覧で計算。仕入れると古物台帳に自動で記録。無料・登録不要。">
+<link rel="canonical" href="https://zeroichiworks.net/sedori/">
+<meta property="og:title" content="せどり 利益チェック">
+<meta property="og:description" content="楽天・Yahoo!・ヤフオク・業者オークションで仕入れて、Amazon・メルカリで売る時の手数料・送料・ポイント込みの利益を一覧で計算。仕入れると古物台帳に自動で記録。無料・登録不要。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zeroichiworks.net/sedori/">
+<meta property="og:image" content="https://zeroichiworks.net/sedori/og.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="./assets/sedori.css?v=20261030b">
+</head>
+<body data-base="./" data-page="top">
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="./"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <form class="sbar" id="sbar" role="search">
+      <label class="sr" for="sb-src">探す場所</label>
+      <select id="sb-src"><option value="rakuten" selected>楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon">Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger">台帳</option></select>
+      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
+      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
+      <button type="submit">検索</button>
+    </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
+    <div class="tgt" id="tgt">
+      <span class="tgt-k">目標の利益</span>
+      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
+      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
+    </div>
+    <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
+    <a class="hd-ledger" href="./daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="./mypage/">ログイン</a>
+  </div>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="./" aria-current="page">トップ</a><a href="./rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="./muzaiko-amazon/">無在庫 Amazon中古</a><a href="./mercari-calc/">メルカリ</a><a href="./yahuoku-mercari/">ヤフオク→メルカリ</a><a href="./auction-mercari/">業者オークション</a><a href="./daicho/">台帳</a><a href="./books/">帳簿</a><a href="./shikumi/">利益の仕組み</a><a href="./chigai/">コンサルとの違い</a><a href="./plans/">料金</a></div></nav>
+</header>
+<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><span>トップ</span></nav><span class="feedate" data-feedate></span></div></div>
+<main class="wrap">
+<div class="lay2">
+  <aside class="side" aria-label="メニュー">
+    <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
+    <div class="sbox"><p class="sbox-t">はじめての方へ</p><div class="sbox-b">
+      <ul class="side-links"><li><a href="shikumi/">せどりで利益が出る仕組み</a><small>計算の例・向き不向き・失敗のパターン</small></li><li><a href="chigai/">コンサル・スクールとの違い</a><small>申し込む前に確かめたい9つのこと</small></li><li><a href="#ai" data-ai-open>AIに相談</a><small>無料のAIに、当店の前提つきで相談</small></li></ul>
+    </div></div>
+    <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳のつけ方を週1回お届けします。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
+  </aside>
+
+  <section class="res">
+    <h1 class="pg-h">せどりの利益計算と、古物台帳の自動記録</h1>
+    <div class="hero" id="intro">
+      <div class="hero-m">
+        <p>仕入れ先と売り先を選ぶだけで、手数料・送料・ポイントを引いた利益が出ます。目標の利益に届く売値と、仕入れ値の上限も一緒に。「仕入れた」を押せば古物台帳に記録され、「売れた」で売却欄まで埋まります。</p>
+        <ul class="memo">
+          <li>5つの仕入れルートに対応。業者オークションの参加費も、まとめ落札の1個あたりの原価も計算します</li>
+          <li>台帳は古物台帳の項目どおりの並び。そのままExcel・CSVで書き出せます</li>
+          <li>計算と台帳は無料・登録なしで使えます。入れた内容は、この端末にだけ保存されます</li>
+        </ul>
+        <div class="row-btns"><a class="btn" href="#shindan-sec">向いている仕入れルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a></div>
+        <p class="hero-read"><a href="shikumi/">せどりで利益が出る仕組み(計算の例つき)</a><a href="chigai/">コンサル・スクールとの違い</a><a href="#ai" data-ai-open>AIに相談</a></p>
+      </div>
+      <aside class="hero-p" aria-labelledby="hero-p-h">
+        <p class="hero-p-h" id="hero-p-h">料金<small>税込</small></p>
+        <table class="hp-t">
+          <thead><tr><th></th><th>月払い</th><th>年払い<small>10か月分</small></th></tr></thead>
+          <tbody>
+            <tr><th>ライト</th><td>2,980円</td><td>29,800円</td></tr>
+            <tr class="rec"><th>総合<span class="pill">おすすめ</span></th><td>4,980円</td><td>49,800円</td></tr>
+            <tr class="fd"><th>総合 先着100名</th><td>3,980円</td><td>39,800円</td></tr>
+            <tr><th>業務</th><td>7,980円</td><td>79,800円</td></tr>
+          </tbody>
+        </table>
+        <p class="hp-n">年払いは10か月分の料金で1年(2か月分お得)。月払いは14日無料、年払いは30日以内の解約で全額返金。計算と、この端末の台帳は0円です。<a href="plans/">条件を詳しく見る</a></p>
+        <div data-bill="prep" class="hp-pre"><p class="hp-pre-h">有料版の受付は11月4日(水)から</p><div data-prereg data-compact></div></div>
+        <div data-bill="ready" hidden><a class="btn wide" href="plans/">プランを選ぶ(月払いは14日無料)</a></div>
+      </aside>
+    </div>
+
+    <h2 class="sec-h">仕入れ先と売り先で選ぶ</h2>
+    <div class="gridwrap"><table class="grid nimg rt" id="route-grid">
+      <thead><tr><th>ページ</th><th>仕入れ先</th><th>売り先</th><th>商品</th><th>古物商許可</th><th>計算する手数料</th></tr></thead>
+      <tbody><tr data-href="rakuten-amazon/"><td><a href="rakuten-amazon/">楽天・Yahoo!→Amazon</a></td><td>楽天市場・Yahoo!ショッピング</td><td>Amazon(FBA)</td><td>新品</td><td>不要</td><td>販売手数料・FBA・ポイント</td></tr>
+<tr data-href="muzaiko-amazon/"><td><a href="muzaiko-amazon/">無在庫 Amazon中古</a></td><td>ヤフオク(売れてから)</td><td>Amazon(中古・自己発送)</td><td>中古</td><td>必要</td><td>販売手数料・発送代行</td></tr>
+<tr data-href="mercari-calc/"><td><a href="mercari-calc/">メルカリ</a></td><td>不用品・少額の仕入れ</td><td>メルカリ</td><td>新品・中古</td><td>不用品は不要</td><td>10%・メルカリ便</td></tr>
+<tr data-href="yahuoku-mercari/"><td><a href="yahuoku-mercari/">ヤフオク→メルカリ</a></td><td>Yahoo!オークション</td><td>メルカリ・ヤフオク</td><td>中古</td><td>必要</td><td>10%・送料・まとめ落札</td></tr>
+<tr data-href="auction-mercari/"><td><a href="auction-mercari/">業者オークション</a></td><td>古物市場(エコオク・大吉 等)</td><td>メルカリ・ヤフオク</td><td>中古・ブランド</td><td>必要</td><td>落札手数料・参加費</td></tr></tbody>
+    </table></div>
+
+    <h2 class="sec-h">今日のポイント高還元(楽天) <small id="today-time"></small></h2>
+    <div class="gridwrap"><table class="grid mc" id="today-grid">
+      <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">価格</th><th class="r c-pt">ポイント</th><th class="c-fee">期限</th><th></th></tr></thead>
+      <tbody id="today-rows"><tr><td colspan="6" class="empty">読み込み中</td></tr></tbody>
+    </table></div>
+    <p class="credit">楽天市場の公式APIで毎朝取得した見本です。Amazonで売れるかは判定していません。PR: 商品へのリンクは楽天アフィリエイトのリンクです(価格は変わりません)。<a href="https://developers.rakuten.com/" target="_blank" rel="noopener">Supported by Rakuten Developers</a></p>
+
+    <h2 class="sec-h" id="shindan-sec">向いている仕入れルートを診断(6問)</h2>
+    <form id="shindan" class="qtab">
+      <table class="kv wide"><tr><th scope="row">仕入れに使えるお金</th><td><label class="rd"><input type="radio" name="cap" value="low">5万円未満</label><label class="rd"><input type="radio" name="cap" value="mid">5〜30万円</label><label class="rd"><input type="radio" name="cap" value="high">30万円以上</label></td></tr>
+<tr><th scope="row">1日に使える時間</th><td><label class="rd"><input type="radio" name="time" value="short">1時間未満</label><label class="rd"><input type="radio" name="time" value="mid">1〜3時間</label><label class="rd"><input type="radio" name="time" value="long">3時間以上</label></td></tr>
+<tr><th scope="row">古物商許可</th><td><label class="rd"><input type="radio" name="lic" value="yes">持っている</label><label class="rd"><input type="radio" name="lic" value="plan">取る予定</label><label class="rd"><input type="radio" name="lic" value="no">持っていない</label></td></tr>
+<tr><th scope="row">在庫・値下がりのリスク</th><td><label class="rd"><input type="radio" name="risk" value="low">小さく</label><label class="rd"><input type="radio" name="risk" value="mid">ほどほど</label><label class="rd"><input type="radio" name="risk" value="high">大きめでもよい</label></td></tr>
+<tr><th scope="row">扱いたい物</th><td><label class="rd"><input type="radio" name="kind" value="new">新品</label><label class="rd"><input type="radio" name="kind" value="used">中古</label><label class="rd"><input type="radio" name="kind" value="both">どちらでも</label></td></tr>
+<tr><th scope="row">仕入れの場所</th><td><label class="rd"><input type="radio" name="where" value="net">ネットだけ</label><label class="rd"><input type="radio" name="where" value="store">お店・市場にも行ける</label></td></tr></table>
+      <div class="row-btns"><button class="btn pri" type="submit">診断する</button><span class="hint">収入の見込みを示すものではありません。答えはこの端末の中だけで使います。</span></div>
+    </form>
+    <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
+
+    <h2 class="sec-h" id="plans">料金</h2>
+    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>10か月分の料金で1年(2か月分お得)</b>で、<b>30日以内の解約は全額返金</b>です<span data-bill="prep">(受付は11月4日(水)から)</span>。</p>
+    <div class="mini-plans"><a class="mp-c" href="plans/?plan=light#pl-step2"><span class="mp-n">ライト</span><span class="mp-w">まずは台帳をクラウドに残したい方</span><span class="mp-p">月<b>2,980</b>円<small>税込</small></span><span class="mp-y">年払いは29,800円(10か月分)</span></a><a class="mp-c rec" href="plans/?plan=total#pl-step2"><span class="mp-n">総合<span class="pill">おすすめ</span></span><span class="mp-w">売上・経費・利益まで1か所で見たい方</span><span class="mp-p">月<b>4,980</b>円<small>税込</small></span><span class="mp-y">年払いは49,800円(10か月分)</span><span class="mp-f">先着100名は月3,980円</span></a><a class="mp-c" href="plans/?plan=business#pl-step2"><span class="mp-n">業務</span><span class="mp-w">棚卸と確定申告の数字まで任せたい方</span><span class="mp-p">月<b>7,980</b>円<small>税込</small></span><span class="mp-y">年払いは79,800円(10か月分)</span></a></div>
+    <p class="row-links"><a href="plans/">機能を比べて申し込む</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
+
+    <h2 class="sec-h" id="faq">よくある質問</h2>
+    <div class="faq">
+      <details><summary>無料でどこまで使えますか。</summary><p>5つの計算ページと台帳は、無料・回数制限なし・登録なしで使えます。楽天の検索だけは1日20回までで、楽天の開発者サイトで無料のIDを取ってお使いください。</p></details>
+      <details><summary>いま使っている出品ツールと一緒に使えますか。</summary><p>使えます。このアプリは出品も価格改定もしません。仕入れ前の計算と、仕入れた後の古物台帳を受け持ちます。</p></details>
+      <details><summary>入れたデータはどこに保存されますか。</summary><p>無料版は、この端末のブラウザの中だけです。当方のサーバーには送られません。ブラウザのデータを消すと台帳も消えるので、CSV・Excelで書き出しておいてください。有料プランでログインすると、台帳をクラウド(Google Cloud の東京リージョン)にも保存します。中身は見ず、ほかの目的にも使いません(<a href="privacy/">プライバシーポリシー</a>)。解約後も3年間は保管し、マイページから書き出せます。</p></details>
+      <details><summary>Amazonの価格はどう入れますか。</summary><p>「Amazonで見る」で価格を確かめて入れてください。価格データのサービスのAPIキーをお持ちなら、設定に入れると自動で入ります(そのサービスの料金と利用条件は、そのサービスとのご契約です)。</p></details>
+      <details><summary>メルカリやヤフオクの価格は自動で取れますか。</summary><p>取りません。各サービスの規約で自動アクセスが制限されているためです。検索バーで各サイトの検索ページを開き、見た価格を入れてください。</p></details>
+      <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行入ります。台帳では状態を1クリックずつ進め、「売れた」を押すと売却日・売値・相手が入ります。</p></details>
+      <details id="honnin"><summary>1万円以上の中古品を買うときの、売り手の確認はどう記録しますか。</summary><p>台帳に、相手の氏名・住所と確認の方法を入れる欄があります。個人から1万円以上で買った中古品など、法律で確認が必要な行は、入力するまで印が付きます。確認のやり方は<a href="guide/honnin-kakunin/">手引き「中古品を買うときの売り手の確認」</a>にまとめています。</p></details>
+      <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
+      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">11月4日(水)から受け付けます。事前登録(メール1通・無料)の方へは、11月3日(火)にメールでご案内します。</span><span data-bill="ready" hidden>いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
+      <details><summary>解約はどうしますか。</summary><p>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すれば完了です。メール1通でのお申し出でも解約できます(PayPalでお支払いの方は、PayPalの自動支払いの管理画面からも)。次の請求日の前日までに解約すれば、次回からは請求しません。</p></details>
+    </div>
+
+    <h2 class="sec-h" id="fees">手数料・送料の出典(確認日 <!--CHECKED-->2026年10月27日<!--/CHECKED-->)</h2>
+    <p class="hint">計算に使う数値は <a href="data/fees.json">fees.json</a> にまとめています。Amazonの販売手数料は税抜(計算で消費税10%を足す)、FBA・メルカリ・Yahoo!オークションは税込。Amazonの公式ページは確認環境から開けなかったため、2026年4月改定を反映した複数の記事の一致で確認しています。</p>
+    <ul class="srcs">
+      <!--FEES-->
+      <li><a href="https://link-ecconsulting.co.jp/column/amazon-fees-guide/" target="_blank" rel="noopener">Amazon 販売手数料(2026年4月1日改定後)</a> <small>記事内で2026年9月27日に公式と照合と記載。税抜表示</small></li>
+      <li><a href="https://jagoo.co.jp/column/amazon-fee/" target="_blank" rel="noopener">Amazon 販売手数料・FBA配送代行手数料</a> <small>2026年9月6日更新。2026年4月1日改定を反映</small></li>
+      <li><a href="https://wise.com/jp/blog/amazon-seller-fees" target="_blank" rel="noopener">Amazon 販売手数料・FBA配送代行手数料</a> <small>2026年6月14日時点の料率</small></li>
+      <li><a href="https://ecstarslab.com/blog/fba-commission-price-increase/" target="_blank" rel="noopener">Amazon 2026年4月改定の内容(販売手数料+0.4%、FBA標準2・3の引き下げ)</a></li>
+      <li><a href="https://sell.amazon.co.jp/pricing" target="_blank" rel="noopener">Amazon 公式: 出品サービスの料金</a> <small>公式。当方の確認環境からは直接開けなかったため、上の記事3本の数値の一致で確認</small></li>
+      <li><a href="https://sellercentral.amazon.co.jp/help/hub/reference/external/GT23F3ST7FEZKT9A?locale=ja-JP" target="_blank" rel="noopener">Amazon 公式: 販売手数料の改定(セラーセントラル)</a> <small>公式(要ログイン)</small></li>
+      <li><a href="https://jp-news.mercari.com/contents/1882" target="_blank" rel="noopener">メルカリ便の送料(公式・メルカリびより)</a> <small>2026年10月13日掲載・2026年1月時点の料金</small></li>
+      <li><a href="https://furima-navi.jp/guides/shipping-comparison" target="_blank" rel="noopener">メルカリ便の送料(照合用)</a></li>
+      <li><a href="https://aucfan.com/times/archives/46731" target="_blank" rel="noopener">メルカリ 販売手数料10%・振込申請手数料200円</a></li>
+      <li><a href="https://library.libecity.com/articles/01KM1Y0TSZKA9XHTT035DSXGNM" target="_blank" rel="noopener">メルカリ 販売手数料10%(2026年3月の記事)</a></li>
+      <li><a href="https://netshop.impress.co.jp/node/12364" target="_blank" rel="noopener">Yahoo!オークション 落札システム利用料 一律10%(2024年6月4日〜)</a></li>
+      <li><a href="https://ascii.jp/elem/000/004/193/4193266/" target="_blank" rel="noopener">Yahoo!オークション 落札システム利用料 一律10%</a></li>
+      <li><a href="https://uridoki.net/kobutsuichiba/kiji_200386" target="_blank" rel="noopener">エコリング(エコオク)の落札手数料・会費(第三者記事・掲載時点)</a> <small>公式の会員規約で未確認</small></li>
+      <li><a href="https://uridoki.net/kobutsuichiba/kiji_249600" target="_blank" rel="noopener">大吉オークションの手数料・参加費(第三者記事・掲載時点)</a> <small>公式の会員規約で未確認</small></li>
+      <li><a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">古物営業法 非対面取引での売り手の確認の方法(警視庁)</a> <small>1万円以上(一部品目は金額を問わず)はその都度確認</small></li>
+      <li><a href="https://files.japanpost.jp/assets/34d9d11432734cfaa759e78fe395b688/9f91670d385b45abb05aac0502c7acb8/20260703_02_01.pdf" target="_blank" rel="noopener">日本郵便 2026年10月1日の料金改定(クリックポスト240円・ゆうパケット一律360円・ゆうパック平均約10%)</a> <small>公式(2026年7月3日発表)</small></li>
+      <li><a href="https://stockcrew.co.jp/insights/article_jiji_japanpost_neage_2026-07-06" target="_blank" rel="noopener">ゆうパックの改定後の運賃(東京発の例)</a> <small>60サイズ 関東等へ970円・100サイズ1,650円・140サイズ2,600円</small></li>
+      <li><a href="https://www.pricey.jp/web/articles/4484" target="_blank" rel="noopener">ヤマト運輸 宅急便・宅急便コンパクトの運賃(同一地帯・2025年10月時点)</a> <small>60サイズ940円・80サイズ1,230円・100サイズ1,530円・コンパクト650円(専用BOX別)</small></li>
+      <li><a href="https://www.lnews.jp/2025/11/r1105105.html" target="_blank" rel="noopener">ヤマト運輸 同一都道府県内運賃の新設(2025年11月10日〜)</a> <small>同じ都道府県内なら60サイズ790円など、さらに安い</small></li>
+      <!--/FEES-->
+    </ul>
+  </section>
+</div>
+</main>
+<footer class="ft">
+  <div class="ft-in">
+    <nav><a href="./">トップ</a><a href="./daicho/">台帳</a><a href="./#fees">手数料の出典</a><a href="./plans/">料金</a><a href="./mypage/">マイページ</a><a href="./terms/">利用規約</a><a href="./privacy/">プライバシーポリシー</a><a href="./../tokushoho.html">特定商取引法に基づく表記</a><a href="./lp/">はじめての方へ</a><a href="./shikumi/">利益の仕組み</a><a href="./chigai/">コンサル・スクールとの違い</a><a href="./#ai" data-ai-open>AIに相談</a><a href="./guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <details class="legal" id="legal">
+      <summary>法律と規約の注意</summary>
+      <div class="legal-body">
+        <h3>古物営業法</h3>
+        <ul>
+          <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
+          <li>個人から古物を買うとき、対価の総額が1万円以上なら、その都度、法律で決められた方法で売り手の確認(住所・氏名・職業・年齢)が必要です。ゲームソフト・CD・DVD・書籍・バイクの部品等と、2025年10月1日からはエアコンの室外機・電気温水機器のヒートポンプ・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で売り手の確認が未入力の行には印が付きます。</li>
+          <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
+        </ul>
+        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
+        <ul>
+          <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
+          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
+          <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
+        </ul>
+        <h3>写真と説明文</h3>
+        <ul>
+          <li>仕入れ先(ヤフオク・メルカリ等の出品者)の写真や文章を、自分の出品にそのまま使わないでください。著作権の問題になります。自分で撮った写真を使い、Amazonでは既存の商品ページに相乗りしてコンディションを文字で説明します。</li>
+        </ul>
+        <h3>自動アクセス</h3>
+        <ul>
+          <li>このアプリはメルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取りません。検索は各サイトの検索ページを新しいタブで開くだけです。楽天とKeepaは、ご自身のIDとキーで公式APIを使います。</li>
+        </ul>
+      </div>
+    </details>
+    <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
+  </div>
+</footer>
+<script src="./assets/config.js?v=20261030b"></script>
+<script src="./assets/sync.js?v=20261030b"></script>
+<script src="./assets/calc.js?v=20261030b"></script>
+<script src="./assets/seller-check.js?v=20261030b"></script>
+<script src="./assets/ui.js?v=20261030b"></script>
+<script src="./assets/account.js?v=20261030b"></script>
+<script src="./assets/top.js?v=20261030b"></script>
+<script src="./assets/shindan.js?v=20261030b"></script>
+<script src="./assets/ai.js?v=20261030b"></script>
+</body>
+</html>

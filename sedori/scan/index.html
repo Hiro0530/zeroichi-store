@@ -1,144 +1,19 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>バーコード読み取り(店舗せどり)｜せどり 利益チェック</title>
-<meta name="description" content="スマホのカメラでJANを読み取り、その場で楽天・Yahoo!・Amazonの検索と、目標の利益を満たすかの計算。1タップでウォッチ・古物台帳へ。アプリのインストール不要。">
-<link rel="canonical" href="https://zeroichiworks.net/sedori/scan/">
-<link rel="manifest" href="../manifest.webmanifest">
-<link rel="icon" href="../icon-192.png">
-<link rel="apple-touch-icon" href="../icon-192.png">
-<meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261028e">
-<link rel="stylesheet" href="../assets/scan.css?v=20261028e">
-</head>
-<body data-base="../" data-page="scan">
-<header class="hd">
-  <div class="hd-in">
-    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
-    <div class="tgt" id="tgt">
-      <span class="tgt-k">目標の利益</span>
-      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
-      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
-    </div>
-    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
-  </div>
-  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="./" aria-current="page">読み取り</a><a href="../daicho/">台帳</a><a href="../books/">帳簿</a></div></nav>
-</header>
-<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>バーコード読み取り</span></nav><span class="feedate" data-feedate></span></div></div>
-
-<main class="wrap sc">
-  <section class="sc-cam" aria-label="カメラ">
-    <div class="cam" id="cam" data-state="idle">
-      <video id="video" playsinline muted></video>
-      <div class="cam-band" aria-hidden="true"><i></i></div>
-      <div class="cam-idle" id="cam-idle">
-        <button type="button" class="cam-go" id="cam-go">カメラで読み取る</button>
-        <p>バーコード(JAN)を枠に入れると、続けて読み取ります</p>
-      </div>
-      <p class="cam-msg" id="cam-msg" role="status" aria-live="polite"></p>
-    </div>
-    <div class="cam-bar">
-      <button type="button" class="btn ghost sm" id="cam-stop" hidden>止める</button>
-      <button type="button" class="btn ghost sm" id="cam-torch" hidden aria-pressed="false">ライト</button>
-      <span class="cam-opt">
-        <label><input type="checkbox" id="o-beep"> 音</label>
-        <label><input type="checkbox" id="o-vib"> 振動</label>
-      </span>
-    </div>
-    <form class="manual" id="manual" autocomplete="off">
-      <label for="m-jan">JANを手で入れる</label>
-      <div class="manual-row">
-        <input id="m-jan" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="JANの数字(8桁か13桁)">
-        <button type="submit" class="btn">追加</button>
-      </div>
-    </form>
-    <div class="sbox pair-box" id="pair-box">
-      <p class="sbox-t">スマホで開く</p>
-      <div class="sbox-b pair">
-        <div class="qr" id="pair-qr" aria-label="このページのQRコード"></div>
-        <div>
-          <p>スマホのカメラでQRを読むと、このページが開きます。ホーム画面に追加すると、アプリのように使えます。</p>
-          <p class="hint">接続番号 <b id="pair-id"></b>(アカウントの同期が始まると、この番号で自動でつながります)</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="sc-now" aria-label="読み取った商品">
-    <div class="now-empty" id="now-empty">
-      <h1 class="pg-h">バーコード読み取り</h1>
-      <p>読み取った商品の検索リンクと、目標の利益(<span data-tlabel></span>)に届くかの判定が、ここに出ます。</p>
-      <ol class="steps-mini">
-        <li>カメラで読む(続けて読めます。同じ商品は1回だけ)</li>
-        <li>店頭の価格と、売れている価格を入れる</li>
-        <li>「仕入れた」で古物台帳に1行。迷ったら「ウォッチ」</li>
-      </ol>
-    </div>
-    <div class="now" id="now" hidden>
-      <div class="now-hd">
-        <div>
-          <span class="now-k">JAN</span>
-          <b class="now-jan" id="now-jan"></b>
-          <span class="now-chk" id="now-chk"></span>
-        </div>
-        <span class="now-at" id="now-at"></span>
-      </div>
-      <div class="links" id="now-links"></div>
-      <div class="seg to" role="group" aria-label="売り先" id="now-to"><button type="button" data-to="amazon">Amazon(FBA)</button><button type="button" data-to="mercari">メルカリ</button></div>
-      <div class="fgrid">
-        <label class="f2"><span>品名(台帳用・任意)</span><input id="n-name" autocomplete="off" placeholder="例: 〇〇 フィギュア"></label>
-        <label><span>仕入れ値(店頭・税込)</span><span class="yenin"><input id="n-cost" type="number" inputmode="numeric" min="0"><i>円</i></span></label>
-        <label><span id="n-sell-k">Amazon売値(税込)</span><span class="yenin"><input id="n-sell" type="number" inputmode="numeric" min="0"><i>円</i></span></label>
-        <label data-for="amazon"><span>カテゴリー</span><select id="n-cat"></select></label>
-        <label data-for="amazon"><span>FBAのサイズ</span><select id="n-tier"></select></label>
-        <label data-for="mercari" class="f2"><span>配送方法</span><select id="n-ship"></select></label>
-      </div>
-      <div class="verdict" id="verdict"></div>
-      <div class="acts">
-        <button type="button" class="btn ghost" id="a-watch">ウォッチに入れる</button>
-        <button type="button" class="btn" id="a-buy">仕入れた(台帳へ)</button>
-      </div>
-      <p class="note" id="now-note"></p>
-    </div>
-  </section>
-
-  <section class="sc-list" aria-label="スキャン一覧">
-    <div class="list-hd">
-      <h2>スキャン一覧 <span class="n" id="l-n">0</span></h2>
-      <div class="list-acts">
-        <button type="button" class="btn ghost sm" id="l-send">パソコンへ送る</button>
-        <button type="button" class="btn ghost sm" id="l-recv">スマホから受け取る</button>
-        <button type="button" class="btn ghost sm" id="l-csv">CSV</button>
-      </div>
-    </div>
-    <div class="list-wrap"><table class="slist"><thead><tr><th>JAN・品名</th><th class="r">仕入れ値</th><th class="r">売値</th><th class="r">利益</th><th>記録</th><th></th></tr></thead><tbody id="l-rows"></tbody></table></div>
-    <p class="list-empty" id="l-empty">まだありません。読み取った商品は、この端末に保存されます(有料プランでは、パソコンとスマホで同じ一覧になります)。</p>
-    <p class="list-foot"><button type="button" class="linkbtn" id="l-clear">一覧を空にする</button></p>
-  </section>
-</main>
-
-<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-h">
-  <div class="sheet-in">
-    <div class="sheet-hd"><h2 id="sheet-h"></h2><button type="button" class="x" id="sheet-x" aria-label="閉じる">閉じる</button></div>
-    <div id="sheet-b"></div>
-  </div>
-</div>
-
-<footer class="ft">
-  <div class="ft-in">
-    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../lp/">はじめての方へ</a><a href="../#fees">手数料の出典</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
-    <p>カメラの映像はこの端末の中だけで読み取りに使い、保存・送信しません。読み取った一覧と台帳はこの端末のブラウザの中に保存されます。店内での撮影・読み取りは、お店の決まりに従ってください。価格・相場は各サイトで確かめてください(このページは他のサイトの価格を自動で読み取りません)。</p>
-    <p>ZEROICHI WORKS(個人事業)。計算は目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。</p>
-  </div>
-</footer>
-<script src="../assets/calc.js?v=20261028e"></script>
-<script src="../assets/seller-check.js?v=20261028e"></script>
-<script src="../assets/ui.js?v=20261028e"></script>
-<script src="../assets/vendor/qrcode-generator.js"></script>
-<script src="../assets/scan-decoder.js?v=20261028e"></script>
-<script src="../assets/scan-sync.js?v=20261028e"></script>
-<script src="../assets/scan.js?v=20261028e"></script>
-</body>
-</html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>準備中｜ZEROICHI WORKS</title>
+<style>
+:root{--bg:#f6f4ef;--ink:#1f2328;--sub:#5b6168;--line:#e2ddd2}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--ink:#ecebe7;--sub:#a3a7ad;--line:#2b2f34}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.8}
+main{max-width:560px;margin:0 auto;padding:18vh 20px 40px}
+h1{font-size:22px;margin:0 0 12px}
+p{color:var(--sub);margin:0 0 10px}
+a{color:inherit}
+.f{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+</style></head>
+<body><main>
+<h1>ただいま準備中です</h1>
+<p>せどり向けの計算と台帳のアプリは、公開前の最終確認をしています。</p>
+<p>確認が終わりしだい、このページで再開します。</p>
+<div class="f"><a href="/">ZEROICHI WORKS トップへ</a></div>
+</main></body></html>

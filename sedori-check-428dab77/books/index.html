@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+<head><meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>帳簿｜ZEROICHI WORKS</title>
+<meta name="description" content="売上の取り込み(Amazonのペイメントレポート・メルカリ)、経費、月ごとの利益、売れ残り、期末の棚卸、確定申告用の数字、会計ソフト向けの仕訳の書き出し。確定申告に必要な数字が、毎日の記録から自動でそろいます。">
+<link rel="canonical" href="https://zeroichiworks.net/sedori/books/">
+<meta property="og:title" content="帳簿 — せどり 利益チェック">
+<meta property="og:description" content="売上の取り込み(Amazonのペイメントレポート・メルカリ)、経費、月ごとの利益、売れ残り、期末の棚卸、確定申告用の数字、会計ソフト向けの仕訳の書き出し。確定申告に必要な数字が、毎日の記録から自動でそろいます。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zeroichiworks.net/sedori/books/">
+<meta property="og:image" content="https://zeroichiworks.net/sedori/og.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261028e">
+<link rel="stylesheet" href="books.css?v=20261028e">
+</head>
+<body data-base="../" data-page="books">
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <form class="sbar" id="sbar" role="search">
+      <label class="sr" for="sb-src">探す場所</label>
+      <select id="sb-src"><option value="rakuten">楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon">Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger" selected>台帳</option></select>
+      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
+      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
+      <button type="submit">検索</button>
+    </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
+    <div class="tgt" id="tgt">
+      <span class="tgt-k">目標の利益</span>
+      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
+      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
+    </div>
+    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
+  </div>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a><a href="../books/" aria-current="page">帳簿</a></div></nav>
+</header>
+<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>帳簿</span></nav><span class="feedate" data-feedate></span></div></div>
+<main class="wrap">
+  <div class="bk-demo" id="bk-demo" hidden><b>見本のデータを表示しています。</b>入力や取り込みは保存されません。<a href="./">自分の記録に戻る</a></div>
+  <div class="bk-head">
+    <h1>帳簿</h1>
+    <span class="bk-mode" id="bk-mode"></span>
+    <span class="bk-sync" id="bk-sync" role="status" hidden></span>
+    <label class="bk-year">年 <select id="bk-year" aria-label="年"></select></label>
+    <dl class="sum" id="bk-sum"></dl>
+  </div>
+  <div class="tabs" role="tablist" id="bk-tabs"></div>
+  <div id="bk-pane"></div>
+  <p class="credit">確定申告に必要な数字が、毎日の記録から自動でそろいます。自分でできる青色申告の準備に使えます。表示は記録から計算した参考の値で、申告の前に必ずご自身で確認してください。個別の税務のご相談(経費にできるか等)にはお答えできません。税務署または税理士にご相談ください。帳簿の記録(取り込んだ売上・経費・設定・棚卸の数)はこの端末のブラウザに保存し、総合・業務でログインしている間はクラウドにも保存して、パソコンとスマホで同じ帳簿を使えます<span data-acct="prep">(ログインの準備が整い次第、クラウドに保存されます)</span>。<a href="?demo=1">見本のデータで見る</a></p>
+</main>
+<footer class="ft">
+  <div class="ft-in">
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../lp/">はじめての方へ</a><a href="../guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+      <p>ZEROICHI WORKS(個人事業)。画面と計算部分はAI(Claude)を使って作成し、手計算の例で検算しています。</p>
+  </div>
+</footer>
+<script src="../assets/config.js?v=20261028e"></script>
+<script src="../assets/sync.js?v=20261028e"></script>
+<script src="../assets/books-sync.js?v=20261028e"></script>
+<script src="../assets/calc.js?v=20261028e"></script>
+<script src="../assets/seller-check.js?v=20261028e"></script>
+<script src="../assets/ui.js?v=20261028e"></script>
+<script src="../assets/account.js?v=20261028e"></script>
+<script src="assets/books-core.js?v=20261028e"></script>
+<script src="assets/books.js?v=20261028e"></script>
+</body>
+</html>

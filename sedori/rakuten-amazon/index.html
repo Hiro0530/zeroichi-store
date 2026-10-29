@@ -1,174 +1,19 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>楽天・Yahoo!→Amazon 利益チェック｜ZEROICHI WORKS</title>
-<meta name="description" content="楽天市場・Yahoo!ショッピングの商品を、Amazon(FBA)で売った時の手数料・ポイント込みの利益を一覧で計算。目標の利益を満たす売値、損益分岐、仕入れ上限。仕入れると古物台帳に自動で記録。無料・登録不要。">
-<link rel="canonical" href="https://zeroichiworks.net/sedori/rakuten-amazon/">
-<meta property="og:title" content="楽天・Yahoo!→Amazon 利益チェック">
-<meta property="og:description" content="楽天市場・Yahoo!ショッピングの商品を、Amazon(FBA)で売った時の手数料・ポイント込みの利益を一覧で計算。目標の利益を満たす売値、損益分岐、仕入れ上限。仕入れると古物台帳に自動で記録。無料・登録不要。">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://zeroichiworks.net/sedori/rakuten-amazon/">
-<meta property="og:image" content="https://zeroichiworks.net/sedori/og.png">
-<link rel="manifest" href="../manifest.webmanifest">
-<link rel="icon" href="../icon-192.png">
-<link rel="apple-touch-icon" href="../icon-192.png">
-<meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
-</head>
-<body data-base="../" data-route="ra" data-route-label="楽天・Yahoo!→Amazon" data-page="rakuten-amazon">
-<header class="hd">
-  <div class="hd-in">
-    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
-    <form class="sbar" id="sbar" role="search">
-      <label class="sr" for="sb-src">探す場所</label>
-      <select id="sb-src"><option value="rakuten" selected>楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon">Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger">台帳</option></select>
-      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
-      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
-      <button type="submit">検索</button>
-    </form>
-    <div class="tgt shipm" id="shipm" title="発送のしかた">
-      <span class="tgt-k">発送</span>
-      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
-    </div>
-    <div class="tgt" id="tgt">
-      <span class="tgt-k">目標の利益</span>
-      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
-      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
-    </div>
-    <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
-    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
-    <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
-  </div>
-  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/" aria-current="page">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a><a href="../books/">帳簿</a><a href="../shikumi/">利益の仕組み</a><a href="../chigai/">コンサルとの違い</a><a href="../plans/">料金</a></div></nav>
-</header>
-<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>楽天・Yahoo!→Amazon 利益チェック</span></nav><span class="feedate" data-feedate></span></div></div>
-<main class="wrap">
-<div class="lay3">
-  <aside class="side" aria-label="絞り込みと条件">
-      <details class="sbox " open data-desk-open>
-        <summary>絞り込み</summary>
-        <div class="sbox-b"><div class="fl">
-          <label class="fr col"><span class="fk">並び順</span><span class="fv"><select id="sort" style="width:100%"><option value="price">価格の安い順</option><option value="standard">標準</option><option value="review">レビューの多い順</option></select></span></label>
-          <label class="ck"><input id="ptonly" type="checkbox">ポイント2倍以上</label><label class="ck"><input id="freeonly" type="checkbox">送料無料のみ</label>
-          <div class="fr2"><span class="fk">価格</span><span class="rng"><input id="pmin" type="number" inputmode="numeric" min="0" placeholder="下限" aria-label="価格の下限"><span>〜</span><input id="pmax" type="number" inputmode="numeric" min="0" placeholder="上限" aria-label="価格の上限"></span></div>
-          <label class="ck"><input id="profitonly" type="checkbox">目標を満たす行だけ</label>
-        </div></div>
-      </details>
-      <details class="sbox " open data-desk-open>
-        <summary>Amazon側の条件</summary>
-        <div class="sbox-b"><p class="hint">一覧の全行にこの条件で計算します。</p>
-        <div class="fl">
-          <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat"></select></label>
-          <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier"></select></label>
-          <label class="fr "><span class="fk">納品送料<small>資材込み・1個</small></span><span class="fv"><input id="c-inbound" type="number" inputmode="numeric" min="0" value="100"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>1個</small></span><span class="fv"><input id="c-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント上乗せ<small>SPU・カード</small></span><span class="fv"><input id="c-pt-mine" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><label class="ck"><input id="c-usept" type="checkbox" checked>ポイントを利益に含める</label><label class="ck"><input id="c-self" type="checkbox">FBAを使わない(自分か代行が発送)</label><div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier"></select></label><label class="fr "><span class="fk">送料<small>自分で入力の時</small></span><span class="fv"><input id="c-selfship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
-        </div></div>
-      </details>
-      <details class="sbox keys" id="keys" data-desk-open>
-        <summary>APIキー</summary>
-        <div class="sbox-b"><p class="hint">ご自身のIDとキーをこの端末だけに保存し、楽天・Keepaへ直接問い合わせます。</p>
-        <div class="fl">
-          <label class="fr col"><span class="fk">楽天 アプリID</span><input id="k-rk-app" autocomplete="off" spellcheck="false"></label>
-          <label class="fr col"><span class="fk">楽天 アクセスキー(pk_)</span><input id="k-rk-key" autocomplete="off" spellcheck="false"></label>
-          <label class="fr col"><span class="fk">Keepa APIキー(任意)</span><input id="k-kp" autocomplete="off" spellcheck="false"></label>
-          <div class="row-btns"><button class="btn sm" type="button" id="k-save">保存</button><button class="btn sm ghost" type="button" id="k-clear">消す</button></div>
-          <p class="hint">楽天: <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener">Rakuten Developers</a>でアプリを作り、許可するWebサイトに <code>https://zeroichiworks.net</code> を入れる。Keepa: <a href="https://keepa.com/#!api" target="_blank" rel="noopener">Keepa API</a>(有料・1件1トークン)。Yahoo!ショッピングは公式の検索ページを開きます。</p>
-        </div></div>
-      </details>
-  </aside>
-
-  <section class="res" aria-label="一覧">
-    <div class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="s" aria-selected="false">検索結果<span class="n" id="n-s">0</span></button>
-      <button type="button" role="tab" data-tab="t" aria-selected="true">今日のポイント高還元<span class="n" id="n-t">0</span></button>
-      <button type="button" role="tab" data-tab="w" aria-selected="false">ウォッチ<span class="n" id="n-w">0</span></button>
-    </div>
-    <div class="tbar">
-      <p class="tbar-t" id="res-title">今日のポイント高還元(楽天)</p>
-      <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
-    </div>
-    <div id="res-msg"></div>
-    <div class="gridwrap">
-      <table class="grid mc" id="grid">
-        <colgroup><col class="c-img"><col><col class="c-n"><col class="c-pt"><col class="c-n"><col class="c-n c-fee"><col class="c-n"><col class="c-rt"></colgroup>
-        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r">利益</th><th class="r">利益率</th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
-    <p class="credit" id="credit"></p>
-  </section>
-
-  <aside class="det" id="calc" aria-label="選んだ商品">
-    <div class="det-in">
-      <div class="det-h"><p class="det-k">選んだ商品</p><p class="det-name" id="d-name">一覧の行を選ぶと、ここに内訳が出ます。</p><p class="det-sub" id="d-sub"></p></div>
-      <div class="dg">
-        <label class="cell "><span class="ck2">仕入れ値(税込)</span><span class="cv"><input id="c-cost" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
-        <label class="cell "><span class="ck2">仕入れの送料</span><span class="cv"><input id="c-inship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label>
-        <label class="cell "><span class="ck2">ショップのポイント</span><span class="cv"><input id="c-pt-shop" type="number" inputmode="decimal" min="0" step="0.1" value="1"><span class="u">%</span></span></label>
-        <label class="cell "><span class="ck2">仕入れる個数</span><span class="cv"><input id="c-qty" type="number" inputmode="numeric" min="0" value="1"><span class="u">個</span></span></label>
-        <label class="cell"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
-        <label class="cell "><span class="ck2">Amazon売値(税込)</span><span class="cv"><input id="c-sell" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
-      </div>
-      <div id="wh"></div>
-      <div id="kp-out"></div>
-      <div id="c-out" aria-live="polite"></div>
-      <div class="acts">
-          <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
-          <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
-        </div>
-        <div id="party"></div>
-        <div id="brk"></div>
-      <p class="det-links"><button type="button" class="lnk" id="c-watch">ウォッチに追加</button><a id="amz-link" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a><a id="kp-link" href="https://keepa.com/" target="_blank" rel="noopener">Keepaで見る</a></p>
-      <details class="dims"><summary>寸法と重さからFBAのサイズを出す</summary>
-        <div class="dims-g">
-          <label>長さcm<input id="d1" type="number" inputmode="decimal" step="0.1"></label><label>幅cm<input id="d2" type="number" inputmode="decimal" step="0.1"></label><label>高さcm<input id="d3" type="number" inputmode="decimal" step="0.1"></label><label>重さg<input id="dg" type="number" inputmode="numeric"></label>
-        </div>
-        <p class="hint" id="d-out">梱包した状態の寸法を入れてください。</p>
-      </details>
-    </div>
-  </aside>
-</div>
-</main>
-<footer class="ft">
-  <div class="ft-in">
-    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../lp/">はじめての方へ</a><a href="../shikumi/">利益の仕組み</a><a href="../chigai/">コンサル・スクールとの違い</a><a href="../#ai" data-ai-open>AIに相談</a><a href="../guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
-    <details class="legal" id="legal">
-      <summary>法律と規約の注意</summary>
-      <div class="legal-body">
-        <h3>古物営業法</h3>
-        <ul>
-          <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
-          <li>個人から古物を買うとき、対価の総額が1万円以上なら、その都度、法律で決められた方法で売り手の確認(住所・氏名・職業・年齢)が必要です。ゲームソフト・CD・DVD・書籍・バイクの部品等と、2025年10月1日からはエアコンの室外機・電気温水機器のヒートポンプ・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
-          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で売り手の確認が未入力の行には印が付きます。</li>
-          <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
-        </ul>
-        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
-        <ul>
-          <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
-          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
-          <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
-        </ul>
-        <h3>写真と説明文</h3>
-        <ul>
-          <li>仕入れ先(ヤフオク・メルカリ等の出品者)の写真や文章を、自分の出品にそのまま使わないでください。著作権の問題になります。自分で撮った写真を使い、Amazonでは既存の商品ページに相乗りしてコンディションを文字で説明します。</li>
-        </ul>
-        <h3>自動アクセス</h3>
-        <ul>
-          <li>このアプリはメルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取りません。検索は各サイトの検索ページを新しいタブで開くだけです。楽天とKeepaは、ご自身のIDとキーで公式APIを使います。</li>
-        </ul>
-      </div>
-    </details>
-    <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
-  </div>
-</footer>
-<script src="../assets/config.js?v=20261030b"></script>
-<script src="../assets/sync.js?v=20261030b"></script>
-<script src="../assets/calc.js?v=20261030b"></script>
-<script src="../assets/seller-check.js?v=20261030b"></script>
-<script src="../assets/ui.js?v=20261030b"></script>
-<script src="../assets/account.js?v=20261030b"></script>
-<script src="../assets/ra.js?v=20261030b"></script>
-<script src="../assets/ai.js?v=20261030b"></script>
-</body>
-</html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>準備中｜ZEROICHI WORKS</title>
+<style>
+:root{--bg:#f6f4ef;--ink:#1f2328;--sub:#5b6168;--line:#e2ddd2}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--ink:#ecebe7;--sub:#a3a7ad;--line:#2b2f34}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.8}
+main{max-width:560px;margin:0 auto;padding:18vh 20px 40px}
+h1{font-size:22px;margin:0 0 12px}
+p{color:var(--sub);margin:0 0 10px}
+a{color:inherit}
+.f{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+</style></head>
+<body><main>
+<h1>ただいま準備中です</h1>
+<p>せどり向けの計算と台帳のアプリは、公開前の最終確認をしています。</p>
+<p>確認が終わりしだい、このページで再開します。</p>
+<div class="f"><a href="/">ZEROICHI WORKS トップへ</a></div>
+</main></body></html>

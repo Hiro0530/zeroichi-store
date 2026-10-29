@@ -1,90 +1,19 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>メルカリ 利益計算(貼り付け用)｜ZEROICHI WORKS</title>
-<meta name="robots" content="noindex">
-<link rel="canonical" href="https://zeroichiworks.net/sedori/mercari-calc/">
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>準備中｜ZEROICHI WORKS</title>
 <style>
-:root{--ink:#16202b;--sub:#4a5360;--mute:#6b7480;--line:#d8dde3;--ac:#1559b3;--good:#0a7a3a;--bad:#c4231c;--bg:#fff;color-scheme:light}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.6 "Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,"Noto Sans JP",sans-serif;font-variant-numeric:tabular-nums}
-.w{border:1px solid var(--line);border-radius:4px;padding:14px 16px 10px;max-width:640px}
-h1{font-size:14px;margin:0 0 10px}
-.g{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
-label{display:flex;flex-direction:column;gap:2px;font-size:11.5px;color:var(--sub)}
-.f2{grid-column:1/-1}
-input,select{height:34px;border:1px solid #b9c1cb;border-radius:3px;padding:0 8px;font:inherit;font-size:14px;width:100%;background:#fff;color:var(--ink)}
-input{text-align:right;font-weight:700}
-.out{margin-top:12px;border-top:2px solid var(--ink);padding-top:8px}
-.big{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
-.big b{font-size:24px}
-.big b.good{color:var(--good)}.big b.bad{color:var(--bad)}
-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
-td{padding:3px 0;border-bottom:1px solid #eef1f4}
-td:last-child{text-align:right}
-.sug{background:#fff8de;padding:6px 8px;margin-top:8px;display:flex;justify-content:space-between;font-size:12.5px}
-.ft{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:11px;color:var(--mute);flex-wrap:wrap}
-.ft a{color:var(--ac);font-weight:700}
-@media(max-width:360px){.g{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div class="w">
-  <h1>メルカリの手数料・送料を引いた利益</h1>
-  <div class="g">
-    <label>販売価格<input id="sell" type="number" inputmode="numeric" min="300" value="3000"></label>
-    <label>仕入れ値<input id="cost" type="number" inputmode="numeric" min="0" value="1500"></label>
-    <label class="f2">配送方法<select id="ship"></select></label>
-    <label>目標の利益率<input id="pct" type="number" inputmode="decimal" min="0" max="80" value="15"></label>
-    <label>その他の費用<input id="other" type="number" inputmode="numeric" min="0" value="0"></label>
-  </div>
-  <div class="out">
-    <div class="big"><span>利益</span><b id="pf">—</b></div>
-    <table><tbody id="brk"></tbody></table>
-    <div class="sug"><span>目標の利益率を残せる販売価格</span><b id="sug">—</b></div>
-  </div>
-  <div class="ft"><span id="chk">手数料10%・送料はメルカリ便(税込)</span><a id="attr" href="../../lp/#mercari" target="_blank" rel="noopener">ZEROICHI WORKS せどり 利益チェック</a></div>
-</div>
-<script>
-(function () {
-  'use strict';
-  var FALLBACK = { rate: 0.1, checked: '2026年10月27日', ship: [['ネコポス(A4・厚さ3cm・1kg)', 210], ['ゆうパケット(A4・厚さ3cm・1kg)', 230], ['ゆうパケットポスト(専用箱65円込み)', 280], ['宅急便コンパクト(専用箱70円込み)', 520], ['宅急便60サイズ(2kg)', 750], ['ゆうパック60サイズ', 770], ['宅急便80サイズ(5kg)', 850], ['宅急便100サイズ(10kg)', 1050]] };
-  var rate = FALLBACK.rate, ships = FALLBACK.ship;
-  var $ = function (id) { return document.getElementById(id); };
-  function yen(n) { n = Math.round(n || 0); return (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ja-JP') + '円'; }
-  function num(id) { var v = Number($(id).value); return isFinite(v) && v > 0 ? Math.round(v) : 0; }
-  // 埋め込み元(どのサイトに貼られたか)を紹介リンクに付ける。行き先はこのページの住所から作る(独自ドメインに移っても直さなくてよい)
-  try {
-    var host = document.referrer ? new URL(document.referrer).hostname : 'direct';
-    $('attr').href = new URL('../../lp/', location.href).href + '?utm_source=widget&utm_medium=embed&utm_campaign=mercari-calc&utm_content=' + encodeURIComponent(host.replace(/[^a-z0-9.-]/gi, '').slice(0, 60)) + '#mercari';
-  } catch (e) { /* そのまま */ }
-  function fill() {
-    $('ship').innerHTML = ships.map(function (s, i) { return '<option value="' + i + '">' + s[0] + ' ' + s[1].toLocaleString('ja-JP') + '円</option>'; }).join('');
-  }
-  function calc() {
-    var sell = num('sell'), cost = num('cost'), other = num('other'), ship = (ships[$('ship').value] || ships[0])[1], p = Number($('pct').value) || 0;
-    var fee = Math.floor(sell * rate + 1e-9), profit = sell - fee - ship - cost - other;
-    $('pf').textContent = sell ? yen(profit) : '—';
-    $('pf').className = profit < 0 ? 'bad' : (profit >= Math.ceil(sell * p / 100 - 1e-9) ? 'good' : '');
-    $('brk').innerHTML = [['販売価格', sell], ['販売手数料(' + Math.round(rate * 100) + '%)', -fee], ['送料・資材', -ship], ['仕入れ値', -cost], ['その他', -other]]
-      .map(function (r) { return '<tr><td>' + r[0] + '</td><td>' + yen(r[1]) + '</td></tr>'; }).join('');
-    // 目標を満たす最安の売値(手数料は1円未満切り捨てなので1円ずつ確かめる)
-    var fixed = ship + cost + other, d = 1 - rate - p / 100, s = d > 0 ? Math.max(1, Math.floor(fixed / d) - 3) : null;
-    if (s != null) { for (var g = 0; g < 100000; g++, s++) { if (s - Math.floor(s * rate + 1e-9) - fixed >= Math.ceil(s * p / 100 - 1e-9)) break; } }
-    $('sug').textContent = s != null ? yen(s) : '—';
-  }
-  fill(); calc();
-  ['sell', 'cost', 'other', 'pct', 'ship'].forEach(function (id) { $(id).addEventListener('input', calc); $(id).addEventListener('change', calc); });
-  fetch('../../data/fees.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (f) {
-    if (!f || !f.mercari) return;
-    rate = f.mercari.rate;
-    ships = f.mercari.shipping.filter(function (s) { return s.id !== 'custom'; }).map(function (s) { return [s.label, s.fee + s.material]; });
-    var keep = $('ship').selectedIndex; fill(); $('ship').selectedIndex = Math.min(keep, ships.length - 1); calc();
-    $('chk').textContent = '手数料・送料 ' + f.checked_label + ' 確認';
-  }).catch(function () { $('chk').textContent = '手数料・送料 ' + FALLBACK.checked + ' 確認'; });
-})();
-</script>
-</body>
-</html>
+:root{--bg:#f6f4ef;--ink:#1f2328;--sub:#5b6168;--line:#e2ddd2}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--ink:#ecebe7;--sub:#a3a7ad;--line:#2b2f34}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.8}
+main{max-width:560px;margin:0 auto;padding:18vh 20px 40px}
+h1{font-size:22px;margin:0 0 12px}
+p{color:var(--sub);margin:0 0 10px}
+a{color:inherit}
+.f{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+</style></head>
+<body><main>
+<h1>ただいま準備中です</h1>
+<p>せどり向けの計算と台帳のアプリは、公開前の最終確認をしています。</p>
+<p>確認が終わりしだい、このページで再開します。</p>
+<div class="f"><a href="/">ZEROICHI WORKS トップへ</a></div>
+</main></body></html>

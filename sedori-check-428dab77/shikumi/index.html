@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<head><meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>せどりで利益が出る仕組み｜ZEROICHI WORKS</title>
+<meta name="description" content="せどりの利益は、売値から販売手数料・送料・仕入れ値を引き、ポイントを足して決まります。実際の数字の計算例、5つの仕入れルートの向き不向き、始める手順、リスクとよくある失敗を説明します。">
+<link rel="canonical" href="https://zeroichiworks.net/sedori/shikumi/">
+<meta property="og:title" content="せどりで利益が出る仕組み">
+<meta property="og:description" content="せどりの利益は、売値から販売手数料・送料・仕入れ値を引き、ポイントを足して決まります。実際の数字の計算例、5つの仕入れルートの向き不向き、始める手順、リスクとよくある失敗を説明します。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zeroichiworks.net/sedori/shikumi/">
+<meta property="og:image" content="https://zeroichiworks.net/sedori/og.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<meta name="theme-color" content="#1e3348">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
+</head>
+<body data-base="../" data-page="shikumi">
+<header class="hd">
+  <div class="hd-in">
+    <a class="logo" href="../"><b>ZEROICHI</b><span>せどり 利益チェック</span></a>
+    <form class="sbar" id="sbar" role="search">
+      <label class="sr" for="sb-src">探す場所</label>
+      <select id="sb-src"><option value="rakuten" selected>楽天市場</option><option value="yshop">Yahoo!ショッピング</option><option value="amazon">Amazon(JAN・ASIN)</option><option value="yahuoku">ヤフオク 出品中</option><option value="yahuoku-closed">ヤフオク 落札相場</option><option value="mercari-sold">メルカリ 売り切れ</option><option value="ledger">台帳</option></select>
+      <label class="sr" for="sb-q">キーワード・JAN・ASIN</label>
+      <input id="sb-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="商品名・JAN・ASIN">
+      <button type="submit">検索</button>
+    </form>
+    <div class="tgt shipm" id="shipm" title="発送のしかた">
+      <span class="tgt-k">発送</span>
+      <span class="seg"><button type="button" data-s="self" title="自分で発送(経費をかけない)">自分で発送</button><button type="button" data-s="3pl" title="発送代行に任せる">発送代行</button></span>
+    </div>
+    <div class="tgt" id="tgt">
+      <span class="tgt-k">目標の利益</span>
+      <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
+      <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
+    </div>
+    <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
+    <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
+    <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
+  </div>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a><a href="../books/">帳簿</a><a href="../shikumi/" aria-current="page">利益の仕組み</a><a href="../chigai/">コンサルとの違い</a><a href="../plans/">料金</a></div></nav>
+</header>
+<div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>せどりで利益が出る仕組み</span></nav><span class="feedate" data-feedate></span></div></div>
+<main class="wrap">
+<article class="rdg">
+<header class="rd-h">
+  <p class="rd-k">はじめての方へ</p>
+  <h1>せどりで利益が出る仕組み</h1>
+  <p class="rd-lead">せどりの利益は「安く買って高く売る」の差だけでは決まりません。売れた値段から販売サイトの手数料と送料が引かれ、仕入れの時に付いたポイントが少し戻ります。手元に残るかどうかは、この足し引きで決まります。このページでは、その仕組みを実際の数字で説明します。</p>
+  <nav class="rd-toc" aria-label="このページの目次"><a href="#shiki">1. 利益の式</a><a href="#rei">2. 計算の例</a><a href="#route">3. 仕入れルートの向き不向き</a><a href="#tejun">4. 始める手順</a><a href="#risk">5. リスクとよくある失敗</a><a href="#okane">6. お金の出入りの時期</a><a href="#soft">7. このソフトがすること</a></nav>
+</header>
+
+<section class="rd-s" id="shiki">
+  <h2><span class="no">1</span>利益の式</h2>
+  <p class="rd-formula"><b>利益</b> = 売値 − 販売手数料 − 送料・資材 − 仕入れ値 − 仕入れの送料 − その他の経費 <span class="plus">+ ポイント</span></p>
+  <dl class="rd-dl">
+    <div><dt>売値</dt><dd>実際に売れた値段です。出品した値段ではありません。値下げして売れたら、下げた値段で計算します。</dd></div>
+    <div><dt>販売手数料</dt><dd>メルカリ・Yahoo!オークションは売値の10%。Amazonはカテゴリーごとの率と、FBAを使えば配送代行の手数料がかかります(<a href="../#fees">出典と確認日</a>)。</dd></div>
+    <div><dt>送料・資材</dt><dd>お客様へ送る送料と箱・袋の代金。箱が1サイズ大きくなるだけで、送料は100円以上変わります。</dd></div>
+    <div><dt>仕入れ値と仕入れの送料</dt><dd>買った値段と、手元に届くまでの送料。まとめて買った時は1個あたりに割ります。</dd></div>
+    <div><dt>その他の経費</dt><dd>発送代行の費用、市場の参加費、修理やクリーニングの代金など、その品物のためにかかったお金です。</dd></div>
+    <div><dt>ポイント</dt><dd>楽天市場・Yahoo!ショッピングなどで仕入れた時に付くポイント。足してよいのは、実際に使い切れる分だけです。</dd></div>
+  </dl>
+</section>
+
+<section class="rd-s" id="rei">
+  <h2><span class="no">2</span>計算の例</h2>
+  <p>中古のホットプレートを、ヤフオクで個人の出品者から落札し、メルカリで売った場合です。</p>
+  <div class="rd-ex">
+    <table class="wf" aria-label="利益の内訳">
+      <tbody>
+<tr class="wf-in"><th scope="row">売値<small>メルカリで売れた値段</small></th><td class="wf-bar"><span style="margin-left:0.00%;width:100.00%"></span></td><td class="wf-y">6,500円</td></tr>
+<tr class="wf-out"><th scope="row">販売手数料<small>売値の10%</small></th><td class="wf-bar"><span style="margin-left:90.00%;width:10.00%"></span></td><td class="wf-y">−650円</td></tr>
+<tr class="wf-out"><th scope="row">送料<small>らくらくメルカリ便 宅急便60サイズ(2kg)</small></th><td class="wf-bar"><span style="margin-left:78.46%;width:11.54%"></span></td><td class="wf-y">−750円</td></tr>
+<tr class="wf-out"><th scope="row">仕入れ値<small>ヤフオクの落札価格</small></th><td class="wf-bar"><span style="margin-left:32.31%;width:46.15%"></span></td><td class="wf-y">−3,000円</td></tr>
+<tr class="wf-out"><th scope="row">仕入れの送料<small>出品者から自分へ</small></th><td class="wf-bar"><span style="margin-left:20.77%;width:11.54%"></span></td><td class="wf-y">−750円</td></tr>
+<tr class="wf-plus"><th scope="row">ポイント<small>落札価格の1%</small></th><td class="wf-bar"><span style="margin-left:20.77%;width:0.60%"></span></td><td class="wf-y">+30円</td></tr>
+<tr class="wf-total"><th scope="row">利益<small>売値の21.2%</small></th><td class="wf-bar"><span style="margin-left:0.00%;width:21.23%"></span></td><td class="wf-y">=1,380円</td></tr>
+      </tbody>
+    </table>
+    <ul class="rd-exn">
+      <li>利益が0円になる売値(損益分岐)は <b>4,966円</b>。これより安く売ると赤字です。</li>
+      <li>相場が下がって 5,500円で売れた場合、利益は <b>480円</b> に減ります。</li>
+      <li>箱が1サイズ大きく(宅急便80サイズ)なると、同じ6,500円で売れても利益は <b>1,280円</b> です。</li>
+    </ul>
+    <p class="rd-note">上の数字は計算の例です。この値段で売れることや、この利益が出ることを約束するものではありません。手数料と送料は2026年10月27日に確認した料金表によります。</p>
+    <div class="row-btns"><a class="btn" href="../yahuoku-mercari/?b-bid=3000&b-ship=750&b-pt=1&b-other=0&b-qty=1&s-price=6500&s-mat=0&s-other=0&ship=tq60&mk=mercari">この例を計算機で開く</a><span class="hint">「発送」が「自分で発送」の時の数字です。数字を変えると、その場で計算し直します。</span></div>
+  </div>
+</section>
+
+<section class="rd-s" id="route">
+  <h2><span class="no">3</span>仕入れルートの向き不向き</h2>
+  <p>仕入れ先と売り先の組み合わせで、必要なお金・時間・許可が変わります。迷ったら<a href="../#shindan-sec">6問の診断</a>で、合いそうなルートを1つ選んでください。</p>
+  <div class="gridwrap"><table class="grid nimg rd-t">
+    <thead><tr><th>ルート</th><th>向いている人</th><th>注意すること</th><th>古物商許可</th></tr></thead>
+    <tbody>
+<tr><th scope="row"><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a></th><td>新品をネットで仕入れたい。ポイントの付く日や倍率を調べるのが苦にならない</td><td>在庫を持つのが不安な人。ブランドやカテゴリーによっては Amazon の出品の許可が要る</td><td>不要</td></tr>
+<tr><th scope="row"><a href="../muzaiko-amazon/">無在庫 Amazon中古</a></th><td>在庫を持たずに始めたい。中古の状態を文字で正確に書ける</td><td>仕入れ先の売り切れや遅れでキャンセルが出やすい。販売者は自分・同梱物の除去・返品の受け付けなど Amazon の方針を守る必要がある</td><td>必要</td></tr>
+<tr><th scope="row"><a href="../mercari-calc/">メルカリ</a></th><td>まず家の不用品から始めて、売る流れを覚えたい</td><td>不用品が尽きたら仕入れが要る。仕入れて売るのを繰り返すなら古物商許可が要る</td><td>不用品は不要</td></tr>
+<tr><th scope="row"><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a></th><td>中古の状態を見極められる。写真と説明文を読み比べるのが苦にならない</td><td>1回の取引で合計1万円以上なら売り手の確認が要る。状態の思い違いで返品になることがある</td><td>必要</td></tr>
+<tr><th scope="row"><a href="../auction-mercari/">業者オークション</a></th><td>古物商許可があり、まとめて仕入れて手早く出品できる</td><td>入会金・参加費がかかる。ブランド品は真贋の見極めが要る</td><td>必要</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="rd-s" id="tejun">
+  <h2><span class="no">4</span>始める手順</h2>
+  <ol class="rd-steps">
+    <li><b>古物商許可が要るか確かめる</b><span>中古品を仕入れて売ることを繰り返すなら、古物商許可が必要です。自分の不用品を売るだけなら要りません。申請は、住んでいる所を受け持つ警察署で行います。</span></li>
+    <li><b>ルートを1つ選ぶ</b><span>最初は1つに絞ります。<a href="../#shindan-sec">診断(6問)</a>で、元手・時間・許可から合いそうなルートが出ます。</span></li>
+    <li><b>1件だけ計算する</b><span>売りたい品物の相場(売れた値段)を見て、計算ページに入れます。先に「目標の利益」を決めておくと、仕入れてよい値段の上限が出ます。</span></li>
+    <li><b>少しだけ仕入れて、台帳に残す</b><span>計算ページで「仕入れた」を押すと、古物台帳に1行入ります。1万円以上の中古品は、売り手の確認を入れるまで印が付きます。</span></li>
+    <li><b>売れたら記録して、月末に見直す</b><span>「売れた」を押すと売却の欄が埋まります。月末に、見込みと実際の利益の差を見て、次の仕入れを決めます。</span></li>
+  </ol>
+</section>
+
+<section class="rd-s" id="risk">
+  <h2><span class="no">5</span>リスクとよくある失敗</h2>
+  <div class="rd-risk">
+    <div><h3>値下がり</h3><p>同じ品物の出品が増えると相場は下がります。上の例では、1,000円下がるだけで利益は1,380円から480円になります。</p></div>
+    <div><h3>売れ残り</h3><p>売れるまで、仕入れたお金は戻りません。置き場所も要ります。売れない時の値下げの下限(損益分岐)を、仕入れる前に決めておきます。</p></div>
+    <div><h3>手数料・送料の見落とし</h3><p>箱のサイズ、仕入れの送料、振込の手数料。小さな費用の見落としが、薄い利益を消します。</p></div>
+    <div><h3>販売サイトの規約</h3><p>Amazonのカテゴリーごとの出品許可、無在庫の販売の方針、他人の写真や説明文を使わないこと。違反するとアカウントが止まることがあります。</p></div>
+    <div><h3>古物営業法</h3><p>許可、1万円以上(品物によっては金額を問わず)の売り手の確認、取引の記録。<a href="../guide/honnin-kakunin/">売り手の確認の手引き</a>にまとめています。</p></div>
+    <div><h3>状態の思い違い・偽物</h3><p>中古品は、写真で分からない傷や不具合があります。ブランド品は真贋の見極めが要ります。返品や悪い評価につながります。</p></div>
+  </div>
+</section>
+
+<section class="rd-s" id="okane">
+  <h2><span class="no">6</span>お金の出入りの時期</h2>
+  <p>仕入れのお金を払う日と、売上が入る日はずれます。売上は販売サイトごとに決まった周期で入金されるので、売れてもすぐには使えません。クレジットカードで仕入れる時は、引き落としの日までに売上が入るかを先に確かめてください。最初は、手元のお金で払える範囲で始めるのが安全です。台帳に仕入れ日と売却日を残しておくと、お金が戻るまでの日数が分かります。</p>
+</section>
+
+<section class="rd-s" id="soft">
+  <h2><span class="no">7</span>このソフトがすること・しないこと</h2>
+  <div class="rd-two">
+    <div><h3>すること</h3><ul>
+      <li>手数料・送料・ポイントを引いた利益の計算(5つのルート)</li>
+      <li>目標の利益に届く売値と、仕入れ値の上限</li>
+      <li>古物台帳への記録と、CSV・Excelへの書き出し</li>
+      <li>有料版: 台帳のクラウド保存、売上・経費・月ごとの利益、確定申告用の数字</li>
+    </ul></div>
+    <div><h3>しないこと</h3><ul>
+      <li>何を仕入れれば売れるかを教えること</li>
+      <li>メルカリ・ヤフオク・Amazonのページの自動の読み取り</li>
+      <li>利益や販売の保証</li>
+    </ul></div>
+  </div>
+  <p>迷った時は、ソフトの中の<a href="#ai" data-ai-open>AIに相談</a>で、このページの計算の決まりを前提に、無料のAIへ相談できます。人が教えるサービスとの違いは<a href="../chigai/">コンサル・スクールとの違い</a>にまとめています。</p>
+  <div class="row-btns rd-cta"><a class="btn" href="../">無料で計算してみる(登録なし)</a><a class="btn ghost" href="../daicho/">台帳を見る</a><a class="btn ghost" href="../plans/">料金を見る</a></div>
+  <div class="rd-pre" data-bill="prep">
+  <p class="rd-pre-h">有料版の受付は11月4日(水)から</p>
+  <div data-prereg data-compact></div>
+</div>
+</section>
+</article>
+</main>
+<footer class="ft">
+  <div class="ft-in">
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../lp/">はじめての方へ</a><a href="../shikumi/">利益の仕組み</a><a href="../chigai/">コンサル・スクールとの違い</a><a href="../#ai" data-ai-open>AIに相談</a><a href="../guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <details class="legal" id="legal">
+      <summary>法律と規約の注意</summary>
+      <div class="legal-body">
+        <h3>古物営業法</h3>
+        <ul>
+          <li>中古品を仕入れて売ることを繰り返す場合は、古物商許可が必要です(自分の不用品を売るだけなら不要)。Amazonで中古を出品する場合は、出品者情報に許可した公安委員会名と許可番号の表示も必要です。</li>
+          <li>個人から古物を買うとき、対価の総額が1万円以上なら、その都度、法律で決められた方法で売り手の確認(住所・氏名・職業・年齢)が必要です。ゲームソフト・CD・DVD・書籍・バイクの部品等と、2025年10月1日からはエアコンの室外機・電気温水機器のヒートポンプ・電線・金属製グレーチングも、金額を問わず必要です。身分証の写しを受け取るだけでは足りず、匿名配送の取引では事実上できません。1万円未満でも、18歳未満からの買い受けでないことの確認が要ります。<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kobutsu/kaisetsu/hitaimen.html" target="_blank" rel="noopener">警視庁の解説</a></li>
+          <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で売り手の確認が未入力の行には印が付きます。</li>
+          <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
+        </ul>
+        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
+        <ul>
+          <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
+          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
+          <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
+        </ul>
+        <h3>写真と説明文</h3>
+        <ul>
+          <li>仕入れ先(ヤフオク・メルカリ等の出品者)の写真や文章を、自分の出品にそのまま使わないでください。著作権の問題になります。自分で撮った写真を使い、Amazonでは既存の商品ページに相乗りしてコンディションを文字で説明します。</li>
+        </ul>
+        <h3>自動アクセス</h3>
+        <ul>
+          <li>このアプリはメルカリ・Yahoo!オークション・業者オークション・Amazonのページを自動で読み取りません。検索は各サイトの検索ページを新しいタブで開くだけです。楽天とKeepaは、ご自身のIDとキーで公式APIを使います。</li>
+        </ul>
+      </div>
+    </details>
+    <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
+  </div>
+</footer>
+<script src="../assets/config.js?v=20261030b"></script>
+<script src="../assets/sync.js?v=20261030b"></script>
+<script src="../assets/calc.js?v=20261030b"></script>
+<script src="../assets/seller-check.js?v=20261030b"></script>
+<script src="../assets/ui.js?v=20261030b"></script>
+<script src="../assets/account.js?v=20261030b"></script>
+<script src="../assets/ai.js?v=20261030b"></script>
+</body>
+</html>
