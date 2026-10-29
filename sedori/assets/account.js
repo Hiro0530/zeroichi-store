@@ -104,8 +104,8 @@
     if (!ready) {
       d.innerHTML = '<div class="dlg-in"><div class="dlg-h"><h2 id="acct-dlg-h">ログイン</h2><button type="button" class="dlg-x" data-x aria-label="閉じる">×</button></div>' +
         '<p class="dlg-st">準備中</p><p>ログインと台帳のクラウド保存は準備中です。計算と台帳は、このままログインなしで使えます(この端末に保存)。</p>' +
-        '<p class="hint">始まったら事前登録の方へメールでお知らせします。</p>' +
-        '<div class="row-btns"><a class="btn" href="' + esc(U.PREREG) + '">事前登録(メール1通・無料)</a><button type="button" class="btn ghost" data-x>閉じる</button></div></div>';
+        (U.preregHTML ? U.preregHTML() : '<div class="row-btns"><a class="btn" href="' + esc(U.PREREG) + '">事前登録(メール1通・無料)</a></div>') +
+        '<div class="row-btns"><button type="button" class="btn ghost" data-x>閉じる</button></div></div>';
     } else {
       d.innerHTML = '<div class="dlg-in"><div class="dlg-h"><h2 id="acct-dlg-h">ログイン</h2><button type="button" class="dlg-x" data-x aria-label="閉じる">×</button></div>' +
         '<p class="dlg-lead">ログインすると、台帳をクラウドに保存して、パソコンとスマホで同じ台帳を使えます(ライト・総合)。</p>' +

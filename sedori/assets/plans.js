@@ -41,7 +41,6 @@
   /** 前に契約があったアカウント(解約後の申し込み直し)か */
   function returning() { var s = SA && SA.state ? SA.state() : null; return !!(s && s.user && s.sub && s.sub.status); }
 
-  var preHref = null;
   function paint() {
     var k = key(), c = CAT[k], isF = !!c.founder, per = st.cyc === 'year' ? '年' : '月', again = returning();
     var now = new Date(), end = new Date(now.getTime() + DAYS * 864e5);
@@ -67,7 +66,7 @@
     var every = st.cyc === 'month' ? '毎月' : '毎年';
     var year = st.cyc === 'year';
     $('#cf-refund').textContent = year
-      ? '1回目のお支払いから' + RDAYS + '日以内に解約すれば、全額を返金します(その日で使えなくなります。台帳は書き出せます)。' + (RDAYS + 1) + '日目からの解約は日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します'
+      ? '1回目のお支払いから' + RDAYS + '日以内に解約すれば、全額を返金します(その日で使えなくなります。台帳は書き出せます)。' + (RDAYS + 1) + '日目からの解約は月割り・日割りの返金はなく、次回の自動更新を止める扱いとなり、支払い済みの期間(1年)の終わりまで使えます。当方の不具合で使えなかった期間は返金します'
       : '途中で解約しても日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します';
     $('#cf-limit').textContent = year
       ? '次の請求日の前日まで。1回目のお支払いから' + RDAYS + '日以内の解約は全額を返金します'
@@ -96,11 +95,7 @@
       ? '1回目のお支払いが済んだ方が100名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、無料期間中でもこの価格のまま。' + KEEP + 'この価格です'
       : '期限はありません';
     // 事前登録のメールに、選んだプランを書き添える
-    var pr = $('#pl-prereg');
-    if (pr) {
-      if (!preHref && /body=/.test(pr.getAttribute('href') || '')) preHref = pr.getAttribute('href');
-      if (preHref) pr.setAttribute('href', preHref.replace('body=', 'body=' + encodeURIComponent('希望のプラン: ' + name + '(' + cycl + ')\n')));
-    }
+    if (U.setPreregPlan) U.setPreregPlan(name + '(' + cycl + ')');
     payBox();
   }
 

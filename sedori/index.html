@@ -15,7 +15,7 @@
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="./assets/sedori.css?v=20261030a">
+<link rel="stylesheet" href="./assets/sedori.css?v=20261030b">
 </head>
 <body data-base="./" data-page="top">
 <header class="hd">
@@ -37,34 +37,51 @@
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
       <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
     </div>
+    <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
     <a class="hd-ledger" href="./daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
     <a class="hd-acct" id="hd-acct" href="./mypage/">ログイン</a>
   </div>
-  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="./" aria-current="page">トップ</a><a href="./rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="./muzaiko-amazon/">無在庫 Amazon中古</a><a href="./mercari-calc/">メルカリ</a><a href="./yahuoku-mercari/">ヤフオク→メルカリ</a><a href="./auction-mercari/">業者オークション</a><a href="./daicho/">台帳</a><a href="./books/">帳簿</a></div></nav>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="./" aria-current="page">トップ</a><a href="./rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="./muzaiko-amazon/">無在庫 Amazon中古</a><a href="./mercari-calc/">メルカリ</a><a href="./yahuoku-mercari/">ヤフオク→メルカリ</a><a href="./auction-mercari/">業者オークション</a><a href="./daicho/">台帳</a><a href="./books/">帳簿</a><a href="./shikumi/">利益の仕組み</a><a href="./chigai/">コンサルとの違い</a><a href="./plans/">料金</a></div></nav>
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><span>トップ</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
 <div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
-    <div class="sbox"><p class="sbox-t">料金</p><div class="sbox-b">
-      <table class="kv"><tr><th>ライト</th><td>月2,980円</td></tr><tr><th>総合<span class="pill">おすすめ</span></th><td>月4,980円</td></tr><tr><th>業務</th><td>月7,980円</td></tr></table>
-      <p class="hint">税込。月払いは14日無料・年払いは30日以内の解約で全額返金<span data-bill="prep">(受付は準備中)</span>。先着100名は総合が月3,980円。計算と、この端末の台帳は無料です。</p>
-      <p class="row-links"><a href="plans/">料金を見る</a></p>
+    <div class="sbox"><p class="sbox-t">はじめての方へ</p><div class="sbox-b">
+      <ul class="side-links"><li><a href="shikumi/">せどりで利益が出る仕組み</a><small>計算の例・向き不向き・失敗のパターン</small></li><li><a href="chigai/">コンサル・スクールとの違い</a><small>申し込む前に確かめたい9つのこと</small></li><li><a href="#ai" data-ai-open>AIに相談</a><small>無料のAIに、当店の前提つきで相談</small></li></ul>
     </div></div>
     <div class="sbox"><p class="sbox-t">週刊メルマガ(無料)</p><div class="sbox-b"><p class="hint">手数料の改定、ポイントの日程、台帳のつけ方を週1回お届けします。</p><p class="row-links"><a data-mail="news" href="#">メール1通で登録</a></p></div></div>
   </aside>
 
   <section class="res">
     <h1 class="pg-h">せどりの利益計算と、古物台帳の自動記録</h1>
-    <div class="out-box" id="intro">
-      <p>仕入れ先と売り先を選ぶだけで、手数料・送料・ポイントを引いた利益が出ます。目標の利益に届く売値と、仕入れ値の上限も一緒に。「仕入れた」を押せば古物台帳に記録され、「売れた」で売却欄まで埋まります。</p>
-      <ul class="memo">
-        <li>5つの仕入れルートに対応。業者オークションの参加費も、まとめ落札の1個あたりの原価も計算します</li>
-        <li>台帳は古物台帳の項目どおりの並び。そのままExcel・CSVで書き出せます</li>
-        <li>無料・登録なしで使えます。入れた内容は、この端末にだけ保存されます</li>
-      </ul>
-      <div class="row-btns"><a class="btn" href="#shindan-sec">向いている仕入れルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a><a class="btn ghost" href="lp/">はじめての方へ</a></div>
+    <div class="hero" id="intro">
+      <div class="hero-m">
+        <p>仕入れ先と売り先を選ぶだけで、手数料・送料・ポイントを引いた利益が出ます。目標の利益に届く売値と、仕入れ値の上限も一緒に。「仕入れた」を押せば古物台帳に記録され、「売れた」で売却欄まで埋まります。</p>
+        <ul class="memo">
+          <li>5つの仕入れルートに対応。業者オークションの参加費も、まとめ落札の1個あたりの原価も計算します</li>
+          <li>台帳は古物台帳の項目どおりの並び。そのままExcel・CSVで書き出せます</li>
+          <li>計算と台帳は無料・登録なしで使えます。入れた内容は、この端末にだけ保存されます</li>
+        </ul>
+        <div class="row-btns"><a class="btn" href="#shindan-sec">向いている仕入れルートを診断(6問)</a><a class="btn ghost" href="daicho/">台帳を開く</a></div>
+        <p class="hero-read"><a href="shikumi/">せどりで利益が出る仕組み(計算の例つき)</a><a href="chigai/">コンサル・スクールとの違い</a><a href="#ai" data-ai-open>AIに相談</a></p>
+      </div>
+      <aside class="hero-p" aria-labelledby="hero-p-h">
+        <p class="hero-p-h" id="hero-p-h">料金<small>税込</small></p>
+        <table class="hp-t">
+          <thead><tr><th></th><th>月払い</th><th>年払い<small>10か月分</small></th></tr></thead>
+          <tbody>
+            <tr><th>ライト</th><td>2,980円</td><td>29,800円</td></tr>
+            <tr class="rec"><th>総合<span class="pill">おすすめ</span></th><td>4,980円</td><td>49,800円</td></tr>
+            <tr class="fd"><th>総合 先着100名</th><td>3,980円</td><td>39,800円</td></tr>
+            <tr><th>業務</th><td>7,980円</td><td>79,800円</td></tr>
+          </tbody>
+        </table>
+        <p class="hp-n">年払いは10か月分の料金で1年(2か月分お得)。月払いは14日無料、年払いは30日以内の解約で全額返金。計算と、この端末の台帳は0円です。<a href="plans/">条件を詳しく見る</a></p>
+        <div data-bill="prep" class="hp-pre"><p class="hp-pre-h">有料版の受付は11月4日(水)から</p><div data-prereg data-compact></div></div>
+        <div data-bill="ready" hidden><a class="btn wide" href="plans/">プランを選ぶ(月払いは14日無料)</a></div>
+      </aside>
     </div>
 
     <h2 class="sec-h">仕入れ先と売り先で選ぶ</h2>
@@ -97,8 +114,8 @@
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
     <h2 class="sec-h" id="plans">料金</h2>
-    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>30日以内の解約で全額返金</b>です<span data-bill="prep">(受付は準備中)</span>。</p>
-    <div class="mini-plans"><a class="mp-c" href="plans/?plan=light#pl-step2"><span class="mp-n">ライト</span><span class="mp-w">まずは台帳をクラウドに残したい方</span><span class="mp-p">月<b>2,980</b>円<small>税込</small></span></a><a class="mp-c rec" href="plans/?plan=total#pl-step2"><span class="mp-n">総合<span class="pill">おすすめ</span></span><span class="mp-w">売上・経費・利益まで1か所で見たい方</span><span class="mp-p">月<b>4,980</b>円<small>税込</small></span><span class="mp-f">先着100名は月3,980円</span></a><a class="mp-c" href="plans/?plan=business#pl-step2"><span class="mp-n">業務</span><span class="mp-w">棚卸と確定申告の数字まで任せたい方</span><span class="mp-p">月<b>7,980</b>円<small>税込</small></span></a></div>
+    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>10か月分の料金で1年(2か月分お得)</b>で、<b>30日以内の解約は全額返金</b>です<span data-bill="prep">(受付は11月4日(水)から)</span>。</p>
+    <div class="mini-plans"><a class="mp-c" href="plans/?plan=light#pl-step2"><span class="mp-n">ライト</span><span class="mp-w">まずは台帳をクラウドに残したい方</span><span class="mp-p">月<b>2,980</b>円<small>税込</small></span><span class="mp-y">年払いは29,800円(10か月分)</span></a><a class="mp-c rec" href="plans/?plan=total#pl-step2"><span class="mp-n">総合<span class="pill">おすすめ</span></span><span class="mp-w">売上・経費・利益まで1か所で見たい方</span><span class="mp-p">月<b>4,980</b>円<small>税込</small></span><span class="mp-y">年払いは49,800円(10か月分)</span><span class="mp-f">先着100名は月3,980円</span></a><a class="mp-c" href="plans/?plan=business#pl-step2"><span class="mp-n">業務</span><span class="mp-w">棚卸と確定申告の数字まで任せたい方</span><span class="mp-p">月<b>7,980</b>円<small>税込</small></span><span class="mp-y">年払いは79,800円(10か月分)</span></a></div>
     <p class="row-links"><a href="plans/">機能を比べて申し込む</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
     <h2 class="sec-h" id="faq">よくある質問</h2>
@@ -111,7 +128,7 @@
       <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行入ります。台帳では状態を1クリックずつ進め、「売れた」を押すと売却日・売値・相手が入ります。</p></details>
       <details id="honnin"><summary>1万円以上の中古品を買うときの、売り手の確認はどう記録しますか。</summary><p>台帳に、相手の氏名・住所と確認の方法を入れる欄があります。個人から1万円以上で買った中古品など、法律で確認が必要な行は、入力するまで印が付きます。確認のやり方は<a href="guide/honnin-kakunin/">手引き「中古品を買うときの売り手の確認」</a>にまとめています。</p></details>
       <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
-      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">準備ができたら、事前登録の方へメールでご案内します。</span><span data-bill="ready" hidden>いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
+      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">11月4日(水)から受け付けます。事前登録(メール1通・無料)の方へは、11月3日(火)にメールでご案内します。</span><span data-bill="ready" hidden>いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
       <details><summary>解約はどうしますか。</summary><p>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すれば完了です。メール1通でのお申し出でも解約できます(PayPalでお支払いの方は、PayPalの自動支払いの管理画面からも)。次の請求日の前日までに解約すれば、次回からは請求しません。</p></details>
     </div>
 
@@ -145,7 +162,7 @@
 </main>
 <footer class="ft">
   <div class="ft-in">
-    <nav><a href="./">トップ</a><a href="./daicho/">台帳</a><a href="./#fees">手数料の出典</a><a href="./plans/">料金</a><a href="./mypage/">マイページ</a><a href="./terms/">利用規約</a><a href="./privacy/">プライバシーポリシー</a><a href="./../tokushoho.html">特定商取引法に基づく表記</a><a href="./lp/">はじめての方へ</a><a href="./guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="./">トップ</a><a href="./daicho/">台帳</a><a href="./#fees">手数料の出典</a><a href="./plans/">料金</a><a href="./mypage/">マイページ</a><a href="./terms/">利用規約</a><a href="./privacy/">プライバシーポリシー</a><a href="./../tokushoho.html">特定商取引法に基づく表記</a><a href="./lp/">はじめての方へ</a><a href="./shikumi/">利益の仕組み</a><a href="./chigai/">コンサル・スクールとの違い</a><a href="./#ai" data-ai-open>AIに相談</a><a href="./guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     <details class="legal" id="legal">
       <summary>法律と規約の注意</summary>
       <div class="legal-body">
@@ -175,13 +192,14 @@
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="./assets/config.js?v=20261030a"></script>
-<script src="./assets/sync.js?v=20261030a"></script>
-<script src="./assets/calc.js?v=20261030a"></script>
-<script src="./assets/seller-check.js?v=20261030a"></script>
-<script src="./assets/ui.js?v=20261030a"></script>
-<script src="./assets/account.js?v=20261030a"></script>
-<script src="./assets/top.js?v=20261030a"></script>
-<script src="./assets/shindan.js?v=20261030a"></script>
+<script src="./assets/config.js?v=20261030b"></script>
+<script src="./assets/sync.js?v=20261030b"></script>
+<script src="./assets/calc.js?v=20261030b"></script>
+<script src="./assets/seller-check.js?v=20261030b"></script>
+<script src="./assets/ui.js?v=20261030b"></script>
+<script src="./assets/account.js?v=20261030b"></script>
+<script src="./assets/top.js?v=20261030b"></script>
+<script src="./assets/shindan.js?v=20261030b"></script>
+<script src="./assets/ai.js?v=20261030b"></script>
 </body>
 </html>

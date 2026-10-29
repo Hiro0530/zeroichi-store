@@ -68,6 +68,9 @@ window.ZW_CONFIG = {
     threepl: false,   // 業務: 発送代行への入庫・出荷の指示ファイル
     policepdf: false  // 業務: 警察提出用の台帳PDF
   },
+  /* 事前登録(件名「せどりアプリ事前登録」のメール1通)。open は有料の受付を始める日、notice はご案内を送る日(画面とメールの本文に出す)。
+     受付が始まって WORKER_URL が入ると、事前登録の欄(data-bill="prep")は自動で隠れる */
+  PREREG: { open: "11月4日(水)", notice: "11月3日(火)" },
   /* 先着100名の価格の受付終了日("2026-12-31" のように。決めていなければ null。人数で終わる) */
   FOUNDER_DEADLINE: null
 };

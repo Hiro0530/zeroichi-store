@@ -201,15 +201,51 @@
   /** 料金は config.js の PLAN_CATALOG から(無ければ既定の表示) */
   function catPrice(k, d) { var c = ((window.ZW_CONFIG || {}).PLAN_CATALOG || {})[k]; return c ? Number(c.price).toLocaleString('ja-JP') : d; }
   function mailto(subject, body) { return 'mailto:' + MAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); }
-  var PREREG = mailto('せどりアプリ事前登録',
-    'このまま送信してください(分かる所だけで大丈夫です)。\n\nお名前(ニックネーム可):\nよく使う仕入れ先:\nよく使う売り先:\nいま一番面倒な作業:\n\n' +
-    'いま道具に払っている月額(だいたい):\n\n' +
-    '※有料版(ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円・先着100名は月' + catPrice('founder_month', '3,980') + '円/業務 月' + catPrice('business_month', '7,980') + '円。月払いは14日無料、年払いは30日以内の解約で全額返金)の準備ができたら、このアドレスにご案内を1通お送りします。登録しても料金は発生しません。');
+  /* 事前登録は「件名『せどりアプリ事前登録』のメール1通」。届いたメールは事業用の Gmail に残り、
+     受付開始の前日(config の PREREG.notice)に、そのメールへの返信でご案内を1通送る(手順は zeroichi-store の backend/sedori/README.md「事前登録」)。
+     Worker やデータベースに頼らないので、裏側の準備が遅れても受け付けられる。パソコンでメールソフトが無い方のために「Gmailで送る」も並べる */
+  var PRE_SUBJECT = 'せどりアプリ事前登録';
+  function preCfg() { var p = (window.ZW_CONFIG || {}).PREREG || {}; return { open: p.open || '受付開始', notice: p.notice || '受付開始の前日' }; }
+  function preBody(plan) {
+    var c = preCfg();
+    return 'このまま送信してください。これで事前登録は完了です(料金はかかりません)。\n' +
+      c.notice + 'に、このメールアドレスへ受付開始のご案内を1通だけお送りします。\n\n' +
+      (plan ? '気になっているプラン: ' + plan + '\n' : '') +
+      '(任意)いま一番手間に感じている作業:\n\n' +
+      '有料版: ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円(先着100名は月' + catPrice('founder_month', '3,980') + '円)/業務 月' + catPrice('business_month', '7,980') + '円(税込)。' +
+      '月払いは14日無料、年払いは10か月分の料金で1年(30日以内の解約は全額返金)。\n' +
+      '登録の取り消しは、このメールに「取り消し」と返信するだけでできます。';
+  }
+  function gmailCompose(subject, body) { return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(MAIL) + '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); }
+  var PREREG = mailto(PRE_SUBJECT, preBody(''));
   var NEWS = mailto('せどりメルマガ登録',
     'このまま送信してください。毎週1回、無料のメールマガジンをお送りします。\n\nお名前(ニックネーム可):\n知りたいこと:\n\n※配信停止は、届いたメールに「配信停止」とご返信いただくだけでできます。');
+  var prePlan = '';
+  /** 事前登録の欄(data-prereg の中身)。「Gmailで送る」「メールアプリで送る」の2つと、宛先・件名のコピー */
+  function preregHTML(opt) {
+    opt = opt || {}; var c = preCfg(), body = preBody(prePlan);
+    return '<div class="prg' + (opt.compact ? ' cmp' : '') + '">' +
+      (opt.compact ? '' : '<p class="prg-h">事前登録<span>無料・メール1通</span></p>') +
+      '<p class="prg-t">' + esc(c.notice) + 'に受付開始のご案内を1通だけお送りします。それ以外のメールは届きません。</p>' +
+      '<div class="prg-b"><a class="btn" data-pre="gmail" href="' + esc(gmailCompose(PRE_SUBJECT, body)) + '" target="_blank" rel="noopener">Gmailで送る</a>' +
+      '<a class="btn ghost" data-pre="mail" href="' + esc(mailto(PRE_SUBJECT, body)) + '">メールアプリで送る</a></div>' +
+      '<p class="prg-s">開かない時は、宛先 <b>' + MAIL + '</b> へ件名「' + PRE_SUBJECT + '」で送ってください。<button type="button" class="lnk" data-pre-copy>宛先と件名をコピー</button></p>' +
+      '</div>';
+  }
+  function paintPrereg() {
+    $$('[data-prereg]').forEach(function (box) { box.innerHTML = preregHTML({ compact: box.hasAttribute('data-compact') }); });
+    $$('[data-mail="prereg"]').forEach(function (a) { a.href = mailto(PRE_SUBJECT, preBody(prePlan)); });
+  }
+  function setPreregPlan(p) { if (p === prePlan) return; prePlan = p || ''; paintPrereg(); }
   function wireMail() {
-    $$('[data-mail="prereg"]').forEach(function (a) { a.href = PREREG; });
+    paintPrereg();
     $$('[data-mail="news"]').forEach(function (a) { a.href = NEWS; });
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-pre-copy]'); if (!b) return;
+      var t = MAIL + '\n件名: ' + PRE_SUBJECT;
+      var done = function () { toast('宛先と件名をコピーしました'); };
+      try { navigator.clipboard.writeText(t).then(done, function () { window.prompt('コピーしてください', t); }); } catch (err) { window.prompt('コピーしてください', t); }
+    });
   }
 
   /* ==================================================================
@@ -640,6 +676,7 @@
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
     brkRows: brkRows, profitHead: profitHead, result: result,
-    shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS
+    shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS,
+    preregHTML: preregHTML, setPreregPlan: setPreregPlan
   };
 })();

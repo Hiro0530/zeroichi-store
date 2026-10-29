@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261030a">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
 </head>
 <body data-base="../" data-page="plans">
 <header class="hd">
@@ -37,17 +37,18 @@
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
       <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
     </div>
+    <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
     <a class="hd-ledger" href="../daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
     <a class="hd-acct" id="hd-acct" href="../mypage/">ログイン</a>
   </div>
-  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a><a href="../books/">帳簿</a></div></nav>
+  <nav class="gnav" aria-label="ページ"><div class="gnav-in"><a href="../">トップ</a><a href="../rakuten-amazon/">楽天・Yahoo!→Amazon</a><a href="../muzaiko-amazon/">無在庫 Amazon中古</a><a href="../mercari-calc/">メルカリ</a><a href="../yahuoku-mercari/">ヤフオク→メルカリ</a><a href="../auction-mercari/">業者オークション</a><a href="../daicho/">台帳</a><a href="../books/">帳簿</a><a href="../shikumi/">利益の仕組み</a><a href="../chigai/">コンサルとの違い</a><a href="../plans/" aria-current="page">料金</a></div></nav>
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>料金</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
 <div class="pl">
   <div class="pl-head">
     <h1 class="pg-h">料金</h1>
-    <p class="pl-lead">3つのプランから選べます。月払いは<b>14日無料</b>で、その間は業務のすべてを使えます。年払いは無料期間なしでお申し込みの日にお支払いいただき、<b>1回目のお支払いから30日以内の解約は全額返金</b>です。プランはあとから変えられます。</p>
+    <p class="pl-lead">3つのプランから選べます。月払いは<b>14日無料</b>で、その間は業務のすべてを使えます。年払いは<b>10か月分の料金で1年(2か月分お得)</b>。無料期間なしでお申し込みの日にお支払いいただき、<b>1回目のお支払いから30日以内の解約は全額返金</b>です。プランはあとから変えられます。</p>
   </div>
 
   <section class="pl-s1" id="pl-step1" aria-labelledby="pl-s1h">
@@ -55,13 +56,13 @@
       <h2 class="pl-step" id="pl-s1h"><span class="no" aria-hidden="true">1</span>プランを選ぶ</h2>
       <fieldset class="cyc" id="pl-cyc"><legend class="sr">お支払いの周期</legend>
         <label><input type="radio" name="cyc" value="month" checked><span>月払い</span></label>
-        <label><input type="radio" name="cyc" value="year"><span>年払い<small>2か月分お得</small></span></label>
+        <label><input type="radio" name="cyc" value="year"><span>年払い<small>10か月分で1年</small></span></label>
       </fieldset>
     </div>
     <div class="pcs" id="pl-cards">
-      <article class="pc pc-light" data-base="light" aria-labelledby="pc-n-light"><header class="pc-h"><h3 class="pc-name" id="pc-n-light">ライト</h3></header><p class="pc-who">まずは台帳をクラウドに残したい方</p><div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>2,980</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>29,800</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-sub" data-c="year" hidden>月あたり約2,483円・2か月分お得</p></div><div class="pc-fd"></div><a class="btn pc-go ghost" href="?plan=light#pl-step2" data-pick="light" aria-pressed="false">このプランで14日無料</a><div class="pc-feat"><ul class="pc-list"><li>台帳をクラウドに保存(月100件まで)</li><li>パソコンとスマホで同じ台帳</li><li>ヤフオク終了前の通知をどの端末にも</li><li>楽天の検索 制限なし</li></ul></div></article>
-      <article class="pc pc-total rec" data-base="total" aria-labelledby="pc-n-total"><header class="pc-h"><h3 class="pc-name" id="pc-n-total">総合</h3><span class="pc-tag rec">おすすめ</span></header><p class="pc-who">売上・経費・利益まで1か所で見たい方</p><div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>4,980</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>49,800</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-sub" data-c="year" hidden>月あたり4,150円・2か月分お得</p></div><div class="pc-fd"><p class="pc-founder" id="pc-founder"><span data-c="month">先着100名は <b>月3,980円</b></span><span data-c="year" hidden>先着100名は <b>年39,800円</b></span><span class="pc-keep">。解約しない限りずっと(サービス提供中)</span><span class="pc-left" id="pl-founder-left"></span></p></div><a class="btn pc-go" href="?plan=total#pl-step2" data-pick="total" aria-pressed="false">このプランで14日無料</a><div class="pc-feat"><ul class="pc-list"><li>ライトのすべて</li><li>台帳の件数は無制限</li><li>売上の取り込みと経費</li><li>月ごとの利益と売れ残りアラート</li></ul></div></article>
-      <article class="pc pc-business" data-base="business" aria-labelledby="pc-n-business"><header class="pc-h"><h3 class="pc-name" id="pc-n-business">業務</h3><span class="pc-tag">確定申告まで全部</span></header><p class="pc-who">棚卸と確定申告の数字まで任せたい方</p><div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>7,980</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>79,800</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-sub" data-c="year" hidden>月あたり6,650円・2か月分お得</p></div><div class="pc-fd"></div><a class="btn pc-go ghost" href="?plan=business#pl-step2" data-pick="business" aria-pressed="false">このプランで14日無料</a><div class="pc-feat"><ul class="pc-list"><li>総合のすべて</li><li>期末の棚卸(スマホで数える)</li><li>確定申告用の数字と会計ソフト向けの書き出し</li></ul><p class="pc-later"><span class="soon">11月中に追加</span></p><ul class="pc-list later"><li>3人まで・発送代行への指示・警察提出用の台帳PDF</li></ul></div></article>
+      <article class="pc pc-light" data-base="light" aria-labelledby="pc-n-light"><header class="pc-h"><h3 class="pc-name" id="pc-n-light">ライト</h3></header><p class="pc-who">まずは台帳をクラウドに残したい方</p><div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>2,980</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>29,800</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-sub" data-c="year" hidden>10か月分の料金で1年・2か月分お得(月あたり約2,483円)</p><p class="pc-sub pc-alt" data-c="month">年払いなら29,800円(10か月分)</p></div><div class="pc-fd"></div><a class="btn pc-go ghost" href="?plan=light#pl-step2" data-pick="light" aria-pressed="false">このプランで14日無料</a><div class="pc-feat"><ul class="pc-list"><li>台帳をクラウドに保存(月100件まで)</li><li>パソコンとスマホで同じ台帳</li><li>ヤフオク終了前の通知をどの端末にも</li><li>楽天の検索 制限なし</li></ul></div></article>
+      <article class="pc pc-total rec" data-base="total" aria-labelledby="pc-n-total"><header class="pc-h"><h3 class="pc-name" id="pc-n-total">総合</h3><span class="pc-tag rec">おすすめ</span></header><p class="pc-who">売上・経費・利益まで1か所で見たい方</p><div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>4,980</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>49,800</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-sub" data-c="year" hidden>10か月分の料金で1年・2か月分お得(月あたり4,150円)</p><p class="pc-sub pc-alt" data-c="month">年払いなら49,800円(10か月分)</p></div><div class="pc-fd"><p class="pc-founder" id="pc-founder"><span data-c="month">先着100名は <b>月3,980円</b></span><span data-c="year" hidden>先着100名は <b>年39,800円</b></span><span class="pc-keep">。解約しない限りずっと(サービス提供中)</span><span class="pc-left" id="pl-founder-left"></span></p></div><a class="btn pc-go" href="?plan=total#pl-step2" data-pick="total" aria-pressed="false">このプランで14日無料</a><div class="pc-feat"><ul class="pc-list"><li>ライトのすべて</li><li>台帳の件数は無制限</li><li>売上の取り込みと経費</li><li>月ごとの利益と売れ残りアラート</li></ul></div></article>
+      <article class="pc pc-business" data-base="business" aria-labelledby="pc-n-business"><header class="pc-h"><h3 class="pc-name" id="pc-n-business">業務</h3><span class="pc-tag">確定申告まで全部</span></header><p class="pc-who">棚卸と確定申告の数字まで任せたい方</p><div class="pc-pr"><p class="pc-price" data-c="month"><span class="pc-per">月</span><b>7,980</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-price" data-c="year" hidden><span class="pc-per">年</span><b>79,800</b><span class="pc-u">円</span><small>税込</small></p><p class="pc-sub" data-c="year" hidden>10か月分の料金で1年・2か月分お得(月あたり6,650円)</p><p class="pc-sub pc-alt" data-c="month">年払いなら79,800円(10か月分)</p></div><div class="pc-fd"></div><a class="btn pc-go ghost" href="?plan=business#pl-step2" data-pick="business" aria-pressed="false">このプランで14日無料</a><div class="pc-feat"><ul class="pc-list"><li>総合のすべて</li><li>期末の棚卸(スマホで数える)</li><li>確定申告用の数字と会計ソフト向けの書き出し</li></ul><p class="pc-later"><span class="soon">11月中に追加</span></p><ul class="pc-list later"><li>3人まで・発送代行への指示・警察提出用の台帳PDF</li></ul></div></article>
     </div>
     <p class="pl-free">5つの計算ページと、この端末に保存する台帳は、登録なしでずっと無料です。<a href="../">無料のまま使う</a></p>
     <details class="pl-cmp" id="pl-cmp">
@@ -110,8 +111,8 @@
       </dl>
       <div class="pay" id="pl-pay">
         <div data-bill="prep">
-          <p class="pay-st"><span class="dlg-st">準備中</span>お申し込みの受付はまだ始めていません。事前登録の方へ、受付の開始をメールでお知らせします(料金はかかりません)。</p>
-          <a class="btn wide" data-mail="prereg" href="#" id="pl-prereg">このプランで事前登録(メール1通・無料)</a>
+          <p class="pay-st"><span class="dlg-st">準備中</span>お申し込みの受付は<b>11月4日(水)</b>からです。いまは事前登録(無料・メール1通)を受け付けています。</p>
+          <div data-prereg data-compact id="pl-prereg"></div>
         </div>
         <div data-bill="ready" hidden>
           <div id="pl-login"><button type="button" class="btn wide" id="pl-login-btn">ログインして申し込む</button><p class="hint">申し込むアカウントを決めるため、先にログインします(メールのリンクかGoogle)。</p></div>
@@ -136,7 +137,7 @@
 </main>
 <footer class="ft">
   <div class="ft-in">
-    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../lp/">はじめての方へ</a><a href="../guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="../">トップ</a><a href="../daicho/">台帳</a><a href="../#fees">手数料の出典</a><a href="../plans/">料金</a><a href="../mypage/">マイページ</a><a href="../terms/">利用規約</a><a href="../privacy/">プライバシーポリシー</a><a href="../../tokushoho.html">特定商取引法に基づく表記</a><a href="../lp/">はじめての方へ</a><a href="../shikumi/">利益の仕組み</a><a href="../chigai/">コンサル・スクールとの違い</a><a href="../#ai" data-ai-open>AIに相談</a><a href="../guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     <details class="legal" id="legal">
       <summary>法律と規約の注意</summary>
       <div class="legal-body">
@@ -166,12 +167,13 @@
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261030a"></script>
-<script src="../assets/sync.js?v=20261030a"></script>
-<script src="../assets/calc.js?v=20261030a"></script>
-<script src="../assets/seller-check.js?v=20261030a"></script>
-<script src="../assets/ui.js?v=20261030a"></script>
-<script src="../assets/account.js?v=20261030a"></script>
-<script src="../assets/plans.js?v=20261030a"></script>
+<script src="../assets/config.js?v=20261030b"></script>
+<script src="../assets/sync.js?v=20261030b"></script>
+<script src="../assets/calc.js?v=20261030b"></script>
+<script src="../assets/seller-check.js?v=20261030b"></script>
+<script src="../assets/ui.js?v=20261030b"></script>
+<script src="../assets/account.js?v=20261030b"></script>
+<script src="../assets/plans.js?v=20261030b"></script>
+<script src="../assets/ai.js?v=20261030b"></script>
 </body>
 </html>

@@ -180,6 +180,11 @@
     market = U.store.get('mk-' + route, 'mercari'); shipId = U.store.get('ship-' + route, 'tq60');
     if (!ships.some(function (s) { return s.id === shipId; })) shipId = 'tq60';
     restoreForm();
+    // 説明のページの「この例を計算機で開く」(?b-bid=3000&s-price=6500&ship=tq60&mk=mercari など)。入れるだけで、触るまで保存しない
+    var qp = new URLSearchParams(location.search);
+    FORM_IDS.forEach(function (id) { if (has(id) && qp.has(id)) $('#' + id).value = qp.get(id); });
+    if (qp.get('ship') && ships.some(function (s) { return s.id === qp.get('ship'); })) shipId = qp.get('ship');
+    if (qp.get('mk') && MK_LABEL[qp.get('mk')]) market = qp.get('mk');
     U.mountWh($('#wh'), fees, '送料は表で選んだ配送方法で計算します');
     if (has('b-venue')) { var keep = $('#b-venue').value; onVenue(); $('#b-venue').value = keep; }
     if (has('b-fee')) $('#b-fee').addEventListener('input', function () { feeTouched = true; });
