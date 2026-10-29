@@ -43,19 +43,34 @@ S = ROOT / OUT
 NOINDEX = OUT != "sedori"
 ROBOTS = '<meta name="robots" content="noindex,nofollow">'
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261030c"
+VER = "20261030d"
 
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
 # 料金は sedori/assets/config.js の PLAN_CATALOG だけで決める(/*PLANS*/ と /*/PLANS*/ の間の JSON)
 CAT = json.loads(_re.search(r"/\*PLANS\*/(.*?)/\*/PLANS\*/", _CONFIG, _re.S).group(1))
 # サイトの住所も config.js の SITE_URL だけで決める(独自ドメインに移す時はそこを直して、このスクリプトを流し直す)。
 # ページ同士のリンクは相対で書くので、絶対の住所が要るのは canonical・OGP・サイトマップ・楽天の「許可するWebサイト」の案内だけ
-# 年払いの決まりの文と、先着100名の価格の続く期間の言い方も config.js だけで決める(料金ページ・規約・Worker の YEAR_TEXT・特商法と同じ文)
+# 年払いの決まりの文と、先着の価格の続く期間の言い方も config.js だけで決める(料金ページ・規約・Worker の YEAR_TEXT・特商法と同じ文)
 YEAR_TEXT = _re.search(r'YEAR_TEXT:\s*"([^"]+)"', _CONFIG).group(1)
 YEAR_DAYS = int(_re.search(r'YEAR_REFUND_DAYS:\s*(\d+)', _CONFIG).group(1))
 FOUNDER_KEEP = _re.search(r'FOUNDER_KEEP:\s*"([^"]+)"', _CONFIG).group(1)
-_PRE = _re.search(r'PREREG:\s*\{\s*open:\s*"([^"]+)",\s*notice:\s*"([^"]+)"', _CONFIG)
-PREREG_OPEN, PREREG_NOTICE = _PRE.group(1), _PRE.group(2)
+# 先着の定員(人数)も config.js の FOUNDER_LIMIT だけで決める(2026-10-28 オーナー決定で 200名)
+FOUNDER_N = int(_re.search(r"FOUNDER_LIMIT:\s*(\d+)", _CONFIG).group(1))
+FOUNDER = f"先着{FOUNDER_N}名"
+# 有料版の受付開始日も config.js の PREREG の1行だけで決める。日付が決まっていない間(null)は日付を出さない
+_PRE = _re.search(r'^\s*PREREG:\s*\{\s*open:\s*(null|"[^"]+"),\s*notice:\s*(null|"[^"]+")', _CONFIG, _re.M)
+PREREG_OPEN, PREREG_NOTICE = (None if v == "null" else v.strip('"') for v in _PRE.groups())
+if PREREG_OPEN:
+    PRE_HEAD = f"有料版の受付は{PREREG_OPEN}から"
+    PRE_SHORT = f"(受付は{PREREG_OPEN}から)"
+    PRE_FAQ = (f"{PREREG_OPEN}から受け付けます。事前登録(メール1通・無料)の方へは、"
+               f"{PREREG_NOTICE or '受付開始の前日'}にメールでご案内します。")
+    PRE_PAY = f"お申し込みの受付は<b>{PREREG_OPEN}</b>からです。"
+else:
+    PRE_HEAD = "有料版の受付開始日は、決まりしだいこのページでお知らせします"
+    PRE_SHORT = "(受付開始日は、決まりしだいこのページでお知らせします)"
+    PRE_FAQ = "受付開始日は、決まりしだいこのページでお知らせします。事前登録(メール1通・無料)の方へは、受付が始まる前にメールでご案内します。"
+    PRE_PAY = "有料版の受付開始日は、決まりしだいこのページでお知らせします。"
 SITE_URL = _re.search(r'SITE_URL:\s*"([^"]+)"', _CONFIG).group(1).rstrip("/") + "/"
 SITE_ORIGIN = _re.match(r"https?://[^/]+", SITE_URL).group(0)
 BASE_URL = SITE_URL + "sedori/"
@@ -486,7 +501,7 @@ RA_BODY = f"""<div class="lay3">
         <tbody id="rows">{empty_row(8, "検索欄にキーワードかJANコードを入れて、検索してください。")}</tbody>
       </table>
     </div>
-    <p class="credit" id="credit">「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益から逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。</p>
+    <p class="credit" id="credit">「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益からポイント抜きで逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。</p>
   </section>
 
   <aside class="det" id="calc" aria-label="選んだ商品">
@@ -606,7 +621,7 @@ def market_body(side: str, title_hint: str, rows: str = "") -> str:
         <tbody id="rows">{rows}</tbody>
       </table>
     </div>
-    <p class="credit">利益(ポイント抜き)は、上の「実際の売値」で売れた場合です。未入力の間は、目標の売値(目標の利益から逆算した目安)だけを出します。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
+    <p class="credit">利益(ポイント抜き)は、上の「実際の売値」で売れた場合です。未入力の間は、目標の売値(目標の利益からポイント抜きで逆算した目安)だけを出します。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
   </section>
 
   <aside class="det" id="sell" aria-label="内訳">
@@ -710,8 +725,8 @@ def founder_line() -> str:
     f = CAT.get("founder_month")
     if not f or f.get("open") is False:
         return '<div class="pc-fd"></div>'
-    return (f'<div class="pc-fd"><p class="pc-founder" id="pc-founder"><span data-c="month">先着100名は <b>月{yen(P_FM)}</b></span>'
-            f'<span data-c="year" hidden>先着100名は <b>年{yen(P_FY)}</b></span><span class="pc-keep">。{FOUNDER_KEEP}</span><span class="pc-left" id="pl-founder-left"></span></p></div>')
+    return (f'<div class="pc-fd"><p class="pc-founder" id="pc-founder"><span data-c="month">{FOUNDER}は <b>月{yen(P_FM)}</b></span>'
+            f'<span data-c="year" hidden>{FOUNDER}は <b>年{yen(P_FY)}</b></span><span class="pc-keep">。{FOUNDER_KEEP}</span><span class="pc-left" id="pl-founder-left"></span></p></div>')
 
 
 def plan_card(c: dict) -> str:
@@ -759,13 +774,13 @@ def _mini(c: dict) -> str:
     b = c["base"]
     m = CAT[b + "_month"]
     tag = '<span class="pill">おすすめ</span>' if b == "total" else ""
-    fl = f'<span class="mp-f">先着100名は月{yen(P_FM)}</span>' if b == "total" and CAT.get("founder_month", {}).get("open", True) else ""
+    fl = f'<span class="mp-f">{FOUNDER}は月{yen(P_FM)}</span>' if b == "total" and CAT.get("founder_month", {}).get("open", True) else ""
     return (f'<a class="mp-c{" rec" if b == "total" else ""}" href="plans/?plan={b}#pl-step2"><span class="mp-n">{m["name"]}{tag}</span><span class="mp-w">{c["who"]}</span>'
             f'<span class="mp-p">月<b>{m["price"]:,}</b>円<small>税込</small></span><span class="mp-y">年払いは{CAT[b + "_year"]["price"]:,}円({PAY_MONTHS}か月分)</span>{fl}</a>')
 
 
 top_plans = "".join(_mini(c) for c in CARDS)
-HERO_FOUNDER = (f'<tr class="fd"><th>総合 先着100名</th><td>{yen(P_FM)}</td><td>{yen(P_FY)}</td></tr>'
+HERO_FOUNDER = (f'<tr class="fd"><th>総合 {FOUNDER}</th><td>{yen(P_FM)}</td><td>{yen(P_FY)}</td></tr>'
                 if CAT.get("founder_month", {}).get("open", True) is not False else "")
 
 TOP_BODY = f"""<div class="lay2">
@@ -802,7 +817,7 @@ TOP_BODY = f"""<div class="lay2">
           </tbody>
         </table>
         <p class="hp-n">年払いは{YEAR_DEAL}。月払いは14日無料、年払いは{YEAR_DAYS}日以内の解約で全額返金。計算と、この端末の台帳は0円です。<a href="plans/">条件を詳しく見る</a></p>
-        <div data-bill="prep" class="hp-pre"><p class="hp-pre-h">有料版の受付は{PREREG_OPEN}から</p><div data-prereg data-compact></div></div>
+        <div data-bill="prep" class="hp-pre"><p class="hp-pre-h">{PRE_HEAD}</p><div data-prereg data-compact></div></div>
         <div data-bill="ready"><a class="btn wide" href="plans/">プランを選ぶ(月払いは14日無料)</a></div>
       </aside>
     </div>
@@ -821,7 +836,7 @@ TOP_BODY = f"""<div class="lay2">
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
 
     <h2 class="sec-h" id="plans">料金</h2>
-    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>{YEAR_DEAL}</b>で、<b>{YEAR_DAYS}日以内の解約は全額返金</b>です<span data-bill="prep">(受付は{PREREG_OPEN}から)</span>。</p>
+    <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>{YEAR_DEAL}</b>で、<b>{YEAR_DAYS}日以内の解約は全額返金</b>です<span data-bill="prep">{PRE_SHORT}</span>。</p>
     <div class="mini-plans">{top_plans}</div>
     <p class="row-links"><a href="plans/">機能を比べて申し込む</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></p>
 
@@ -835,7 +850,7 @@ TOP_BODY = f"""<div class="lay2">
       <details><summary>台帳はどう使いますか。</summary><p>計算ページで「仕入れた」を押すと1行入ります。台帳では状態を1クリックずつ進め、「売れた」を押すと売却日・売値・相手が入ります。</p></details>
       <details id="honnin"><summary>1万円以上の中古品を買うときの、売り手の確認はどう記録しますか。</summary><p>台帳に、相手の氏名・住所と確認の方法を入れる欄があります。個人から1万円以上で買った中古品など、法律で確認が必要な行は、入力するまで印が付きます。確認のやり方は<a href="guide/honnin-kakunin/">手引き「中古品を買うときの売り手の確認」</a>にまとめています。</p></details>
       <details><summary>計算は正確ですか。</summary><p>公開されている料金表で計算し、手計算の例で検算していますが、目安です。在庫保管手数料・返品・値下がりは含みません。</p></details>
-      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">{PREREG_OPEN}から受け付けます。事前登録(メール1通・無料)の方へは、{PREREG_NOTICE}にメールでご案内します。</span><span data-bill="ready">いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
+      <details><summary>有料版はいつから使えますか。</summary><p><span data-bill="prep">{PRE_FAQ}</span><span data-bill="ready">いまから使えます。</span>料金・支払い・解約の条件は<a href="plans/">料金ページ</a>と<a href="../tokushoho.html">特定商取引法に基づく表記</a>に載せています。</p></details>
       <details><summary>解約はどうしますか。</summary><p>マイページの「契約内容」にある「解約について」を開き、「解約する」を押して確認すれば完了です。メール1通でのお申し出でも解約できます(PayPalでお支払いの方は、PayPalの自動支払いの管理画面からも)。次の請求日の前日までに解約すれば、次回からは請求しません。</p></details>
     </div>
 
@@ -924,7 +939,7 @@ PLANS_BODY = f"""<div class="pl">
       </dl>
       <div class="pay" id="pl-pay">
         <div data-bill="prep">
-          <p class="pay-st"><span class="dlg-st">準備中</span>お申し込みの受付は<b>{PREREG_OPEN}</b>からです。いまは事前登録(無料・メール1通)を受け付けています。</p>
+          <p class="pay-st"><span class="dlg-st">準備中</span>{PRE_PAY}いまは事前登録(無料・メール1通)を受け付けています。</p>
           <div data-prereg data-compact id="pl-prereg"></div>
         </div>
         <div data-bill="ready">
@@ -948,7 +963,7 @@ PLANS_BODY = f"""<div class="pl">
   </section>
 </div>"""
 
-out = head("料金", f"せどり 利益チェックの料金。ライト 月{yen(P_LM)}/総合 月{yen(P_TM)}(先着100名は月{yen(P_FM)})/業務 月{yen(P_BM)}(税込)。月払いは14日無料。年払いは2か月分お得で、30日以内の解約は全額返金。",
+out = head("料金", f"せどり 利益チェックの料金。ライト 月{yen(P_LM)}/総合 月{yen(P_TM)}({FOUNDER}は月{yen(P_FM)})/業務 月{yen(P_BM)}(税込)。月払いは14日無料。年払いは2か月分お得で、30日以内の解約は全額返金。",
            "plans/", "../", 'data-page="plans"')
 out += header("../", "plans", "rakuten") + crumb("../", "料金") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
 write("plans", out)
@@ -1037,7 +1052,7 @@ def doc_page(slug: str, title: str, desc: str, body: str) -> None:
 
 
 TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日・改定日 2026年10月29日(年払いを無料期間なし・30日以内の全額返金に。31日目からの解約は返金なし・次回の更新の停止として扱うことを明記。先着100名の価格の続く期間の書き方。サービスをやめる時の返金)</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年10月30日(先着の価格の定員を200名に。年払いを無料期間なし・30日以内の全額返金に。31日目からの解約は返金なし・次回の更新の停止として扱うことを明記。先着の価格の続く期間の書き方。サービスをやめる時の返金)</p>
 <p>この規約は、ZEROICHI WORKS(以下「当方」)が提供する「せどり 利益チェック」(以下「本サービス」)の利用条件です。本サービスを使う方(以下「利用者」)は、この規約に同意したうえで使ってください。有料プランは、ログインしてお申し込みいただいた時に、この規約に同意したものとします。</p>
 
 <h2>第1条(本サービスの内容)</h2>
@@ -1058,7 +1073,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <li>有料プランの料金(税込)、支払いの時期と方法は、料金ページのお申し込み内容の確認に表示したとおりです。支払いは、クレジットカード・デビットカード(決済代行: Stripe)またはPayPalによる自動の定期支払いで行います。</li>
 <li>月払いの初めてのお申し込みには14日間の無料期間があります。無料期間が終わる日に1回目の料金を請求し、以後は毎月同じ日に自動で請求します(前払い)。無料期間中に解約した場合、料金はかかりません。解約後に申し込み直した場合は、カードでのお申し込みには無料期間がなく、お申し込みの日に1回目を請求します。</li>
 <li>{YEAR_TEXT}以後は毎年同じ日に自動で請求します(前払い)。全額返金の対象は、年払いでお申し込みいただいた1回目のお支払いです(2年目以降の更新の分と、月払いから年払いへ変えた分は対象外です)。返金すると、その日で有料プランは終わります(台帳は第6条のとおり保管し、書き出せます)。</li>
-<li>先着100名の価格は、1回目のお支払いが済んだ方が100名に達するまで受け付け、その契約は{FOUNDER_KEEP}この価格のままです。受付中にお申し込みの方は、無料期間中の方を含めて、この価格のままです。解約後に申し込み直した場合は、その時の価格になります。</li>
+<li>{FOUNDER}の価格は、1回目のお支払いが済んだ方が{FOUNDER_N}名に達するまで受け付け、その契約は{FOUNDER_KEEP}この価格のままです。受付中にお申し込みの方は、無料期間中の方を含めて、この価格のままです。解約後に申し込み直した場合は、その時の価格になります。</li>
 <li>支払いが確認できない時は、当方は有料プランの機能(クラウドへの保存)を止めることがあります。その間も、保存済みの台帳の閲覧と書き出しはできます。</li>
 </ol>
 
@@ -1189,7 +1204,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <p>ZEROICHI WORKS(事業者の名前・住所等は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
 
 TERMS_LATER = "業務の機能のうち、料金ページに「11月中に追加」と示したものは順に追加します。" if ANY_LATER else ""
-doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS.replace("{TERMS_LATER}", TERMS_LATER).replace("{YEAR_TEXT}", YEAR_TEXT).replace("{YEAR_DAYS}", str(YEAR_DAYS)).replace("{FOUNDER_KEEP}", FOUNDER_KEEP))
+doc_page("terms", "利用規約", "せどり 利益チェックの利用規約(料金・無料期間・解約・台帳のデータ・古物台帳と法令)。", TERMS.replace("{TERMS_LATER}", TERMS_LATER).replace("{YEAR_TEXT}", YEAR_TEXT).replace("{YEAR_DAYS}", str(YEAR_DAYS)).replace("{FOUNDER_KEEP}", FOUNDER_KEEP).replace("{FOUNDER_N}", str(FOUNDER_N)).replace("{FOUNDER}", FOUNDER))
 doc_page("privacy", "プライバシーポリシー", "せどり 利益チェックのプライバシーポリシー(利用目的・安全管理・第三者提供の制限とクラウドへの保存・解約後の保存期間)。", PRIVACY)
 
 
@@ -1266,7 +1281,7 @@ fit_rows = "\n".join(
     for slug, good, bad in ROUTE_FIT)
 
 PREREG_BLOCK = f"""<div class="rd-pre" data-bill="prep">
-  <p class="rd-pre-h">有料版の受付は{PREREG_OPEN}から</p>
+  <p class="rd-pre-h">{PRE_HEAD}</p>
   <div data-prereg data-compact></div>
 </div>"""
 

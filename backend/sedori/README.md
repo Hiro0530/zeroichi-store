@@ -22,16 +22,16 @@ users/{uid}
     reminderSent, cancelReason, payerEmail, updatedAt, purgedAt }
 users/{uid}/ledger/{行のid}
   row{...台帳の1行}, updatedAt(端末の時刻・最後に書いた方が勝つ), deleted(消した印), serverAt(サーバーの時刻・差分の受け取りに使う)
-paypalSubs/{契約番号}   uid, status, counted(先着100名に数えたか)  … Worker だけ
+paypalSubs/{契約番号}   uid, status, counted(先着200名に数えたか)  … Worker だけ
 stripeSubs/{sub_…}     uid, status, counted                       … Worker だけ
 stripeEvents/{evt_…}   type, subId, done                          … Worker だけ(同じ通知を2回処理しない)
-founderSeats/{provider_契約番号}                                   … Worker だけ(先着100名を1契約1回だけ数える)
+founderSeats/{provider_契約番号}                                   … Worker だけ(先着200名を1契約1回だけ数える)
 public/founders        taken, limit, open                       … 誰でも読める・Worker だけが書く
 ```
 status: `trialing`(無料期間)/`active`/`past_due`(支払いの失敗)/`paused`(利用者が1か月止めた)/`suspended`(PayPal が止めた・Stripe が請求をあきらめた)/`incomplete`/`canceled`(paidThrough まで使える)/`expired`
 
 - 無料期間(14日)は初めてのお申し込みの時だけ。Stripe は Checkout の `subscription_data.trial_period_days` で付ける。申し込み直しはカードだけで、無料期間なし
-- 先着100名(総合 3,980円)は **1回目のお支払いが済んだ順** に数える(Stripe は 0円より大きい `invoice.paid`、PayPal は active になった時)。100名で `public/founders.open=false` にし、それ以降は Checkout が断る(料金ページは総合の価格で出し直す)。受付中に申し込んだ方は無料期間中でもその価格のまま
+- 先着200名(総合 3,980円)は **1回目のお支払いが済んだ順** に数える(Stripe は 0円より大きい `invoice.paid`、PayPal は active になった時)。200名(`FOUNDER_LIMIT`。2026-10-28 オーナー決定で 100名 → 200名)で `public/founders.open=false` にし、それ以降は Checkout が断る(料金ページは総合の価格で出し直す)。受付中に申し込んだ方は無料期間中でもその価格のまま
 - カードの解約は `cancel_at_period_end=true`(期間の終わりで終える・日割りの返金なし)。無料期間中なら無料期間の終わりで終わり、請求しない
 
 ## 解約の動線(特商法の「解約の方法」と同じにしておくこと)
@@ -65,7 +65,7 @@ Stripe の署名(正しい・別の鍵・本文の書き換え・5分より古�
 |---|---|---|---|
 | せどり 利益チェック ライト | 2,980円 | 29,800円 | `STRIPE_PRICE_LIGHT_MONTH` / `STRIPE_PRICE_LIGHT_YEAR` |
 | せどり 利益チェック 総合 | 4,980円 | 49,800円 | `STRIPE_PRICE_TOTAL_MONTH` / `STRIPE_PRICE_TOTAL_YEAR` |
-| せどり 利益チェック 総合 先着100名 | 3,980円 | 39,800円 | `STRIPE_PRICE_FOUNDER_MONTH` / `STRIPE_PRICE_FOUNDER_YEAR` |
+| せどり 利益チェック 総合 先着200名 | 3,980円 | 39,800円 | `STRIPE_PRICE_FOUNDER_MONTH` / `STRIPE_PRICE_FOUNDER_YEAR` |
 | せどり 利益チェック 業務 | 7,980円 | 79,800円 | `STRIPE_PRICE_BUSINESS_MONTH` / `STRIPE_PRICE_BUSINESS_YEAR` |
 
    - 無料期間は価格に付けない(Worker が申し込みの時に14日を付ける)
@@ -112,15 +112,15 @@ Cloudflare の同じ画面で **シークレット** として追加し、デプ
 
 確認が済んだら、オーナーの了承のあと本番モードで 1.〜5. を同じように作り、Cloudflare の値(価格ID8つ・`sk_live_…`・本番の `whsec_…`)を差し替え、Firestore の `public/founders` と `founderSeats` を消す(テストの人数を0に戻す)。
 
-## 事前登録(2026-10-29 決定 D2。受付開始 11/4 まで)
+## 事前登録(2026-10-29 決定 D2。受付開始日は、テストの結果を見てオーナーが決め直す)
 Worker・Firebase に頼らない形にした(裏側の公開が遅れても受け付けられるように)。
 - 受け口: 公開ページの「事前登録」欄(トップ・料金・利益の仕組み・違いのページ・ログインの画面)。「Gmailで送る」か「メールアプリで送る」で、
   **件名「せどりアプリ事前登録」** のメールが `zeroichi.works.jp@gmail.com` に届く。これが登録の記録(同意の記録も兼ねる)。宛先・件名だけの手入力でもよい
 - 保存: 事業用 Gmail の受信箱そのもの。ほかの場所に写さない(プライバシーポリシーの「事前登録・メールマガジン」の行)。数えるのは Gmail で `subject:せどりアプリ事前登録`
-- 日付の文言: `sedori/assets/config.js` の `PREREG`(open・notice)。受付が始まり `WORKER_URL` が入ると、欄(`data-bill="prep"`)は自動で隠れる
+- 日付の文言: `sedori/assets/config.js` の `PREREG`(open・notice)の1行だけ。日付が決まっていない間は `null` で、画面は「有料版の受付開始日は、決まりしだいこのページでお知らせします」。決まったら1行直して `tools/sedori/build_pages.py` を流し直す。受付が始まり `WORKER_URL` が入ると、欄(`data-bill="prep"`)は自動で隠れる
 - 取り消し: 「取り消し」と返信があれば、そのスレッドを削除してご案内を送らない
 
-### 11/3(火)のご案内の送り方
+### 受付開始の前日(config の `PREREG.notice`)のご案内の送り方
 1. Gmail で `subject:せどりアプリ事前登録 -subject:Re` を検索し、「取り消し」の返信がある人を除く
 2. 各メールに **返信** で次の文を送る(1日100通まで。超えたら翌日に回す)。BCCの一斉送信はしない
 3. 送ったスレッドにラベル「事前登録 案内済み」を付ける(二重送信を防ぐ)。案内から3か月たったら、申し込みの無かった登録のメールを消す
@@ -128,10 +128,10 @@ Worker・Firebase に頼らない形にした(裏側の公開が遅れても受�
 ```
 件名: Re: せどりアプリ事前登録
 せどり 利益チェックの事前登録をありがとうございます。ZEROICHI WORKS です。
-有料版のお申し込みを 11月4日(水)から受け付けます。
+有料版のお申し込みを ○月○日(○)から受け付けます。   ← config の PREREG.open の日付を入れる
 https://zeroichiworks.net/sedori/plans/
 
-・ライト 月2,980円/総合 月4,980円(先着100名は月3,980円)/業務 月7,980円(税込)
+・ライト 月2,980円/総合 月4,980円(先着200名は月3,980円)/業務 月7,980円(税込)
 ・年払いは10か月分の料金で1年。月払いは14日無料(初めての方)、年払いは30日以内の解約で全額返金
 ・計算と、この端末の台帳は、これまでどおり無料・登録なしで使えます
 

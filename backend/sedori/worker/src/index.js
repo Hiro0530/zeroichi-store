@@ -22,12 +22,15 @@
  *     GET  /stripe/plans    カードで申し込めるプラン(料金ページが「準備中」かどうかを決める。ログイン不要)
  *  4. 毎日1回(cron): 無料期間の終了3日前のメール、一時停止の自動再開、解約から3年たった台帳の削除
  *
- * 先着100名(総合 3,980円)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。解約しない限りずっと(サービス提供中)その価格。
+ * 先着200名(総合 3,980円。2026-10-28 オーナー決定で 100名 → 200名。数は FOUNDER_LIMIT)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。解約しない限りずっと(サービス提供中)その価格。
  * 年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(YEAR_TEXT。料金ページ・規約・特商法と同じ文)。
  * 秘密の値は wrangler secret で入れる(README)。ここには書かない。Stripe の SDK は使わず、REST を fetch で呼ぶ。
  */
 
 const DAY = 864e5;
+/** 先着の定員の既定(wrangler.toml の FOUNDER_LIMIT が無い時。sedori/assets/config.js の FOUNDER_LIMIT と同じ数) */
+export const FOUNDER_LIMIT_DEFAULT = 200;
+export const founderLimit = env => Number(env.FOUNDER_LIMIT || FOUNDER_LIMIT_DEFAULT) || FOUNDER_LIMIT_DEFAULT;
 const RETAIN_YEARS = 3;
 
 /* ------------------------------------------------------------------ 小さな道具 */
@@ -244,18 +247,18 @@ export async function syncSubscription(env, subId, uidHint) {
   const sub = normalize(s, prev, env);
   await patchDoc(env, 'users/' + uid, { subscription: sub });
   await patchDoc(env, 'paypalSubs/' + subId, { uid, status: sub.status, updatedAt: new Date() });
-  // 先着100名は1回目のお支払いが済んだ順に数える(PayPal は無料期間の後に ACTIVE のまま請求が通ると active になる)
+  // 先着の価格は1回目のお支払いが済んだ順に数える(PayPal は無料期間の後に ACTIVE のまま請求が通ると active になる)
   if (sub.founder && sub.status === 'active' && !(link && link.counted)) await countFounder(env, 'paypal', subId);
   return { uid, sub };
 }
 
 /**
- * 先着100名: 1回目のお支払いが済んだ契約を1回だけ数える。上限に達したら受付を閉じる(public/founders.open=false)。
+ * 先着(FOUNDER_LIMIT 名): 1回目のお支払いが済んだ契約を1回だけ数える。上限に達したら受付を閉じる(public/founders.open=false)。
  * 同じ契約の通知が同時に2つ来ても2回数えないよう、founderSeats/{provider}_{契約番号} の作成(無い時だけ)と
  * taken の加算を1つの書き込み(:commit)でまとめる。受付中に申し込んだ方(無料期間中の方を含む)は、その価格のまま続く。
  */
 export async function countFounder(env, provider, subId) {
-  const limit = Number(env.FOUNDER_LIMIT || 100);
+  const limit = founderLimit(env);
   const root = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
   try {
     await fs(env, 'POST', ':commit', { writes: [
@@ -296,7 +299,7 @@ function keyOfPrice(env, priceId) { const m = stripePrices(env); return Object.k
 const PLAN_INFO = {
   light_month: { name: 'ライト(月払い)', amount: '月2,980円' }, light_year: { name: 'ライト(年払い)', amount: '年29,800円' },
   total_month: { name: '総合(月払い)', amount: '月4,980円' }, total_year: { name: '総合(年払い)', amount: '年49,800円' },
-  founder_month: { name: '総合 先着100名の価格(月払い)', amount: '月3,980円', founder: true }, founder_year: { name: '総合 先着100名の価格(年払い)', amount: '年39,800円', founder: true },
+  founder_month: { name: '総合 先着' + FOUNDER_LIMIT_DEFAULT + '名の価格(月払い)', amount: '月3,980円', founder: true }, founder_year: { name: '総合 先着' + FOUNDER_LIMIT_DEFAULT + '名の価格(年払い)', amount: '年39,800円', founder: true },
   business_month: { name: '業務(月払い)', amount: '月7,980円' }, business_year: { name: '業務(年払い)', amount: '年79,800円' }
 };
 function planByKey(env, key) {
@@ -511,7 +514,7 @@ export async function handleStripeUser(path, body, who, env) {
     if (curPaid) throw err('このアカウントには、いまの契約があります。マイページの契約内容をご確認ください', 409, 'has-sub');
     if (/^founder_/.test(key)) {
       const f = (await getDoc(env, 'public/founders')) || {};
-      if (f.open === false || Number(f.taken || 0) >= Number(env.FOUNDER_LIMIT || 100)) throw err('先着100名の価格の受付は終わりました', 409, 'founder-closed');
+      if (f.open === false || Number(f.taken || 0) >= founderLimit(env)) throw err('先着' + founderLimit(env) + '名の価格の受付は終わりました', 409, 'founder-closed');
     }
     const year = isYearKey(key);
     const trial = !cur && !year; // 無料期間は、初めてのお申し込みの月払いだけ。年払いは無料期間なしでその場で決済(30日以内は全額返金)
@@ -583,7 +586,7 @@ export async function handleStripeUser(path, body, who, env) {
   if (path === '/stripe/revise') {
     const key = String(body.planKey || ''), price = stripePrices(env)[key];
     if (!price) throw err('プランがありません', 400);
-    if (/^founder_/.test(key) && !sub.founder) throw err('先着100名の価格には変えられません', 400);
+    if (/^founder_/.test(key) && !sub.founder) throw err('先着' + founderLimit(env) + '名の価格には変えられません', 400);
     if (!['trialing', 'active'].includes(sub.status)) throw err('いまはプランを変えられません', 409);
     const s = await stripe(env, 'GET', '/subscriptions/' + id);
     const itemId = ((((s.items || {}).data) || [])[0] || {}).id;

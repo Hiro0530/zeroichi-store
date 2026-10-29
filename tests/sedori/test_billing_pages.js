@@ -26,7 +26,7 @@ eq([/せどり 利益チェック[^。]*クレジットカード\(Stripe/.test(t
 eq(/ご請求があれば遅滞なく開示します/.test(toku), true, '特商法: 氏名・住所は請求で開示の方針のまま');
 const privacy = text(read('sedori/privacy/index.html')), terms = text(read('sedori/terms/index.html'));
 eq([/決済代行会社への提供/.test(privacy), /Stripe, Inc\./.test(privacy), /Stripe Payments Japan/.test(privacy), /PayPal Pte\. Ltd\./.test(privacy), /外国にある第三者/.test(privacy)], [true, true, true, true, true], 'プライバシーポリシー: 決済代行への提供と外国の事業者');
-eq([/Stripe/.test(terms), /PayPal/.test(terms), /1回目のお支払いが済んだ方が100名/.test(terms)], [true, true, true], '利用規約: 支払いの方法と先着の数え方');
+eq([/Stripe/.test(terms), /PayPal/.test(terms), /1回目のお支払いが済んだ方が200名/.test(terms)], [true, true, true], '利用規約: 支払いの方法と先着の数え方');
 
 // Stripe で扱うページ(せどりの全ページと特商法・規約)に、賭け事の言葉を出さない
 const BET = /競艇|ボートレース|舟券|競馬|競輪|オートレース|パチンコ|パチスロ|賭け|ギャンブル|kyotei/i;
@@ -58,7 +58,7 @@ eq(/〒\s?\d{3}-?\d{4}/.test(toku + privacy + terms), false, '郵便番号つき
   eq([/月払いは14日無料/.test(text(top)), /どれも14日無料/.test(text(top) + text(plans) + text(lp))], [true, false], '「どれも14日無料」と書かない(年払いは無料期間なし)');
   const all = pages.map(p => text(read(p))).join('') + text(toku);
   eq([/一生/.test(all), /続けている間ずっと/.test(all)], [false, false], '「一生」「続けている間ずっと」を使わない');
-  eq([text(plans).includes(keep), text(terms).includes(keep), text(lp).includes(keep), text(toku).includes(keep)], [true, true, true, true], '先着100名の続く期間は同じ言い方');
+  eq([text(plans).includes(keep), text(terms).includes(keep), text(lp).includes(keep), text(toku).includes(keep)], [true, true, true, true], '先着200名の続く期間は同じ言い方');
   eq([/対象外/.test(text(terms)), /やめる日より後の分は、日割りで返金/.test(text(terms))], [true, true], '規約: 返金の対象外と、サービスをやめる時の返金');
   const my = read('sedori/assets/mypage.js');
   eq([/refundUntil/.test(my), /全額を返金しました/.test(my), /30日以内の全額返金の対象外/.test(my)], [true, true, true], 'マイページ: 返金の期限・解約の確認・年払いへの変更の注意');

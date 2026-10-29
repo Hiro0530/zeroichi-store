@@ -47,6 +47,20 @@ const server = http.createServer((req, res) => {
     await fill(p, [['c-sell', 3480]]);
     out = await txt(p, '#c-out');
     eq([/目標より[\d,]+円高い/.test(out), /黒字/.test(out)], [true, true], '楽天→Amazon: 黒字と目標との差');
+    // 目標の売値もポイント抜きで逆算する(2026-10-29 表示確認の指摘。価格差が先、ポイントは後)
+    // 目標の売値ちょうどで売ると、ポイント抜きの利益が目標に届き、1円下では届かない
+    const num = s => Number(String(s).replace(/[^\d-]/g, ''));
+    const gateNoPt = async () => num(await p.$eval('#c-out .gate .hl b', el => el.textContent));
+    await fill(p, [['c-sell', '']]);
+    out = await txt(p, '#c-out');
+    const tgt = num((out.match(/目標の売値\(([^)]*)\)\s*([\d,]+)円/) || [, , ''])[2]), pct = Number((out.match(/利益率(\d+(?:\.\d+)?)%/) || [])[1]);
+    eq([tgt > 1650, pct > 0, /ポイント抜きで逆算した目安/.test(out)], [true, true, true], '楽天→Amazon: 目標の売値は「ポイント抜きで逆算」と書く');
+    await fill(p, [['c-sell', tgt]]);
+    const atT = await gateNoPt(), ptAdd = /ポイント\(上乗せ[^)]*\)\s*\+\d+円/.test(await txt(p, '#c-out'));
+    await fill(p, [['c-sell', tgt - 1]]);
+    const below = await gateNoPt();
+    eq([ptAdd, atT >= Math.ceil(tgt * pct / 100), below < Math.ceil((tgt - 1) * pct / 100)], [true, true, true], '楽天→Amazon: 目標の売値はポイントを足さずに目標に届く最安の売値');
+    eq(/目標より0円高い/.test(await (async () => { await fill(p, [['c-sell', tgt]]); return txt(p, '#c-out'); })()), true, '楽天→Amazon: 目標の売値ちょうどなら差は0円');
     await p.context().close();
 
     // ヤフオク→メルカリ: ポイントは原価から引かず、上乗せとして後から
@@ -54,6 +68,19 @@ const server = http.createServer((req, res) => {
     await fill(p, [['b-bid', 3000], ['b-ship', 750], ['b-pt', 1], ['s-price', 6500]]);
     out = await txt(p, '#m-out');
     eq([/ポイント抜きの利益/.test(out), /ポイント\(上乗せ・落札価格の1%\)\s*\+30円/.test(out), /黒字/.test(out)], [true, true, true], 'ヤフオク→メルカリ: ポイントは上乗せ');
+    // 目標の売値もポイント抜き: 目標の売値ちょうどで、ポイント抜きの利益が目標に届く
+    await fill(p, [['s-price', '']]);
+    out = await txt(p, '#m-out');
+    {
+      const num = s => Number(String(s).replace(/[^\d-]/g, ''));
+      const tgt = num((out.match(/目標の売値\(([^)]*)\)\s*([\d,]+)円/) || [, , ''])[2]), pct = Number((out.match(/利益率(\d+(?:\.\d+)?)%/) || [])[1]);
+      eq([tgt > 0, pct > 0, /ポイント抜きで逆算した目安/.test(out)], [true, true, true], 'ヤフオク→メルカリ: 目標の売値は「ポイント抜きで逆算」と書く');
+      await fill(p, [['s-price', tgt]]);
+      const atT = num(await p.$eval('#m-out .gate .hl b', el => el.textContent));
+      await fill(p, [['s-price', tgt - 1]]);
+      const below = num(await p.$eval('#m-out .gate .hl b', el => el.textContent));
+      eq([atT >= Math.ceil(tgt * pct / 100), below < Math.ceil((tgt - 1) * pct / 100)], [true, true], 'ヤフオク→メルカリ: 目標の売値はポイントを足さずに目標に届く最安の売値');
+    }
     await p.context().close();
 
     // 無在庫: 中古の実際の売値の行

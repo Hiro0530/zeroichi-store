@@ -15,9 +15,9 @@ PAYPAL_CLIENT_ID = "ここに PayPal の Client ID"
 ALLOWED_ORIGIN = "https://hiro0530.github.io,https://zeroichiworks.net"   # 独自ドメインに移す時は新しい住所を足す(カンマ区切り。docs/sedori_app/domain.md)
 APP_URL = "https://zeroichiworks.net/sedori/"
 TRIAL_DAYS = "14"
-FOUNDER_LIMIT = "100"
+FOUNDER_LIMIT = "200"            # 先着の定員(2026-10-28 オーナー決定で 200名。sedori/assets/config.js の FOUNDER_LIMIT と同じ数)
 # PayPal のプランID → アプリのプラン(金額は sedori/assets/config.js の PLAN_CATALOG と同じにする)
-PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amount":"月4,980円"},"P-TOTAL-YEAR":{"key":"total_year","name":"総合(年払い)","amount":"年49,800円"},"P-FOUNDER-MONTH":{"key":"founder_month","name":"総合 先着100名の価格(月払い)","amount":"月3,980円","founder":true},"P-FOUNDER-YEAR":{"key":"founder_year","name":"総合 先着100名の価格(年払い)","amount":"年39,800円","founder":true},"P-LIGHT-MONTH":{"key":"light_month","name":"ライト(月払い)","amount":"月2,980円"},"P-LIGHT-YEAR":{"key":"light_year","name":"ライト(年払い)","amount":"年29,800円"},"P-BUSINESS-MONTH":{"key":"business_month","name":"業務(月払い)","amount":"月7,980円"},"P-BUSINESS-YEAR":{"key":"business_year","name":"業務(年払い)","amount":"年79,800円"}}'
+PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amount":"月4,980円"},"P-TOTAL-YEAR":{"key":"total_year","name":"総合(年払い)","amount":"年49,800円"},"P-FOUNDER-MONTH":{"key":"founder_month","name":"総合 先着200名の価格(月払い)","amount":"月3,980円","founder":true},"P-FOUNDER-YEAR":{"key":"founder_year","name":"総合 先着200名の価格(年払い)","amount":"年39,800円","founder":true},"P-LIGHT-MONTH":{"key":"light_month","name":"ライト(月払い)","amount":"月2,980円"},"P-LIGHT-YEAR":{"key":"light_year","name":"ライト(年払い)","amount":"年29,800円"},"P-BUSINESS-MONTH":{"key":"business_month","name":"業務(月払い)","amount":"月7,980円"},"P-BUSINESS-YEAR":{"key":"business_year","name":"業務(年払い)","amount":"年79,800円"}}'
 
 # Stripe の価格ID(price_ で始まる)。カードで申し込めるのは、ここに ID が入っているプランだけ(空欄のプランは料金ページで「準備中」)。
 # テストモードの ID → 確認が済んだら本番の ID に入れ替える。手順は README の「Stripe の設定」。
@@ -25,8 +25,8 @@ STRIPE_PRICE_LIGHT_MONTH = ""      # ライト 月2,980円
 STRIPE_PRICE_LIGHT_YEAR = ""       # ライト 年29,800円
 STRIPE_PRICE_TOTAL_MONTH = ""      # 総合 月4,980円
 STRIPE_PRICE_TOTAL_YEAR = ""       # 総合 年49,800円
-STRIPE_PRICE_FOUNDER_MONTH = ""    # 総合 先着100名 月3,980円
-STRIPE_PRICE_FOUNDER_YEAR = ""     # 総合 先着100名 年39,800円
+STRIPE_PRICE_FOUNDER_MONTH = ""    # 総合 先着200名 月3,980円
+STRIPE_PRICE_FOUNDER_YEAR = ""     # 総合 先着200名 年39,800円
 STRIPE_PRICE_BUSINESS_MONTH = ""   # 業務 月7,980円
 STRIPE_PRICE_BUSINESS_YEAR = ""    # 業務 年79,800円
 

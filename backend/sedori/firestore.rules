@@ -70,7 +70,7 @@ service cloud.firestore {
       }
     }
 
-    // 先着100名の残り(誰でも読める・書けるのはサーバーだけ)
+    // 先着200名の残り(誰でも読める・書けるのはサーバーだけ)
     match /public/{docId} {
       allow read: if true;
       allow write: if false;

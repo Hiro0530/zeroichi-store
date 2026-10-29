@@ -29,7 +29,7 @@ const PAGES = ['sedori/index.html', 'sedori/plans/index.html', 'sedori/shikumi/i
 eq(PAGES.map(p => /data-prereg/.test(read(p))), [true, true, true, true], '事前登録の欄');
 const ui = read('sedori/assets/ui.js');
 eq([/せどりアプリ事前登録/.test(ui), /mail\.google\.com\/mail\/\?view=cm/.test(ui), /mailto:/.test(ui)], [true, true, true], '事前登録は Gmail・メールアプリのどちらでも送れる');
-eq(!!win.ZW_CONFIG.PREREG && /11月4日/.test(win.ZW_CONFIG.PREREG.open), true, '受付開始の日は config から');
+eq(!!win.ZW_CONFIG.PREREG && 'open' in win.ZW_CONFIG.PREREG && 'notice' in win.ZW_CONFIG.PREREG, true, '受付開始の日は config の PREREG から(決まるまでは null)');
 const priv = text(read('sedori/privacy/index.html'));
 eq([/事前登録の方へ、有料版の受付開始のご案内を1通/.test(priv), /事前登録のメール/.test(priv)], [true, true], 'プライバシーポリシー: 事前登録の利用目的と保存期間');
 

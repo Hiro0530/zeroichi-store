@@ -115,7 +115,7 @@ eq(S.firstSync('u2', 'u1', 0), 'merge', '別のアカウントでも空なら');
   eq(S.planState({ status: 'trialing', planKey: 'light_month' }, now).tier, 'business', '無料期間はライトで申し込んでも業務のすべて');
   eq(S.planState({ status: 'active', planKey: 'business_year' }, now).tier, 'business', '業務');
   eq(S.planState({ status: 'active', planKey: 'light_year' }, now).tier, 'light', 'ライト');
-  eq(S.planState({ status: 'active', planKey: 'founder_month' }, now).tier, 'total', '先着100名は総合');
+  eq(S.planState({ status: 'active', planKey: 'founder_month' }, now).tier, 'total', '先着200名は総合');
   eq(S.planState({ status: 'active', planKey: 'total_month' }, now).tier, 'total', '総合');
   eq(S.planState({ status: 'active' }, now).tier, 'total', 'プランが分からない時は総合(機能を減らさない)');
   eq(S.planState({ status: 'paused', planKey: 'total_month' }, now).tier, 'free', '一時停止中は無料と同じ');

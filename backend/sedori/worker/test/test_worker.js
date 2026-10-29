@@ -1,7 +1,7 @@
 // Worker の検算(Stripe・PayPal・Firestore・Google をすべて偽物に置き換える)。実行: node test/test_worker.js
 import assert from 'node:assert';
 import { createHmac } from 'node:crypto';
-import W, { normalize, normalizeStripe, refundDeadline, YEAR_TEXT, YEAR_REFUND_DAYS, verifyIdToken, verifyStripeSignature, formEncode, stripePrices, toFields, fromFields, trialReminderMail, daily, _resetCaches } from '../src/index.js';
+import W, { FOUNDER_LIMIT_DEFAULT, founderLimit, normalize, normalizeStripe, refundDeadline, YEAR_TEXT, YEAR_REFUND_DAYS, verifyIdToken, verifyStripeSignature, formEncode, stripePrices, toFields, fromFields, trialReminderMail, daily, _resetCaches } from '../src/index.js';
 
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
@@ -27,7 +27,7 @@ const env = {
   STRIPE_SECRET_KEY: 'sk_test_fake', STRIPE_WEBHOOK_SECRET: 'whsec_fake',
   STRIPE_PRICE_TOTAL_MONTH: 'price_tm', STRIPE_PRICE_TOTAL_YEAR: 'price_ty', STRIPE_PRICE_FOUNDER_MONTH: 'price_fm', STRIPE_PRICE_FOUNDER_YEAR: 'price_fy',
   STRIPE_PRICE_LIGHT_MONTH: 'price_lm', STRIPE_PRICE_BUSINESS_MONTH: 'price_bm', STRIPE_PRICE_LIGHT_YEAR: '',
-  PLANS: JSON.stringify({ 'P-SM': { key: 'total_month', name: '総合(月払い)', amount: '月4,980円' }, 'P-SY': { key: 'total_year', name: '総合(年払い)', amount: '年49,800円' }, 'P-FM': { key: 'founder_month', name: '総合 先着100名の価格(月払い)', amount: '月3,980円', founder: true }, 'P-LM': { key: 'light_month', name: 'ライト(月払い)', amount: '月2,980円' } }),
+  PLANS: JSON.stringify({ 'P-SM': { key: 'total_month', name: '総合(月払い)', amount: '月4,980円' }, 'P-SY': { key: 'total_year', name: '総合(年払い)', amount: '年49,800円' }, 'P-FM': { key: 'founder_month', name: '総合 先着200名の価格(月払い)', amount: '月3,980円', founder: true }, 'P-LM': { key: 'light_month', name: 'ライト(月払い)', amount: '月2,980円' } }),
 };
 
 /* ---------- 偽物の外部(Firestore・PayPal・Google) ---------- */
@@ -318,7 +318,7 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
   r = await scall('u10', '/stripe/checkout', { planKey: 'light_year' });
   eq(r.status, 400, '価格IDの無いプランは断る');
   r = await scall('u10', '/stripe/checkout', { planKey: 'founder_month' });
-  eq([r.status, (await r.json()).code], [409, 'founder-closed'], '先着100名が埋まっていれば断る(料金ページが総合に切り替える)');
+  eq([r.status, (await r.json()).code], [409, 'founder-closed'], '先着200名が埋まっていれば断る(料金ページが総合に切り替える)');
   r = await scall('u1', '/stripe/checkout', { planKey: 'total_month' });
   eq([r.status, (await r.json()).code], [409, 'has-sub'], '解約済みでも期間の終わりまでは二重に申し込ませない');
   r = await scall(null, '/stripe/checkout', { planKey: 'total_month' });
@@ -337,7 +337,7 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
   let r = await stripeHook(ev('checkout.session.completed', { object: 'checkout.session', mode: 'subscription', subscription: 'sub_10', client_reference_id: 'u10', customer_details: { email: 'card10@example.com' } }, 'evt_cs10'));
   let s = get('users/u10').subscription;
   eq([r.status, (await r.json()).status], [200, 'trialing'], '申し込みの完了 → 無料期間');
-  eq([s.provider, s.status, s.planKey, s.planName, s.amount, s.founder, s.customerId, s.payerEmail, s.trialEnd instanceof Date, get('stripeSubs/sub_10').uid], ['stripe', 'trialing', 'founder_month', '総合 先着100名の価格(月払い)', '月3,980円', true, 'cus_u10', 'card10@example.com', true, 'u10'], 'Firestore に書く中身');
+  eq([s.provider, s.status, s.planKey, s.planName, s.amount, s.founder, s.customerId, s.payerEmail, s.trialEnd instanceof Date, get('stripeSubs/sub_10').uid], ['stripe', 'trialing', 'founder_month', '総合 先着200名の価格(月払い)', '月3,980円', true, 'cus_u10', 'card10@example.com', true, 'u10'], 'Firestore に書く中身');
   eq(get('public/founders'), null, '無料期間中は先着に数えない');
   const before = stripeSent.length;
   r = await stripeHook(ev('checkout.session.completed', { mode: 'subscription', subscription: 'sub_10', client_reference_id: 'u10' }, 'evt_cs10'));
@@ -536,6 +536,16 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
   const m = mails.slice(sent).find(x => x.to === 'u16@example.com');
   eq([!!m, /ご登録のカード/.test(m.body), /自動支払いを管理/.test(m.body), /mypage\/#cancel/.test(m.body)], [true, true, false, true], 'カードの方への3日前のメール(PayPal の手順は書かない)');
   eq([stripeSubs.sub_17.pause_collection, get('users/u17').subscription.status], [null, 'active'], '一時停止の期間が過ぎたら再開');
+}
+
+/* ---------- 先着の定員(2026-10-28 オーナー決定で 200名) ---------- */
+{
+  const fsx = await import('node:fs'), px = await import('node:path'), ux = await import('node:url');
+  const here = px.dirname(ux.fileURLToPath(import.meta.url));
+  const toml = fsx.readFileSync(px.join(here, '../wrangler.toml'), 'utf8'), src = fsx.readFileSync(px.join(here, '../src/index.js'), 'utf8');
+  eq([FOUNDER_LIMIT_DEFAULT, founderLimit({}), founderLimit({ FOUNDER_LIMIT: '200' }), founderLimit({ FOUNDER_LIMIT: '2' })], [200, 200, 200, 2], '先着の定員の既定は200名(wrangler.toml の値が優先)');
+  eq((toml.match(/^FOUNDER_LIMIT = "(\d+)"/m) || [])[1], '200', 'wrangler.toml の FOUNDER_LIMIT は200');
+  eq([new RegExp('先着' + 1e2 + '名').test(toml + src), (toml.match(/先着200名の価格/g) || []).length], [false, 2], '古い定員(100名)の先着の表記が残っていない(PayPal のプラン名も200名)');
 }
 
 console.log('OK ' + n + '件');
