@@ -8,8 +8,8 @@ compatibility_date = "2026-10-01"
 crons = ["10 0 * * *"]
 
 [vars]
-FIREBASE_PROJECT_ID = "ここに Firebase のプロジェクトID"
-FIREBASE_SA_EMAIL = "ここに サービスアカウントのメールアドレス"
+FIREBASE_PROJECT_ID = "zw-sedori"
+FIREBASE_SA_EMAIL = "firebase-adminsdk-fbsvc@zw-sedori.iam.gserviceaccount.com"
 PAYPAL_ENV = "sandbox"            # 本番は "live"
 PAYPAL_CLIENT_ID = "ここに PayPal の Client ID"
 ALLOWED_ORIGIN = "https://hiro0530.github.io,https://zeroichiworks.net"   # 独自ドメインに移す時は新しい住所を足す(カンマ区切り。docs/sedori_app/domain.md)
