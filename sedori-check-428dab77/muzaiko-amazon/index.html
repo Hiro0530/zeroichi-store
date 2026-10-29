@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261030c">
 </head>
 <body data-base="../" data-route="muzaiko" data-route-label="無在庫 Amazon中古" data-page="muzaiko-amazon">
 <header class="hd">
@@ -45,6 +45,7 @@
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>無在庫 Amazon中古×ヤフオク 価格差チェック</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
+<noscript><p class="nojs">この計算ページは JavaScript で動きます。JavaScript を有効にすると、入れた数字で利益がその場で出ます。利益は「実際の売値 − 仕入れ値 − 手数料 − 送料」で、ポイントはその後に上乗せとして足します。</p></noscript>
 <div class="lay3">
   <aside class="side" aria-label="条件">
       <details class="sbox " open data-desk-open>
@@ -53,8 +54,8 @@
           <label class="fr col"><span class="fk">JAN・ASIN</span><span class="fv"><input id="mz-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="mz-go">Keepa</button></span></label>
           <div id="mz-kp"></div>
           <label class="fr col"><span class="fk">商品名</span><input id="mz-name"></label>
-          <label class="fr "><span class="fk">新品の価格<small>Amazon</small></span><span class="fv"><input id="mz-new" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
-          <label class="fr col"><span class="fk">カテゴリー</span><select id="mz-cat"></select></label>
+          <label class="fr "><span class="fk">中古の実際の売値<small>Amazonで確かめた今の中古の価格</small></span><span class="fv"><input id="mz-actual" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">新品の価格<small>Amazon</small></span><span class="fv"><input id="mz-new" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
+          <label class="fr col"><span class="fk">カテゴリー</span><select id="mz-cat"><option value="toys" selected>おもちゃ&amp;ホビー</option><option value="electronics">家電&amp;カメラ(エレクトロニクス)</option><option value="pc">パソコン・周辺機器</option><option value="elec_acc">家電アクセサリー</option><option value="small_appliance">小型家電</option><option value="large_appliance">大型家電</option><option value="home_appliance">ホーム&amp;キッチン家電</option><option value="game_console">テレビゲーム機本体</option><option value="home">ホーム&amp;キッチン(生活雑貨)</option><option value="beauty">ビューティ・ヘルス・パーソナルケア(ドラッグストア)</option><option value="food">食品&amp;飲料</option><option value="beer">ビール類</option><option value="sports">スポーツ&amp;アウトドア</option><option value="car">カー&amp;バイク用品</option><option value="diy">DIY・工具</option><option value="baby">ベビー&amp;マタニティ</option><option value="pet">ペット用品</option><option value="stationery">文房具・オフィス用品</option><option value="instruments">楽器・AV制作機器</option><option value="garden">ガーデニング・園芸用品</option><option value="furniture">家具</option><option value="clothes">服&amp;ファッション小物</option><option value="shoes">シューズ</option><option value="bags">バッグ・旅行かばん</option><option value="eyewear">アイウェア</option><option value="jewelry">ジュエリー</option><option value="watch">腕時計</option><option value="industrial">産業・研究開発用品</option><option value="other">その他のカテゴリー</option></select></label>
         </div></div>
       </details>
       <details class="sbox " open data-desk-open>
@@ -70,7 +71,7 @@
       <details class="sbox " open data-desk-open>
         <summary>発送</summary>
         <div class="sbox-b"><div class="fl">
-          <label class="fr col"><span class="fk">運送会社・サイズ</span><select id="mz-carrier"></select></label><label class="fr "><span class="fk">送料<small>自分で入力の時</small></span><span class="fv"><input id="mz-outship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他</span><span class="fv"><input id="mz-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label>
+          <label class="fr col"><span class="fk">運送会社・サイズ</span><select id="mz-carrier"><optgroup label="日本郵便"><option value="clickpost">クリックポスト(3辺60cm・長辺34cm・2kg) 240円</option><option value="yupacket">ゆうパケット(厚さ3cmまで一律) 360円</option><option value="yp60" selected>ゆうパック60サイズ(東京→関東・東海など) 970円</option><option value="yp100">ゆうパック100サイズ(東京→関東・東海など) 1,650円</option><option value="yp140">ゆうパック140サイズ(東京→関東・東海など) 2,600円</option></optgroup><optgroup label="ヤマト運輸"><option value="ycompact">宅急便コンパクト(専用BOX70円込み・同一地帯) 720円</option><option value="y60">宅急便60サイズ(同一地帯) 940円</option><option value="y80">宅急便80サイズ(同一地帯) 1,230円</option><option value="y100">宅急便100サイズ(同一地帯) 1,530円</option></optgroup><optgroup label="その他"><option value="custom">自分で入力する</option></optgroup></select></label><label class="fr "><span class="fk">送料<small>自分で入力の時</small></span><span class="fv"><input id="mz-outship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他</span><span class="fv"><input id="mz-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label>
           <p class="hint">FBAは使いません。自分か発送代行が、お客様へ直接送ります。</p>
         </div></div>
       </details>
@@ -87,7 +88,7 @@
     <div class="gridwrap">
       <table class="grid nimg mc" id="grid">
         <thead><tr><th>出品価格の決め方</th><th class="r">出品価格</th><th class="r c-fee">販売手数料</th><th class="r c-fee">発送</th><th class="r">利益</th><th class="r">利益率</th><th class="r">ヤフオク上限</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <tbody id="rows"><tr><td colspan="7" class="empty">新品の価格がまだありません。<br>「JAN・ASIN」で Keepa を押すか、「新品の価格」に入れてください。</td></tr></tbody>
       </table>
     </div>
     <p class="credit">ヤフオク上限は、目標の利益を残せるヤフオクの価格(送料別)です。行を選ぶと出品価格に入ります。</p>
@@ -100,7 +101,7 @@
         <label class="cell "><span class="ck2">出品価格(中古)</span><span class="cv"><input id="mz-sell" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
       </div>
       <div id="wh"></div>
-      <div id="mz-out" aria-live="polite"></div>
+      <div id="mz-out" aria-live="polite"><p class="note">一覧の行を選ぶか、出品価格を入れてください。Amazon(中古)の実際の売値を入れると、その値段で売れた時の利益が先に出ます。</p></div>
       <div class="acts">
           <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
           <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
@@ -144,13 +145,13 @@
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261030b"></script>
-<script src="../assets/sync.js?v=20261030b"></script>
-<script src="../assets/calc.js?v=20261030b"></script>
-<script src="../assets/seller-check.js?v=20261030b"></script>
-<script src="../assets/ui.js?v=20261030b"></script>
-<script src="../assets/account.js?v=20261030b"></script>
-<script src="../assets/mz.js?v=20261030b"></script>
-<script src="../assets/ai.js?v=20261030b"></script>
+<script src="../assets/config.js?v=20261030c"></script>
+<script src="../assets/sync.js?v=20261030c"></script>
+<script src="../assets/calc.js?v=20261030c"></script>
+<script src="../assets/seller-check.js?v=20261030c"></script>
+<script src="../assets/ui.js?v=20261030c"></script>
+<script src="../assets/account.js?v=20261030c"></script>
+<script src="../assets/mz.js?v=20261030c"></script>
+<script src="../assets/ai.js?v=20261030c"></script>
 </body>
 </html>

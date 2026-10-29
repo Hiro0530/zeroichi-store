@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261030c">
 </head>
 <body data-base="../" data-route="ra" data-route-label="楽天・Yahoo!→Amazon" data-page="rakuten-amazon">
 <header class="hd">
@@ -45,6 +45,7 @@
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>楽天・Yahoo!→Amazon 利益チェック</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
+<noscript><p class="nojs">この計算ページは JavaScript で動きます。JavaScript を有効にすると、入れた数字で利益がその場で出ます。利益は「実際の売値 − 仕入れ値 − 手数料 − 送料」で、ポイントはその後に上乗せとして足します。</p></noscript>
 <div class="lay3">
   <aside class="side" aria-label="絞り込みと条件">
       <details class="sbox " open data-desk-open>
@@ -60,9 +61,9 @@
         <summary>Amazon側の条件</summary>
         <div class="sbox-b"><p class="hint">一覧の全行にこの条件で計算します。</p>
         <div class="fl">
-          <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat"></select></label>
-          <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier"></select></label>
-          <label class="fr "><span class="fk">納品送料<small>資材込み・1個</small></span><span class="fv"><input id="c-inbound" type="number" inputmode="numeric" min="0" value="100"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>1個</small></span><span class="fv"><input id="c-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント上乗せ<small>SPU・カード</small></span><span class="fv"><input id="c-pt-mine" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><label class="ck"><input id="c-usept" type="checkbox" checked>ポイントを利益に含める</label><label class="ck"><input id="c-self" type="checkbox">FBAを使わない(自分か代行が発送)</label><div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier"></select></label><label class="fr "><span class="fk">送料<small>自分で入力の時</small></span><span class="fv"><input id="c-selfship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
+          <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat"><option value="toys" selected>おもちゃ&amp;ホビー</option><option value="electronics">家電&amp;カメラ(エレクトロニクス)</option><option value="pc">パソコン・周辺機器</option><option value="elec_acc">家電アクセサリー</option><option value="small_appliance">小型家電</option><option value="large_appliance">大型家電</option><option value="home_appliance">ホーム&amp;キッチン家電</option><option value="game_console">テレビゲーム機本体</option><option value="home">ホーム&amp;キッチン(生活雑貨)</option><option value="beauty">ビューティ・ヘルス・パーソナルケア(ドラッグストア)</option><option value="food">食品&amp;飲料</option><option value="beer">ビール類</option><option value="sports">スポーツ&amp;アウトドア</option><option value="car">カー&amp;バイク用品</option><option value="diy">DIY・工具</option><option value="baby">ベビー&amp;マタニティ</option><option value="pet">ペット用品</option><option value="stationery">文房具・オフィス用品</option><option value="instruments">楽器・AV制作機器</option><option value="garden">ガーデニング・園芸用品</option><option value="furniture">家具</option><option value="clothes">服&amp;ファッション小物</option><option value="shoes">シューズ</option><option value="bags">バッグ・旅行かばん</option><option value="eyewear">アイウェア</option><option value="jewelry">ジュエリー</option><option value="watch">腕時計</option><option value="industrial">産業・研究開発用品</option><option value="other">その他のカテゴリー</option></select></label>
+          <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier"><option value="small">小型(25×18×2.0cm・250gまで)</option><option value="std1">標準1(35×30×3.3cm・1kgまで)</option><option value="std2a">標準2a(3辺合計20cm・2kgまで)</option><option value="std2b">標準2b(3辺合計30cm・2kgまで)</option><option value="std2c" selected>標準2c(3辺合計40cm・2kgまで)</option><option value="std2d">標準2d(3辺合計50cm・2kgまで)</option><option value="std2e">標準2e(3辺合計60cm・2kgまで)</option><option value="std3">標準3(3辺合計80cm・5kgまで)</option><option value="std4">標準4(3辺合計100cm・9kgまで)</option><option value="large1">大型1(3辺合計60cm・2kgまで)</option><option value="large2">大型2(3辺合計80cm・5kgまで)</option><option value="large3">大型3(3辺合計100cm・10kgまで)</option><option value="large4">大型4(3辺合計120cm・15kgまで)</option><option value="large5">大型5(3辺合計140cm・20kgまで)</option><option value="large6">大型6(3辺合計160cm・25kgまで)</option><option value="large7">大型7(3辺合計180cm・30kgまで)</option><option value="large8">大型8(3辺合計200cm・40kgまで)</option><option value="xl1">特大型1(3辺合計200cm・50kgまで)</option><option value="xl2">特大型2(3辺合計220cm・50kgまで)</option><option value="xl3">特大型3(3辺合計240cm・50kgまで)</option><option value="xl4a">特大型4a(3辺合計260cm・50kgまで)</option><option value="xl4b">特大型4b(3辺合計400cm・50kgまで)</option></select></label>
+          <label class="fr "><span class="fk">納品送料<small>資材込み・1個</small></span><span class="fv"><input id="c-inbound" type="number" inputmode="numeric" min="0" value="100"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>1個</small></span><span class="fv"><input id="c-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント上乗せ<small>SPU・キャンペーン・カード</small></span><span class="fv"><input id="c-pt-mine" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><p class="hint">ショップの倍率に足す分です。人によって違うので、ご自身の実際の率を入れてください(分からなければ0のまま)。</p><label class="ck"><input id="c-usept" type="checkbox" checked>ポイントを利益に含める(上乗せとして)</label><label class="ck"><input id="c-self" type="checkbox">FBAを使わない(自分か代行が発送)</label><div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier"><optgroup label="日本郵便"><option value="clickpost">クリックポスト(3辺60cm・長辺34cm・2kg) 240円</option><option value="yupacket">ゆうパケット(厚さ3cmまで一律) 360円</option><option value="yp60" selected>ゆうパック60サイズ(東京→関東・東海など) 970円</option><option value="yp100">ゆうパック100サイズ(東京→関東・東海など) 1,650円</option><option value="yp140">ゆうパック140サイズ(東京→関東・東海など) 2,600円</option></optgroup><optgroup label="ヤマト運輸"><option value="ycompact">宅急便コンパクト(専用BOX70円込み・同一地帯) 720円</option><option value="y60">宅急便60サイズ(同一地帯) 940円</option><option value="y80">宅急便80サイズ(同一地帯) 1,230円</option><option value="y100">宅急便100サイズ(同一地帯) 1,530円</option></optgroup><optgroup label="その他"><option value="custom">自分で入力する</option></optgroup></select></label><label class="fr "><span class="fk">送料<small>自分で入力の時</small></span><span class="fv"><input id="c-selfship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
         </div></div>
       </details>
       <details class="sbox keys" id="keys" data-desk-open>
@@ -80,39 +81,39 @@
 
   <section class="res" aria-label="一覧">
     <div class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="s" aria-selected="false">検索結果<span class="n" id="n-s">0</span></button>
-      <button type="button" role="tab" data-tab="t" aria-selected="true">今日のポイント高還元<span class="n" id="n-t">0</span></button>
+      <button type="button" role="tab" data-tab="s" aria-selected="true">検索結果<span class="n" id="n-s">0</span></button>
       <button type="button" role="tab" data-tab="w" aria-selected="false">ウォッチ<span class="n" id="n-w">0</span></button>
     </div>
     <div class="tbar">
-      <p class="tbar-t" id="res-title">今日のポイント高還元(楽天)</p>
+      <p class="tbar-t" id="res-title">検索結果<small>上の検索欄から探せます</small></p>
       <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
     </div>
     <div id="res-msg"></div>
     <div class="gridwrap">
       <table class="grid mc" id="grid">
         <colgroup><col class="c-img"><col><col class="c-n"><col class="c-pt"><col class="c-n"><col class="c-n c-fee"><col class="c-n"><col class="c-rt"></colgroup>
-        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r">利益</th><th class="r">利益率</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r" title="ポイント抜きの利益。+Pはポイントの上乗せ">利益</th><th class="r">利益率</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="8" class="empty">検索欄にキーワードかJANコードを入れて、検索してください。</td></tr></tbody>
       </table>
     </div>
-    <p class="credit" id="credit"></p>
+    <p class="credit" id="credit">「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益から逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。</p>
   </section>
 
   <aside class="det" id="calc" aria-label="選んだ商品">
     <div class="det-in">
       <div class="det-h"><p class="det-k">選んだ商品</p><p class="det-name" id="d-name">一覧の行を選ぶと、ここに内訳が出ます。</p><p class="det-sub" id="d-sub"></p></div>
       <div class="dg">
+        <label class="cell w2 act"><span class="ck2">Amazonの実際の売値(税込)<small>Amazonで確かめた今の価格。利益はこの値段で見ます</small></span><span class="cv"><input id="c-sell" type="number" inputmode="numeric" min="0" placeholder="Amazonで見た価格"><span class="u">円</span></span></label>
         <label class="cell "><span class="ck2">仕入れ値(税込)</span><span class="cv"><input id="c-cost" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
         <label class="cell "><span class="ck2">仕入れの送料</span><span class="cv"><input id="c-inship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label>
         <label class="cell "><span class="ck2">ショップのポイント</span><span class="cv"><input id="c-pt-shop" type="number" inputmode="decimal" min="0" step="0.1" value="1"><span class="u">%</span></span></label>
         <label class="cell "><span class="ck2">仕入れる個数</span><span class="cv"><input id="c-qty" type="number" inputmode="numeric" min="0" value="1"><span class="u">個</span></span></label>
-        <label class="cell"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
-        <label class="cell "><span class="ck2">Amazon売値(税込)</span><span class="cv"><input id="c-sell" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label>
+        <label class="cell w2"><span class="ck2">JAN・ASIN</span><span class="cv"><input id="c-code" autocomplete="off" spellcheck="false"><button type="button" class="btn sm ghost in" id="kp-go">Keepa</button></span></label>
       </div>
+      <p class="hint pt-hint">ポイントの率の目安: 楽天の通常分は1%(ショップの倍率がP1倍の時)。SPU・お買い物マラソンなどのキャンペーンや、カードの分は人によって違うので、ご自身の実際の率を入れてください。ポイントは 仕入れ値÷1.1×率 で計算し、利益には上乗せとして後から足します。</p>
       <div id="wh"></div>
       <div id="kp-out"></div>
-      <div id="c-out" aria-live="polite"></div>
+      <div id="c-out" aria-live="polite"><p class="note">仕入れ値を入れると、目標の利益に届く売値の目安と、損益分岐が出ます。Amazonの実際の売値を入れると、利益の内訳が出ます。</p></div>
       <div class="acts">
           <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
           <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
@@ -162,13 +163,13 @@
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261030b"></script>
-<script src="../assets/sync.js?v=20261030b"></script>
-<script src="../assets/calc.js?v=20261030b"></script>
-<script src="../assets/seller-check.js?v=20261030b"></script>
-<script src="../assets/ui.js?v=20261030b"></script>
-<script src="../assets/account.js?v=20261030b"></script>
-<script src="../assets/ra.js?v=20261030b"></script>
-<script src="../assets/ai.js?v=20261030b"></script>
+<script src="../assets/config.js?v=20261030c"></script>
+<script src="../assets/sync.js?v=20261030c"></script>
+<script src="../assets/calc.js?v=20261030c"></script>
+<script src="../assets/seller-check.js?v=20261030c"></script>
+<script src="../assets/ui.js?v=20261030c"></script>
+<script src="../assets/account.js?v=20261030c"></script>
+<script src="../assets/ra.js?v=20261030c"></script>
+<script src="../assets/ai.js?v=20261030c"></script>
 </body>
 </html>

@@ -634,6 +634,38 @@
     b.innerHTML = rows ? '<details class="brkd"' + (open ? ' open' : '') + '><summary>内訳</summary>' + brkRows(rows) + (notes || '') + '</details>' : (notes || '');
     var d = $('details', b); if (d) d.addEventListener('toggle', function () { store.set('brk-open', d.open); });
   }
+  /* ---------- 価格差が先、ポイントは後(各計算ページ共通) ----------
+     利益はまず「ポイント抜き(売値−仕入れ−手数料−送料)」で黒字かを見せ、ポイントはその下に上乗せとして足す */
+  function gateHTML(o) {
+    var v = Math.round(Number(o.noPt) || 0), ok = v > 0;
+    var verdict = v > 0 ? '<b>黒字</b>価格差だけで利益が残ります' :
+      (v === 0 ? '<b>±0円</b>手数料と送料を引くと、利益が残りません' :
+        (o.plain ? '<b>赤字</b>この売値では損が出ます' : '<b>赤字</b>ポイント抜きでは損が出ます。価格差のない商品は、ポイントを足して黒字に見えても、仕入れの候補から外すのが基本です'));
+    var h = '<div class="gate ' + (ok ? 'ok' : 'ng') + '"><div class="hl"><span>' + esc(o.title || 'ポイント抜きの利益') + '<small>' + esc(o.sub || '売値−仕入れ−手数料−送料') + '</small></span>' +
+      '<b class="' + (ok ? 'good' : 'bad') + '">' + yen(v) + '<i>円</i></b></div><p class="gate-v">' + verdict + '</p>';
+    if (o.pt != null) {
+      h += '<table class="brk gate-pt"><tr><td>ポイント(上乗せ' + (o.ptLabel ? '・' + o.ptLabel : '') + ')</td><td>' + (o.pt > 0 ? '+' : '') + yen(o.pt) + '円</td></tr>' +
+        '<tr class="t"><td>ポイント込みの利益</td><td>' + yen(v + (Number(o.pt) || 0)) + '円</td></tr></table>';
+    }
+    return h + '</div>';
+  }
+  /** 実際の売値(判断の主役)と、目標の売値(目標の利益から逆算した目安)を並べ、差を出す */
+  function compareHTML(o) {
+    var h = '<table class="cmp"><tr class="act"><th>実際の売値<small>' + esc(o.where || '売り先') + 'で確かめた今の価格</small></th><td>' + yen(o.actual) + '<i>円</i></td></tr>' +
+      '<tr><th>目標の売値<small>' + esc(o.tgLabel || '') + 'から逆算した目安</small></th><td>' + (o.target ? yen(o.target) + '<i>円</i>' : '届かない') + '</td></tr>';
+    if (o.target) {
+      var d = o.actual - o.target;
+      h += '<tr class="diff ' + (d >= 0 ? 'good' : 'bad') + '"><th>差</th><td>' + (d >= 0 ? '目標より' + yen(d) + '円高い' : '目標に' + yen(-d) + '円足りない') + '</td></tr>';
+    }
+    return h + '</table>';
+  }
+  /** 実際の売値が未入力の時の案内(目標の売値は目安として小さく) */
+  function askActualHTML(o) {
+    return '<div class="ask"><p class="ask-h">' + esc(o.where || '売り先') + 'の実際の売値を入れてください</p>' +
+      '<p>利益は、実際に売れている値段で決まります。' + (o.how || '') + '</p></div>' +
+      brkRows([['目標の売値(' + esc(o.tgLabel || '') + 'から逆算した目安)', o.target ? yen(o.target) + '円' : '届かない', 'key'], ['損益分岐の売値' + (o.plain ? '' : '(ポイント抜き)'), o.be ? yen(o.be) + '円' : '—', 'key']]) +
+      '<p class="note">目標の売値は、目標の利益から逆算した値です。その値段で売れるという意味ではありません。</p>';
+  }
   function profitClass(profit, sell, tg) {
     if (profit < 0) return 'bad';
     return profit >= window.SedoriCalc.needProfit(sell, tg || target()) ? 'good' : '';
@@ -675,7 +707,7 @@
     STATUS: STATUS, NEXT_LABEL: NEXT_LABEL, HINMOKU: HINMOKU, VERIFY: VERIFY, hinmokuFor: hinmokuFor, checkState: checkState, checkReason: checkReason, anyPriceItem: anyPriceItem,
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
-    brkRows: brkRows, profitHead: profitHead, result: result,
+    brkRows: brkRows, profitHead: profitHead, result: result, gateHTML: gateHTML, compareHTML: compareHTML, askActualHTML: askActualHTML,
     shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS,
     preregHTML: preregHTML, setPreregPlan: setPreregPlan
   };

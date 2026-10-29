@@ -8,8 +8,8 @@
   var RAKUTEN_EP = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
   var KEEPA_EP = 'https://api.keepa.com/product';
   var CREDIT = '<a href="https://developers.rakuten.com/" target="_blank" rel="noopener">Supported by Rakuten Developers</a>';
-  var fees = null, tab = 't', sel = -1, query = '', todayLabel = '';
-  var lists = { s: [], t: [], w: [] };
+  var fees = null, tab = 's', sel = -1, query = '';
+  var lists = { s: [], w: [] };
   var manual = U.store.get('ra-manual', null) || { name: '', price: 0, inShip: 0, shopPt: 1, jan: '', sell: null, manual: true };
 
   /* ---------- キー ---------- */
@@ -78,7 +78,7 @@
       if (pmin && p < pmin) return false;
       if (pmax && p > pmax) return false;
       if (free && !o.it.freeShip) return false;
-      if (pto && tab !== 's' && !(o.it.shopPt >= 2)) return false;
+      if (pto && tab === 'w' && !(o.it.shopPt >= 2)) return false;
       if (po && o.r && !o.r.est && o.r.profit < o.r.need) return false;
       return true;
     });
@@ -89,12 +89,16 @@
     var meta = [esc(it.shop || (it.src === 'yahoo' ? 'Yahoo!ショッピング' : '')), it.jan ? 'JAN ' + esc(it.jan) : '<span title="JANが見つからない商品">JANなし</span>', it.freeShip ? '<b>送料無料</b>' : '送料別']
       .filter(Boolean).join('<span aria-hidden="true">　</span>');
     var sellCell, feeCell = '—', pfCell = '—', rtCell = '—';
-    if (r && r.sell) {
-      sellCell = r.est ? '<span class="yen est" title="Amazon売値が未入力のため、目標の利益を満たす最安の売値を表示"><small class="estk">目標</small>' + yen(r.sell) + '<i>円</i></span>' : '<span class="yen">' + yen(r.sell) + '<i>円</i></span>';
+    if (r && r.sell && r.est) {
+      // 実際の売値が未入力: 目標の売値は逆算の目安として薄く出し、利益は出さない
+      sellCell = '<span class="yen est" title="Amazonの実際の売値が未入力です。目標の利益から逆算した目安の売値を表示しています"><small class="estk">目安</small>' + yen(r.sell) + '<i>円</i></span>';
+      pfCell = '<span class="muted" title="実際の売値を入れると出ます">未入力</span>';
+    } else if (r && r.sell) {
+      sellCell = '<span class="yen">' + yen(r.sell) + '<i>円</i></span>';
       feeCell = yen(r.fee);
-      var cls = r.profit < 0 ? 'bad' : (r.profit >= r.need ? 'good' : '');
-      pfCell = '<span class="pf ' + (r.est ? 'est' : cls) + '">' + yen(r.profit) + '</span>';
-      rtCell = '<span class="rt ' + (r.est ? 'est' : cls) + '">' + U.pct(r.margin) + '</span>';
+      var np = r.profitNoPoints, cls = np <= 0 ? 'bad' : (r.profit >= r.need ? 'good' : '');
+      pfCell = '<span class="pf ' + cls + '">' + yen(np) + '</span>' + (r.x.usePoints && r.points ? '<small class="ptadd">+P' + yen(r.points) + '</small>' : '');
+      rtCell = '<span class="rt ' + cls + '">' + U.pct(r.sell > 0 ? np / r.sell : 0) + '</span>';
     } else sellCell = r && r.est ? '<span class="yen est">届かない</span>' : '—';
     return '<tr data-i="' + o.i + '"' + (o.i === sel ? ' class="on" aria-selected="true"' : '') + '>' +
       '<td class="c-img">' + img + '</td>' +
@@ -105,17 +109,17 @@
   }
   function render() {
     $$('.tabs [data-tab]').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === tab)); });
-    $('#n-s').textContent = lists.s.length; $('#n-t').textContent = lists.t.length; $('#n-w').textContent = lists.w.length;
+    $('#n-s').textContent = lists.s.length; $('#n-w').textContent = lists.w.length;
     var title = { s: query ? '「' + esc(query) + '」の検索結果<small>楽天市場 ' + lists.s.length + '件</small>' : '検索結果<small>上の検索欄から探せます</small>',
-      t: '今日のポイント高還元<small>楽天市場 ' + esc(todayLabel) + ' 取得</small>', w: 'ウォッチ<small>' + lists.w.length + '件</small>' }[tab];
+      w: 'ウォッチ<small>' + lists.w.length + '件</small>' }[tab];
     $('#res-title').innerHTML = title;
     $('#w-csv').hidden = tab !== 'w' || !lists.w.length;
     var v = visible();
     var empty = { s: query ? '見つかりませんでした。言葉を短くするか、JANコードで探してください。' : '検索欄にキーワードかJANコードを入れて、検索してください。<br><kbd>/</kbd> で検索欄に移動します。',
-      t: '今日の分はまだありません(毎朝更新)。', w: '気になる商品は、右の「ウォッチに追加」で残せます。' }[tab];
+      w: '気になる商品は、右の「ウォッチに追加」で残せます。' }[tab];
     $('#rows').innerHTML = v.length ? v.map(rowHTML).join('') : '<tr><td colspan="8" class="empty">' + (cur().length ? '絞り込みの条件に合う商品がありません。' : empty) + '</td></tr>';
-    $('#credit').innerHTML = tab === 'w' ? '' : CREDIT + '。価格・在庫・ポイントは取得時点のものです。' + (tab === 't' ? 'PR: 商品へのリンクは楽天アフィリエイトのリンクです(価格は変わりません)。Amazonで売れるかは判定していません。' : '') +
-      ' 灰色の売値は、Amazonの売値が未取得のため、目標の利益を満たす最安の売値で計算した値です。';
+    $('#credit').innerHTML = (tab === 'w' ? '' : CREDIT + '。価格・在庫・ポイントは取得時点のものです。') +
+      ' 「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益から逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。';
     paintBulk();
   }
   function paintBulk() {
@@ -173,44 +177,45 @@
   ['c-cost', 'c-inship', 'c-pt-shop', 'c-code', 'c-sell', 'c-qty'].forEach(function (id) { $('#' + id).addEventListener('input', fromDetail); });
 
   var lastCalc = null;
+  function ptLabel(x) { return U.pct(x.pointRate) + '・仕入れ値÷1.1×率'; }
   function calcDetail() {
     var it = selected(), out = $('#c-out');
     var r = compute(it); lastCalc = r;
-    if (!r || !r.sell) {
-      U.result(out, '<p class="note">' + (r && r.est ? '目標の利益(' + esc(U.targetLabel()) + ')に届く売値がありません。' : '仕入れ値を入れると、目標の利益を満たす売値と内訳が出ます。') + '</p>', null, '');
+    if (!r) { U.result(out, '<p class="note">仕入れ値を入れると、目標の利益に届く売値の目安と、損益分岐が出ます。Amazonの実際の売値を入れると、利益の内訳が出ます。</p>', null, ''); return; }
+    var tg = U.target();
+    if (r.est) {
+      var x1 = input(it), be1 = C.amazonBreakEvenSell(fees, Object.assign({}, x1, { usePoints: false }));
+      U.result(out, '<div class="pfbox">' + U.askActualHTML({ where: 'Amazon', target: r.sug, be: be1, tgLabel: U.targetLabel(tg),
+        how: '「Amazonで見る」' + (keys().keepa ? 'かKeepa' : '') + 'で今の価格を確かめて、上の「Amazonの実際の売値」に入れてください。' }) + '</div>', null, '');
       return;
     }
-    var x = r.x, tg = U.target();
-    var be = C.amazonBreakEvenSell(fees, x), maxc = C.amazonMaxCost(fees, Object.assign({}, x), tg);
-    var rows = [['販売価格' + (r.est ? '(目標の売値)' : ''), r.sell], ['販売手数料', -r.referral], [x.selfShip ? '送料(' + esc(carrierName()) + ')' : 'FBA配送代行手数料', x.selfShip ? -r.selfShipCost : -r.fba],
+    var x = r.x, x0 = Object.assign({}, x, { usePoints: false });
+    var be = C.amazonBreakEvenSell(fees, x0), maxc = C.amazonMaxCost(fees, Object.assign({}, x0), tg);
+    var rows = [['実際の売値', r.sell], ['販売手数料', -r.referral], [x.selfShip ? '送料(' + esc(carrierName()) + ')' : 'FBA配送代行手数料', x.selfShip ? -r.selfShipCost : -r.fba],
       ['Amazonからの入金', r.payout, 't'], ['仕入れ値', -r.cost]];
     if (r.inShip) rows.push(['仕入れの送料', -r.inShip]);
     if (r.inbound) rows.push(['納品送料・資材', -r.inbound]);
     if (x.wh) rows.push(['発送代行(入庫・保管・撮影・出荷)', -x.wh]);
     if (r.other - (x.wh || 0)) rows.push(['その他', -(r.other - (x.wh || 0))]);
-    if (x.usePoints && r.points) rows.push(['ポイント(' + U.pct(x.pointRate) + '・税抜で計算)', r.points]);
-    rows.push(['利益(1個)', r.profit, 't']);
-    var keyRows = [['目標(' + esc(U.targetLabel(tg)) + ')を満たす売値', r.sug ? yen(r.sug) + '円' : '届かない', 'key go'], ['損益分岐の売値', be ? yen(be) + '円' : '—', 'key']];
-    if (!r.est) keyRows.push(['仕入れ値の上限', maxc == null ? '届かない' : yen(maxc) + '円', 'key']);
-    var cls = U.profitClass(r.profit, r.sell, tg);
-    var head = r.est ?
-      '<div class="pfbox"><div class="hl"><span>この売値以上なら目標に届く</span><b>' + yen(r.sug) + '<i>円</i></b></div>' +
-      '<div class="kpi"><div><b>' + yen(r.profit) + '円</b>その時の利益</div><div><b>' + (be ? yen(be) + '円' : '—') + '</b>損益分岐</div><div><b>' + yen(r.points) + '円</b>ポイント</div></div>' :
-      U.profitHead('利益(1個)', r.profit, cls) +
-      '<div class="kpi"><div><b>' + U.pct(r.margin) + '</b>利益率</div><div><b>' + U.pct(r.roi, 0) + '</b>仕入れに対して</div><div><b>' + yen(r.profitNoPoints) + '円</b>ポイント抜き</div></div>' + U.brkRows(keyRows);
+    rows.push(['ポイント抜きの利益(1個)', r.profitNoPoints, 't']);
+    if (x.usePoints && r.points) rows.push(['ポイント(上乗せ・' + ptLabel(x) + ')', r.points], ['ポイント込みの利益(1個)', r.profit, 't']);
+    var keyRows = [['損益分岐の売値(ポイント抜き)', be ? yen(be) + '円' : '—', 'key'], ['仕入れ値の上限(ポイント抜きで目標に届く)', maxc == null ? '届かない' : yen(maxc) + '円', 'key']];
+    var np = r.profitNoPoints;
+    var head = '<div class="pfbox">' + U.compareHTML({ actual: r.sell, target: r.sug, where: 'Amazon', tgLabel: U.targetLabel(tg) }) +
+      U.gateHTML({ noPt: np, pt: x.usePoints ? r.points : null, ptLabel: ptLabel(x) }) +
+      '<div class="kpi"><div><b>' + U.pct(r.sell > 0 ? np / r.sell : 0) + '</b>利益率(ポイント抜き)</div><div><b>' + U.pct((r.cost + r.inShip) > 0 ? np / (r.cost + r.inShip) : 0, 0) + '</b>仕入れに対して</div><div><b>' + U.pct(r.margin) + '</b>ポイント込みの利益率</div></div>' + U.brkRows(keyRows);
     U.result(out, head + '</div>' +
-      (!r.est && maxc != null && x.cost > maxc ? '<p class="warn-line">仕入れ値が上限を' + yen(x.cost - maxc) + '円超えています</p>' : '') +
-      (r.est ? '<p class="note">Amazon売値が未入力です。Keepaで取得するか、見た売値を入れると利益が出ます。</p>' : ''),
+      (maxc != null && x.cost > maxc ? '<p class="warn-line">仕入れ値が上限を' + yen(x.cost - maxc) + '円超えています</p>' : ''),
       rows,
       '<p class="note">' + esc(r.category.label) + (x.selfShip ? '・自己発送' : '・' + esc(r.tier ? r.tier.label.replace(/\(.*\)/, '') : '') + '・' + (r.sell <= fees.amazon.fba_price_threshold ? '1,000円以下' : '1,000円超') + 'の料金') + '。保管手数料・返品は含みません。</p>');
   }
 
   /* この価格で出品 / 仕入れた */
   function listAtTarget() {
-    var it = selected(), r = lastCalc;
-    if (!r || !r.sug) { U.toast('目標の利益に届く売値がありません'); return; }
-    it.sell = r.sug; $('#c-sell').value = r.sug; fromDetail();
-    U.toast('出品価格を' + yen(r.sug) + '円にしました');
+    var r = lastCalc;
+    if (!r) { U.toast('仕入れ値を入れてください'); $('#c-cost').focus(); return; }
+    if (r.est) { U.toast('Amazonの実際の売値を入れてください。目標の売値は目安で、その値段で売れるとは限りません'); $('#c-sell').focus(); return; }
+    U.toast('実際の売値 ' + yen(r.sell) + '円で計算しています' + (r.profitNoPoints <= 0 ? '(ポイント抜きでは利益が出ません)' : ''));
   }
   function paintBuy(done) {
     var b = $('[data-act="buy"]'); b.classList.toggle('done', !!done);
@@ -219,13 +224,13 @@
   function buy() {
     var it = selected(), r = compute(it);
     if (!r || !r.sell) { U.toast('仕入れ値を入れてください'); $('#c-cost').focus(); return; }
-    if (r.est) { it.sell = r.sug; $('#c-sell').value = r.sug; fromDetail(); r = compute(it); }
+    var noActual = r.est; // 実際の売値が未入力なら、台帳の売値は目標の売値(目安)で入れて、そう知らせる
     var qty = Math.max(1, val('c-qty') || 1);
     var row = U.ledger.add({ ship: r.x.selfShip ? U.shipMode() : 'fba', cond: '新品', hinmoku: U.hinmokuFor(r.x.category), name: it.name || '(名前なし)',
       feature: [it.jan ? 'JAN ' + it.jan : '', it.asin ? 'ASIN ' + it.asin : ''].filter(Boolean).join(' '),
       qty: qty, unit: r.cost + r.inShip, party: it.manual ? '' : (it.src === 'yahoo' ? 'Yahoo!ショッピング ' : '楽天市場 ') + (it.shop || ''),
       ref: it.url || '', sellTo: 'Amazon', sellPrice: r.sell, profit: r.profit, route: '楽天・Yahoo!→Amazon' });
-    if (row) { paintBuy(true); it.bought = row.id; persistList(); }
+    if (row) { paintBuy(true); it.bought = row.id; persistList(); if (noActual) U.toast('実際の売値が未入力のため、台帳の売値は目標の売値(目安)で入れました。売れた時に直してください'); }
   }
   $('[data-act="list"]').addEventListener('click', listAtTarget);
   $('[data-act="buy"]').addEventListener('click', buy);
@@ -388,17 +393,6 @@
     lists.w = w;
   }
 
-  /* ---------- 今日の候補 ---------- */
-  function loadToday() {
-    return fetch('../data/today.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
-      todayLabel = j.fetched_at_label || '';
-      lists.t = (j.items || []).map(function (it) {
-        return { src: 'rakuten', name: it.name, price: it.price, url: it.url, shop: it.shop, img: it.img || '', shopPt: it.pointRate || 1,
-          freeShip: !!it.freeShip, jan: it.jan || C.extractJan(it.name), until: it.until || '', genre: it.genre || '' };
-      });
-    }).catch(function () { lists.t = []; });
-  }
-
   /* ---------- キー操作 ---------- */
   U.api.page = {
     move: function (d) {
@@ -427,8 +421,8 @@
   $('[data-act="list"]').innerHTML = 'この価格で出品<kbd>Enter</kbd>';
   document.addEventListener('sedori:target', function () { render(); calcDetail(); });
   document.addEventListener('sedori:wh', function () { render(); calcDetail(); });
-  Promise.all([U.loadFees(), loadToday()]).then(function (a) {
-    fees = a[0];
+  U.loadFees().then(function (f) {
+    fees = f;
     $('#c-cat').innerHTML = fees.amazon.categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.label) + '</option>'; }).join('');
     $('#c-tier').innerHTML = fees.amazon.fba_tiers.map(function (t) { return '<option value="' + t.id + '">' + esc(t.label) + '</option>'; }).join('');
     $('#c-tier').value = 'std2c'; $('#c-cat').value = 'toys';
@@ -444,10 +438,9 @@
       el.addEventListener('change', function () { saveCond(); render(); calcDetail(); });
     });
     var p = new URLSearchParams(location.search), s = U.store.get('ra-sel', null);
-    tab = U.store.get('ra-tab', null) || (lists.s.length ? 's' : 't');
-    if (!lists[tab]) tab = 't';
-    if (p.get('t') != null) { tab = 't'; sel = Number(p.get('t')); }
-    else if (s && s.tab === tab && cur()[s.i]) sel = s.i;
+    tab = U.store.get('ra-tab', null) || 's';
+    if (!lists[tab]) tab = 's';
+    if (s && s.tab === tab && cur()[s.i]) sel = s.i;
     render(); fillDetail();
     if (p.get('q')) doSearch(p.get('q'));
   });

@@ -1,7 +1,7 @@
 /* せどり 利益チェック: オフラインでも計算できるように画面と手数料データを保存する。
    HTML・JSON・config.js は通信を優先(新しい手数料・設定を使う)、それ以外は保存済みを優先。外部(楽天・Yahoo!・Keepa・Firebase・Stripe・PayPal)は扱わない。
    ヤフオクの終了の通知で「出品停止にした」を押すと、開いているページに知らせる(無ければ台帳を開く)。 */
-var CACHE = 'zw-sedori-v10';
+var CACHE = 'zw-sedori-v11';
 var CORE = ['./', 'rakuten-amazon/', 'muzaiko-amazon/', 'mercari-calc/', 'yahuoku-mercari/', 'auction-mercari/', 'daicho/', 'scan/', 'books/', 'plans/', 'mypage/', 'terms/', 'privacy/', 'shikumi/', 'chigai/',
   'assets/sedori.css', 'assets/calc.js', 'assets/ui.js', 'assets/sync.js', 'assets/books-sync.js', 'assets/seller-check.js', 'assets/account.js', 'assets/ra.js', 'assets/market.js', 'assets/mz.js', 'assets/ledger.js', 'assets/top.js', 'assets/shindan.js',
   'assets/plans.js', 'assets/mypage.js', 'assets/ai.js', 'assets/scan.css', 'assets/scan.js', 'assets/scan-decoder.js', 'assets/scan-sync.js', 'books/books.css', 'books/assets/books-core.js', 'books/assets/books.js', 'assets/vendor/qrcode-generator.js', 'assets/vendor/zxing-library-0.21.3.min.js',

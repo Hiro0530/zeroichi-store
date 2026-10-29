@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261030c">
 </head>
 <body data-base="../" data-route="yahuoku" data-route-label="ヤフオク→メルカリ" data-page="yahuoku-mercari">
 <header class="hd">
@@ -45,11 +45,12 @@
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>ヤフオク→メルカリ 利益計算</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
+<noscript><p class="nojs">この計算ページは JavaScript で動きます。JavaScript を有効にすると、入れた数字で利益がその場で出ます。利益は「実際の売値 − 仕入れ値 − 手数料 − 送料」で、ポイントはその後に上乗せとして足します。</p></noscript>
 <div class="lay3">
   <aside class="side" aria-label="仕入れ">
       <details class="sbox " open data-desk-open>
         <summary>仕入れ(ヤフオク)</summary>
-        <div class="sbox-b"><div class="fl"><label class="fr "><span class="fk">落札価格</span><span class="fv"><input id="b-bid" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">送料<small>出品者→自分</small></span><span class="fv"><input id="b-ship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>支払い手数料など</small></span><span class="fv"><input id="b-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント<small>落札価格に対して</small></span><span class="fv"><input id="b-pt" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><label class="fr "><span class="fk">個数<small>まとめ落札</small></span><span class="fv"><input id="b-qty" type="number" inputmode="numeric" min="0" value="1" min="1"><span class="u">個</span></span></label><label class="ck"><input id="b-media" type="checkbox"><span>金額を問わず確認が要る品<small class="ckn">ゲーム・CD・DVD・書籍・バイク部品・室外機など</small></span></label></div><p class="unit">1個の原価 <b id="b-unit">—</b></p><p class="hint" id="guard" hidden><span class="badge">売り手の確認が必要</span> 合計1万円以上(またはゲーム等)の中古品です。仕入れた後、台帳で売り手の確認を入力してください。</p></div>
+        <div class="sbox-b"><div class="fl"><label class="fr "><span class="fk">落札価格</span><span class="fv"><input id="b-bid" type="number" inputmode="numeric" min="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">送料<small>出品者→自分</small></span><span class="fv"><input id="b-ship" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">その他<small>支払い手数料など</small></span><span class="fv"><input id="b-other" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label><label class="fr "><span class="fk">ポイント<small>落札価格に対して</small></span><span class="fv"><input id="b-pt" type="number" inputmode="decimal" min="0" step="0.1" value="0"><span class="u">%</span></span></label><p class="hint">もらえる率は、支払い方法やキャンペーンで人によって違います。ご自身の実際の率を入れてください(分からなければ0のまま)。利益には上乗せとして後から足します。</p><label class="fr "><span class="fk">個数<small>まとめ落札</small></span><span class="fv"><input id="b-qty" type="number" inputmode="numeric" min="0" value="1" min="1"><span class="u">個</span></span></label><label class="ck"><input id="b-media" type="checkbox"><span>金額を問わず確認が要る品<small class="ckn">ゲーム・CD・DVD・書籍・バイク部品・室外機など</small></span></label></div><p class="unit">1個の原価 <b id="b-unit">—</b></p><p class="hint" id="guard" hidden><span class="badge">売り手の確認が必要</span> 合計1万円以上(またはゲーム等)の中古品です。仕入れた後、台帳で売り手の確認を入力してください。</p></div>
       </details>
   </aside>
 
@@ -63,16 +64,16 @@
       <p class="tbar-t">配送方法ごとの売値と利益</p>
       <span class="tbar-r">
         <label class="inl" id="s-rate-w" hidden>手数料率 <input id="s-rate" type="number" inputmode="decimal" min="0" step="0.1" value="10">%</label>
-        <label class="inl">販売価格 <input id="s-price" type="number" inputmode="numeric" min="0">円</label>
+        <label class="inl act">実際の売値 <input id="s-price" type="number" inputmode="numeric" min="0" placeholder="売れた値段" title="同じ品が実際に売れた値段(売り切れ・落札相場で確かめた価格)">円</label>
       </span>
     </div>
     <div class="gridwrap">
       <table class="grid nimg mc" id="grid">
         <thead><tr><th>配送方法</th><th class="r">送料・資材</th><th class="r c-fee">損益分岐</th><th class="r">目標の売値</th><th class="r c-fee">手数料</th><th class="r">利益</th><th class="r">利益率</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <tbody id="rows"><tr><td colspan="7" class="empty">「仕入れ」に落札価格を入れると、配送方法ごとの売値と利益が並びます。</td></tr></tbody>
       </table>
     </div>
-    <p class="credit">利益と手数料は、上の販売価格で売れた場合です(未入力なら目標の売値で計算)。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
+    <p class="credit">利益(ポイント抜き)は、上の「実際の売値」で売れた場合です。未入力の間は、目標の売値(目標の利益から逆算した目安)だけを出します。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
   </section>
 
   <aside class="det" id="sell" aria-label="内訳">
@@ -85,7 +86,7 @@
         <div id="s-shipfee-w" class="w2" hidden><label class="cell "><span class="ck2">送料(自分で入力)</span><span class="cv"><input id="s-shipfee" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
       </div>
       <div id="wh"></div>
-      <div id="m-out" aria-live="polite"></div>
+      <div id="m-out" aria-live="polite"><p class="note">配送方法を選び、実際の売値を入れると、利益の内訳が出ます。</p></div>
       <div class="acts">
           <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
           <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
@@ -128,13 +129,13 @@
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261030b"></script>
-<script src="../assets/sync.js?v=20261030b"></script>
-<script src="../assets/calc.js?v=20261030b"></script>
-<script src="../assets/seller-check.js?v=20261030b"></script>
-<script src="../assets/ui.js?v=20261030b"></script>
-<script src="../assets/account.js?v=20261030b"></script>
-<script src="../assets/market.js?v=20261030b"></script>
-<script src="../assets/ai.js?v=20261030b"></script>
+<script src="../assets/config.js?v=20261030c"></script>
+<script src="../assets/sync.js?v=20261030c"></script>
+<script src="../assets/calc.js?v=20261030c"></script>
+<script src="../assets/seller-check.js?v=20261030c"></script>
+<script src="../assets/ui.js?v=20261030c"></script>
+<script src="../assets/account.js?v=20261030c"></script>
+<script src="../assets/market.js?v=20261030c"></script>
+<script src="../assets/ai.js?v=20261030c"></script>
 </body>
 </html>

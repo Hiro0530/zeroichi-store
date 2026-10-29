@@ -15,7 +15,7 @@
 <link rel="icon" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="../assets/sedori.css?v=20261030b">
+<link rel="stylesheet" href="../assets/sedori.css?v=20261030c">
 </head>
 <body data-base="../" data-route="mercari" data-route-label="メルカリ" data-page="mercari-calc">
 <header class="hd">
@@ -45,6 +45,7 @@
 </header>
 <div class="crumb"><div class="crumb-in"><nav aria-label="現在地"><a href="../">トップ</a><span aria-hidden="true">&gt;</span><span>メルカリ 手数料・送料・利益の計算</span></nav><span class="feedate" data-feedate></span></div></div>
 <main class="wrap">
+<noscript><p class="nojs">この計算ページは JavaScript で動きます。JavaScript を有効にすると、入れた数字で利益がその場で出ます。利益は「実際の売値 − 仕入れ値 − 手数料 − 送料」で、ポイントはその後に上乗せとして足します。</p></noscript>
 <div class="lay3">
   <aside class="side" aria-label="仕入れ">
       <details class="sbox " open data-desk-open>
@@ -66,16 +67,16 @@
       <p class="tbar-t">配送方法ごとの売値と利益</p>
       <span class="tbar-r">
         <label class="inl" id="s-rate-w" hidden>手数料率 <input id="s-rate" type="number" inputmode="decimal" min="0" step="0.1" value="10">%</label>
-        <label class="inl">販売価格 <input id="s-price" type="number" inputmode="numeric" min="0">円</label>
+        <label class="inl act">実際の売値 <input id="s-price" type="number" inputmode="numeric" min="0" placeholder="売れた値段" title="同じ品が実際に売れた値段(売り切れ・落札相場で確かめた価格)">円</label>
       </span>
     </div>
     <div class="gridwrap">
       <table class="grid nimg mc" id="grid">
         <thead><tr><th>配送方法</th><th class="r">送料・資材</th><th class="r c-fee">損益分岐</th><th class="r">目標の売値</th><th class="r c-fee">手数料</th><th class="r">利益</th><th class="r">利益率</th></tr></thead>
-        <tbody id="rows"></tbody>
+        <tbody id="rows"><tr class="grp"><td colspan="7">らくらくメルカリ便</td></tr><tr data-i="nekopos"><td><div class="nm">ネコポス(A4・厚さ3cm・1kg)</div></td><td class="r fee" data-k="送料・資材">210</td><td class="r c-fee fee">233</td><td class="r" data-k="目標の売値"><span class="yen">279<i>円</i></span></td><td class="r c-fee fee">27</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tqcompact"><td><div class="nm">宅急便コンパクト(専用箱70円込み)</div></td><td class="r fee" data-k="送料・資材">520</td><td class="r c-fee fee">577</td><td class="r" data-k="目標の売値"><span class="yen">693<i>円</i></span></td><td class="r c-fee fee">69</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq60" class="on"><td><div class="nm">宅急便60サイズ(2kg)</div></td><td class="r fee" data-k="送料・資材">750</td><td class="r c-fee fee">833</td><td class="r" data-k="目標の売値"><span class="yen">999<i>円</i></span></td><td class="r c-fee fee">99</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq80"><td><div class="nm">宅急便80サイズ(5kg)</div></td><td class="r fee" data-k="送料・資材">850</td><td class="r c-fee fee">944</td><td class="r" data-k="目標の売値"><span class="yen">1,133<i>円</i></span></td><td class="r c-fee fee">113</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq100"><td><div class="nm">宅急便100サイズ(10kg)</div></td><td class="r fee" data-k="送料・資材">1,050</td><td class="r c-fee fee">1,166</td><td class="r" data-k="目標の売値"><span class="yen">1,399<i>円</i></span></td><td class="r c-fee fee">139</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq120"><td><div class="nm">宅急便120サイズ(15kg)</div></td><td class="r fee" data-k="送料・資材">1,200</td><td class="r c-fee fee">1,333</td><td class="r" data-k="目標の売値"><span class="yen">1,599<i>円</i></span></td><td class="r c-fee fee">159</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq140"><td><div class="nm">宅急便140サイズ(20kg)</div></td><td class="r fee" data-k="送料・資材">1,450</td><td class="r c-fee fee">1,611</td><td class="r" data-k="目標の売値"><span class="yen">1,933<i>円</i></span></td><td class="r c-fee fee">193</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq160"><td><div class="nm">宅急便160サイズ(25kg)</div></td><td class="r fee" data-k="送料・資材">1,700</td><td class="r c-fee fee">1,888</td><td class="r" data-k="目標の売値"><span class="yen">2,266<i>円</i></span></td><td class="r c-fee fee">226</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq180"><td><div class="nm">宅急便180サイズ(30kg)</div></td><td class="r fee" data-k="送料・資材">2,100</td><td class="r c-fee fee">2,333</td><td class="r" data-k="目標の売値"><span class="yen">2,799<i>円</i></span></td><td class="r c-fee fee">279</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="tq200"><td><div class="nm">宅急便200サイズ(30kg)</div></td><td class="r fee" data-k="送料・資材">2,500</td><td class="r c-fee fee">2,777</td><td class="r" data-k="目標の売値"><span class="yen">3,333<i>円</i></span></td><td class="r c-fee fee">333</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr class="grp"><td colspan="7">ゆうゆうメルカリ便</td></tr><tr data-i="yupacket"><td><div class="nm">ゆうパケット(A4・厚さ3cm・1kg)</div></td><td class="r fee" data-k="送料・資材">230</td><td class="r c-fee fee">255</td><td class="r" data-k="目標の売値"><span class="yen">306<i>円</i></span></td><td class="r c-fee fee">30</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yppost"><td><div class="nm">ゆうパケットポスト(専用箱65円込み)</div></td><td class="r fee" data-k="送料・資材">280</td><td class="r c-fee fee">311</td><td class="r" data-k="目標の売値"><span class="yen">373<i>円</i></span></td><td class="r c-fee fee">37</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yppost_seal"><td><div class="nm">ゆうパケットポスト(発送用シール5円込み)</div></td><td class="r fee" data-k="送料・資材">220</td><td class="r c-fee fee">244</td><td class="r" data-k="目標の売値"><span class="yen">293<i>円</i></span></td><td class="r c-fee fee">29</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yppostmini"><td><div class="nm">ゆうパケットポストmini(専用封筒20円込み)</div></td><td class="r fee" data-k="送料・資材">180</td><td class="r c-fee fee">199</td><td class="r" data-k="目標の売値"><span class="yen">239<i>円</i></span></td><td class="r c-fee fee">23</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="ypplus"><td><div class="nm">ゆうパケットプラス(専用箱65円込み)</div></td><td class="r fee" data-k="送料・資材">520</td><td class="r c-fee fee">577</td><td class="r" data-k="目標の売値"><span class="yen">693<i>円</i></span></td><td class="r c-fee fee">69</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp60"><td><div class="nm">ゆうパック60サイズ</div></td><td class="r fee" data-k="送料・資材">770</td><td class="r c-fee fee">855</td><td class="r" data-k="目標の売値"><span class="yen">1,026<i>円</i></span></td><td class="r c-fee fee">102</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp80"><td><div class="nm">ゆうパック80サイズ</div></td><td class="r fee" data-k="送料・資材">870</td><td class="r c-fee fee">966</td><td class="r" data-k="目標の売値"><span class="yen">1,159<i>円</i></span></td><td class="r c-fee fee">115</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp100"><td><div class="nm">ゆうパック100サイズ</div></td><td class="r fee" data-k="送料・資材">1,070</td><td class="r c-fee fee">1,188</td><td class="r" data-k="目標の売値"><span class="yen">1,426<i>円</i></span></td><td class="r c-fee fee">142</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp120"><td><div class="nm">ゆうパック120サイズ</div></td><td class="r fee" data-k="送料・資材">1,200</td><td class="r c-fee fee">1,333</td><td class="r" data-k="目標の売値"><span class="yen">1,599<i>円</i></span></td><td class="r c-fee fee">159</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp140"><td><div class="nm">ゆうパック140サイズ</div></td><td class="r fee" data-k="送料・資材">1,450</td><td class="r c-fee fee">1,611</td><td class="r" data-k="目標の売値"><span class="yen">1,933<i>円</i></span></td><td class="r c-fee fee">193</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp160"><td><div class="nm">ゆうパック160サイズ</div></td><td class="r fee" data-k="送料・資材">1,700</td><td class="r c-fee fee">1,888</td><td class="r" data-k="目標の売値"><span class="yen">2,266<i>円</i></span></td><td class="r c-fee fee">226</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr data-i="yp170"><td><div class="nm">ゆうパック170サイズ</div></td><td class="r fee" data-k="送料・資材">1,900</td><td class="r c-fee fee">2,111</td><td class="r" data-k="目標の売値"><span class="yen">2,533<i>円</i></span></td><td class="r c-fee fee">253</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr><tr class="grp"><td colspan="7">その他</td></tr><tr data-i="custom"><td><div class="nm">自分で入力する</div></td><td class="r fee" data-k="送料・資材">0</td><td class="r c-fee fee">1</td><td class="r" data-k="目標の売値"><span class="yen">1<i>円</i></span></td><td class="r c-fee fee">0</td><td class="r" data-k="利益"><span class="muted">—</span></td><td class="r c-rt"><span class="muted">—</span></td></tr></tbody>
       </table>
     </div>
-    <p class="credit">利益と手数料は、上の販売価格で売れた場合です(未入力なら目標の売値で計算)。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
+    <p class="credit">利益(ポイント抜き)は、上の「実際の売値」で売れた場合です。未入力の間は、目標の売値(目標の利益から逆算した目安)だけを出します。送料はメルカリ便の料金(税込・資材代込み)。行を選ぶと配送方法が決まります。</p>
   </section>
 
   <aside class="det" id="sell" aria-label="内訳">
@@ -88,7 +89,7 @@
         <div id="s-shipfee-w" class="w2" hidden><label class="cell "><span class="ck2">送料(自分で入力)</span><span class="cv"><input id="s-shipfee" type="number" inputmode="numeric" min="0" value="0"><span class="u">円</span></span></label></div>
       </div>
       <div id="wh"></div>
-      <div id="m-out" aria-live="polite"></div>
+      <div id="m-out" aria-live="polite"><p class="note">配送方法を選び、実際の売値を入れると、利益の内訳が出ます。</p></div>
       <div class="acts">
           <button type="button" class="btn pri" data-act="list">この価格で出品<kbd>Enter</kbd></button>
           <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
@@ -131,13 +132,13 @@
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
 </footer>
-<script src="../assets/config.js?v=20261030b"></script>
-<script src="../assets/sync.js?v=20261030b"></script>
-<script src="../assets/calc.js?v=20261030b"></script>
-<script src="../assets/seller-check.js?v=20261030b"></script>
-<script src="../assets/ui.js?v=20261030b"></script>
-<script src="../assets/account.js?v=20261030b"></script>
-<script src="../assets/market.js?v=20261030b"></script>
-<script src="../assets/ai.js?v=20261030b"></script>
+<script src="../assets/config.js?v=20261030c"></script>
+<script src="../assets/sync.js?v=20261030c"></script>
+<script src="../assets/calc.js?v=20261030c"></script>
+<script src="../assets/seller-check.js?v=20261030c"></script>
+<script src="../assets/ui.js?v=20261030c"></script>
+<script src="../assets/account.js?v=20261030c"></script>
+<script src="../assets/market.js?v=20261030c"></script>
+<script src="../assets/ai.js?v=20261030c"></script>
 </body>
 </html>

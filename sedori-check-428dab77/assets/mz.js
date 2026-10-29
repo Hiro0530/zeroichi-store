@@ -4,7 +4,7 @@
   'use strict';
   var U = window.SedoriUI, C = window.SedoriCalc;
   var $ = U.$, $$ = U.$$, esc = U.esc, yen = U.yen, val = U.val;
-  var manual = false, fees = null, sel = -1, cands = [], kpUsed = null, lastR = null;
+  var manual = false, fees = null, sel = -1, cands = [], lastR = null;
   var OFFS = [0, 5, 10, 15, 20, 25, 30, 40];
 
   function keys() { return U.store.get('keys', {}); }
@@ -40,7 +40,8 @@
       if (nw) $('#mz-new').value = nw;
       if (!$('#mz-q').value) $('#mz-q').value = shortName(pr.title);
       $('#mz-name').value = pr.title || '';
-      kpUsed = used; sel = -1;
+      if (used) { $('#mz-actual').value = used; U.store.set('mz-pick', 'actual'); }
+      sel = -1;
       out.innerHTML = '<table class="kpx"><tr><td>新品最安</td><td>' + (nw ? yen(nw) + '円' : '—') + '</td></tr><tr><td>中古最安</td><td>' + (used ? yen(used) + '円' : '—') + '</td></tr>' +
         '<tr><td>Amazon本体</td><td>' + (c[0] > 0 ? '在庫あり' : 'なし') + '</td></tr><tr><td>ASIN</td><td>' + esc(pr.asin) + '</td></tr></table>';
       links(); update();
@@ -66,7 +67,8 @@
     var nw = val('mz-new'), tg = U.target(), b = base();
     cands = [];
     if (nw > 0) OFFS.forEach(function (o) { cands.push({ label: o ? '新品より' + o + '%安く' : '新品と同じ', price: Math.floor(nw * (1 - o / 100)), off: o }); });
-    if (kpUsed) cands.push({ label: '中古の最安値に合わせる', price: kpUsed, tag: 'used' });
+    var act = val('mz-actual');
+    if (act > 0) cands.push({ label: '実際の売値(中古の今の価格)', price: act, tag: 'actual' });
     if (b.cost > 0) { var p = C.amazonPriceFor(fees, b, tg); if (p) cands.push({ label: '目標(' + U.targetLabel(tg) + ')を満たす最安', price: p, tag: 'target' }); }
     cands.sort(function (a, c) { return c.price - a.price; });
     cands.forEach(function (c) {
@@ -81,7 +83,7 @@
     $('#mz-title').innerHTML = nw > 0 ? '新品 ' + yen(nw) + '円からの出品価格<small>' + (has ? 'ヤフオク ' + yen(val('mz-yprice') + val('mz-yship')) + '円(送料込み)で仕入れた場合' : 'ヤフオクの価格を入れると利益が出ます') + '</small>' : '新品の価格を入れると、値下げ幅ごとの利益が並びます<small>「JAN・ASIN」で Keepa を押すか、検索欄で「Amazon」を選んで検索</small>';
     $('#rows').innerHTML = cands.length ? cands.map(function (c, i) {
       var r = c.r, cls = r.profit < 0 ? 'bad' : (r.profit >= c.need ? 'good' : '');
-      return '<tr data-i="' + i + '"' + (i === sel ? ' class="on"' : '') + '><td><div class="nm">' + esc(c.label) + '</div>' + (c.tag === 'target' ? '<div class="meta">目標の利益ちょうど</div>' : (nw > 0 && c.off == null ? '<div class="meta">新品より' + U.pct(1 - c.price / nw, 0) + '安い</div>' : '')) + '</td>' +
+      return '<tr data-i="' + i + '"' + (i === sel ? ' class="on"' : '') + '><td><div class="nm">' + esc(c.label) + '</div>' + (c.tag === 'target' ? '<div class="meta">目標の利益から逆算した目安</div>' : c.tag === 'actual' ? '<div class="meta"><b>確かめた価格</b></div>' : (nw > 0 && c.off == null ? '<div class="meta">新品より' + U.pct(1 - c.price / nw, 0) + '安い</div>' : '')) + '</td>' +
         '<td class="r" data-k="出品価格"><span class="yen">' + yen(c.price) + '<i>円</i></span></td><td class="r c-fee fee">' + yen(r.referral) + '</td><td class="r c-fee fee">' + yen(r.selfShipCost) + '</td>' +
         '<td class="r" data-k="利益">' + (has ? '<span class="pf ' + cls + '">' + yen(r.profit) + '</span>' : '<span class="muted">—</span>') + '</td>' +
         '<td class="r c-rt">' + (has ? '<span class="rt ' + cls + '">' + U.pct(r.margin) + '</span>' : '<span class="muted">—</span>') + '</td>' +
@@ -99,26 +101,41 @@
   }
 
   function detail() {
-    var x = Object.assign(base(), { sell: val('mz-sell') }), tg = U.target(), out = $('#mz-out');
+    var x = Object.assign(base(), { sell: val('mz-sell') }), tg = U.target(), out = $('#mz-out'), act = val('mz-actual');
     var c = cands[sel];
     $('#d-name').textContent = $('#mz-name').value || $('#mz-q').value || '商品名なし';
     $('#d-sub').textContent = c ? c.label : (x.sell ? '出品価格を手で入力' : '');
     lastR = null;
-    if (!(x.sell > 0)) { U.result(out, '<p class="note">一覧の行を選ぶか、出品価格を入れてください。</p>', null, ''); return; }
+    if (!(x.sell > 0) && !(act > 0)) { U.result(out, '<p class="note">一覧の行を選ぶか、出品価格を入れてください。Amazon(中古)の実際の売値を入れると、その値段で売れた時の利益が先に出ます。</p>', null, ''); return; }
+    if (!(x.sell > 0)) x.sell = act;
     var maxc = C.amazonMaxCost(fees, x, tg), be = C.amazonBreakEvenSell(fees, x), sug = x.cost > 0 ? C.amazonPriceFor(fees, x, tg) : null;
-    var keyRows = [['ヤフオクで払ってよい上限', maxc == null ? '届かない' : yen(maxc) + '円', 'key go']];
-    if (sug) keyRows.push(['目標(' + esc(U.targetLabel(tg)) + ')を満たす出品価格', yen(sug) + '円', 'key']);
+    var keyRows = [['ヤフオクで払ってよい上限(出品価格' + yen(x.sell) + '円の時)', maxc == null ? '届かない' : yen(maxc) + '円', 'key go']];
     if (x.cost > 0) keyRows.push(['損益分岐の出品価格', be ? yen(be) + '円' : '—', 'key']);
-    if (!(x.cost > 0)) { U.result(out, '<div class="pfbox">' + U.brkRows(keyRows) + '</div><p class="note">ヤフオクの価格を入れると、利益と内訳が出ます。上限は送料別です。</p>', null, ''); return; }
+    if (!(x.cost > 0)) {
+      U.result(out, '<div class="pfbox">' + (act > 0 ? U.compareHTML({ actual: act, target: null, where: 'Amazon(中古)', tgLabel: U.targetLabel(tg) }) : '') + U.brkRows(keyRows) + '</div><p class="note">ヤフオクの価格を入れると、利益と内訳が出ます。上限は送料別です。</p>', null, '');
+      return;
+    }
     var r = C.amazonProfit(fees, x); lastR = r;
-    var rows = [['出品価格(中古)', r.sell], ['販売手数料', -r.referral], ['送料(' + esc(carrierName()) + ')', -r.selfShipCost], ['Amazonからの入金', r.payout, 't'], ['ヤフオクの価格', -r.cost]];
-    if (r.inShip) rows.push(['ヤフオクの送料', -r.inShip]);
+    // 判断の主役は実際の売値。内訳も、実際の売値があればその値段で出す
+    var ra = act > 0 ? C.amazonProfit(fees, Object.assign({}, x, { sell: act })) : null, m = ra || r;
+    var rows = [[(ra ? '実際の売値' : '出品価格') + '(中古)', m.sell], ['販売手数料', -m.referral], ['送料(' + esc(carrierName()) + ')', -m.selfShipCost], ['Amazonからの入金', m.payout, 't'], ['ヤフオクの価格', -m.cost]];
+    if (m.inShip) rows.push(['ヤフオクの送料', -m.inShip]);
     if (x.wh) rows.push(['発送代行(入庫・保管・撮影・出荷)', -x.wh]);
-    if (r.other - (x.wh || 0)) rows.push(['その他', -(r.other - (x.wh || 0))]);
-    rows.push(['利益(1個)', r.profit, 't']);
-    var nw = val('mz-new');
-    U.result(out, U.profitHead('利益(1個)', r.profit, U.profitClass(r.profit, r.sell, tg)) +
-      '<div class="kpi"><div><b>' + U.pct(r.margin) + '</b>利益率</div><div><b>' + U.pct(r.roi, 0) + '</b>仕入れに対して</div><div><b>' + (nw > 0 ? U.pct(1 - r.sell / nw, 0) : '—') + '</b>新品より安く</div></div>' +
+    if (m.other - (x.wh || 0)) rows.push(['その他', -(m.other - (x.wh || 0))]);
+    rows.push(['利益(1個)', m.profit, 't']);
+    var nw = val('mz-new'), top;
+    if (ra) {
+      top = U.compareHTML({ actual: act, target: sug, where: 'Amazon(中古)', tgLabel: U.targetLabel(tg) }) + U.gateHTML({ noPt: ra.profit, title: '実際の売値で売れた時の利益', sub: '売値−仕入れ−手数料−送料', plain: true });
+      if (x.sell !== act) {
+        top += U.brkRows([['選んだ出品価格 ' + yen(x.sell) + '円の時の利益', yen(r.profit) + '円', 'key']]) +
+          (x.sell > act ? '<p class="warn-line">出品価格が実際の売値より' + yen(x.sell - act) + '円高く、売れにくい値段です</p>' : '');
+      }
+    } else {
+      top = U.askActualHTML({ where: 'Amazon(中古)', target: sug, be: be, plain: true, tgLabel: U.targetLabel(tg), how: 'Keepaか「Amazonで見る」で中古の今の価格を確かめて、左の「中古の実際の売値」に入れてください。' }) +
+        '<div class="hl sub"><span>選んだ出品価格 ' + yen(x.sell) + '円で売れた時の利益</span><b class="' + U.profitClass(r.profit, r.sell, tg) + '">' + yen(r.profit) + '<i>円</i></b></div>';
+    }
+    U.result(out, '<div class="pfbox">' + top +
+      '<div class="kpi"><div><b>' + U.pct(m.margin) + '</b>利益率</div><div><b>' + U.pct(m.roi, 0) + '</b>仕入れに対して</div><div><b>' + (nw > 0 ? U.pct(1 - m.sell / nw, 0) : '—') + '</b>新品より安く</div></div>' +
       U.brkRows(keyRows) + '</div>' +
       (maxc != null && x.cost > maxc ? '<p class="warn-line">ヤフオクの価格が上限を' + yen(x.cost - maxc) + '円超えています</p>' : '') +
       (r.cost >= 10000 || $('#mz-media').checked ? '<p class="note"><span class="badge">売り手の確認が必要</span> 仕入れた後、出てくる欄に取引ナビの本文を貼り付けてください。</p>' : ''),
@@ -167,7 +184,7 @@
     render();
     if (sel >= 0) $('#mz-sell').value = cands[sel].price;
     detail(); paintBuy(false); $('#party').innerHTML = '';
-    U.store.set('form-mz', { new: $('#mz-new').value, cat: $('#mz-cat').value, carrier: $('#mz-carrier').value, outship: $('#mz-outship').value, code: $('#mz-code').value, name: $('#mz-name').value, q: $('#mz-q').value });
+    U.store.set('form-mz', { actual: $('#mz-actual').value, new: $('#mz-new').value, cat: $('#mz-cat').value, carrier: $('#mz-carrier').value, outship: $('#mz-outship').value, code: $('#mz-code').value, name: $('#mz-name').value, q: $('#mz-q').value });
   }
   U.api.page = {
     move: function (d) { if (!cands.length) return; select(Math.max(0, Math.min(cands.length - 1, (sel < 0 ? 0 : sel + d)))); },
@@ -188,7 +205,7 @@
     $('#mz-cat').value = 'toys';
     $('#mz-carrier').innerHTML = U.carrierOptions(fees, 'yp60');
     var s = U.store.get('form-mz', null);
-    if (s) { $('#mz-new').value = s.new || ''; $('#mz-cat').value = s.cat || 'toys'; $('#mz-carrier').value = s.carrier || 'yp60'; if (!C.findCarrier(fees, $('#mz-carrier').value)) $('#mz-carrier').value = 'yp60'; $('#mz-outship').value = s.outship || 0; $('#mz-code').value = s.code || ''; $('#mz-name').value = s.name || ''; $('#mz-q').value = s.q || ''; }
+    if (s) { $('#mz-actual').value = s.actual || ''; $('#mz-new').value = s.new || ''; $('#mz-cat').value = s.cat || 'toys'; $('#mz-carrier').value = s.carrier || 'yp60'; if (!C.findCarrier(fees, $('#mz-carrier').value)) $('#mz-carrier').value = 'yp60'; $('#mz-outship').value = s.outship || 0; $('#mz-code').value = s.code || ''; $('#mz-name').value = s.name || ''; $('#mz-q').value = s.q || ''; }
     links(); paintCarrier();
     var ye = $('#mz-yend'), yp = $('#mz-yend-paste');
     ye.addEventListener('input', function () { paintBuy(false); });
@@ -205,7 +222,7 @@
     ['mz-q', 'mz-code'].forEach(function (id) { $('#' + id).addEventListener('input', links); });
     $$('.side input, .side select').forEach(function (el) {
       if (el.id === 'mz-key' || el.id === 'mz-q' || el.id === 'mz-code' || el.id === 'mz-yend' || el.id === 'mz-yend-paste') return;
-      el.addEventListener('input', function () { if (el.id === 'mz-new') manual = false; update(); });
+      el.addEventListener('input', function () { if (el.id === 'mz-new') manual = false; if (el.id === 'mz-actual') { manual = false; U.store.set('mz-pick', 'actual'); } update(); });
       el.addEventListener('change', update);
     });
     $('#mz-sell').addEventListener('input', function () { sel = -1; manual = true; $$('#rows tr.on').forEach(function (tr) { tr.classList.remove('on'); }); detail(); });
