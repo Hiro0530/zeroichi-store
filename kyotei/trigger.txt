@@ -1,2 +1,2 @@
-place
-# 2026-10-30: 自信ありレースの2着・3着、券種ごとの的中率・平均の倍率・回収率、荒れるレースの確率の作り直しの検証(exp_place → experiments/place_v1.json)。予想は作らない
+refit
+# 2026-10-30: exp_place で採用した2着・3着の構成(model_config.json の cond / pre.cond_*)で学習し直す。今日の予想は公開済みなので書き換えない

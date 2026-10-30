@@ -206,6 +206,9 @@ tr.hit td{background:var(--shu-soft)}
 .rec td:first-child{font-size:13.5px}
 .rec .n{font-size:19px}
 .rec td.base{color:var(--sub)}
+.bt-h{font-size:15px;margin:14px 0 4px}.bt-h small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12.5px}
+.rec td small{font-size:11px;color:var(--sub);margin-left:3px}
+.oddsl{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.7}.oddsl b{font-family:var(--num)}
 
 /* 注意・作り方 */
 .calm{font-size:13px;color:var(--sub);border-top:1px solid var(--rule);margin-top:30px;padding-top:16px}
@@ -782,7 +785,50 @@ def verdict(x) -> str:
     return "<span class=miss>—</span>"
 
 
-def results_html(r: dict, prev: dict | None = None) -> str:
+def _place_cfg() -> dict:
+    try:
+        return json.loads((ROOT / "place_config.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def bets_report_html(rep: dict | None, total: dict | None) -> str:
+    """券種ごとの答え合わせ(report.py の表)。的中レースは確定オッズを全部並べる。"""
+    if not rep:
+        return ""
+    cfg = _place_cfg()
+    shown_h1 = set(cfg.get("show_head1") or [])
+    main = {"tansho", "exacta3", "quinella3", "trifecta3", "trio3"}
+    o = ["<h3>券種ごとの答え合わせ(1点100円の仮の計算)</h3>"
+         "<p class=cap>的中/買ったレース数、払戻の合計/購入額、当たったときの平均の倍率(確定オッズ)、回収率。外れのレースも数に入っています。</p>"]
+    for g, title in (("star", "自信あり上位5"), ("all", "全レース"), ("are", "荒れ予報TOP3")):
+        v = rep.get(g)
+        if not v:
+            continue
+        rows = [t for t in v["rows"] if t["key"] in main or t["key"] in shown_h1 or g == "are"]
+        if not rows:
+            continue
+        tv = {t["key"]: t for t in ((total or {}).get(g) or {}).get("rows", [])}
+        o.append(f"<h4 class=bt-h>{esc(title)}<small>{v['races']}レース</small></h4><div class=tw><table class=rec><thead><tr><th>券種・買い方</th>"
+                 "<th class=r>的中</th><th class=r>払戻/購入</th><th class=r>平均の倍率</th><th class=r>回収率</th><th class=r>累計の回収率</th></tr></thead><tbody>")
+        for t in rows:
+            od = f"{t['avg_odds']:.1f}倍" if t.get("avg_odds") else "—"
+            tt = tv.get(t["key"])
+            cum = f"{pct(tt['roi'], 0)}<small>({tt['hits']}/{tt['races']})</small>" if tt and tt.get("roi") is not None else "—"
+            o.append(f"<tr><td>{esc(t['kind'])} {esc(t['label'])}</td><td class='r n'>{t['hits']}/{t['races']}</td>"
+                     f"<td class='r yen'>{yen(t['return'])}/{yen(t['stake'])}</td><td class='r n'>{od}</td><td class='r n'>{pct(t['roi'], 0) if t.get('roi') is not None else '—'}</td>"
+                     f"<td class='r n'>{cum}</td></tr>")
+        o.append("</tbody></table></div>")
+        if g != "all":
+            hl = [(t, h) for t in rows for h in t.get("hit_list", [])]
+            if hl:
+                o.append("<details class=more><summary>的中したレースと確定オッズ</summary><ul class=oddsl>"
+                         + "".join(f"<li>{esc(t['kind'])} {esc(t['label'])}:{esc(h['venue_name'])}{h['race']}R {combo(h['combo'])} <b>{h['odds']:.1f}倍</b></li>"
+                                   for t, h in hl) + "</ul></details>")
+    return "".join(o)
+
+
+def results_html(r: dict, prev: dict | None = None, total: dict | None = None) -> str:
     s, xs = r["summary"], r["races"]
     n = s["graded_races"]
     pw, pt, pb = s["return_win"] - s["stake_win"], s["return_tri"] - s["stake_tri"], s["base_return"] - 100 * n
@@ -795,6 +841,7 @@ def results_html(r: dict, prev: dict | None = None) -> str:
          f"<tr><td>3連単 3点</td><td class='r n'>{s['tri_hits']}</td><td class='r yen'>{yen(s['stake_tri'])}</td><td class='r yen'>{yen(s['return_tri'])}</td><td class=r>{signed(pt)}</td></tr>"
          f"<tr><td class=base>比較用:1号艇の単勝</td><td class='r n base'>{s['base_hits']}</td><td class='r yen base'>{yen(100 * n)}</td><td class='r yen base'>{yen(s['base_return'])}</td><td class='r base'>{signed(pb)}</td></tr>"
          "</tbody></table></div>"
+         + bets_report_html(s.get("report"), (total or {}).get("report")) +
          "<h3>場ごとの全レース</h3><p class=cap>的中=3連単3点のどれかが当たり。惜しい=1点目の1・2着が合っていた、または1〜3着の3艇は合っていた(並びが違った)。◎1着=◎の1着だけ当たり。</p><div class=vlist>"]
     for vn, ys in group(xs).items():
         th = sum(1 for x in ys if x.get("tri_hit"))
@@ -929,7 +976,7 @@ def build():
     h.append(venues_nav_html(p))
     h.append(paid.mail_box_html())
     if r:
-        h.append(results_html(r, prev))
+        h.append(results_html(r, prev, t))
     h.append(record_html(t, summ, model))
     h.append(paid.offer_html(prev, r, model))
     h.append(calm_html(data.get("disclaimers") or []))

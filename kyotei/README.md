@@ -5,7 +5,7 @@
 - 毎朝 06:45 JST(`.github/workflows/kyotei.yml`): 前日の全レースを答え合わせ → 学習用の履歴を少し足す → (月曜・履歴が育つ間は毎日)学習し直し → 当日の予想 → このフォルダにコミット → gh-pages の `kyotei/index.html` だけを更新。
 - `predictions/`(公開時刻つき・公開後は書き換えない。締切が公開時刻より前のレースは採点しない)/ `results/` / `summary.json` / `model.json`(係数と、学習に使っていない期間での検証結果 `eval`)
 - 比較の基準は常に「1号艇を毎回」。予想は無料の参考情報で、的中・利益を保証しない。過去の成績は将来を約束しない。20歳未満は投票不可。検証で1号艇を上回れていない期間は、ページにそのまま書く。
-- 手動実行: `trigger.txt` の1行目を書き換えてpush(`daily` / `backfill`(履歴を上限つきでさかのぼって作り学習)/ `refit`(学習だけ)/ `exp`(v3の改良候補を1つずつ検証 → 採用した構成を `model_config.json` に書き、学習し直す))。
+- 手動実行: `trigger.txt` の1行目を書き換えてpush(`daily` / `backfill`(履歴を上限つきでさかのぼって作り学習)/ `refit`(学習だけ)/ `exp`(v3の改良候補を1つずつ検証 → 採用した構成を `model_config.json` に書き、学習し直す)/ `place`(2着・3着と券種ごとの回収率・荒れるレースの検証 → `experiments/place_v1.json`。予想は作らない))。
 - 予想には自信度(本命の1着確率 S:70%以上 / A:55%以上 / B:40%以上 / C:それ未満)を付ける。自信度ごとの学習外の成績は `model.json` の `eval.tiers`、公開後の実績は `summary.json` の `tiers`。
 
 ## データの出どころと利用条件
@@ -66,7 +66,8 @@
 
 ## モデルと検証
 
-- `model2.py`: 条件付きロジット(1レース6艇のsoftmax)、L2正則化、L-BFGS。3連単は Harville に2着・3着の補正(確率のλ乗)を入れ、λは学習外の予想で決める。勾配ブースティング(艇ごとの二値分類)も試したが、確率の精度(対数損失)と当たり具合が悪かったので採用していない。
+- `model2.py`: 条件付きロジット(1レース6艇のsoftmax)、L2正則化、L-BFGS。3連単は Harville に2着・3着の補正(確率のλ乗)を入れ、λは学習外の予想で決める(2着・3着の条件付きモデル `cond.py` が無いとき)。
+- 2着・3着: `cond.py`(条件付きロジット。2026-10-26〜)。2026-10-30 から `model_config.json` の `cond`(候補艇の数字 `cols` と、1号艇が逃げたときに候補の枠ごとに効き方を変える数字 `lane`)を使う。直前版は `pre.cond_feats` / `pre.cond_opt`。根拠は `experiments/place_v1.json`(RESEARCH.md)。勾配ブースティング(艇ごとの二値分類)も試したが、確率の精度(対数損失)と当たり具合が悪かったので採用していない。
 - `train.py`: 直近6週について、1週ずつ「その週より前だけで学習 → その週を予想」(ウォークフォワード)。比較: 1号艇を毎回/場×枠の率だけ/番組表の数字だけのモデル(旧モデル相当)。1着的中率・単勝の仮の回収率・3連単3点の的中率・対数損失・Brier・確率の当たり具合(10区分)、1号艇との差のブートストラップ95%区間。結果は `model.json` の `eval`(読み取りの点検は `data_check`)に入り、ページに出る。
 - 手元での検証: `python kyotei/train.py <histのフォルダ> [週数]`
 
@@ -86,6 +87,9 @@
 - 券種ごとの仮の収支(2026-10-27の予想から): `yesterday.summary.by_bet` / `yesterday.summary.star_by_bet`(自信ありの5レースだけ)/ `record.total.by_bet` / `record.total.star_by_bet` = `{券種: {races, hits, stake, return, pnl, roi}}`。券種は `bet_names`(`tansho` 単勝◎100円、`fukusho` 複勝◎100円、`trio3` 3連複3点300円、`trifecta3` 3連単3点300円)。どれも予想の公開時に決めた買い目だけで計算(複勝◎=2着以内の確率が最も高い艇、3連複3点=3連複の確率の上位3つ)。各レースの `yesterday.races[].bets` にも同じ形で入る。`today.races[]` には `fukusho`, `trio`, `star`(自信あり)を足した。
 - `today.ana` / `yesterday.ana` / `record.total.ana`: 今日の穴(万舟ねらい)の記録。検証で働かなかったのでページ・Xには出さない(RESEARCH.md)。
 - 荒れ注意(`are.py`、2026-10-29から): 予想ファイルの `are`(混戦度の上位3レースと買い目案3つ)、答え合わせの `are`、`summary.json` の `total.are`。検証で回収率100%を超えると確かめられていないので、`are_config.json` の `show` が false の間はページ・Xに出さない(`site_data.json` にも入れない)。検証は RESEARCH.md。
+- 券種ごとの答え合わせ(2026-10-30〜、`report.py`): `yesterday.summary.report` / `record.total.report` = `{all|star|are: {races, rows: [{key, kind(券種), label(買い方), races(買ったレース数), hits, stake, return(払戻の合計), roi, avg_odds(当たったときの平均の倍率=確定オッズ), pnl, hit_list(前日のみ: [{venue_name, race, combo, odds, payout}])}]}}`。all=全レース、star=自信あり上位5、are=荒れ予報TOP3(狙い=本命なしの全レース)。券種のキー: `tansho` 単勝◎、`exacta3`/`exacta1` 2連単、`quinella3`/`quinella1` 2連複(2026-10-31の予想から)、`trifecta3` 3連単、`trio3` 3連複、`fukusho` 複勝、自信あり上位5だけ `h1_*`(1号艇を頭にした2着・3着の買い目。記録だけ)、荒れ予報は買い目案 `tan_34`・`tri_34_6`・`tri_non1_10` と狙い `cands`。古い日は、その日に公開時に記録してあった券種だけ数える(後から買い目は足さない)。
+- `texts`: そのまま使える文面。`x`(Xの答え合わせ。自信あり上位5の券種ごと+全レースの3連単・3連複)、`hq`(本部の報告用。全区分の券種ごとの表、的中レースの確定オッズの一覧、公開からの累計)、`date`。
+- 予想ファイルの各レースに `quinella`(2連複 上位3点)と、1号艇が本命のレースだけ `head1`(`h1_ex2` 2連単1-a・1-b、`h1_qn2` 2連複1=a・1=b、`h1_tri2` 3連単1-a-b・1-b-a、`h1_tri4` 3連単1-ab-abc、`h1_trio2` 3連複1を含む上位2点。a・bは1号艇が勝ったときの2着の確率の1・2番手、決め方は `place.py`)を公開時に書く(2026-10-31の予想から)。ページに出すのは `place_config.json` の `show_head1` に書いたものだけ(今は空)。
 - `disclaimers[]`(必ずページに出す注意書き), `sources[]`(出典)
 
 ## 自信度(しきい値は学習外で決める)

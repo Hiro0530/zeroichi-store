@@ -214,6 +214,7 @@ def make_predictions(d: date, model: dict) -> dict | None:
         print("X save skipped:", e)
     try:   # 券種ごとの仮の収支のため、複勝◎と3連複3点も締切前に出しておく(後から足すと後出しになるので、公開時に決める)
         import exp_bets
+        import place
         Tm = np.array(Ts)
         top2 = Tm @ exp_bets.M_TOP2
         trio = Tm @ exp_bets.M_TRIO
@@ -222,6 +223,11 @@ def make_predictions(d: date, model: dict) -> dict | None:
             x["fukusho"] = int(np.argmax(top2[i])) + 1
             x["exacta"] = [[exp_bets.LBL["exacta"][j], round(float(exa[i, j]), 4)] for j in np.argsort(-exa[i])[:3]]   # 2連単 上位3点(2026-10-28から)
             x["trio"] = [[exp_bets.LBL["trio"][j], round(float(trio[i, j]), 4)] for j in np.argsort(-trio[i])[:3]]
+            qn = exa[i] @ place.M_QN   # 2連複 上位3点(2026-10-31の予想から。券種ごとの答え合わせ用)
+            x["quinella"] = [[exp_bets.LBL["quinella"][j], round(float(qn[j]), 4)] for j in np.argsort(-qn)[:3]]
+            if x["pick"] == 1:   # 1号艇が本命のレース: 1号艇を頭にした2着・3着の買い目(exp_place で検証。決め方は place.py)
+                cc = place.race_combos([v[0] for v in HEAD1_BETS.values()], np.array(x["probs"]), Tm[i])
+                x["head1"] = {k: cc[v[0]] for k, v in HEAD1_BETS.items()}
         sc = [x for x in preds if x["scored"]]
         for x in sorted(sc, key=lambda x: (-max(x["probs"]), x["close"]))[:5]:
             x["star"] = True   # 今日の自信あり(ページ・Xと同じ決め方: ◎の1着率が高い順に5つ)
@@ -311,7 +317,13 @@ def grade_ana(pred: dict, res: dict) -> tuple[dict | None, list]:
     return s, rows
 
 
-BET_NAMES = {"tansho": "単勝◎", "fukusho": "複勝◎", "exacta1": "2連単1点", "exacta3": "2連単3点", "trio3": "3連複3点", "trifecta3": "3連単3点"}
+BET_NAMES = {"tansho": "単勝◎", "fukusho": "複勝◎", "exacta1": "2連単1点", "exacta3": "2連単3点", "quinella1": "2連複1点", "quinella3": "2連複3点",
+             "trio3": "3連複3点", "trifecta3": "3連単3点",
+             "h1_ex2": "2連単 1-a・1-b", "h1_qn2": "2連複 1=a・1=b", "h1_tri2": "3連単 1-a-b・1-b-a", "h1_tri4": "3連単 1-ab-abc 4点",
+             "h1_trio2": "3連複 1を含む2点"}
+# 1号艇が本命のレースの「1号艇を頭にした2着・3着」の買い目(予想ファイルの head1)。キー: (place.race_combos の名前, 券種)
+HEAD1_BETS = {"h1_ex2": ("ex_1ab", "exacta"), "h1_qn2": ("qn_1ab", "quinella"), "h1_tri2": ("tri_swap", "trifecta"),
+              "h1_tri4": ("tri_form4", "trifecta"), "h1_trio2": ("trio_2", "trio")}
 
 
 def by_bet(rows: list) -> dict:
@@ -327,6 +339,7 @@ def by_bet(rows: list) -> dict:
     for t in out.values():
         t["pnl"] = t["return"] - t["stake"]
         t["roi"] = round(t["return"] / max(t["stake"], 1), 4)
+        t["avg_odds"] = round(t["return"] / 100 / t["hits"], 2) if t["hits"] else None   # 当たったときの平均の倍率(確定オッズ)
     return out
 
 
@@ -367,10 +380,25 @@ def grade(d: date) -> dict | None:
             ex_top = [c for c, _ in r["exacta"]]
             bets["exacta1"] = {"stake": 100, "return": ex_pay if ex_top[0] == ex_act else 0}
             bets["exacta3"] = {"stake": 100 * len(ex_top), "return": ex_pay if ex_act in ex_top else 0}
+        tset = "-".join(sorted(actual.split("-")))
         if r.get("trio"):
-            tset = "-".join(sorted(actual.split("-")))
             bets["trio3"] = {"stake": 300, "return": pay.get("trio", {}).get(tset, 0) if any(c == tset for c, _ in r["trio"]) else 0}
+        qn_act = "-".join(sorted(ex_act.split("-")))
+        qn_pay = pay.get("quinella", {}).get(qn_act, 0)
+        if r.get("quinella") and pay.get("quinella"):
+            qtop = [c for c, _ in r["quinella"]]
+            bets["quinella1"] = {"stake": 100, "return": qn_pay if qtop[0] == qn_act else 0}
+            bets["quinella3"] = {"stake": 100 * len(qtop), "return": qn_pay if qn_act in qtop else 0}
+        for b_, (_, kind) in HEAD1_BETS.items():   # 1号艇を頭にした2着・3着(1号艇が本命のレースだけ)
+            cs = (r.get("head1") or {}).get(b_)
+            src = pay.get(kind) or {}
+            if not cs or not src:
+                continue
+            act_k = {"exacta": ex_act, "quinella": qn_act, "trifecta": actual, "trio": tset}[kind]
+            bets[b_] = {"stake": 100 * len(cs), "return": src.get(act_k, 0) if act_k in cs else 0}
         rows.append({"bets": bets, "star": bool(r.get("star")), "fukusho": r.get("fukusho"), "trio": [c for c, _ in r.get("trio", [])],
+                     "quinella": [c for c, _ in r.get("quinella", [])], "head1": r.get("head1"), "quinella_payout": qn_pay,
+                     "trio_payout": pay.get("trio", {}).get(tset, 0),
                      "key": r["key"], "venue_name": r["venue_name"], "race": r["race"], "tier": r.get("tier"),
                      "pick": r["pick"], "trifecta": [c for c, _ in r["trifecta"]], "actual": actual,
                      "verdict": verdict, "win_hit": win_hit, "tri_hit": tri_hit,
@@ -401,6 +429,11 @@ def grade(d: date) -> dict | None:
             summ["are"] = are_s
     except Exception as e:  # noqa
         print("are grade skipped:", e)
+    try:   # 券種ごとの表(全レース・自信あり上位5・荒れ予報TOP3)。的中レースの確定オッズの一覧つき(report.py)
+        import report
+        summ["report"] = report.day(rows, are_rows)
+    except Exception as e:  # noqa
+        print("report skipped:", e)
     (gd / f"{d:%Y-%m-%d}.json").write_text(json.dumps({"summary": summ, "races": rows, "ana": ana_rows, **({"are": are_rows} if are_rows else {})},
                                                       ensure_ascii=False, indent=1), encoding="utf-8")
     print("graded", json.dumps(summ, ensure_ascii=False))
@@ -459,7 +492,13 @@ def cumulative() -> dict:
         for t in agg.values():
             t["pnl"] = t["return"] - t["stake"]
             t["roi"] = round(t["return"] / max(t["stake"], 1), 4)
+            t["avg_odds"] = round(t["return"] / 100 / t["hits"], 2) if t["hits"] else None
         tot[key] = agg
+    try:   # 券種ごとの表の累計(古い日は、その日に記録してあった買い目の券種だけ)
+        import report
+        tot["report"] = report.total([report.for_results(f) for f in sorted((ROOT / "results").glob("*.json"))])
+    except Exception as e:  # noqa
+        print("report total skipped:", e)
     tiers = {}
     for f in sorted((ROOT / "results").glob("*.json")):
         for x in json.loads(f.read_text(encoding="utf-8"))["races"]:

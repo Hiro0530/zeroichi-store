@@ -82,6 +82,12 @@ def _yesterday(r: dict | None) -> dict | None:
         y["pnl_base"] = (x.get("base_pay") or 0) - 100        # 1号艇の単勝100円
         y["pnl_race"] = y["pnl_win"] + y["pnl_tri"]
         races.append(y)
+    if not s.get("report"):   # 2026-10-30 より前の日: 記録してあった買い目から作る(後から買い目は足さない)
+        try:
+            import report
+            s["report"] = report.day(r.get("races") or [], r.get("are") or [])
+        except Exception:  # noqa
+            pass
     hits = sorted([x for x in races if x.get("tri_hit")], key=lambda x: -(x.get("pay_tri") or 0))
     best = {k: hits[0].get(k) for k in ("key", "venue_name", "race", "actual", "pay_tri")} if hits else None
     return {"date": s["date"], "proof_url": f"{PROOF}{s['date']}.json", "summary": s, "best_tri_hit": best, "races": races,
@@ -121,6 +127,21 @@ def _health() -> dict:
     return out
 
 
+def _texts() -> dict:
+    try:
+        import report
+        results = sorted((ROOT / "results").glob("*.json"))
+        if not results:
+            return {}
+        f = results[-1]
+        rep = report.for_results(f)
+        tot = report.total([report.for_results(x) for x in results])
+        d = f.stem
+        return {"date": d, "x": report.x_text(d, rep), "hq": report.hq_text(d, rep, tot)}
+    except Exception as e:  # noqa
+        return {"error": str(e)}
+
+
 def build() -> dict:
     summ = _load(ROOT / "summary.json") or {"total": {}, "daily": []}
     preds = sorted((ROOT / "predictions").glob("*.json"))
@@ -131,6 +152,12 @@ def build() -> dict:
         t["pnl_win"] = t["return_win"] - t["stake_win"]
         t["pnl_tri"] = t["return_tri"] - t["stake_tri"]
         t["pnl_base"] = t["base_return"] - t["stake_base"]
+    if t and not t.get("report"):
+        try:
+            import report
+            t["report"] = report.total([report.for_results(x) for x in results])
+        except Exception:  # noqa
+            pass
     data = {
         "schema": SCHEMA, "generated_at": datetime.now(JST).isoformat(timespec="seconds"), "page_url": PAGE,
         "today": _today(_load(preds[-1]) if preds else None),
@@ -139,6 +166,8 @@ def build() -> dict:
         "model": _model(_load(ROOT / "model.json")),
         "bet_names": {"tansho": "単勝◎", "fukusho": "複勝◎", "exacta1": "2連単1点", "exacta3": "2連単3点", "trio3": "3連複3点", "trifecta3": "3連単3点"},
         "health": _health(),
+        # 券種ごとの答え合わせ(前日・累計)と、そのまま使える文面(X・本部の報告用)。数字は report.py
+        "texts": _texts(),
         # 公開後の実績の直近30日など(metrics.py → metrics/daily.json と同じ数字。X投稿もこれを使う)
         "metrics": {k: v for k, v in (_load(ROOT / "metrics" / "daily.json") or {}).items() if k in ("generated_at", "rolling30", "rolling30_tier_S", "since_start", "definitions")},
         "disclaimers": DISCLAIMERS,
