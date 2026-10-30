@@ -207,7 +207,10 @@ tr.hit td{background:var(--shu-soft)}
 .rec .n{font-size:19px}
 .rec td.base{color:var(--sub)}
 .bt-h{font-size:15px;margin:14px 0 4px}.bt-h small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12.5px}
-.rec td small{font-size:11px;color:var(--sub);margin-left:3px}
+.bt{width:100%;border-collapse:collapse;font-size:14px}.bt th,.bt td{padding:6px 4px;border-bottom:1px solid var(--rule);vertical-align:top}
+.bt th{font-size:11.5px;font-weight:600;color:var(--sub)}.bt th small{display:block;font-weight:400}
+.bt td small{display:block;font-size:11px;color:var(--sub);white-space:nowrap}.bt td b{font:700 16px/1.2 var(--num)}
+.bt .bk{font-weight:700;white-space:nowrap}.bt .bk small{white-space:normal;max-width:9.5em}.bt .cum{color:var(--sub)}.bt .r{text-align:right}
 .oddsl{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.7}.oddsl b{font-family:var(--num)}
 
 /* 注意・作り方 */
@@ -805,19 +808,20 @@ def bets_report_html(rep: dict | None, total: dict | None) -> str:
         v = rep.get(g)
         if not v:
             continue
-        rows = [t for t in v["rows"] if t["key"] in main or t["key"] in shown_h1 or g == "are"]
+        # 荒れ予報の買い目案(tan_34 など)は公開しない決まり(are_config.json)なので、ページには本線・抑え(上位3点)と狙いだけ
+        rows = [t for t in v["rows"] if t["key"] in main or (g == "star" and t["key"] in shown_h1) or (g == "are" and t["key"] == "cands")]
         if not rows:
             continue
         tv = {t["key"]: t for t in ((total or {}).get(g) or {}).get("rows", [])}
-        o.append(f"<h4 class=bt-h>{esc(title)}<small>{v['races']}レース</small></h4><div class=tw><table class=rec><thead><tr><th>券種・買い方</th>"
-                 "<th class=r>的中</th><th class=r>払戻/購入</th><th class=r>平均の倍率</th><th class=r>回収率</th><th class=r>累計の回収率</th></tr></thead><tbody>")
+        o.append(f"<h4 class=bt-h>{esc(title)}<small>{v['races']}レース</small></h4><div class=tw><table class=bt><thead><tr><th>券種・買い方</th>"
+                 "<th class=r>的中<small>払戻/購入</small></th><th class=r>平均の倍率</th><th class=r>回収率</th><th class=r>累計<small>回収率</small></th></tr></thead><tbody>")
         for t in rows:
             od = f"{t['avg_odds']:.1f}倍" if t.get("avg_odds") else "—"
             tt = tv.get(t["key"])
-            cum = f"{pct(tt['roi'], 0)}<small>({tt['hits']}/{tt['races']})</small>" if tt and tt.get("roi") is not None else "—"
-            o.append(f"<tr><td>{esc(t['kind'])} {esc(t['label'])}</td><td class='r n'>{t['hits']}/{t['races']}</td>"
-                     f"<td class='r yen'>{yen(t['return'])}/{yen(t['stake'])}</td><td class='r n'>{od}</td><td class='r n'>{pct(t['roi'], 0) if t.get('roi') is not None else '—'}</td>"
-                     f"<td class='r n'>{cum}</td></tr>")
+            cum = f"{pct(tt['roi'], 0)}<small>{tt['hits']}/{tt['races']}</small>" if tt and tt.get("roi") is not None else "—"
+            o.append(f"<tr><td class=bk>{esc(t['kind'])}<small>{esc(t['label'])}</small></td><td class=r><b>{t['hits']}/{t['races']}</b>"
+                     f"<small>{t['return']:,}/{t['stake']:,}円</small></td><td class=r>{od}</td>"
+                     f"<td class=r><b>{pct(t['roi'], 0) if t.get('roi') is not None else '—'}</b></td><td class='r cum'>{cum}</td></tr>")
         o.append("</tbody></table></div>")
         if g != "all":
             hl = [(t, h) for t in rows for h in t.get("hit_list", [])]
