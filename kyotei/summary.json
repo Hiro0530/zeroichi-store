@@ -95,7 +95,8 @@
     "stake": 55400,
     "return": 46880,
     "pnl": -8520,
-    "roi": 0.8462
+    "roi": 0.8462,
+    "avg_odds": 1.59
    },
    "trifecta3": {
     "days": 4,
@@ -104,7 +105,8 @@
     "stake": 166200,
     "return": 119110,
     "pnl": -47090,
-    "roi": 0.7167
+    "roi": 0.7167,
+    "avg_odds": 9.31
    },
    "fukusho": {
     "days": 3,
@@ -113,7 +115,8 @@
     "stake": 41200,
     "return": 37520,
     "pnl": -3680,
-    "roi": 0.9107
+    "roi": 0.9107,
+    "avg_odds": 1.23
    },
    "trio3": {
     "days": 3,
@@ -122,7 +125,8 @@
     "stake": 123600,
     "return": 95260,
     "pnl": -28340,
-    "roi": 0.7707
+    "roi": 0.7707,
+    "avg_odds": 4.41
    },
    "exacta1": {
     "days": 1,
@@ -131,7 +135,8 @@
     "stake": 12000,
     "return": 9040,
     "pnl": -2960,
-    "roi": 0.7533
+    "roi": 0.7533,
+    "avg_odds": 3.35
    },
    "exacta3": {
     "days": 1,
@@ -140,7 +145,8 @@
     "stake": 36000,
     "return": 27920,
     "pnl": -8080,
-    "roi": 0.7756
+    "roi": 0.7756,
+    "avg_odds": 4.81
    }
   },
   "star_by_bet": {
@@ -151,7 +157,8 @@
     "stake": 1500,
     "return": 1590,
     "pnl": 90,
-    "roi": 1.06
+    "roi": 1.06,
+    "avg_odds": 1.14
    },
    "trifecta3": {
     "days": 3,
@@ -160,7 +167,8 @@
     "stake": 4500,
     "return": 5440,
     "pnl": 940,
-    "roi": 1.2089
+    "roi": 1.2089,
+    "avg_odds": 6.04
    },
    "fukusho": {
     "days": 3,
@@ -169,7 +177,8 @@
     "stake": 1500,
     "return": 1660,
     "pnl": 160,
-    "roi": 1.1067
+    "roi": 1.1067,
+    "avg_odds": 1.11
    },
    "trio3": {
     "days": 3,
@@ -178,7 +187,8 @@
     "stake": 4500,
     "return": 3540,
     "pnl": -960,
-    "roi": 0.7867
+    "roi": 0.7867,
+    "avg_odds": 2.95
    },
    "exacta1": {
     "days": 1,
@@ -187,7 +197,8 @@
     "stake": 500,
     "return": 400,
     "pnl": -100,
-    "roi": 0.8
+    "roi": 0.8,
+    "avg_odds": 2.0
    },
    "exacta3": {
     "days": 1,
@@ -196,7 +207,288 @@
     "stake": 1500,
     "return": 1100,
     "pnl": -400,
-    "roi": 0.7333
+    "roi": 0.7333,
+    "avg_odds": 2.75
+   }
+  },
+  "report": {
+   "all": {
+    "days": 7,
+    "races": 1057,
+    "rows": [
+     {
+      "key": "tansho",
+      "kind": "単勝",
+      "label": "◎ 1点",
+      "races": 554,
+      "hits": 294,
+      "stake": 55400,
+      "return": 46880,
+      "days": 4,
+      "roi": 0.8462,
+      "avg_odds": 1.59,
+      "pnl": -8520
+     },
+     {
+      "key": "trifecta3",
+      "kind": "3連単",
+      "label": "上位3点",
+      "races": 554,
+      "hits": 128,
+      "stake": 166200,
+      "return": 119110,
+      "days": 4,
+      "roi": 0.7167,
+      "avg_odds": 9.31,
+      "pnl": -47090
+     },
+     {
+      "key": "trio3",
+      "kind": "3連複",
+      "label": "上位3点",
+      "races": 412,
+      "hits": 216,
+      "stake": 123600,
+      "return": 95260,
+      "days": 3,
+      "roi": 0.7707,
+      "avg_odds": 4.41,
+      "pnl": -28340
+     },
+     {
+      "key": "fukusho",
+      "kind": "複勝",
+      "label": "◎ 1点",
+      "races": 412,
+      "hits": 305,
+      "stake": 41200,
+      "return": 37520,
+      "days": 3,
+      "roi": 0.9107,
+      "avg_odds": 1.23,
+      "pnl": -3680
+     },
+     {
+      "key": "exacta3",
+      "kind": "2連単",
+      "label": "上位3点",
+      "races": 120,
+      "hits": 58,
+      "stake": 36000,
+      "return": 27920,
+      "days": 1,
+      "roi": 0.7756,
+      "avg_odds": 4.81,
+      "pnl": -8080
+     },
+     {
+      "key": "exacta1",
+      "kind": "2連単",
+      "label": "1点",
+      "races": 120,
+      "hits": 27,
+      "stake": 12000,
+      "return": 9040,
+      "days": 1,
+      "roi": 0.7533,
+      "avg_odds": 3.35,
+      "pnl": -2960
+     }
+    ]
+   },
+   "star": {
+    "days": 3,
+    "races": 15,
+    "rows": [
+     {
+      "key": "tansho",
+      "kind": "単勝",
+      "label": "◎ 1点",
+      "races": 15,
+      "hits": 14,
+      "stake": 1500,
+      "return": 1590,
+      "days": 3,
+      "roi": 1.06,
+      "avg_odds": 1.14,
+      "pnl": 90
+     },
+     {
+      "key": "trifecta3",
+      "kind": "3連単",
+      "label": "上位3点",
+      "races": 15,
+      "hits": 9,
+      "stake": 4500,
+      "return": 5440,
+      "days": 3,
+      "roi": 1.2089,
+      "avg_odds": 6.04,
+      "pnl": 940
+     },
+     {
+      "key": "trio3",
+      "kind": "3連複",
+      "label": "上位3点",
+      "races": 15,
+      "hits": 12,
+      "stake": 4500,
+      "return": 3540,
+      "days": 3,
+      "roi": 0.7867,
+      "avg_odds": 2.95,
+      "pnl": -960
+     },
+     {
+      "key": "fukusho",
+      "kind": "複勝",
+      "label": "◎ 1点",
+      "races": 15,
+      "hits": 15,
+      "stake": 1500,
+      "return": 1660,
+      "days": 3,
+      "roi": 1.1067,
+      "avg_odds": 1.11,
+      "pnl": 160
+     },
+     {
+      "key": "exacta3",
+      "kind": "2連単",
+      "label": "上位3点",
+      "races": 5,
+      "hits": 4,
+      "stake": 1500,
+      "return": 1100,
+      "days": 1,
+      "roi": 0.7333,
+      "avg_odds": 2.75,
+      "pnl": -400
+     },
+     {
+      "key": "exacta1",
+      "kind": "2連単",
+      "label": "1点",
+      "races": 5,
+      "hits": 2,
+      "stake": 500,
+      "return": 400,
+      "days": 1,
+      "roi": 0.8,
+      "avg_odds": 2.0,
+      "pnl": -100
+     }
+    ]
+   },
+   "are": {
+    "days": 1,
+    "races": 3,
+    "rows": [
+     {
+      "key": "tansho",
+      "kind": "単勝",
+      "label": "◎ 1点",
+      "races": 3,
+      "hits": 0,
+      "stake": 300,
+      "return": 0,
+      "days": 1,
+      "roi": 0.0,
+      "avg_odds": null,
+      "pnl": -300
+     },
+     {
+      "key": "exacta3",
+      "kind": "2連単",
+      "label": "上位3点",
+      "races": 3,
+      "hits": 1,
+      "stake": 900,
+      "return": 1080,
+      "days": 1,
+      "roi": 1.2,
+      "avg_odds": 10.8,
+      "pnl": 180
+     },
+     {
+      "key": "trifecta3",
+      "kind": "3連単",
+      "label": "上位3点",
+      "races": 3,
+      "hits": 0,
+      "stake": 900,
+      "return": 0,
+      "days": 1,
+      "roi": 0.0,
+      "avg_odds": null,
+      "pnl": -900
+     },
+     {
+      "key": "trio3",
+      "kind": "3連複",
+      "label": "上位3点",
+      "races": 3,
+      "hits": 1,
+      "stake": 900,
+      "return": 1060,
+      "days": 1,
+      "roi": 1.1778,
+      "avg_odds": 10.6,
+      "pnl": 160
+     },
+     {
+      "key": "tan_34",
+      "kind": "単勝",
+      "label": "3・4号艇の上位1点",
+      "races": 3,
+      "hits": 0,
+      "stake": 300,
+      "return": 0,
+      "days": 1,
+      "roi": 0.0,
+      "avg_odds": null,
+      "pnl": -300
+     },
+     {
+      "key": "tri_34_6",
+      "kind": "3連単",
+      "label": "3・4号艇頭 6点",
+      "races": 3,
+      "hits": 0,
+      "stake": 1800,
+      "return": 0,
+      "days": 1,
+      "roi": 0.0,
+      "avg_odds": null,
+      "pnl": -1800
+     },
+     {
+      "key": "tri_non1_10",
+      "kind": "3連単",
+      "label": "1号艇以外が頭 10点",
+      "races": 3,
+      "hits": 1,
+      "stake": 3000,
+      "return": 4320,
+      "days": 1,
+      "roi": 1.44,
+      "avg_odds": 43.2,
+      "pnl": 1320
+     },
+     {
+      "key": "cands",
+      "kind": "3連単",
+      "label": "狙い 1号艇なし3点(本命なしの全レース)",
+      "races": 10,
+      "hits": 1,
+      "stake": 3000,
+      "return": 2660,
+      "days": 1,
+      "roi": 0.8867,
+      "avg_odds": 26.6,
+      "pnl": -340
+     }
+    ]
    }
   }
  },
