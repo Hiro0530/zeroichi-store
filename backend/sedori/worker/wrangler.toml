@@ -2,6 +2,8 @@
 name = "zw-sedori-billing"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
+# 画面(Cloudflare)で入れた変数(Stripe の価格IDなど)をデプロイで消さない
+keep_vars = true
 
 # 毎日 9:10(日本時間)= 0:10 UTC: 無料期間の終了3日前のメール・一時停止の自動再開・解約から3年たった台帳の削除
 [triggers]
@@ -20,15 +22,7 @@ FOUNDER_LIMIT = "200"            # 先着の定員(2026-10-28 オーナー決定
 PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amount":"月4,980円"},"P-TOTAL-YEAR":{"key":"total_year","name":"総合(年払い)","amount":"年49,800円"},"P-FOUNDER-MONTH":{"key":"founder_month","name":"総合 先着200名の価格(月払い)","amount":"月3,980円","founder":true},"P-FOUNDER-YEAR":{"key":"founder_year","name":"総合 先着200名の価格(年払い)","amount":"年39,800円","founder":true},"P-LIGHT-MONTH":{"key":"light_month","name":"ライト(月払い)","amount":"月2,980円"},"P-LIGHT-YEAR":{"key":"light_year","name":"ライト(年払い)","amount":"年29,800円"},"P-BUSINESS-MONTH":{"key":"business_month","name":"業務(月払い)","amount":"月7,980円"},"P-BUSINESS-YEAR":{"key":"business_year","name":"業務(年払い)","amount":"年79,800円"}}'
 
 # Stripe の価格ID(price_ で始まる)。カードで申し込めるのは、ここに ID が入っているプランだけ(空欄のプランは料金ページで「準備中」)。
-# テストモードの ID → 確認が済んだら本番の ID に入れ替える。手順は README の「Stripe の設定」。
-STRIPE_PRICE_LIGHT_MONTH = ""      # ライト 月2,980円
-STRIPE_PRICE_LIGHT_YEAR = ""       # ライト 年29,800円
-STRIPE_PRICE_TOTAL_MONTH = ""      # 総合 月4,980円
-STRIPE_PRICE_TOTAL_YEAR = ""       # 総合 年49,800円
-STRIPE_PRICE_FOUNDER_MONTH = ""    # 総合 先着200名 月3,980円
-STRIPE_PRICE_FOUNDER_YEAR = ""     # 総合 先着200名 年39,800円
-STRIPE_PRICE_BUSINESS_MONTH = ""   # 業務 月7,980円
-STRIPE_PRICE_BUSINESS_YEAR = ""    # 業務 年79,800円
+# 価格IDは Cloudflare の画面(変数)で入れる(keep_vars = true なのでデプロイで消えない)。テストモードの ID → 確認が済んだら本番の ID に入れ替える。
 
 # 秘密の値は次のコマンドで入れる(このファイルには書かない)
 #   wrangler secret put STRIPE_SECRET_KEY      … Stripe のシークレットキー(テストは sk_test_ / 本番は sk_live_。制限付きキー rk_ でもよい)
