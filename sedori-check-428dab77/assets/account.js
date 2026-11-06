@@ -343,10 +343,12 @@
     return ppPromise;
   }
   /** Worker を呼ぶ(ログイン中の本人であることを ID トークンで示す) */
+  /** このサイトの入口(例 https://zeroichiworks.net/sedori/)。決済の戻り先に使う(Worker が許可した住所かを確かめる) */
+  function appBase() { var seg = location.pathname.split('/').filter(Boolean)[0] || 'sedori'; return location.origin + '/' + seg + '/'; }
   function worker(path, body) {
     if (!cfg.WORKER_URL || !fb || !fb.auth.currentUser) return Promise.reject(new Error('no-worker'));
     return fb.auth.currentUser.getIdToken().then(function (tok) {
-      return fetch(cfg.WORKER_URL.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+      return fetch(cfg.WORKER_URL.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ app: appBase() }, body || {})) });
     }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e = new Error(j.error || ('worker ' + r.status)); e.status = r.status; e.code = j.code || ''; throw e; } return j; }); });
   }
   /**

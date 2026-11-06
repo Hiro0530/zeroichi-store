@@ -10,7 +10,7 @@ window.ZW_CONFIG = {
      移す時に直す場所の一覧は本部の docs/sedori_app/domain.md */
   SITE_URL: "https://zeroichiworks.net/",
   /* Firebase の「ウェブアプリの設定」(apiKey・authDomain・projectId・appId など)。公開してよい値 */
-  FIREBASE_CONFIG: null,
+  FIREBASE_CONFIG: {"apiKey": "AIzaSyA_3_--I5dJUZXKQuwIWVvovNGYs8JcQ0c", "authDomain": "zw-sedori.firebaseapp.com", "projectId": "zw-sedori", "storageBucket": "zw-sedori.firebasestorage.app", "messagingSenderId": "161667599172", "appId": "1:161667599172:web:1f535e952dd12bd0732511"},
   /* PayPal の REST アプリの Client ID(公開してよい値。テスト中は Sandbox の ID) */
   PAYPAL_CLIENT_ID: null,
   /* PayPal のサブスクリプションのプランID(P-で始まる)。無料期間14日はプランの側で設定する(月払いだけ)。
@@ -38,7 +38,7 @@ window.ZW_CONFIG = {
   /* 先着200名の価格の続く期間の言い方(「一生」とは書かない。2026-10-30) */
   FOUNDER_KEEP: "解約しない限りずっと(サービス提供中)",
   /* Cloudflare Worker の URL(カードの申し込み・契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
-  WORKER_URL: null,
+  WORKER_URL: "https://zw-sedori-billing.zeroichi-works-jp.workers.dev",
   /* 料金(税込・円)。ここだけ直せば、料金ページ・トップの料金表・お申し込みの確認の金額が変わる
      (ページの書き出し tools/sedori/build_pages.py もここを読む)。Stripe の価格・PayPal のプランの金額と Worker の PLANS も同じ値にそろえる。
      open: false は「受付前」(申し込めない)。founder: true は先着200名の価格(総合だけ)。tier はできることの段(light/total/business)。
