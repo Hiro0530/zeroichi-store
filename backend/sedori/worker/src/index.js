@@ -63,6 +63,13 @@ function toMs(v) {
 /* サイトの住所の既定値(本番は wrangler.toml の APP_URL・ALLOWED_ORIGIN で決める。独自ドメインに移す時は docs/sedori_app/domain.md) */
 const DEFAULT_APP_URL = 'https://zeroichiworks.net/sedori/';
 const appUrl = (env) => env.APP_URL || DEFAULT_APP_URL;
+/* 決済の戻り先。画面から送られた住所(サイトの入口、最後は /)が、許可した住所(ALLOWED_ORIGIN)の下にある時だけ使う。
+   テスト用の写しから申し込んだ時に、戻り先もその写しになるようにするため(2026-11-06)。それ以外は APP_URL */
+const appFor = (env, body) => {
+  const a = String((body && body.app) || '');
+  const allow = (env.ALLOWED_ORIGIN || 'https://hiro0530.github.io').split(',').map(x => x.trim()).filter(Boolean);
+  return (/^https:\/\/[^\s?#]+\/$/.test(a) && a.length < 200 && allow.some(o => a.startsWith(o + '/'))) ? a : appUrl(env);
+};
 function plansOf(env) { try { return JSON.parse(env.PLANS || '{}'); } catch { return {}; } }
 
 /* ------------------------------------------------------------------ Firestore(REST・サービスアカウント) */
@@ -503,7 +510,7 @@ function checkoutNote(plan, key, trial, env, now = Date.now()) {
 
 /** ログイン中の利用者からの Stripe の頼み */
 export async function handleStripeUser(path, body, who, env) {
-  const uid = who.uid, app = appUrl(env);
+  const uid = who.uid, app = appFor(env, body);
   if (path === '/stripe/checkout') {
     const key = String(body.planKey || '');
     const prices = stripePrices(env);
