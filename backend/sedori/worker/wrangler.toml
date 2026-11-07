@@ -32,3 +32,15 @@ PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amoun
 #   wrangler secret put PAYPAL_WEBHOOK_ID   … PayPal の Webhook ID
 #   wrangler secret put MAIL_HOOK_URL       … メール送信(Apps Script)の URL
 #   wrangler secret put MAIL_HOOK_SECRET    … メール送信の合言葉(Apps Script と同じ)
+
+# Stripe の価格ID(公開して問題ない値。申し込み画面にも出る)。2026-11-07 テストモードのIDを入れる。
+# 管理画面で入れた値が消えて料金ページが「準備中」になっていたため、ここに書いて固定する。
+# 本番に切り替える時は、Muse の 10/29 の報告にある本番の価格IDへ差し替える(秘密の鍵 STRIPE_SECRET_KEY も本番に)。
+STRIPE_PRICE_LIGHT_MONTH = "price_1UVZwFAXVFsyo9rx8vM2giER"
+STRIPE_PRICE_LIGHT_YEAR = "price_1UVZxkAXVFsyo9rxHIer8WEI"
+STRIPE_PRICE_TOTAL_MONTH = "price_1UVZyXAXVFsyo9rxorBzvtDz"
+STRIPE_PRICE_TOTAL_YEAR = "price_1UVZz3AXVFsyo9rxTkRqKTqg"
+STRIPE_PRICE_FOUNDER_MONTH = "price_1UVZzkAXVFsyo9rxbw9E7izM"
+STRIPE_PRICE_FOUNDER_YEAR = "price_1UVa0OAXVFsyo9rxurU03Ulj"
+STRIPE_PRICE_BUSINESS_MONTH = "price_1UVa0vAXVFsyo9rx2uHFvGWH"
+STRIPE_PRICE_BUSINESS_YEAR = "price_1UVa1VAXVFsyo9rx6igAmq7S"
