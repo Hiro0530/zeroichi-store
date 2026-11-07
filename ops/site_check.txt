@@ -1,4 +1,4 @@
-Sat Nov  7 09:17:08 UTC 2026
+Sat Nov  7 09:42:01 UTC 2026
 == https://zeroichiworks.net/
 200  ssl=0
 == https://zeroichiworks.net/sedori/
@@ -18,18 +18,18 @@ notBefore=Oct 28 10:12:08 2026 GMT
 notAfter=Jan 26 10:12:07 2027 GMT
 == dig
 185.199.109.153
-185.199.110.153
 185.199.111.153
 185.199.108.153
+185.199.110.153
 hiro0530.github.io.
 185.199.108.153
-185.199.109.153
-185.199.110.153
 185.199.111.153
+185.199.110.153
+185.199.109.153
 == worker health
 {"ok":true}
 == worker plans
 HTTP/2 200 
 access-control-allow-origin: https://zeroichiworks.net
-{"ready":[],"trialDays":14}
+{"ready":["light_month","light_year","total_month","total_year","founder_month","founder_year","business_month","business_year"],"trialDays":14}
 
