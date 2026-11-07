@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>生成AI利用ルールのひな形|小さな会社向け|ZEROICHI WORKS</title>
+<meta name="description" content="社員が生成AIに顧客情報や社外秘を入力してしまう事故を防ぐための、自社で直して使うひな形一式。ガイドラインのひな形、入力前チェック、10分の研修動画の台本。10人以下の会社が1時間で埋められる分量です。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../zw.css">
+<meta name="theme-color" content="#1b2a6b">
+<style>
+.p-airules{--ac:#2f5d8a;--ac-ink:#fff;--ac-soft:#e4edf6;--ac-text:#244a6f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .p-airules{--ac:#7fb0de;--ac-ink:#0b1a29;--ac-soft:#162a3d;--ac-text:#9cc4ea}}
+:root[data-theme="dark"] .p-airules{--ac:#7fb0de;--ac-ink:#0b1a29;--ac-soft:#162a3d;--ac-text:#9cc4ea}
+
+.contents{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:12px}
+@media(min-width:720px){.contents{grid-template-columns:1fr 1fr}}
+.contents li{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--ac);border-radius:var(--r-m);padding:16px 18px 12px;margin:0}
+.contents b{display:block;font-size:17px}
+.contents .meta{font-size:13px;color:var(--ac-text);font-weight:700;margin:2px 0 6px}
+.contents p{font-size:15px;color:var(--muted);margin:0}
+
+.toc{columns:2;column-gap:28px;font-size:15px;margin:8px 0 0;padding-left:0;list-style:none}
+.toc li{break-inside:avoid;margin:0;padding:6px 0;border-top:1px solid var(--line)}
+@media(max-width:560px){.toc{columns:1}}
+
+.excerpt{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:20px 18px 14px;margin:14px 0}
+.excerpt .label{display:inline-block;font-size:12.5px;font-weight:700;color:var(--ac-text);background:var(--ac-soft);border-radius:4px;padding:1px 8px;margin-bottom:8px}
+.excerpt h3{margin:4px 0 10px;font-size:17px}
+.excerpt p,.excerpt li{font-size:15px}
+.excerpt .fill{background:var(--ac-soft);color:var(--ac-text);padding:0 3px;border-radius:3px;font-weight:700}
+.excerpt table{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 10px}
+.excerpt th,.excerpt td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.excerpt thead th{background:var(--sunk);font-weight:700}
+.excerpt tbody th{white-space:nowrap}
+@media(max-width:560px){.excerpt table,.excerpt tbody,.excerpt tr,.excerpt th,.excerpt td{display:block}.excerpt thead{display:none}
+  .excerpt tr{border:1px solid var(--line);border-radius:6px;margin:0 0 8px;padding:8px 10px}.excerpt th,.excerpt td{border:0;padding:2px 0}}
+.excerpt .cut{position:relative;color:var(--muted);font-size:13.5px;border-top:1px dashed var(--line2);padding-top:10px;margin-top:6px}
+.excerpt ol.q{padding-left:1.4em}
+.check{list-style:none;padding:0;margin:6px 0 10px}
+.check li{position:relative;padding:8px 0 8px 30px;border-top:1px solid var(--line);margin:0;font-size:15px}
+.check li:first-child{border-top:0}
+.check li::before{content:"";position:absolute;left:2px;top:13px;width:16px;height:16px;border:2px solid var(--ac);border-radius:3px}
+.scene{display:grid;gap:10px}
+@media(min-width:640px){.scene{grid-template-columns:5fr 7fr}}
+.scene .screen{background:var(--brand);color:#fff;border-radius:8px;padding:14px 16px;font-weight:700;font-size:15px;line-height:1.7}
+.scene .screen small{display:block;font-weight:500;color:var(--brand-muted);font-size:12px;margin-bottom:4px}
+.scene .talk small{display:block;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:2px}
+.scene .talk p{font-size:15px;margin:0 0 8px}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:10px 0}
+.steps li{counter-increment:s;position:relative;padding:12px 0 12px 46px;border-top:1px solid var(--line);margin:0}
+.steps li:first-child{border-top:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:12px;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--ac-soft);color:var(--ac-text);font:600 18px/1 var(--num)}
+.steps b{display:block}
+.steps span{color:var(--muted);font-size:15px}
+.steps .t{font:600 15px var(--num);color:var(--ac-text);margin-left:6px}
+
+.btn[disabled]{background:var(--sunk);color:var(--muted);border-color:var(--line2);cursor:not-allowed;filter:none;font:inherit;font-weight:700}
+</style>
+</head>
+<body class="p-airules">
+<header class="zw-head">
+  <div class="in"><a class="zw-logo" href="../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a><span class="zw-logo sub">AI利用ルール</span></div>
+  <div class="bar"></div>
+</header>
+<main class="wrap">
+
+<section class="hero">
+  <span class="tag">小さな会社向け・自社で直して使うひな形</span>
+  <h1><span class="name">生成AI利用ルールのひな形</span>社員が生成AIに<br>お客様の情報を<br>入れる前に。</h1>
+  <p class="lead">ChatGPTなどの生成AIを、社員がそれぞれの判断で使い始めていませんか。お客様のメールをそのまま貼り付ける、取引先の資料を要約させる。悪気がなくても、情報を社外に渡すことになります。このひな形は、<strong>社内ルール・入力前チェック・10分の研修台本</strong>を一式にまとめたものです。【 】を埋めて、自社のルールとしてお使いください。</p>
+  <p class="fine">10人以下の会社なら、責任者が1人で約1時間で埋められる分量です。</p>
+  <p><a class="btn" href="#price">内容と料金を見る</a></p>
+</section>
+
+<section class="sec">
+  <h2>入っているもの</h2>
+  <ul class="contents">
+    <li><b>生成AI利用ガイドライン(ひな形)</b><div class="meta">本文12章+別表2つ+周知の記録</div><p>目的、対象、使ってよい道具の決め方、入力してはいけない情報と判定のしかた、出力の確認と責任、著作権・個人情報・秘密保持、事故の時の連絡、見直し。</p></li>
+    <li><b>入力前チェック(社員に配る1枚)</b><div class="meta">7項目・パソコンの横に置ける1枚</div><p>入力する前に上から確かめるだけの紙。相談先と、入れてしまった時の連絡先を書き込む欄つき。</p></li>
+    <li><b>研修動画の台本(約10分)</b><div class="meta">9場面・話す内容と画面の文字</div><p>社長や責任者が読み上げて、スマートフォンで撮れば研修動画になります。説明会の原稿としても使えます。</p></li>
+    <li><b>記入の手引き</b><div class="meta">ひな形の冒頭に収録</div><p>どこから埋めれば早いか、迷いやすい箇所の書き方の例。別表が決まれば、本文はほとんど直さずに使えます。</p></li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2>ガイドラインの章立て</h2>
+  <ol class="toc">
+    <li>第1章 目的</li>
+    <li>第2章 対象(人・道具・場面)</li>
+    <li>第3章 責任者と相談先</li>
+    <li>第4章 使ってよい道具の決め方</li>
+    <li>第5章 入力してはいけない情報と、判定のしかた</li>
+    <li>第6章 出力の確認と責任</li>
+    <li>第7章 著作権など他人の権利</li>
+    <li>第8章 個人情報</li>
+    <li>第9章 秘密保持</li>
+    <li>第10章 事故の時の連絡</li>
+    <li>第11章 教育と周知</li>
+    <li>第12章 見直し</li>
+    <li>別表1 使ってよい道具</li>
+    <li>別表2 情報の区分(自社の例)</li>
+    <li>別紙 周知の記録</li>
+    <li>参考資料(公的な資料の一覧)</li>
+  </ol>
+</section>
+
+<section class="sec" id="sample">
+  <h2>中身の見本(一部)</h2>
+  <p class="muted">製品版の一部をそのまま載せています。<strong>【 】</strong>が自社の内容に置き換える箇所です。</p>
+
+  <div class="excerpt">
+    <span class="label">ガイドライン 第5章より</span>
+    <h3>5-1 情報の区分</h3>
+    <table>
+      <thead><tr><th>区分</th><th>生成AIへの入力</th><th>主な例</th></tr></thead>
+      <tbody>
+        <tr><th>入力禁止</th><td>どの道具にも入力しない</td><td>お客様・取引先・従業員の個人情報、取引先から秘密として預かった情報、パスワード・暗証番号、未公表の決算・価格・人事情報</td></tr>
+        <tr><th>条件つき</th><td>別表1で「条件つき可」とした道具に、固有名詞などを伏せたうえで入力できる</td><td>社内向けの資料、見積や企画の下書き(社名・金額を伏せたもの)、社内の議事メモ</td></tr>
+        <tr><th>入力可</th><td>別表1の道具に入力できる</td><td>当社ホームページなどで公開済みの情報、一般的な調べもの、個人や会社を特定できない文章</td></tr>
+      </tbody>
+    </table>
+    <h3>5-2 迷ったときの判定のしかた</h3>
+    <p>入力する前に、次の問いに順番に答えてください。ひとつでも「はい」なら入力禁止です。</p>
+    <ol class="q">
+      <li>名前・住所・電話番号・メールアドレス・顔写真など、特定の人が分かる情報が入っていますか。</li>
+      <li>取引先から預かった資料や、秘密保持の約束(契約・念書・口頭を含む)がある情報が入っていますか。</li>
+    </ol>
+    <p class="cut">この先(問い3〜5、伏せ方の例)は製品版に収録しています。</p>
+  </div>
+
+  <div class="excerpt">
+    <span class="label">ガイドライン 第10章より</span>
+    <h3>第10章 事故の時の連絡</h3>
+    <p>1. 次のことが起きたら、気づいた時点ですぐに、<span class="fill">【責任者】</span>に<span class="fill">【電話・社内チャット・直接】</span>で知らせてください。夜間・休日でも、<span class="fill">【連絡先】</span>に連絡してください。</p>
+    <ul>
+      <li>入力禁止の情報を、生成AIに入力してしまった(入力した可能性がある)</li>
+      <li>会社が認めていない道具やアカウントで業務の内容を入力した</li>
+    </ul>
+    <p class="cut">この先(報告で伝えること、責任者の対応の順番、報告した人を責めない定め)は製品版に収録しています。</p>
+  </div>
+
+  <div class="excerpt">
+    <span class="label">入力前チェックより</span>
+    <p>入力する前に、上から順に確かめてください。ひとつでも当てはまったら、入力しません。</p>
+    <ul class="check">
+      <li>会社が認めた道具・会社のアカウントを使っている(私用のアカウントではない)</li>
+      <li>名前・住所・電話番号・メールアドレス・顔写真など、人が特定できる情報が入っていない</li>
+      <li>取引先から預かった資料や、秘密にすると約束した情報が入っていない</li>
+    </ul>
+    <p class="cut">全7項目と、相談先・連絡先の記入欄は製品版に収録しています。</p>
+  </div>
+
+  <div class="excerpt">
+    <span class="label">研修動画の台本より 場面4(3:40〜5:00)</span>
+    <div class="scene">
+      <div class="screen"><small>画面の文字</small>迷ったら、この問い<br>「この文章がネットに公開されたら、困る人はいるか」<br>いる → 入力しない<br>分からない → 聞いてから</div>
+      <div class="talk"><small>話す内容</small><p>実際の仕事では、これは入れていいのか、と迷う場面があると思います。そのときは、一つだけ自分に聞いてください。「この文章がそのままネットに公開されたら、困る人はいるか」。</p><p>お客様が困る、取引先が困る、同僚が困る、会社が困る。一人でも思い浮かんだら、入力しません。</p></div>
+    </div>
+    <p class="cut">台本は全9場面(約10分)です。</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>使い始めるまでの流れ</h2>
+  <ol class="steps">
+    <li><b>責任者と使ってよい道具を決める<span class="t">20分</span></b><span>第3章と別表1を埋めます。迷ったら「公開済みの情報だけ入力可」から始めれば十分です。</span></li>
+    <li><b>自社の「入力禁止」の例を書き出す<span class="t">20分</span></b><span>別表2に、顧客台帳や見積書など、自社で実際に扱っている書類の名前を書きます。</span></li>
+    <li><b>残りの【 】を埋める<span class="t">20分</span></b><span>連絡先、確認の手順、見直しの時期など。合わない項目は消して構いません。</span></li>
+    <li><b>研修動画を撮って、チェックを配る</b><span>台本を読み上げて撮影し、入力前チェックを配ります。見た日と人を「周知の記録」に残します。</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="price">
+  <h2>料金</h2>
+  <div class="panel ac">
+    <p class="plan-name">ひな形一式(買い切り・1社)</p>
+    <div class="price"><span class="amt num"><span class="yen">¥</span>19,800</span><span class="unit">税込</span></div>
+    <ul class="items">
+      <li>生成AI利用ガイドラインのひな形(12章+別表・周知の記録)</li>
+      <li>入力前チェック(1枚)</li>
+      <li>研修動画の台本(約10分・9場面)</li>
+      <li>社内で自由に書き直し・印刷・配布できます(1社の中での利用に限ります)</li>
+    </ul>
+    <button class="btn" type="button" disabled aria-disabled="true">準備中(まだご購入いただけません)</button>
+    <p class="muted">販売の開始時期とお届けの形式は、決まりしだいこのページでお知らせします。</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>ご購入の前に</h2>
+  <div class="caution">
+    <p><strong>これは就業規則の作成ではありません。</strong>会社が自分で内容を確かめ、書き直して使うための「ひな形と教材」です。違反した場合の扱いなど、就業規則に反映させる場合は、社会保険労務士にご相談ください。</p>
+    <p><strong>個別の法律相談はお受けしていません。</strong>個人情報保護法・不正競争防止法(営業秘密)・著作権法については、一般的な説明にとどめています。自社の状況での判断が必要な場合は、弁護士などの専門家にご相談ください。</p>
+    <p style="margin:0">弁護士・社会保険労務士の監修は受けていません。このひな形を使うことで、法令上の義務を満たすことや、事故が起きないことを保証するものではありません。</p>
+  </div>
+</section>
+
+<section class="sec faq">
+  <h2>よくあるご質問</h2>
+  <details><summary>ChatGPT以外の生成AIにも使えますか?</summary><p>使えます。特定のサービスに限らない書き方にしてあり、使ってよい道具は別表1に自社で書き込みます。表計算やメールのソフトに組み込まれた生成AIの機能も対象に含めています。</p></details>
+  <details><summary>生成AIを禁止するためのルールですか?</summary><p>いいえ。入れてはいけない情報をはっきりさせたうえで、安心して使えるようにするためのルールです。全面的に禁止したい場合も、別表1を空欄にすれば使えます。</p></details>
+  <details><summary>社員が1〜2人でも必要ですか?</summary><p>人数が少なくても、お客様の情報を扱うなら役に立ちます。特に、入力前チェックと事故の時の連絡先は、1人の会社でも決めておく意味があります。</p></details>
+  <details><summary>就業規則に載せる必要はありますか?</summary><p>ガイドラインとして配るだけでも、社内の約束としては機能します。違反した場合の懲戒などを定めたい場合は、就業規則との関係を社会保険労務士にご相談ください。</p></details>
+  <details><summary>法律の条文は載っていますか?</summary><p>本文では条文番号を挙げず、守るべきことを平易に書いています。根拠を確かめたい方のために、個人情報保護委員会・文化庁・経済産業省などの公的な資料名を末尾に載せています。条文はe-Gov法令検索でご確認いただけます。</p></details>
+  <details><summary>誰が作っていますか?</summary><p>ZEROICHI WORKS が、公的な資料をもとに、AI(Claude)を使って作成しました。事業者の表示は<a href="https://zeroichiworks.net/tokushoho.html">特定商取引法に基づく表記</a>をご覧ください。</p></details>
+</section>
+
+</main>
+<footer class="zw-foot"><div class="in">
+  <nav><a href="../">ZEROICHI WORKS トップ</a><a href="https://zeroichiworks.net/tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a></nav>
+  <p>販売者:ZEROICHI WORKS</p>
+  <p>このページの内容は一般的な情報で、個別の法的な助言ではありません。</p>
+</div></footer>
+</body>
+</html>
