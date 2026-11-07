@@ -43,7 +43,7 @@ S = ROOT / OUT
 NOINDEX = OUT != "sedori"
 ROBOTS = '<meta name="robots" content="noindex,nofollow">'
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261030d"
+VER = "20261108b"  # 11/8 テストで直した部品を確実に読み込ませるため更新
 
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
 # 料金は sedori/assets/config.js の PLAN_CATALOG だけで決める(/*PLANS*/ と /*/PLANS*/ の間の JSON)
