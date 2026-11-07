@@ -15,6 +15,9 @@ jobs:
               echo "== $u"; curl -sS -o /dev/null -w "%{http_code} %{redirect_url} ssl=%{ssl_verify_result}\n" -m 20 "$u" 2>&1
             done
             echo "== cert"; echo | openssl s_client -connect zeroichiworks.net:443 -servername zeroichiworks.net 2>/dev/null | openssl x509 -noout -subject -issuer -dates; echo "== dig"; dig +short zeroichiworks.net; dig +short www.zeroichiworks.net
+            W=https://zw-sedori-billing.zeroichi-works-jp.workers.dev
+            echo "== worker health"; curl -sS -m 20 "$W/health"; echo
+            echo "== worker plans"; curl -sS -m 20 -H "Origin: https://zeroichiworks.net" -D - "$W/stripe/plans" | grep -i -E "^HTTP|access-control-allow-origin|^\{"; echo
           } > ops/site_check.txt 2>&1; true
       - run: |
           git config user.name "site-check"; git config user.email "site-check@users.noreply.github.com"
