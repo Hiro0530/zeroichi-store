@@ -108,6 +108,9 @@
       '<td class="r c-pt">' + (it.shopPt > 1 ? '<span class="pt">' + (it.src === 'yahoo' ? it.shopPt + '%' : 'P' + it.shopPt + '倍') + '</span>' : '<span class="muted">1倍</span>') + '</td>' +
       '<td class="r" data-k="Amazon売値">' + sellCell + '</td><td class="r c-fee fee">' + feeCell + '</td><td class="r" data-k="利益">' + pfCell + '</td><td class="r c-rt">' + rtCell + '</td></tr>';
   }
+  /* 行を作り直すのは中身が変わった時だけ(入力欄から離れた時の change で押した行のクリックが消えないように) */
+  var rowsHTML = null;
+  function setRows(html) { if (html !== rowsHTML) { rowsHTML = html; $('#rows').innerHTML = html; } }
   function render() {
     $$('.tabs [data-tab]').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === tab)); });
     $('#n-s').textContent = lists.s.length; $('#n-w').textContent = lists.w.length;
@@ -118,7 +121,7 @@
     var v = visible();
     var empty = { s: query ? '見つかりませんでした。言葉を短くするか、JANコードで探してください。' : '検索欄にキーワードかJANコードを入れて、検索してください。<br><kbd>/</kbd> で検索欄に移動します。',
       w: '気になる商品は、右の「ウォッチに追加」で残せます。' }[tab];
-    $('#rows').innerHTML = v.length ? v.map(rowHTML).join('') : '<tr><td colspan="8" class="empty">' + (cur().length ? '絞り込みの条件に合う商品がありません。' : empty) + '</td></tr>';
+    setRows(v.length ? v.map(rowHTML).join('') : '<tr><td colspan="8" class="empty">' + (cur().length ? '絞り込みの条件に合う商品がありません。' : empty) + '</td></tr>');
     $('#credit').innerHTML = (tab === 'w' ? '' : CREDIT + '。価格・在庫・ポイントは取得時点のものです。') +
       ' 「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益からポイント抜きで逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。';
     paintBulk();
@@ -143,6 +146,7 @@
   function select(i, scroll) {
     sel = i; U.store.set('ra-sel', { tab: tab, i: i });
     $$('#rows tr[data-i]').forEach(function (tr) { var on = Number(tr.getAttribute('data-i')) === i; tr.classList.toggle('on', on); if (on) tr.setAttribute('aria-selected', 'true'); else tr.removeAttribute('aria-selected'); });
+    rowsHTML = null;
     fillDetail();
     var it = selected();
     if (keys().keepa && it.jan && !it.sell && !it.kp) kpFetch(it);
@@ -172,7 +176,7 @@
     if (it.manual) U.store.set('ra-manual', it);
     persistList();
     var tr = $('#rows tr[data-i="' + sel + '"]');
-    if (tr && sel >= 0) { var o = { it: it, i: sel, r: compute(it) }; var tmp = document.createElement('tbody'); tmp.innerHTML = rowHTML(o); tr.replaceWith(tmp.firstChild); }
+    if (tr && sel >= 0) { var o = { it: it, i: sel, r: compute(it) }; var tmp = document.createElement('tbody'); tmp.innerHTML = rowHTML(o); tr.replaceWith(tmp.firstChild); rowsHTML = null; }
     calcDetail(); links();
   }
   ['c-cost', 'c-inship', 'c-pt-shop', 'c-code', 'c-sell', 'c-qty'].forEach(function (id) { $('#' + id).addEventListener('input', fromDetail); });
@@ -222,7 +226,8 @@
     var b = $('[data-act="buy"]'); b.classList.toggle('done', !!done);
     b.innerHTML = done ? '台帳に記録済み' : '仕入れた<kbd>S</kbd>';
   }
-  function buy() {
+  function buy(force) {
+    if (force !== true && $('[data-act="buy"]').classList.contains('done')) { U.toast('この内容は台帳に記録済みです', 'もう1件記録する', function () { buy(true); }); return; }
     var it = selected(), r = compute(it);
     if (!r || !r.sell) { U.toast('仕入れ値を入れてください'); $('#c-cost').focus(); return; }
     var noActual = r.est; // 実際の売値が未入力なら、台帳の売値は目標の売値(目安)で入れて、そう知らせる
@@ -269,7 +274,7 @@
       $('#open-keys').addEventListener('click', openKeys); return;
     }
     if (!useQuota()) { msg('無料版の今日の検索回数(' + FREE_SEARCHES_PER_DAY + '回)を使い切りました。明日また使えます。計算と台帳は制限なく使えます。'); return; }
-    msg(''); $('#rows').innerHTML = '<tr class="loading"><td colspan="8">楽天市場を検索しています</td></tr>';
+    msg(''); rowsHTML = null; $('#rows').innerHTML = '<tr class="loading"><td colspan="8">楽天市場を検索しています</td></tr>';
     searchRakuten(q, k).then(function (list) {
       lists.s = list; U.store.set('ra-last', { q: q, items: list }); render(); fillDetail();
     }).catch(function (err) {

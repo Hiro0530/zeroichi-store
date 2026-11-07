@@ -63,14 +63,18 @@
     return { x: x, be: be, be0: be0, tp: tp, r: r, r0: r0, est: est, need: x.sell ? C.needProfit(x.sell, tg) : 0 };
   }
 
+  /* 行を作り直すのは中身が変わった時だけ。入力欄から離れた時の change で同じ表を作り直すと、
+     その瞬間に押した行のクリックが消える(1回目のタップが効かない)ため */
+  var rowsHTML = null;
+  function setRows(html) { if (html !== rowsHTML) { rowsHTML = html; $('#rows').innerHTML = html; } }
   function render(b) {
     var price = val('s-price'), grp = '';
     $$('#mk-tabs [data-mk]').forEach(function (t) { t.setAttribute('aria-selected', String(t.getAttribute('data-mk') === market)); });
     $('#s-rate-w').hidden = market !== 'other';
     if (!(b.unit > 0) && route !== 'mercari') {
-      $('#rows').innerHTML = '<tr><td colspan="7" class="empty">「仕入れ」に落札価格を入れると、配送方法ごとの売値と利益が並びます。</td></tr>'; return;
+      setRows('<tr><td colspan="7" class="empty">「仕入れ」に落札価格を入れると、配送方法ごとの売値と利益が並びます。</td></tr>'); return;
     }
-    $('#rows').innerHTML = ships.map(function (sh) {
+    setRows(ships.map(function (sh) {
       var c = rowCalc(sh, b), out = '';
       if (sh.group !== grp) { grp = sh.group; out += '<tr class="grp"><td colspan="7">' + esc(grp) + '</td></tr>'; }
       var np = c.r0 ? c.r0.profit : 0, pt = c.r && c.r0 ? c.r.profit - c.r0.profit : 0;
@@ -82,7 +86,7 @@
         '<td class="r c-fee fee">' + (c.r ? yen(c.r.fee) : '—') + '</td>' +
         '<td class="r" data-k="利益">' + (c.r && !c.est ? '<span class="pf ' + cls + '">' + yen(np) + '</span>' + (pt > 0 ? '<small class="ptadd">+P' + yen(pt) + '</small>' : '') : '<span class="muted">—</span>') + '</td>' +
         '<td class="r c-rt">' + (c.r && !c.est ? '<span class="rt ' + cls + '">' + U.pct(c.r.sell > 0 ? np / c.r.sell : 0) + '</span>' : '<span class="muted">—</span>') + '</td></tr>';
-    }).join('');
+    }).join(''));
     $('.tbar-t').innerHTML = '配送方法ごとの売値と利益<small>' + MK_LABEL[market] + ' 手数料' + U.pct(rate(), 0) + '　1個の原価 ' + yen(b.unit) + '円　' + (price ? '実際の売値 ' + yen(price) + '円で計算' : '実際の売値を入れると利益が出ます') + '</small>';
   }
 
@@ -132,6 +136,7 @@
     var tr = e.target.closest('tr[data-i]'); if (!tr) return;
     shipId = tr.getAttribute('data-i'); U.store.set('ship-' + route, shipId);
     $$('#rows tr[data-i]').forEach(function (t) { t.classList.toggle('on', t === tr); });
+    rowsHTML = null;
     paintBuy(false); $('#party').innerHTML = '';
     detail(buy());
     if (U.narrow()) $('#sell').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -148,7 +153,8 @@
     U.toast('実際の売値 ' + yen(L.r.sell) + '円で計算しています(' + L.sh.label + ')' + (L.c.r0.profit <= 0 ? '。ポイント抜きでは利益が出ません' : ''));
   }
   function paintBuy(done) { var b = $('[data-act="buy"]'); b.classList.toggle('done', !!done); b.innerHTML = done ? '台帳に記録済み' : '仕入れた<kbd>S</kbd>'; }
-  function doBuy() {
+  function doBuy(force) {
+    if (force !== true && $('[data-act="buy"]').classList.contains('done')) { U.toast('この内容は台帳に記録済みです', 'もう1件記録する', function () { doBuy(true); }); return; }
     var L = lastRes, b = buy();
     if (!(b.unit > 0) && route !== 'mercari') { U.toast('仕入れの金額を入れてください'); return; }
     if (!L) { U.toast('売値を決めてください'); return; }

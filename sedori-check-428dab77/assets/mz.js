@@ -78,23 +78,27 @@
       c.need = C.needProfit(c.price, tg);
     });
   }
+  /* 行を作り直すのは中身が変わった時だけ(入力欄から離れた時の change で押した行のクリックが消えないように) */
+  var rowsHTML = null;
+  function setRows(html) { if (html !== rowsHTML) { rowsHTML = html; $('#rows').innerHTML = html; } }
   function render() {
     var nw = val('mz-new'), has = val('mz-yprice') > 0;
     $('#mz-title').innerHTML = nw > 0 ? '新品 ' + yen(nw) + '円からの出品価格<small>' + (has ? 'ヤフオク ' + yen(val('mz-yprice') + val('mz-yship')) + '円(送料込み)で仕入れた場合' : 'ヤフオクの価格を入れると利益が出ます') + '</small>' : '新品の価格を入れると、値下げ幅ごとの利益が並びます<small>「JAN・ASIN」で Keepa を押すか、検索欄で「Amazon」を選んで検索</small>';
-    $('#rows').innerHTML = cands.length ? cands.map(function (c, i) {
+    setRows(cands.length ? cands.map(function (c, i) {
       var r = c.r, cls = r.profit < 0 ? 'bad' : (r.profit >= c.need ? 'good' : '');
       return '<tr data-i="' + i + '"' + (i === sel ? ' class="on"' : '') + '><td><div class="nm">' + esc(c.label) + '</div>' + (c.tag === 'target' ? '<div class="meta">目標の利益から逆算した目安</div>' : c.tag === 'actual' ? '<div class="meta"><b>確かめた価格</b></div>' : (nw > 0 && c.off == null ? '<div class="meta">新品より' + U.pct(1 - c.price / nw, 0) + '安い</div>' : '')) + '</td>' +
         '<td class="r" data-k="出品価格"><span class="yen">' + yen(c.price) + '<i>円</i></span></td><td class="r c-fee fee">' + yen(r.referral) + '</td><td class="r c-fee fee">' + yen(r.selfShipCost) + '</td>' +
         '<td class="r" data-k="利益">' + (has ? '<span class="pf ' + cls + '">' + yen(r.profit) + '</span>' : '<span class="muted">—</span>') + '</td>' +
         '<td class="r c-rt">' + (has ? '<span class="rt ' + cls + '">' + U.pct(r.margin) + '</span>' : '<span class="muted">—</span>') + '</td>' +
         '<td class="r" data-k="ヤフオク上限">' + (c.max == null ? '<span class="muted">届かない</span>' : '<span class="yen">' + yen(c.max) + '<i>円</i></span>') + '</td></tr>';
-    }).join('') : '<tr><td colspan="7" class="empty">新品の価格がまだありません。<br>「JAN・ASIN」で Keepa を押すか、「新品の価格」に入れてください。</td></tr>';
+    }).join('') : '<tr><td colspan="7" class="empty">新品の価格がまだありません。<br>「JAN・ASIN」で Keepa を押すか、「新品の価格」に入れてください。</td></tr>');
   }
   $('#rows').addEventListener('click', function (e) { var tr = e.target.closest('tr[data-i]'); if (tr) select(Number(tr.getAttribute('data-i')), true); });
   function select(i, scroll) {
     sel = i; manual = false; var c = cands[i]; if (!c) return;
     $('#mz-sell').value = c.price;
     $$('#rows tr[data-i]').forEach(function (tr) { tr.classList.toggle('on', Number(tr.getAttribute('data-i')) === i); });
+    rowsHTML = null;
     U.store.set('mz-pick', c.tag || c.off);
     detail(); paintBuy(false); $('#party').innerHTML = '';
     if (scroll && U.narrow()) $('#mz-calc').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -159,7 +163,8 @@
     var b = $('[data-act="buy"]'); b.classList.toggle('done', !!done);
     b.innerHTML = done ? '台帳に記録済み' : (watching() ? '出品した(見張る)' : '仕入れた') + '<kbd>S</kbd>';
   }
-  function buy() {
+  function buy(force) {
+    if (force !== true && $('[data-act="buy"]').classList.contains('done')) { U.toast('この内容は台帳に記録済みです', 'もう1件記録する', function () { buy(true); }); return; }
     var r = lastR;
     if (!r) { U.toast('ヤフオクの価格を入れてください'); $('#mz-yprice').focus(); return; }
     var media = $('#mz-media').checked, code = $('#mz-code').value.trim();
@@ -225,7 +230,7 @@
       el.addEventListener('input', function () { if (el.id === 'mz-new') manual = false; if (el.id === 'mz-actual') { manual = false; U.store.set('mz-pick', 'actual'); } update(); });
       el.addEventListener('change', update);
     });
-    $('#mz-sell').addEventListener('input', function () { sel = -1; manual = true; $$('#rows tr.on').forEach(function (tr) { tr.classList.remove('on'); }); detail(); });
+    $('#mz-sell').addEventListener('input', function () { sel = -1; manual = true; $$('#rows tr.on').forEach(function (tr) { tr.classList.remove('on'); }); rowsHTML = null; detail(); });
     update();
   });
 })();

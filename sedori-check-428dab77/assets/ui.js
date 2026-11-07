@@ -324,7 +324,7 @@
         if (r.status === '売約') {
           if (!r.saleDate) r.saleDate = today();
           if (!r.salePrice && r.sellPrice) r.salePrice = r.sellPrice;
-          if (!r.saleParty) r.saleParty = (r.sellTo || '') + ' 購入者';
+          if (!r.saleParty) r.saleParty = ((r.sellTo || '') + ' 購入者').trim();
         }
         if (r.status === '発送済' && !r.shipDate) r.shipDate = today();
         hit = r;

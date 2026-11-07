@@ -942,3 +942,14 @@ p.pc-sub[data-c="year"]{color:var(--good);font-weight:700}
 .pt-hint{margin:8px 0 0}
 .nojs{margin:8px 0;padding:8px 12px;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);font-size:12.5px}
 .cv input::placeholder,.inl input::placeholder{font-weight:400;font-size:12px;color:var(--mute)}
+/* スマホで押しやすく(2026-11-08 品質テスト): 入力欄・選択・ボタン・タブ・メニューを指で押せる高さ(44px)に */
+@media(max-width:860px){
+  main input:not([type=checkbox]):not([type=radio]),main select,main .btn,main [role=tab],main .seg button,
+  .gnav a,.hd .seg button,.hd input,.hd select,.hd-ai,.hd-acct,.sbar button{min-height:44px}
+  main input[type=checkbox],main input[type=radio]{width:22px;height:22px}
+  main label.ck,main label.rd{min-height:44px;display:inline-flex;align-items:center;gap:6px}
+  .ledger .ops button,.ledger .adv{min-height:40px;min-width:44px}
+  main summary,.hd-ledger,.ft nav a{min-height:44px;display:flex;align-items:center}
+  .ft nav a{display:inline-flex}
+  .det-links a,.det-links .lnk,.lnk.ai-lnk{display:inline-flex;align-items:center;min-height:44px}
+}

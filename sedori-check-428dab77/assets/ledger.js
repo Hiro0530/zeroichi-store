@@ -162,7 +162,7 @@
         var k = el.getAttribute('data-e'), v = el.type === 'checkbox' ? el.checked : el.value;
         if (el.type === 'number') v = v === '' ? '' : Number(v);
         var patch = {}; patch[k] = v;
-        if (k === 'status' && v === '売約') { var r0 = L.get(openId); if (r0 && !r0.saleDate) { patch.saleDate = U.today(); patch.salePrice = r0.salePrice || r0.sellPrice || ''; patch.saleParty = r0.saleParty || (r0.sellTo || '') + ' 購入者'; } }
+        if (k === 'status' && v === '売約') { var r0 = L.get(openId); if (r0 && !r0.saleDate) { patch.saleDate = U.today(); patch.salePrice = r0.salePrice || r0.sellPrice || ''; patch.saleParty = r0.saleParty || ((r0.sellTo || '') + ' 購入者').trim(); } }
         L.update(openId, patch);
         refreshRow();
         if (k === 'ship') { var r1 = L.get(openId); var fl = U.flowOf(r1); if (fl.indexOf(r1.status) < 0) L.update(openId, { status: fl[1] }); if (!r1.recvId || /^(自宅|Amazon FBA)$/.test(r1.recvId)) L.update(openId, { recvId: v === 'self' ? '自宅' : (v === 'fba' ? 'Amazon FBA' : '') }); }
