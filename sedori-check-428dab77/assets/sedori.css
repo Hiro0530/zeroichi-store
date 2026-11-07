@@ -952,4 +952,5 @@ p.pc-sub[data-c="year"]{color:var(--good);font-weight:700}
   main summary,.hd-ledger,.ft nav a{min-height:44px;display:flex;align-items:center}
   .ft nav a{display:inline-flex}
   .det-links a,.det-links .lnk,.lnk.ai-lnk{display:inline-flex;align-items:center;min-height:44px}
+  .det-links{row-gap:0;column-gap:14px}
 }
