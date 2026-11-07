@@ -1,0 +1,83 @@
+/* 仮想通貨の損益計算(tax-crypto)だけで使う見た目。共通部分は ../zw.css */
+.p-tax{--ac:#2f6a8a;--ac-ink:#fff;--ac-soft:#e2eef4;--ac-text:#245570}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .p-tax{--ac:#5fa9cf;--ac-ink:#06202d;--ac-soft:#10293a;--ac-text:#86c3e3}}
+:root[data-theme="dark"] .p-tax{--ac:#5fa9cf;--ac-ink:#06202d;--ac-soft:#10293a;--ac-text:#86c3e3}
+
+.hero{padding:28px 0 4px}
+.hero h1{font-size:clamp(24px,6.2vw,34px);margin:10px 0 10px}
+.disc{border-left:4px solid var(--caution);background:var(--caution-soft);padding:12px 14px;border-radius:0 var(--r-s) var(--r-s) 0;font-size:14px;line-height:1.7;margin:14px 0 0}
+
+/* CSVを入れる所 */
+.drop{display:block;margin:18px 0 6px;border:2px dashed var(--line2);border-radius:var(--r-m);background:var(--surface);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--ac);background:var(--ac-soft)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop .btn{margin:0 auto 10px;pointer-events:none}
+.drop small{display:block;color:var(--muted);font-size:13.5px;line-height:1.7}
+.local{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.local::before{content:"";flex:0 0 8px;height:8px;margin-top:8px;border-radius:2px;background:var(--ac)}
+
+/* 読み込んだファイル */
+.file{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:14px 16px;margin:12px 0}
+.file-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.file-h b{font-size:15.5px;overflow-wrap:anywhere}
+.file-h .st{font-size:13px;font-weight:700;padding:1px 10px;border-radius:999px;background:var(--ac-soft);color:var(--ac-text)}
+.file-h .st.ng{background:var(--caution-soft);color:var(--caution)}
+.file-h .rm{margin-left:auto;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;min-height:36px;padding:0 4px}
+.mapline{font-size:13.5px;color:var(--muted);margin:6px 0 0;line-height:1.7}
+.mapline span{white-space:nowrap}
+.file details{margin-top:8px;border-top:1px solid var(--line)}
+.file summary{cursor:pointer;font-weight:700;font-size:14.5px;min-height:44px;display:flex;align-items:center;color:var(--ac-text)}
+.grid{display:grid;grid-template-columns:1fr;gap:10px;margin:4px 0 12px}
+@media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
+.grid label{display:block;font-size:13.5px;font-weight:700}
+.grid label i{font-style:normal;color:var(--caution);margin-left:4px;font-size:12px}
+select,input[type=number],input[type=text]{width:100%;min-height:44px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:15px;padding:6px 10px;margin-top:3px}
+select.miss{border-color:var(--caution);background:var(--caution-soft)}
+.sides{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 10px}
+.sides td{border-top:1px solid var(--line);padding:6px 0;vertical-align:middle}
+.sides td:first-child{padding-right:12px;overflow-wrap:anywhere}
+.sides select{margin:0;min-width:9em}
+.peek{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-s);margin:6px 0 4px}
+.peek table{border-collapse:collapse;font-size:12.5px;white-space:nowrap}
+.peek th,.peek td{padding:5px 10px;border-bottom:1px solid var(--line);text-align:left}
+.peek th{background:var(--sunk);font-weight:700}
+.sub-h{font-size:14px;font-weight:700;margin:10px 0 2px}
+
+/* 結果 */
+.years{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+.years button,.seg button{min-height:44px;padding:6px 16px;border:1px solid var(--line2);border-radius:999px;background:var(--surface);color:var(--ink);font:700 15px/1 var(--num);letter-spacing:.02em;cursor:pointer}
+.years button[aria-pressed=true],.seg button[aria-pressed=true]{background:var(--ac);border-color:var(--ac);color:var(--ac-ink)}
+.seg button{font-family:var(--jp);font-size:14px}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 6px}
+.sum div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m);padding:12px 14px}
+.sum div.on{border-top:4px solid var(--ac);padding-top:9px}
+.sum span{display:block;font-size:13px;font-weight:700;color:var(--muted)}
+.sum b{display:block;font:600 clamp(24px,7vw,34px)/1.2 var(--num);font-variant-numeric:tabular-nums;margin-top:2px;overflow-wrap:anywhere}
+.sum b small{font-size:.55em;margin-left:2px;font-family:var(--jp);font-weight:700}
+.seg{display:flex;gap:8px;margin:16px 0 8px;flex-wrap:wrap}
+.tbl{overflow-x:auto;margin:6px 0 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-m)}
+.tbl table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl thead th{font-size:12.5px;color:var(--muted);font-weight:700;background:var(--sunk)}
+.tbl tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line2)}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl .neg{color:var(--caution)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.acts button{min-height:44px;padding:8px 16px;border:1px solid var(--line2);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.acts button:hover{border-color:var(--ac)}
+.warn{list-style:none;padding:0;margin:10px 0}
+.warn li{border-left:4px solid var(--caution);background:var(--caution-soft);padding:10px 12px;border-radius:0 var(--r-s) var(--r-s) 0;font-size:14px;margin:6px 0}
+.skipped{font-size:13px;color:var(--muted)}
+.skipped summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;color:var(--ink);font-size:14px}
+.skipped ol{max-height:260px;overflow:auto;padding-left:1.4em;margin:0 0 10px}
+.skipped li{margin:3px 0;overflow-wrap:anywhere}
+.open-in{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 10px;align-items:end;font-size:13.5px}
+.open-in b{padding-bottom:10px}
+.open-in label{font-size:12.5px;color:var(--muted)}
+.formula{background:var(--sunk);border:1px solid var(--line);border-radius:var(--r-s);padding:10px 14px;font-size:14px;line-height:1.9;margin:8px 0 12px}
+[hidden]{display:none!important}
+@media print{.zw-head,.drop,.local,#files,.acts,.seg,.zw-foot nav,#how{display:none!important}body{background:#fff}}
+.files-h{font-size:17px;margin:22px 0 4px}
+.sum .neg{color:var(--caution)}
+@media(max-width:560px){.tbl th,.tbl td{padding:8px 6px;font-size:12.5px}.tbl th:first-child,.tbl td:first-child{padding-left:10px}.tbl th:last-child,.tbl td:last-child{padding-right:10px}}

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>仮想通貨の損益計算|ZEROICHI WORKS</title>
+<meta name="description" content="取引所の取引履歴CSVから、1年ごとの仮想通貨(暗号資産)の所得を総平均法と移動平均法で計算します。計算はお使いの端末の中だけで行い、データは送信しません。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="../zw.css">
+<link rel="stylesheet" href="assets/tool.css">
+<meta name="theme-color" content="#1b2a6b">
+</head>
+<body class="p-tax">
+<header class="zw-head">
+  <div class="in"><a class="zw-logo" href="../"><span class="zw-mark" aria-hidden="true">01</span>ZEROICHI WORKS</a><span class="zw-logo sub">仮想通貨の損益計算</span></div>
+  <div class="bar"></div>
+</header>
+<main class="wrap">
+<section class="hero">
+  <span class="tag">副業の確定申告パック</span>
+  <h1><span class="name">仮想通貨の損益計算</span>取引履歴のCSVを入れると、1年ごとの所得が出ます。</h1>
+  <p class="lead">総平均法と移動平均法の両方で、銘柄ごとの売却額・取得原価・手数料・所得を計算します。</p>
+  <p class="disc" role="note">本ツールは取り込んだデータから機械的に計算するもので、税理士法に定める税務相談・税務書類の作成を行うものではありません。申告の判断は税務署または税理士にご相談ください。</p>
+</section>
+
+<label class="drop" id="drop">
+  <input type="file" id="pick" accept=".csv,.txt,.tsv,text/csv" multiple>
+  <span class="btn">取引履歴のCSVを選ぶ</span>
+  <small>bitFlyer・Coincheck・GMOコインなど。複数の取引所・複数年のファイルをまとめて選べます。<br>最初に買った年からの履歴をすべて入れてください(前の年からの繰越しを計算に使うため)。</small>
+</label>
+<p class="local">計算はこの端末の中だけで行います。CSVの中身はどこにも送信・保存しません(覚えておくのは列の対応だけです)。</p>
+
+<section id="files" hidden>
+  <h2 class="files-h">読み込んだファイル</h2>
+  <div id="fileList"></div>
+</section>
+
+<section id="result" class="sec" hidden>
+  <h2>計算結果</h2>
+  <div class="years" id="years" role="group" aria-label="年を選ぶ"></div>
+  <div class="sum" id="sum"></div>
+  <p class="muted">個人の場合、評価方法の届出をしていなければ総平均法で計算します(国税庁FAQ)。移動平均法を使うには届出が必要です。</p>
+  <div class="seg" id="seg" role="group" aria-label="内訳の計算方法">
+    <button type="button" data-m="average" aria-pressed="true">総平均法の内訳</button>
+    <button type="button" data-m="moving" aria-pressed="false">移動平均法の内訳</button>
+  </div>
+  <div class="tbl"><table id="tblAssets"></table></div>
+  <h3>年末に持っている分(翌年に繰り越す分)</h3>
+  <div class="tbl"><table id="tblHold"></table></div>
+  <ul class="warn" id="warn"></ul>
+  <div class="acts">
+    <button type="button" id="saveCsv">結果をCSVで保存</button>
+    <button type="button" id="print">印刷する</button>
+  </div>
+  <details class="skipped" id="skippedBox"><summary id="skippedSum"></summary><ol id="skippedList"></ol></details>
+  <details class="skipped" id="openBox">
+    <summary>履歴が途中の年からしかない場合(年初の保有を入れる)</summary>
+    <p>最初の年の1月1日に持っていた数量と、その取得価額の合計(前年末の評価額)を入れると、繰越しとして計算に入ります。</p>
+    <div class="open-in" id="openIn"></div>
+  </details>
+</section>
+
+<section class="sec" id="how">
+  <h2>計算のしかた</h2>
+  <p>国税庁「<a href="https://www.nta.go.jp/publication/pamph/pdf/virtual_currency_faq_03.pdf" target="_blank" rel="noopener noreferrer">暗号資産に関する税務上の取扱いについて(FAQ)</a>」の計算方法に沿っています。銘柄ごとに、すべての取引所の取引を合わせて計算します。</p>
+  <h3>総平均法</h3>
+  <div class="formula">1単位の取得価額 =(年初の評価額 + その年に買った分の取得価額)÷(年初の数量 + その年に買った数量)<br>取得原価 = 1単位の取得価額 × その年に売った数量</div>
+  <h3>移動平均法</h3>
+  <div class="formula">買うたびに 平均単価 =(それまでの帳簿価額 + 今回の取得価額)÷(それまでの数量 + 今回の数量)<br>取得原価 = 売った時点の平均単価 × 売った数量</div>
+  <h3>所得と手数料</h3>
+  <div class="formula">所得 = 売却額 − 取得原価 − 売るときの手数料</div>
+  <ul class="items">
+    <li><b>買うときの手数料</b> 取得価額に加えます。暗号資産で差し引かれた場合は、受け取った数量が減ります。</li>
+    <li><b>売るときの手数料</b> 所得から差し引きます。暗号資産で差し引かれた場合は、その分も売ったものとして数量に含めます。</li>
+    <li><b>計算に入れないもの</b> 入金・出金・送金、ステーキングやエアドロップなどの受け取り、暗号資産同士の交換(例: ETHをBTCで買う)、レバレッジ取引。入れなかった行は結果の下に一覧で出ます。これらがある場合は別に計算が必要です。</li>
+    <li><b>端数</b> 計算の途中は丸めず、表示のときに円未満を四捨五入しています。</li>
+  </ul>
+  <h3>列の対応について</h3>
+  <p>取引所ごとにCSVの列の名前が違うため、見出しの言葉から「日時・通貨・売買・数量・単価・手数料」の列を自動で選びます。選べなかった列や違っている列は、ファイルごとの「列の対応を確認・変更」から直せます。直した対応はこの端末に覚えておき、次から同じ形のCSVに使います。</p>
+</section>
+</main>
+<footer class="zw-foot"><div class="in">
+  <nav><a href="../">ZEROICHI WORKS トップ</a><a href="../tokushoho.html">特定商取引法に基づく表記</a><a href="../privacy.html">プライバシーポリシー</a></nav>
+  <p>本ツールは取り込んだデータから機械的に計算するもので、税理士法に定める税務相談・税務書類の作成を行うものではありません。申告の判断は税務署または税理士にご相談ください。</p>
+  <p>計算方法の出典: 国税庁「暗号資産に関する税務上の取扱いについて(FAQ)」。個別のご相談には応じておりません。</p>
+</div></footer>
+<script src="assets/csv.js"></script>
+<script src="assets/calc.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
