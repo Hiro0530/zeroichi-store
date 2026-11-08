@@ -1,4 +1,4 @@
-Sun Nov  8 11:04:39 UTC 2026
+Sun Nov  8 11:05:25 UTC 2026
 == https://zeroichiworks.net/
 200  ssl=0
 == https://zeroichiworks.net/sedori/
@@ -17,19 +17,19 @@ issuer=C=US, O=Let's Encrypt, CN=YR1
 notBefore=Oct 28 10:12:08 2026 GMT
 notAfter=Jan 26 10:12:07 2027 GMT
 == dig
-185.199.111.153
 185.199.110.153
 185.199.109.153
 185.199.108.153
+185.199.111.153
 hiro0530.github.io.
-185.199.109.153
-185.199.111.153
 185.199.110.153
+185.199.109.153
 185.199.108.153
+185.199.111.153
 == worker health
 {"ok":true}
 == worker diag
-{"error":"method"}
+{"mode":"test","webhook":true,"firebase":false,"prices":{"light_month":{"ok":false,"why":"stripe GET /prices/price_1UVZwFAXVFsyo9rx8vM2giER 401 Invalid API Key provided: ********************************************************************************"},"light_year":{"ok":false,"why":"stripe GET /prices/price_1UVZxkAXVFsyo9rxHIer8WEI 401 Invalid API Key provided: ********************************************************************************"},"total_month":{"ok":false,"why":"stripe GET /prices/price_1UVZyXAXVFsyo9rxorBzvtDz 401 Invalid API Key provided: ********************************************************************************"},"total_year":{"ok":false,"why":"stripe GET /prices/price_1UVZz3AXVFsyo9rxTkRqKTqg 401 Invalid API Key provided: ********************************************************************************"},"founder_month":{"ok":false,"why":"stripe GET /prices/price_1UVZzkAXVFsyo9rxbw9E7izM 401 Invalid API Key provided: ********************************************************************************"},"founder_year":{"ok":false,"why":"stripe GET /prices/price_1UVa0OAXVFsyo9rxurU03Ulj 401 Invalid API Key provided: ********************************************************************************"},"business_month":{"ok":false,"why":"stripe GET /prices/price_1UVa0vAXVFsyo9rx2uHFvGWH 401 Invalid API Key provided: ********************************************************************************"},"business_year":{"ok":false,"why":"stripe GET /prices/price_1UVa1VAXVFsyo9rx6igAmq7S 401 Invalid API Key provided: ********************************************************************************"}}}
 == worker plans
 HTTP/2 200 
 access-control-allow-origin: https://zeroichiworks.net
