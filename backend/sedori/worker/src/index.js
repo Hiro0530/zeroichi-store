@@ -778,6 +778,17 @@ export default {
       const ready = env.STRIPE_SECRET_KEY ? Object.keys(stripePrices(env)) : [];
       return json({ ready, trialDays: Number(env.TRIAL_DAYS || 14) }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
     }
+    // 診断(11/8): 鍵がテストか本番か、各価格IDが Stripe で見つかるかだけを返す。秘密の値は返さない
+    if (url.pathname === '/stripe/diag' && req.method === 'GET') {
+      const k = String(env.STRIPE_SECRET_KEY || '');
+      const mode = k.startsWith('sk_live_') || k.startsWith('rk_live_') ? 'live' : k.startsWith('sk_test_') || k.startsWith('rk_test_') ? 'test' : (k ? 'unknown' : 'none');
+      const prices = {};
+      for (const [key, id] of Object.entries(stripePrices(env))) {
+        try { const pr = await stripe(env, 'GET', '/prices/' + id); prices[key] = { ok: true, livemode: !!pr.livemode, active: !!pr.active }; }
+        catch (e) { prices[key] = { ok: false, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 160) }; }
+      }
+      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, prices }, 200, c);
+    }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
     if (url.pathname === '/stripe/webhook') {
       const text = await req.text();
