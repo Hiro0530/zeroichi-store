@@ -1,4 +1,4 @@
-Thu Nov 12 06:49:23 UTC 2026
+Thu Nov 12 08:31:31 UTC 2026
 == https://zeroichiworks.net/
 200  ssl=0
 == https://zeroichiworks.net/sedori/
@@ -17,19 +17,31 @@ issuer=C=US, O=Let's Encrypt, CN=YR1
 notBefore=Oct 28 10:12:08 2026 GMT
 notAfter=Jan 26 10:12:07 2027 GMT
 == dig
-185.199.108.153
 185.199.111.153
-185.199.110.153
 185.199.109.153
+185.199.108.153
+185.199.110.153
 hiro0530.github.io.
-185.199.110.153
-185.199.109.153
-185.199.111.153
 185.199.108.153
+185.199.111.153
+185.199.109.153
+185.199.110.153
 == worker health
 {"ok":true}
 == worker diag
 {"mode":"test","webhook":true,"firebase":true,"store":"ok","prices":{"light_month":{"ok":true,"livemode":false,"active":true},"light_year":{"ok":true,"livemode":false,"active":true},"total_month":{"ok":true,"livemode":false,"active":true},"total_year":{"ok":true,"livemode":false,"active":true},"founder_month":{"ok":true,"livemode":false,"active":true},"founder_year":{"ok":true,"livemode":false,"active":true},"business_month":{"ok":true,"livemode":false,"active":true},"business_year":{"ok":true,"livemode":false,"active":true}}}
+== worker checkout diag
+{"mode":"test","webhook":true,"firebase":true,"store":"ok","checkout":{"light_month":{"ok":false,"ms":257,"why":"stripe POST /checkout/sessions 400 The `payment_method_types` parameter is no longer supported when creating a Checkout Session. Payment methods are now managed from your Dashboard settings (https://dashboard.stripe.com/settings/paymen"},"total_year":{"ok":false,"ms":781,"why":"stripe POST /checkout/sessions 400 The `payment_method_types` parameter is no longer supported when creating a Checkout Session. Payment methods are now managed from your Dashboard settings (https://dashboard.stripe.com/settings/paymen"}},"prices":{"light_month":{"ok":true,"livemode":false,"active":true},"light_year":{"ok":true,"livemode":false,"active":true},"total_month":{"ok":true,"livemode":false,"active":true},"total_year":{"ok":true,"livemode":false,"active":true},"founder_month":{"ok":true,"livem
+200 2.156929s
+
+== worker checkout noauth
+{"error":"ログインし直してください"}
+401 0.048428s
+
+== worker checkout badtoken
+{"error":"ログインし直してください"}
+401 0.054719s
+
 == worker plans
 HTTP/2 200 
 access-control-allow-origin: https://zeroichiworks.net
