@@ -1,520 +1,520 @@
 {
  "total": {
-  "days": 20,
-  "graded_races": 2962,
-  "win_hits": 1687,
-  "tri_hits": 712,
-  "near": 502,
-  "stake_win": 296200,
-  "return_win": 266840,
-  "stake_tri": 888600,
-  "return_tri": 680230,
-  "base_hits": 1624,
-  "base_return": 268340,
-  "win_rate": 0.5695,
-  "base_win_rate": 0.5483,
-  "tri_rate": 0.2404,
-  "roi_win": 0.9009,
-  "roi_tri": 0.7655,
-  "roi_base": 0.9059,
+  "days": 21,
+  "graded_races": 3118,
+  "win_hits": 1779,
+  "tri_hits": 751,
+  "near": 526,
+  "stake_win": 311800,
+  "return_win": 281310,
+  "stake_tri": 935400,
+  "return_tri": 718340,
+  "base_hits": 1717,
+  "base_return": 283840,
+  "win_rate": 0.5706,
+  "base_win_rate": 0.5507,
+  "tri_rate": 0.2409,
+  "roi_win": 0.9022,
+  "roi_tri": 0.7679,
+  "roi_base": 0.9103,
   "ana": {
-   "days": 16,
-   "races": 31,
-   "hits": 3,
-   "stake": 9300,
-   "return": 4340,
+   "days": 17,
+   "races": 33,
+   "hits": 4,
+   "stake": 9900,
+   "return": 6070,
    "manshu_hits": 0,
-   "manshu_races": 6,
-   "roi": 0.4667
+   "manshu_races": 7,
+   "roi": 0.6131
   },
   "are": {
-   "days": 14,
-   "races": 42,
+   "days": 15,
+   "races": 45,
    "lane1_lost": 22,
    "manshu_races": 10,
    "bets": {
     "tan_34": {
-     "races": 42,
+     "races": 45,
      "hits": 6,
-     "stake": 4200,
+     "stake": 4500,
      "return": 2350,
-     "roi": 0.5595
+     "roi": 0.5222
     },
     "tri_34_6": {
-     "races": 42,
+     "races": 45,
      "hits": 3,
-     "stake": 25200,
+     "stake": 27000,
      "return": 13670,
-     "roi": 0.5425
+     "roi": 0.5063
     },
     "tri_non1_10": {
-     "races": 42,
+     "races": 45,
      "hits": 6,
-     "stake": 42000,
+     "stake": 45000,
      "return": 23570,
-     "roi": 0.5612
+     "roi": 0.5238
     }
    },
    "nashi": {
-    "races": 181,
-    "lane1_lost": 119,
-    "manshu_races": 39,
-    "cand_hits": 15,
-    "cand_stake": 54300,
-    "cand_return": 58890,
-    "cand_roi": 1.0845
+    "races": 195,
+    "lane1_lost": 127,
+    "manshu_races": 42,
+    "cand_hits": 16,
+    "cand_stake": 58500,
+    "cand_return": 63030,
+    "cand_roi": 1.0774
    },
    "levels": {
     "1": {
-     "races": 793,
-     "lane1_won": 549,
-     "manshu": 80
+     "races": 857,
+     "lane1_won": 595,
+     "manshu": 94
     },
     "2": {
-     "races": 749,
-     "lane1_won": 385,
-     "manshu": 142
+     "races": 803,
+     "lane1_won": 413,
+     "manshu": 153
     },
     "3": {
-     "races": 302,
-     "lane1_won": 130,
-     "manshu": 52
+     "races": 326,
+     "lane1_won": 143,
+     "manshu": 57
     },
     "4": {
-     "races": 181,
-     "lane1_won": 62,
-     "manshu": 39
+     "races": 195,
+     "lane1_won": 68,
+     "manshu": 42
     }
    }
   },
   "by_bet": {
    "tansho": {
-    "days": 17,
-    "races": 2459,
-    "hits": 1401,
-    "stake": 245900,
-    "return": 221810,
-    "pnl": -24090,
-    "roi": 0.902,
+    "days": 18,
+    "races": 2615,
+    "hits": 1493,
+    "stake": 261500,
+    "return": 236280,
+    "pnl": -25220,
+    "roi": 0.9036,
     "avg_odds": 1.58
    },
    "trifecta3": {
-    "days": 17,
-    "races": 2459,
-    "hits": 590,
-    "stake": 737700,
-    "return": 564700,
-    "pnl": -173000,
-    "roi": 0.7655,
-    "avg_odds": 9.57
+    "days": 18,
+    "races": 2615,
+    "hits": 629,
+    "stake": 784500,
+    "return": 602810,
+    "pnl": -181690,
+    "roi": 0.7684,
+    "avg_odds": 9.58
    },
    "fukusho": {
-    "days": 16,
-    "races": 2317,
-    "hits": 1780,
-    "stake": 231700,
-    "return": 216000,
-    "pnl": -15700,
-    "roi": 0.9322,
+    "days": 17,
+    "races": 2473,
+    "hits": 1897,
+    "stake": 247300,
+    "return": 229430,
+    "pnl": -17870,
+    "roi": 0.9277,
     "avg_odds": 1.21
    },
    "trio3": {
-    "days": 16,
-    "races": 2317,
-    "hits": 1236,
-    "stake": 695100,
-    "return": 558510,
-    "pnl": -136590,
-    "roi": 0.8035,
-    "avg_odds": 4.52
+    "days": 17,
+    "races": 2473,
+    "hits": 1319,
+    "stake": 741900,
+    "return": 596880,
+    "pnl": -145020,
+    "roi": 0.8045,
+    "avg_odds": 4.53
    },
    "exacta1": {
-    "days": 14,
-    "races": 2025,
-    "hits": 508,
-    "stake": 202500,
-    "return": 169500,
-    "pnl": -33000,
-    "roi": 0.837,
+    "days": 15,
+    "races": 2181,
+    "hits": 545,
+    "stake": 218100,
+    "return": 182230,
+    "pnl": -35870,
+    "roi": 0.8355,
     "avg_odds": 3.34
    },
    "exacta3": {
-    "days": 14,
-    "races": 2025,
-    "hits": 1076,
-    "stake": 607500,
-    "return": 493740,
-    "pnl": -113760,
-    "roi": 0.8127,
+    "days": 15,
+    "races": 2181,
+    "hits": 1157,
+    "stake": 654300,
+    "return": 531600,
+    "pnl": -122700,
+    "roi": 0.8125,
     "avg_odds": 4.59
    },
    "quinella1": {
-    "days": 12,
-    "races": 1761,
-    "hits": 622,
-    "stake": 176100,
-    "return": 155950,
-    "pnl": -20150,
-    "roi": 0.8856,
+    "days": 13,
+    "races": 1917,
+    "hits": 678,
+    "stake": 191700,
+    "return": 170470,
+    "pnl": -21230,
+    "roi": 0.8893,
     "avg_odds": 2.51
    },
    "quinella3": {
-    "days": 12,
-    "races": 1761,
-    "hits": 1221,
-    "stake": 528300,
-    "return": 453780,
-    "pnl": -74520,
-    "roi": 0.8589,
-    "avg_odds": 3.72
+    "days": 13,
+    "races": 1917,
+    "hits": 1315,
+    "stake": 575100,
+    "return": 486420,
+    "pnl": -88680,
+    "roi": 0.8458,
+    "avg_odds": 3.7
    },
    "h1_ex2": {
-    "days": 12,
-    "races": 1490,
-    "hits": 657,
-    "stake": 298000,
-    "return": 256520,
-    "pnl": -41480,
-    "roi": 0.8608,
-    "avg_odds": 3.9
+    "days": 13,
+    "races": 1629,
+    "hits": 713,
+    "stake": 325800,
+    "return": 277430,
+    "pnl": -48370,
+    "roi": 0.8515,
+    "avg_odds": 3.89
    },
    "h1_qn2": {
-    "days": 12,
-    "races": 1490,
-    "hits": 851,
-    "stake": 298000,
-    "return": 264800,
-    "pnl": -33200,
-    "roi": 0.8886,
-    "avg_odds": 3.11
+    "days": 13,
+    "races": 1629,
+    "hits": 923,
+    "stake": 325800,
+    "return": 287520,
+    "pnl": -38280,
+    "roi": 0.8825,
+    "avg_odds": 3.12
    },
    "h1_tri2": {
-    "days": 12,
-    "races": 1490,
-    "hits": 251,
-    "stake": 298000,
-    "return": 232140,
-    "pnl": -65860,
-    "roi": 0.779,
-    "avg_odds": 9.25
+    "days": 13,
+    "races": 1629,
+    "hits": 278,
+    "stake": 325800,
+    "return": 256350,
+    "pnl": -69450,
+    "roi": 0.7868,
+    "avg_odds": 9.22
    },
    "h1_tri4": {
-    "days": 12,
-    "races": 1490,
-    "hits": 449,
-    "stake": 596000,
-    "return": 495690,
-    "pnl": -100310,
-    "roi": 0.8317,
-    "avg_odds": 11.04
+    "days": 13,
+    "races": 1629,
+    "hits": 491,
+    "stake": 651600,
+    "return": 536010,
+    "pnl": -115590,
+    "roi": 0.8226,
+    "avg_odds": 10.92
    },
    "h1_trio2": {
-    "days": 12,
-    "races": 1489,
-    "hits": 615,
-    "stake": 297800,
-    "return": 244540,
-    "pnl": -53260,
-    "roi": 0.8212,
+    "days": 13,
+    "races": 1628,
+    "hits": 677,
+    "stake": 325600,
+    "return": 269390,
+    "pnl": -56210,
+    "roi": 0.8274,
     "avg_odds": 3.98
    }
   },
   "star_by_bet": {
    "tansho": {
-    "days": 16,
-    "races": 79,
-    "hits": 66,
-    "stake": 7900,
-    "return": 7420,
-    "pnl": -480,
-    "roi": 0.9392,
+    "days": 17,
+    "races": 84,
+    "hits": 70,
+    "stake": 8400,
+    "return": 7830,
+    "pnl": -570,
+    "roi": 0.9321,
     "avg_odds": 1.12
    },
    "trifecta3": {
-    "days": 16,
-    "races": 79,
-    "hits": 32,
-    "stake": 23700,
-    "return": 21970,
-    "pnl": -1730,
-    "roi": 0.927,
-    "avg_odds": 6.87
+    "days": 17,
+    "races": 84,
+    "hits": 34,
+    "stake": 25200,
+    "return": 23240,
+    "pnl": -1960,
+    "roi": 0.9222,
+    "avg_odds": 6.84
    },
    "fukusho": {
-    "days": 16,
-    "races": 79,
-    "hits": 74,
-    "stake": 7900,
-    "return": 7760,
+    "days": 17,
+    "races": 84,
+    "hits": 79,
+    "stake": 8400,
+    "return": 8260,
     "pnl": -140,
-    "roi": 0.9823,
+    "roi": 0.9833,
     "avg_odds": 1.05
    },
    "trio3": {
-    "days": 16,
-    "races": 79,
-    "hits": 50,
-    "stake": 23700,
-    "return": 19570,
-    "pnl": -4130,
-    "roi": 0.8257,
-    "avg_odds": 3.91
+    "days": 17,
+    "races": 84,
+    "hits": 53,
+    "stake": 25200,
+    "return": 20430,
+    "pnl": -4770,
+    "roi": 0.8107,
+    "avg_odds": 3.85
    },
    "exacta1": {
-    "days": 14,
-    "races": 69,
-    "hits": 31,
-    "stake": 6900,
-    "return": 6830,
-    "pnl": -70,
-    "roi": 0.9899,
-    "avg_odds": 2.2
+    "days": 15,
+    "races": 74,
+    "hits": 33,
+    "stake": 7400,
+    "return": 7370,
+    "pnl": -30,
+    "roi": 0.9959,
+    "avg_odds": 2.23
    },
    "exacta3": {
-    "days": 14,
-    "races": 69,
-    "hits": 50,
-    "stake": 20700,
-    "return": 14420,
-    "pnl": -6280,
-    "roi": 0.6966,
-    "avg_odds": 2.88
+    "days": 15,
+    "races": 74,
+    "hits": 53,
+    "stake": 22200,
+    "return": 15210,
+    "pnl": -6990,
+    "roi": 0.6851,
+    "avg_odds": 2.87
    },
    "quinella1": {
-    "days": 12,
-    "races": 59,
-    "hits": 29,
-    "stake": 5900,
-    "return": 5820,
-    "pnl": -80,
-    "roi": 0.9864,
+    "days": 13,
+    "races": 64,
+    "hits": 31,
+    "stake": 6400,
+    "return": 6240,
+    "pnl": -160,
+    "roi": 0.975,
     "avg_odds": 2.01
    },
    "quinella3": {
-    "days": 12,
-    "races": 59,
-    "hits": 51,
-    "stake": 17700,
-    "return": 15550,
-    "pnl": -2150,
-    "roi": 0.8785,
+    "days": 13,
+    "races": 64,
+    "hits": 55,
+    "stake": 19200,
+    "return": 16770,
+    "pnl": -2430,
+    "roi": 0.8734,
     "avg_odds": 3.05
    },
    "h1_ex2": {
-    "days": 12,
-    "races": 59,
-    "hits": 41,
-    "stake": 11800,
-    "return": 11030,
-    "pnl": -770,
-    "roi": 0.9347,
+    "days": 13,
+    "races": 64,
+    "hits": 43,
+    "stake": 12800,
+    "return": 11570,
+    "pnl": -1230,
+    "roi": 0.9039,
     "avg_odds": 2.69
    },
    "h1_qn2": {
-    "days": 12,
-    "races": 59,
-    "hits": 44,
-    "stake": 11800,
-    "return": 11630,
-    "pnl": -170,
-    "roi": 0.9856,
-    "avg_odds": 2.64
+    "days": 13,
+    "races": 64,
+    "hits": 46,
+    "stake": 12800,
+    "return": 12050,
+    "pnl": -750,
+    "roi": 0.9414,
+    "avg_odds": 2.62
    },
    "h1_tri2": {
-    "days": 12,
-    "races": 59,
-    "hits": 12,
-    "stake": 11800,
-    "return": 8340,
-    "pnl": -3460,
-    "roi": 0.7068,
-    "avg_odds": 6.95
+    "days": 13,
+    "races": 64,
+    "hits": 14,
+    "stake": 12800,
+    "return": 9610,
+    "pnl": -3190,
+    "roi": 0.7508,
+    "avg_odds": 6.86
    },
    "h1_tri4": {
-    "days": 12,
-    "races": 59,
-    "hits": 24,
-    "stake": 23600,
-    "return": 19080,
-    "pnl": -4520,
-    "roi": 0.8085,
-    "avg_odds": 7.95
+    "days": 13,
+    "races": 64,
+    "hits": 26,
+    "stake": 25600,
+    "return": 20350,
+    "pnl": -5250,
+    "roi": 0.7949,
+    "avg_odds": 7.83
    },
    "h1_trio2": {
-    "days": 12,
-    "races": 59,
-    "hits": 26,
-    "stake": 11800,
-    "return": 9910,
-    "pnl": -1890,
-    "roi": 0.8398,
-    "avg_odds": 3.81
+    "days": 13,
+    "races": 64,
+    "hits": 29,
+    "stake": 12800,
+    "return": 10770,
+    "pnl": -2030,
+    "roi": 0.8414,
+    "avg_odds": 3.71
    }
   },
   "report": {
    "all": {
-    "days": 20,
-    "races": 2962,
+    "days": 21,
+    "races": 3118,
     "rows": [
      {
       "key": "tansho",
       "kind": "単勝",
       "label": "◎ 1点",
-      "races": 2459,
-      "hits": 1401,
-      "stake": 245900,
-      "return": 221810,
-      "days": 17,
-      "roi": 0.902,
+      "races": 2615,
+      "hits": 1493,
+      "stake": 261500,
+      "return": 236280,
+      "days": 18,
+      "roi": 0.9036,
       "avg_odds": 1.58,
-      "pnl": -24090
+      "pnl": -25220
      },
      {
       "key": "trifecta3",
       "kind": "3連単",
       "label": "上位3点",
-      "races": 2459,
-      "hits": 590,
-      "stake": 737700,
-      "return": 564700,
-      "days": 17,
-      "roi": 0.7655,
-      "avg_odds": 9.57,
-      "pnl": -173000
+      "races": 2615,
+      "hits": 629,
+      "stake": 784500,
+      "return": 602810,
+      "days": 18,
+      "roi": 0.7684,
+      "avg_odds": 9.58,
+      "pnl": -181690
      },
      {
       "key": "trio3",
       "kind": "3連複",
       "label": "上位3点",
-      "races": 2317,
-      "hits": 1236,
-      "stake": 695100,
-      "return": 558510,
-      "days": 16,
-      "roi": 0.8035,
-      "avg_odds": 4.52,
-      "pnl": -136590
+      "races": 2473,
+      "hits": 1319,
+      "stake": 741900,
+      "return": 596880,
+      "days": 17,
+      "roi": 0.8045,
+      "avg_odds": 4.53,
+      "pnl": -145020
      },
      {
       "key": "fukusho",
       "kind": "複勝",
       "label": "◎ 1点",
-      "races": 2317,
-      "hits": 1780,
-      "stake": 231700,
-      "return": 216000,
-      "days": 16,
-      "roi": 0.9322,
+      "races": 2473,
+      "hits": 1897,
+      "stake": 247300,
+      "return": 229430,
+      "days": 17,
+      "roi": 0.9277,
       "avg_odds": 1.21,
-      "pnl": -15700
+      "pnl": -17870
      },
      {
       "key": "exacta3",
       "kind": "2連単",
       "label": "上位3点",
-      "races": 2025,
-      "hits": 1076,
-      "stake": 607500,
-      "return": 493740,
-      "days": 14,
-      "roi": 0.8127,
+      "races": 2181,
+      "hits": 1157,
+      "stake": 654300,
+      "return": 531600,
+      "days": 15,
+      "roi": 0.8125,
       "avg_odds": 4.59,
-      "pnl": -113760
+      "pnl": -122700
      },
      {
       "key": "exacta1",
       "kind": "2連単",
       "label": "1点",
-      "races": 2025,
-      "hits": 508,
-      "stake": 202500,
-      "return": 169500,
-      "days": 14,
-      "roi": 0.837,
+      "races": 2181,
+      "hits": 545,
+      "stake": 218100,
+      "return": 182230,
+      "days": 15,
+      "roi": 0.8355,
       "avg_odds": 3.34,
-      "pnl": -33000
+      "pnl": -35870
      },
      {
       "key": "quinella3",
       "kind": "2連複",
       "label": "上位3点",
-      "races": 1761,
-      "hits": 1221,
-      "stake": 528300,
-      "return": 453780,
-      "days": 12,
-      "roi": 0.8589,
-      "avg_odds": 3.72,
-      "pnl": -74520
+      "races": 1917,
+      "hits": 1315,
+      "stake": 575100,
+      "return": 486420,
+      "days": 13,
+      "roi": 0.8458,
+      "avg_odds": 3.7,
+      "pnl": -88680
      },
      {
       "key": "quinella1",
       "kind": "2連複",
       "label": "1点",
-      "races": 1761,
-      "hits": 622,
-      "stake": 176100,
-      "return": 155950,
-      "days": 12,
-      "roi": 0.8856,
+      "races": 1917,
+      "hits": 678,
+      "stake": 191700,
+      "return": 170470,
+      "days": 13,
+      "roi": 0.8893,
       "avg_odds": 2.51,
-      "pnl": -20150
+      "pnl": -21230
      }
     ]
    },
    "star": {
-    "days": 16,
-    "races": 79,
+    "days": 17,
+    "races": 84,
     "rows": [
      {
       "key": "tansho",
       "kind": "単勝",
       "label": "◎ 1点",
-      "races": 79,
-      "hits": 66,
-      "stake": 7900,
-      "return": 7420,
-      "days": 16,
-      "roi": 0.9392,
+      "races": 84,
+      "hits": 70,
+      "stake": 8400,
+      "return": 7830,
+      "days": 17,
+      "roi": 0.9321,
       "avg_odds": 1.12,
-      "pnl": -480
+      "pnl": -570
      },
      {
       "key": "trifecta3",
       "kind": "3連単",
       "label": "上位3点",
-      "races": 79,
-      "hits": 32,
-      "stake": 23700,
-      "return": 21970,
-      "days": 16,
-      "roi": 0.927,
-      "avg_odds": 6.87,
-      "pnl": -1730
+      "races": 84,
+      "hits": 34,
+      "stake": 25200,
+      "return": 23240,
+      "days": 17,
+      "roi": 0.9222,
+      "avg_odds": 6.84,
+      "pnl": -1960
      },
      {
       "key": "trio3",
       "kind": "3連複",
       "label": "上位3点",
-      "races": 79,
-      "hits": 50,
-      "stake": 23700,
-      "return": 19570,
-      "days": 16,
-      "roi": 0.8257,
-      "avg_odds": 3.91,
-      "pnl": -4130
+      "races": 84,
+      "hits": 53,
+      "stake": 25200,
+      "return": 20430,
+      "days": 17,
+      "roi": 0.8107,
+      "avg_odds": 3.85,
+      "pnl": -4770
      },
      {
       "key": "fukusho",
       "kind": "複勝",
       "label": "◎ 1点",
-      "races": 79,
-      "hits": 74,
-      "stake": 7900,
-      "return": 7760,
-      "days": 16,
-      "roi": 0.9823,
+      "races": 84,
+      "hits": 79,
+      "stake": 8400,
+      "return": 8260,
+      "days": 17,
+      "roi": 0.9833,
       "avg_odds": 1.05,
       "pnl": -140
      },
@@ -522,241 +522,241 @@
       "key": "exacta3",
       "kind": "2連単",
       "label": "上位3点",
-      "races": 69,
-      "hits": 50,
-      "stake": 20700,
-      "return": 14420,
-      "days": 14,
-      "roi": 0.6966,
-      "avg_odds": 2.88,
-      "pnl": -6280
+      "races": 74,
+      "hits": 53,
+      "stake": 22200,
+      "return": 15210,
+      "days": 15,
+      "roi": 0.6851,
+      "avg_odds": 2.87,
+      "pnl": -6990
      },
      {
       "key": "exacta1",
       "kind": "2連単",
       "label": "1点",
-      "races": 69,
-      "hits": 31,
-      "stake": 6900,
-      "return": 6830,
-      "days": 14,
-      "roi": 0.9899,
-      "avg_odds": 2.2,
-      "pnl": -70
+      "races": 74,
+      "hits": 33,
+      "stake": 7400,
+      "return": 7370,
+      "days": 15,
+      "roi": 0.9959,
+      "avg_odds": 2.23,
+      "pnl": -30
      },
      {
       "key": "quinella3",
       "kind": "2連複",
       "label": "上位3点",
-      "races": 59,
-      "hits": 51,
-      "stake": 17700,
-      "return": 15550,
-      "days": 12,
-      "roi": 0.8785,
+      "races": 64,
+      "hits": 55,
+      "stake": 19200,
+      "return": 16770,
+      "days": 13,
+      "roi": 0.8734,
       "avg_odds": 3.05,
-      "pnl": -2150
+      "pnl": -2430
      },
      {
       "key": "quinella1",
       "kind": "2連複",
       "label": "1点",
-      "races": 59,
-      "hits": 29,
-      "stake": 5900,
-      "return": 5820,
-      "days": 12,
-      "roi": 0.9864,
+      "races": 64,
+      "hits": 31,
+      "stake": 6400,
+      "return": 6240,
+      "days": 13,
+      "roi": 0.975,
       "avg_odds": 2.01,
-      "pnl": -80
+      "pnl": -160
      },
      {
       "key": "h1_ex2",
       "kind": "2連単",
       "label": "1-a・1-b 2点",
-      "races": 59,
-      "hits": 41,
-      "stake": 11800,
-      "return": 11030,
-      "days": 12,
-      "roi": 0.9347,
+      "races": 64,
+      "hits": 43,
+      "stake": 12800,
+      "return": 11570,
+      "days": 13,
+      "roi": 0.9039,
       "avg_odds": 2.69,
-      "pnl": -770
+      "pnl": -1230
      },
      {
       "key": "h1_qn2",
       "kind": "2連複",
       "label": "1=a・1=b 2点",
-      "races": 59,
-      "hits": 44,
-      "stake": 11800,
-      "return": 11630,
-      "days": 12,
-      "roi": 0.9856,
-      "avg_odds": 2.64,
-      "pnl": -170
+      "races": 64,
+      "hits": 46,
+      "stake": 12800,
+      "return": 12050,
+      "days": 13,
+      "roi": 0.9414,
+      "avg_odds": 2.62,
+      "pnl": -750
      },
      {
       "key": "h1_tri2",
       "kind": "3連単",
       "label": "1-a-b・1-b-a 2点",
-      "races": 59,
-      "hits": 12,
-      "stake": 11800,
-      "return": 8340,
-      "days": 12,
-      "roi": 0.7068,
-      "avg_odds": 6.95,
-      "pnl": -3460
+      "races": 64,
+      "hits": 14,
+      "stake": 12800,
+      "return": 9610,
+      "days": 13,
+      "roi": 0.7508,
+      "avg_odds": 6.86,
+      "pnl": -3190
      },
      {
       "key": "h1_tri4",
       "kind": "3連単",
       "label": "1-ab-abc 4点",
-      "races": 59,
-      "hits": 24,
-      "stake": 23600,
-      "return": 19080,
-      "days": 12,
-      "roi": 0.8085,
-      "avg_odds": 7.95,
-      "pnl": -4520
+      "races": 64,
+      "hits": 26,
+      "stake": 25600,
+      "return": 20350,
+      "days": 13,
+      "roi": 0.7949,
+      "avg_odds": 7.83,
+      "pnl": -5250
      },
      {
       "key": "h1_trio2",
       "kind": "3連複",
       "label": "1を含む上位2点",
-      "races": 59,
-      "hits": 26,
-      "stake": 11800,
-      "return": 9910,
-      "days": 12,
-      "roi": 0.8398,
-      "avg_odds": 3.81,
-      "pnl": -1890
+      "races": 64,
+      "hits": 29,
+      "stake": 12800,
+      "return": 10770,
+      "days": 13,
+      "roi": 0.8414,
+      "avg_odds": 3.71,
+      "pnl": -2030
      }
     ]
    },
    "are": {
-    "days": 14,
-    "races": 42,
+    "days": 15,
+    "races": 45,
     "rows": [
      {
       "key": "tansho",
       "kind": "単勝",
       "label": "◎ 1点",
-      "races": 42,
-      "hits": 20,
-      "stake": 4200,
-      "return": 5130,
-      "days": 14,
-      "roi": 1.2214,
+      "races": 45,
+      "hits": 23,
+      "stake": 4500,
+      "return": 5880,
+      "days": 15,
+      "roi": 1.3067,
       "avg_odds": 2.56,
-      "pnl": 930
+      "pnl": 1380
      },
      {
       "key": "exacta3",
       "kind": "2連単",
       "label": "上位3点",
-      "races": 42,
-      "hits": 14,
-      "stake": 12600,
-      "return": 10170,
-      "days": 14,
-      "roi": 0.8071,
-      "avg_odds": 7.26,
-      "pnl": -2430
+      "races": 45,
+      "hits": 17,
+      "stake": 13500,
+      "return": 11600,
+      "days": 15,
+      "roi": 0.8593,
+      "avg_odds": 6.82,
+      "pnl": -1900
      },
      {
       "key": "trifecta3",
       "kind": "3連単",
       "label": "上位3点",
-      "races": 42,
-      "hits": 6,
-      "stake": 12600,
-      "return": 16090,
-      "days": 14,
-      "roi": 1.277,
-      "avg_odds": 26.82,
-      "pnl": 3490
+      "races": 45,
+      "hits": 8,
+      "stake": 13500,
+      "return": 19300,
+      "days": 15,
+      "roi": 1.4296,
+      "avg_odds": 24.12,
+      "pnl": 5800
      },
      {
       "key": "trio3",
       "kind": "3連複",
       "label": "上位3点",
-      "races": 42,
-      "hits": 11,
-      "stake": 12600,
-      "return": 9660,
-      "days": 14,
-      "roi": 0.7667,
-      "avg_odds": 8.78,
-      "pnl": -2940
+      "races": 45,
+      "hits": 14,
+      "stake": 13500,
+      "return": 11370,
+      "days": 15,
+      "roi": 0.8422,
+      "avg_odds": 8.12,
+      "pnl": -2130
      },
      {
       "key": "tan_34",
       "kind": "単勝",
       "label": "3・4号艇の上位1点",
-      "races": 42,
+      "races": 45,
       "hits": 6,
-      "stake": 4200,
+      "stake": 4500,
       "return": 2350,
-      "days": 14,
-      "roi": 0.5595,
+      "days": 15,
+      "roi": 0.5222,
       "avg_odds": 3.92,
-      "pnl": -1850
+      "pnl": -2150
      },
      {
       "key": "tri_34_6",
       "kind": "3連単",
       "label": "3・4号艇頭 6点",
-      "races": 42,
+      "races": 45,
       "hits": 3,
-      "stake": 25200,
+      "stake": 27000,
       "return": 13670,
-      "days": 14,
-      "roi": 0.5425,
+      "days": 15,
+      "roi": 0.5063,
       "avg_odds": 45.57,
-      "pnl": -11530
+      "pnl": -13330
      },
      {
       "key": "tri_non1_10",
       "kind": "3連単",
       "label": "1号艇以外が頭 10点",
-      "races": 42,
+      "races": 45,
       "hits": 6,
-      "stake": 42000,
+      "stake": 45000,
       "return": 23570,
-      "days": 14,
-      "roi": 0.5612,
+      "days": 15,
+      "roi": 0.5238,
       "avg_odds": 39.28,
-      "pnl": -18430
+      "pnl": -21430
      },
      {
       "key": "cands",
       "kind": "3連単",
       "label": "狙い 1号艇なし3点(本命なしの全レース)",
-      "races": 181,
-      "hits": 15,
-      "stake": 54300,
-      "return": 58890,
-      "days": 14,
-      "roi": 1.0845,
-      "avg_odds": 39.26,
-      "pnl": 4590
+      "races": 195,
+      "hits": 16,
+      "stake": 58500,
+      "return": 63030,
+      "days": 15,
+      "roi": 1.0774,
+      "avg_odds": 39.39,
+      "pnl": 4530
      },
      {
       "key": "quinella3",
       "kind": "2連複",
       "label": "上位3点",
-      "races": 36,
-      "hits": 19,
-      "stake": 10800,
-      "return": 10150,
-      "days": 12,
-      "roi": 0.9398,
-      "avg_odds": 5.34,
-      "pnl": -650
+      "races": 39,
+      "hits": 22,
+      "stake": 11700,
+      "return": 11140,
+      "days": 13,
+      "roi": 0.9521,
+      "avg_odds": 5.06,
+      "pnl": -560
      }
     ]
    }
@@ -764,28 +764,28 @@
  },
  "tiers": {
   "S": {
-   "races": 755,
-   "win_hits": 572,
-   "base_hits": 570,
-   "return_win": 69720
+   "races": 797,
+   "win_hits": 605,
+   "base_hits": 603,
+   "return_win": 74170
   },
   "A": {
-   "races": 967,
-   "win_hits": 529,
-   "base_hits": 508,
-   "return_win": 81540
+   "races": 1034,
+   "win_hits": 568,
+   "base_hits": 546,
+   "return_win": 87450
   },
   "C": {
-   "races": 412,
-   "win_hits": 155,
-   "base_hits": 140,
-   "return_win": 39500
+   "races": 438,
+   "win_hits": 166,
+   "base_hits": 153,
+   "return_win": 41860
   },
   "B": {
-   "races": 325,
-   "win_hits": 145,
-   "base_hits": 128,
-   "return_win": 31050
+   "races": 346,
+   "win_hits": 154,
+   "base_hits": 137,
+   "return_win": 32800
   }
  },
  "daily": [
@@ -74565,6 +74565,5962 @@
        "roi": 0.0,
        "avg_odds": null,
        "pnl": -5100
+      }
+     ]
+    }
+   }
+  },
+  {
+   "date": "2026-11-12",
+   "graded_races": 156,
+   "win_hits": 92,
+   "tri_hits": 39,
+   "near": 24,
+   "stake_win": 15600,
+   "return_win": 14470,
+   "stake_tri": 46800,
+   "return_tri": 38110,
+   "base_hits": 93,
+   "base_return": 15500,
+   "by_bet": {
+    "tansho": {
+     "races": 156,
+     "hits": 92,
+     "stake": 15600,
+     "return": 14470,
+     "pnl": -1130,
+     "roi": 0.9276,
+     "avg_odds": 1.57
+    },
+    "trifecta3": {
+     "races": 156,
+     "hits": 39,
+     "stake": 46800,
+     "return": 38110,
+     "pnl": -8690,
+     "roi": 0.8143,
+     "avg_odds": 9.77
+    },
+    "fukusho": {
+     "races": 156,
+     "hits": 117,
+     "stake": 15600,
+     "return": 13430,
+     "pnl": -2170,
+     "roi": 0.8609,
+     "avg_odds": 1.15
+    },
+    "exacta1": {
+     "races": 156,
+     "hits": 37,
+     "stake": 15600,
+     "return": 12730,
+     "pnl": -2870,
+     "roi": 0.816,
+     "avg_odds": 3.44
+    },
+    "exacta3": {
+     "races": 156,
+     "hits": 81,
+     "stake": 46800,
+     "return": 37860,
+     "pnl": -8940,
+     "roi": 0.809,
+     "avg_odds": 4.67
+    },
+    "trio3": {
+     "races": 156,
+     "hits": 83,
+     "stake": 46800,
+     "return": 38370,
+     "pnl": -8430,
+     "roi": 0.8199,
+     "avg_odds": 4.62
+    },
+    "quinella1": {
+     "races": 156,
+     "hits": 56,
+     "stake": 15600,
+     "return": 14520,
+     "pnl": -1080,
+     "roi": 0.9308,
+     "avg_odds": 2.59
+    },
+    "quinella3": {
+     "races": 156,
+     "hits": 94,
+     "stake": 46800,
+     "return": 32640,
+     "pnl": -14160,
+     "roi": 0.6974,
+     "avg_odds": 3.47
+    },
+    "h1_ex2": {
+     "races": 139,
+     "hits": 56,
+     "stake": 27800,
+     "return": 20910,
+     "pnl": -6890,
+     "roi": 0.7522,
+     "avg_odds": 3.73
+    },
+    "h1_qn2": {
+     "races": 139,
+     "hits": 72,
+     "stake": 27800,
+     "return": 22720,
+     "pnl": -5080,
+     "roi": 0.8173,
+     "avg_odds": 3.16
+    },
+    "h1_tri2": {
+     "races": 139,
+     "hits": 27,
+     "stake": 27800,
+     "return": 24210,
+     "pnl": -3590,
+     "roi": 0.8709,
+     "avg_odds": 8.97
+    },
+    "h1_tri4": {
+     "races": 139,
+     "hits": 42,
+     "stake": 55600,
+     "return": 40320,
+     "pnl": -15280,
+     "roi": 0.7252,
+     "avg_odds": 9.6
+    },
+    "h1_trio2": {
+     "races": 139,
+     "hits": 62,
+     "stake": 27800,
+     "return": 24850,
+     "pnl": -2950,
+     "roi": 0.8939,
+     "avg_odds": 4.01
+    }
+   },
+   "star_by_bet": {
+    "tansho": {
+     "races": 5,
+     "hits": 4,
+     "stake": 500,
+     "return": 410,
+     "pnl": -90,
+     "roi": 0.82,
+     "avg_odds": 1.02
+    },
+    "trifecta3": {
+     "races": 5,
+     "hits": 2,
+     "stake": 1500,
+     "return": 1270,
+     "pnl": -230,
+     "roi": 0.8467,
+     "avg_odds": 6.35
+    },
+    "fukusho": {
+     "races": 5,
+     "hits": 5,
+     "stake": 500,
+     "return": 500,
+     "pnl": 0,
+     "roi": 1.0,
+     "avg_odds": 1.0
+    },
+    "exacta1": {
+     "races": 5,
+     "hits": 2,
+     "stake": 500,
+     "return": 540,
+     "pnl": 40,
+     "roi": 1.08,
+     "avg_odds": 2.7
+    },
+    "exacta3": {
+     "races": 5,
+     "hits": 3,
+     "stake": 1500,
+     "return": 790,
+     "pnl": -710,
+     "roi": 0.5267,
+     "avg_odds": 2.63
+    },
+    "trio3": {
+     "races": 5,
+     "hits": 3,
+     "stake": 1500,
+     "return": 860,
+     "pnl": -640,
+     "roi": 0.5733,
+     "avg_odds": 2.87
+    },
+    "quinella1": {
+     "races": 5,
+     "hits": 2,
+     "stake": 500,
+     "return": 420,
+     "pnl": -80,
+     "roi": 0.84,
+     "avg_odds": 2.1
+    },
+    "quinella3": {
+     "races": 5,
+     "hits": 4,
+     "stake": 1500,
+     "return": 1220,
+     "pnl": -280,
+     "roi": 0.8133,
+     "avg_odds": 3.05
+    },
+    "h1_ex2": {
+     "races": 5,
+     "hits": 2,
+     "stake": 1000,
+     "return": 540,
+     "pnl": -460,
+     "roi": 0.54,
+     "avg_odds": 2.7
+    },
+    "h1_qn2": {
+     "races": 5,
+     "hits": 2,
+     "stake": 1000,
+     "return": 420,
+     "pnl": -580,
+     "roi": 0.42,
+     "avg_odds": 2.1
+    },
+    "h1_tri2": {
+     "races": 5,
+     "hits": 2,
+     "stake": 1000,
+     "return": 1270,
+     "pnl": 270,
+     "roi": 1.27,
+     "avg_odds": 6.35
+    },
+    "h1_tri4": {
+     "races": 5,
+     "hits": 2,
+     "stake": 2000,
+     "return": 1270,
+     "pnl": -730,
+     "roi": 0.635,
+     "avg_odds": 6.35
+    },
+    "h1_trio2": {
+     "races": 5,
+     "hits": 3,
+     "stake": 1000,
+     "return": 860,
+     "pnl": -140,
+     "roi": 0.86,
+     "avg_odds": 2.87
+    }
+   },
+   "ana": {
+    "races": 2,
+    "hits": 1,
+    "stake": 600,
+    "return": 1730,
+    "manshu_hits": 0,
+    "manshu_races": 1
+   },
+   "are": {
+    "races": 3,
+    "lane1_lost": 0,
+    "manshu_races": 0,
+    "bets": {
+     "tan_34": {
+      "races": 3,
+      "hits": 0,
+      "stake": 300,
+      "return": 0
+     },
+     "tri_34_6": {
+      "races": 3,
+      "hits": 0,
+      "stake": 1800,
+      "return": 0
+     },
+     "tri_non1_10": {
+      "races": 3,
+      "hits": 0,
+      "stake": 3000,
+      "return": 0
+     }
+    },
+    "best": {
+     "key": "20261112-16-03",
+     "venue_name": "児島",
+     "race": 3,
+     "actual": "1-3-2",
+     "pay": 2090
+    },
+    "nashi": {
+     "races": 14,
+     "lane1_lost": 8,
+     "manshu_races": 3,
+     "cand_hits": 1,
+     "cand_stake": 4200,
+     "cand_return": 4140
+    },
+    "levels": {
+     "3": {
+      "races": 24,
+      "lane1_won": 13,
+      "manshu": 5
+     },
+     "2": {
+      "races": 54,
+      "lane1_won": 28,
+      "manshu": 11
+     },
+     "4": {
+      "races": 14,
+      "lane1_won": 6,
+      "manshu": 3
+     },
+     "1": {
+      "races": 64,
+      "lane1_won": 46,
+      "manshu": 14
+     }
+    }
+   },
+   "report": {
+    "all": {
+     "races": 156,
+     "rows": [
+      {
+       "key": "tansho",
+       "kind": "単勝",
+       "label": "◎ 1点",
+       "races": 156,
+       "hits": 92,
+       "stake": 15600,
+       "return": 14470,
+       "hit_list": [
+        {
+         "key": "20261112-24-01",
+         "venue_name": "大村",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.5,
+         "payout": 150
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-24-09",
+         "venue_name": "大村",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.5,
+         "payout": 150
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-04",
+         "venue_name": "唐津",
+         "race": 4,
+         "combo": "1",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-23-05",
+         "venue_name": "唐津",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-23-09",
+         "venue_name": "唐津",
+         "race": 9,
+         "combo": "1",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-23-10",
+         "venue_name": "唐津",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-23-11",
+         "venue_name": "唐津",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-23-12",
+         "venue_name": "唐津",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-02",
+         "venue_name": "福岡",
+         "race": 2,
+         "combo": "1",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-22-10",
+         "venue_name": "福岡",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-22-11",
+         "venue_name": "福岡",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-21-06",
+         "venue_name": "芦屋",
+         "race": 6,
+         "combo": "1",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-21-09",
+         "venue_name": "芦屋",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-21-10",
+         "venue_name": "芦屋",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-11",
+         "venue_name": "芦屋",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-21-12",
+         "venue_name": "芦屋",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-19-01",
+         "venue_name": "下関",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-19-04",
+         "venue_name": "下関",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-19-07",
+         "venue_name": "下関",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-19-09",
+         "venue_name": "下関",
+         "race": 9,
+         "combo": "1",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-19-10",
+         "venue_name": "下関",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-19-11",
+         "venue_name": "下関",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-17-01",
+         "venue_name": "宮島",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-17-02",
+         "venue_name": "宮島",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-17-03",
+         "venue_name": "宮島",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-17-06",
+         "venue_name": "宮島",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-10",
+         "venue_name": "宮島",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-17-12",
+         "venue_name": "宮島",
+         "race": 12,
+         "combo": "1",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-16-07",
+         "venue_name": "児島",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-13-01",
+         "venue_name": "尼崎",
+         "race": 1,
+         "combo": "1",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-13-02",
+         "venue_name": "尼崎",
+         "race": 2,
+         "combo": "1",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-13-05",
+         "venue_name": "尼崎",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-13-09",
+         "venue_name": "尼崎",
+         "race": 9,
+         "combo": "1",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-10-01",
+         "venue_name": "三国",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-10-05",
+         "venue_name": "三国",
+         "race": 5,
+         "combo": "1",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-10-07",
+         "venue_name": "三国",
+         "race": 7,
+         "combo": "1",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1",
+         "odds": 4.3,
+         "payout": 430
+        },
+        {
+         "key": "20261112-10-09",
+         "venue_name": "三国",
+         "race": 9,
+         "combo": "2",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-09-01",
+         "venue_name": "津",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-09-03",
+         "venue_name": "津",
+         "race": 3,
+         "combo": "3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-07",
+         "venue_name": "津",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-09-09",
+         "venue_name": "津",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-09-11",
+         "venue_name": "津",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-09-12",
+         "venue_name": "津",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.5,
+         "payout": 150
+        },
+        {
+         "key": "20261112-07-09",
+         "venue_name": "蒲郡",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-07-10",
+         "venue_name": "蒲郡",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-07-11",
+         "venue_name": "蒲郡",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-07-12",
+         "venue_name": "蒲郡",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-04-06",
+         "venue_name": "平和島",
+         "race": 6,
+         "combo": "1",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-04-08",
+         "venue_name": "平和島",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-04-09",
+         "venue_name": "平和島",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-04-11",
+         "venue_name": "平和島",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-04-12",
+         "venue_name": "平和島",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-02-08",
+         "venue_name": "戸田",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-02-09",
+         "venue_name": "戸田",
+         "race": 9,
+         "combo": "1",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-02-11",
+         "venue_name": "戸田",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        }
+       ],
+       "roi": 0.9276,
+       "avg_odds": 1.57,
+       "pnl": -1130
+      },
+      {
+       "key": "exacta3",
+       "kind": "2連単",
+       "label": "上位3点",
+       "races": 156,
+       "hits": 81,
+       "stake": 46800,
+       "return": 37860,
+       "hit_list": [
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-24-09",
+         "venue_name": "大村",
+         "race": 9,
+         "combo": "1-4",
+         "odds": 3.8,
+         "payout": 380
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.9,
+         "payout": 290
+        },
+        {
+         "key": "20261112-23-01",
+         "venue_name": "唐津",
+         "race": 1,
+         "combo": "2-1",
+         "odds": 7.5,
+         "payout": 750
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1-5",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-23-09",
+         "venue_name": "唐津",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-23-11",
+         "venue_name": "唐津",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 3.9,
+         "payout": 390
+        },
+        {
+         "key": "20261112-23-12",
+         "venue_name": "唐津",
+         "race": 12,
+         "combo": "1-4",
+         "odds": 7.6,
+         "payout": 760
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-22-02",
+         "venue_name": "福岡",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-22-05",
+         "venue_name": "福岡",
+         "race": 5,
+         "combo": "3-1",
+         "odds": 4.4,
+         "payout": 440
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-22-10",
+         "venue_name": "福岡",
+         "race": 10,
+         "combo": "1-3",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-22-11",
+         "venue_name": "福岡",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 5.1,
+         "payout": 510
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1-4",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 2.9,
+         "payout": 290
+        },
+        {
+         "key": "20261112-21-06",
+         "venue_name": "芦屋",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 4.8,
+         "payout": 480
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-21-09",
+         "venue_name": "芦屋",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 3.7,
+         "payout": 370
+        },
+        {
+         "key": "20261112-21-10",
+         "venue_name": "芦屋",
+         "race": 10,
+         "combo": "1-5",
+         "odds": 8.0,
+         "payout": 800
+        },
+        {
+         "key": "20261112-21-11",
+         "venue_name": "芦屋",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-21-12",
+         "venue_name": "芦屋",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 5.2,
+         "payout": 520
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1-4",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-19-04",
+         "venue_name": "下関",
+         "race": 4,
+         "combo": "1-6",
+         "odds": 4.4,
+         "payout": 440
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-19-09",
+         "venue_name": "下関",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 10.9,
+         "payout": 1090
+        },
+        {
+         "key": "20261112-19-10",
+         "venue_name": "下関",
+         "race": 10,
+         "combo": "1-4",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-19-11",
+         "venue_name": "下関",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-17-01",
+         "venue_name": "宮島",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 4.3,
+         "payout": 430
+        },
+        {
+         "key": "20261112-17-02",
+         "venue_name": "宮島",
+         "race": 2,
+         "combo": "1-4",
+         "odds": 8.9,
+         "payout": 890
+        },
+        {
+         "key": "20261112-17-04",
+         "venue_name": "宮島",
+         "race": 4,
+         "combo": "2-1",
+         "odds": 14.9,
+         "payout": 1490
+        },
+        {
+         "key": "20261112-17-05",
+         "venue_name": "宮島",
+         "race": 5,
+         "combo": "3-1",
+         "odds": 7.3,
+         "payout": 730
+        },
+        {
+         "key": "20261112-17-06",
+         "venue_name": "宮島",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 3.3,
+         "payout": 330
+        },
+        {
+         "key": "20261112-17-07",
+         "venue_name": "宮島",
+         "race": 7,
+         "combo": "2-1",
+         "odds": 8.2,
+         "payout": 820
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 5.8,
+         "payout": 580
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-17-12",
+         "venue_name": "宮島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 3.8,
+         "payout": 380
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.3,
+         "payout": 330
+        },
+        {
+         "key": "20261112-13-05",
+         "venue_name": "尼崎",
+         "race": 5,
+         "combo": "1-4",
+         "odds": 5.0,
+         "payout": 500
+        },
+        {
+         "key": "20261112-13-09",
+         "venue_name": "尼崎",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 6.4,
+         "payout": 640
+        },
+        {
+         "key": "20261112-10-01",
+         "venue_name": "三国",
+         "race": 1,
+         "combo": "1-5",
+         "odds": 11.7,
+         "payout": 1170
+        },
+        {
+         "key": "20261112-10-03",
+         "venue_name": "三国",
+         "race": 3,
+         "combo": "3-1",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-10-05",
+         "venue_name": "三国",
+         "race": 5,
+         "combo": "1-4",
+         "odds": 8.2,
+         "payout": 820
+        },
+        {
+         "key": "20261112-10-07",
+         "venue_name": "三国",
+         "race": 7,
+         "combo": "1-4",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 6.7,
+         "payout": 670
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1-2",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-09-01",
+         "venue_name": "津",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 6.0,
+         "payout": 600
+        },
+        {
+         "key": "20261112-09-03",
+         "venue_name": "津",
+         "race": 3,
+         "combo": "3-4",
+         "odds": 4.9,
+         "payout": 490
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-09-11",
+         "venue_name": "津",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 4.4,
+         "payout": 440
+        },
+        {
+         "key": "20261112-09-12",
+         "venue_name": "津",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-07-04",
+         "venue_name": "蒲郡",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 8.4,
+         "payout": 840
+        },
+        {
+         "key": "20261112-07-06",
+         "venue_name": "蒲郡",
+         "race": 6,
+         "combo": "2-1",
+         "odds": 6.0,
+         "payout": 600
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-07-08",
+         "venue_name": "蒲郡",
+         "race": 8,
+         "combo": "2-1",
+         "odds": 4.0,
+         "payout": 400
+        },
+        {
+         "key": "20261112-07-09",
+         "venue_name": "蒲郡",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "2-1",
+         "odds": 4.3,
+         "payout": 430
+        },
+        {
+         "key": "20261112-04-08",
+         "venue_name": "平和島",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 4.0,
+         "payout": 400
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "3-4",
+         "odds": 6.0,
+         "payout": 600
+        },
+        {
+         "key": "20261112-04-12",
+         "venue_name": "平和島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 5.8,
+         "payout": 580
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 8.1,
+         "payout": 810
+        },
+        {
+         "key": "20261112-02-09",
+         "venue_name": "戸田",
+         "race": 9,
+         "combo": "1-4",
+         "odds": 7.8,
+         "payout": 780
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1-3",
+         "odds": 3.7,
+         "payout": 370
+        },
+        {
+         "key": "20261112-02-11",
+         "venue_name": "戸田",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 6.7,
+         "payout": 670
+        }
+       ],
+       "roi": 0.809,
+       "avg_odds": 4.67,
+       "pnl": -8940
+      },
+      {
+       "key": "quinella3",
+       "kind": "2連複",
+       "label": "上位3点",
+       "races": 156,
+       "hits": 94,
+       "stake": 46800,
+       "return": 32640,
+       "hit_list": [
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-24-09",
+         "venue_name": "大村",
+         "race": 9,
+         "combo": "1-4",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-23-01",
+         "venue_name": "唐津",
+         "race": 1,
+         "combo": "1-2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-23-05",
+         "venue_name": "唐津",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 12.1,
+         "payout": 1210
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1-5",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-23-09",
+         "venue_name": "唐津",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-23-11",
+         "venue_name": "唐津",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-23-12",
+         "venue_name": "唐津",
+         "race": 12,
+         "combo": "1-4",
+         "odds": 6.5,
+         "payout": 650
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-22-02",
+         "venue_name": "福岡",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-22-03",
+         "venue_name": "福岡",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 4.2,
+         "payout": 420
+        },
+        {
+         "key": "20261112-22-05",
+         "venue_name": "福岡",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-22-10",
+         "venue_name": "福岡",
+         "race": 10,
+         "combo": "1-3",
+         "odds": 3.7,
+         "payout": 370
+        },
+        {
+         "key": "20261112-22-11",
+         "venue_name": "福岡",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 4.6,
+         "payout": 460
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1-4",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-21-04",
+         "venue_name": "芦屋",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-21-06",
+         "venue_name": "芦屋",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 4.1,
+         "payout": 410
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-21-09",
+         "venue_name": "芦屋",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-21-10",
+         "venue_name": "芦屋",
+         "race": 10,
+         "combo": "1-5",
+         "odds": 6.2,
+         "payout": 620
+        },
+        {
+         "key": "20261112-21-11",
+         "venue_name": "芦屋",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-21-12",
+         "venue_name": "芦屋",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1-4",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-19-04",
+         "venue_name": "下関",
+         "race": 4,
+         "combo": "1-6",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-19-09",
+         "venue_name": "下関",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 5.7,
+         "payout": 570
+        },
+        {
+         "key": "20261112-19-10",
+         "venue_name": "下関",
+         "race": 10,
+         "combo": "1-4",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-19-11",
+         "venue_name": "下関",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-17-01",
+         "venue_name": "宮島",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 4.0,
+         "payout": 400
+        },
+        {
+         "key": "20261112-17-02",
+         "venue_name": "宮島",
+         "race": 2,
+         "combo": "1-4",
+         "odds": 8.0,
+         "payout": 800
+        },
+        {
+         "key": "20261112-17-04",
+         "venue_name": "宮島",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-17-05",
+         "venue_name": "宮島",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-17-06",
+         "venue_name": "宮島",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-17-07",
+         "venue_name": "宮島",
+         "race": 7,
+         "combo": "1-2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-17-11",
+         "venue_name": "宮島",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-17-12",
+         "venue_name": "宮島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 4.8,
+         "payout": 480
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-16-06",
+         "venue_name": "児島",
+         "race": 6,
+         "combo": "2-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-16-12",
+         "venue_name": "児島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-13-03",
+         "venue_name": "尼崎",
+         "race": 3,
+         "combo": "1-6",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-13-05",
+         "venue_name": "尼崎",
+         "race": 5,
+         "combo": "1-4",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-13-06",
+         "venue_name": "尼崎",
+         "race": 6,
+         "combo": "1-6",
+         "odds": 5.7,
+         "payout": 570
+        },
+        {
+         "key": "20261112-13-07",
+         "venue_name": "尼崎",
+         "race": 7,
+         "combo": "2-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-13-09",
+         "venue_name": "尼崎",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 10.0,
+         "payout": 1000
+        },
+        {
+         "key": "20261112-10-01",
+         "venue_name": "三国",
+         "race": 1,
+         "combo": "1-5",
+         "odds": 9.2,
+         "payout": 920
+        },
+        {
+         "key": "20261112-10-03",
+         "venue_name": "三国",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-10-05",
+         "venue_name": "三国",
+         "race": 5,
+         "combo": "1-4",
+         "odds": 3.9,
+         "payout": 390
+        },
+        {
+         "key": "20261112-10-07",
+         "venue_name": "三国",
+         "race": 7,
+         "combo": "1-4",
+         "odds": 3.3,
+         "payout": 330
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-10-10",
+         "venue_name": "三国",
+         "race": 10,
+         "combo": "1-2",
+         "odds": 9.4,
+         "payout": 940
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1-2",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-09-01",
+         "venue_name": "津",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-09-11",
+         "venue_name": "津",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-09-12",
+         "venue_name": "津",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-07-04",
+         "venue_name": "蒲郡",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-07-06",
+         "venue_name": "蒲郡",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-07-08",
+         "venue_name": "蒲郡",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-07-09",
+         "venue_name": "蒲郡",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-04-01",
+         "venue_name": "平和島",
+         "race": 1,
+         "combo": "1-4",
+         "odds": 6.8,
+         "payout": 680
+        },
+        {
+         "key": "20261112-04-04",
+         "venue_name": "平和島",
+         "race": 4,
+         "combo": "2-5",
+         "odds": 5.2,
+         "payout": 520
+        },
+        {
+         "key": "20261112-04-05",
+         "venue_name": "平和島",
+         "race": 5,
+         "combo": "1-5",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "1-2",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-04-08",
+         "venue_name": "平和島",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 4.6,
+         "payout": 460
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "3-4",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-04-12",
+         "venue_name": "平和島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 3.9,
+         "payout": 390
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-02-05",
+         "venue_name": "戸田",
+         "race": 5,
+         "combo": "1-4",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-02-09",
+         "venue_name": "戸田",
+         "race": 9,
+         "combo": "1-4",
+         "odds": 5.7,
+         "payout": 570
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-02-11",
+         "venue_name": "戸田",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 4.3,
+         "payout": 430
+        }
+       ],
+       "roi": 0.6974,
+       "avg_odds": 3.47,
+       "pnl": -14160
+      },
+      {
+       "key": "trifecta3",
+       "kind": "3連単",
+       "label": "上位3点",
+       "races": 156,
+       "hits": 39,
+       "stake": 46800,
+       "return": 38110,
+       "hit_list": [
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1-3-2",
+         "odds": 9.0,
+         "payout": 900
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3-5",
+         "odds": 19.8,
+         "payout": 1980
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1-3-4",
+         "odds": 13.0,
+         "payout": 1300
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1-3-2",
+         "odds": 9.0,
+         "payout": 900
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1-3-2",
+         "odds": 11.2,
+         "payout": 1120
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1-3-5",
+         "odds": 8.0,
+         "payout": 800
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 6.1,
+         "payout": 610
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1-5-2",
+         "odds": 9.6,
+         "payout": 960
+        },
+        {
+         "key": "20261112-23-11",
+         "venue_name": "唐津",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3-2",
+         "odds": 6.6,
+         "payout": 660
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1-4-5",
+         "odds": 10.1,
+         "payout": 1010
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1-3-2",
+         "odds": 4.8,
+         "payout": 480
+        },
+        {
+         "key": "20261112-21-06",
+         "venue_name": "芦屋",
+         "race": 6,
+         "combo": "1-2-4",
+         "odds": 11.3,
+         "payout": 1130
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1-2-4",
+         "odds": 4.4,
+         "payout": 440
+        },
+        {
+         "key": "20261112-21-11",
+         "venue_name": "芦屋",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 4.6,
+         "payout": 460
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1-3-2",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1-2-5",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-17-02",
+         "venue_name": "宮島",
+         "race": 2,
+         "combo": "1-4-2",
+         "odds": 14.8,
+         "payout": 1480
+        },
+        {
+         "key": "20261112-17-06",
+         "venue_name": "宮島",
+         "race": 6,
+         "combo": "1-2-3",
+         "odds": 4.8,
+         "payout": 480
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1-2-6",
+         "odds": 15.8,
+         "payout": 1580
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1-3-2",
+         "odds": 9.2,
+         "payout": 920
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1-3-2",
+         "odds": 8.8,
+         "payout": 880
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1-3-4",
+         "odds": 9.0,
+         "payout": 900
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1-2-4",
+         "odds": 8.3,
+         "payout": 830
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1-3-2",
+         "odds": 10.8,
+         "payout": 1080
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1-3-5",
+         "odds": 5.4,
+         "payout": 540
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3-2",
+         "odds": 12.3,
+         "payout": 1230
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1-2-4",
+         "odds": 12.7,
+         "payout": 1270
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1-2-5",
+         "odds": 6.3,
+         "payout": 630
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1-3-4",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-09-03",
+         "venue_name": "津",
+         "race": 3,
+         "combo": "3-4-5",
+         "odds": 14.3,
+         "payout": 1430
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1-3-2",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1-2-3",
+         "odds": 10.3,
+         "payout": 1030
+        },
+        {
+         "key": "20261112-09-11",
+         "venue_name": "津",
+         "race": 11,
+         "combo": "1-2-4",
+         "odds": 8.1,
+         "payout": 810
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1-3-4",
+         "odds": 3.9,
+         "payout": 390
+        },
+        {
+         "key": "20261112-04-08",
+         "venue_name": "平和島",
+         "race": 8,
+         "combo": "1-3-4",
+         "odds": 8.6,
+         "payout": 860
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "3-4-2",
+         "odds": 36.7,
+         "payout": 3670
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1-3-5",
+         "odds": 14.1,
+         "payout": 1410
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "1-2-3",
+         "odds": 14.6,
+         "payout": 1460
+        }
+       ],
+       "roi": 0.8143,
+       "avg_odds": 9.77,
+       "pnl": -8690
+      },
+      {
+       "key": "trio3",
+       "kind": "3連複",
+       "label": "上位3点",
+       "races": 156,
+       "hits": 83,
+       "stake": 46800,
+       "return": 38370,
+       "hit_list": [
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1-2-3",
+         "odds": 4.8,
+         "payout": 480
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3-5",
+         "odds": 7.8,
+         "payout": 780
+        },
+        {
+         "key": "20261112-24-06",
+         "venue_name": "大村",
+         "race": 6,
+         "combo": "1-2-3",
+         "odds": 7.6,
+         "payout": 760
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1-3-4",
+         "odds": 6.9,
+         "payout": 690
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1-2-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 4.6,
+         "payout": 460
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1-2-3",
+         "odds": 4.1,
+         "payout": 410
+        },
+        {
+         "key": "20261112-23-01",
+         "venue_name": "唐津",
+         "race": 1,
+         "combo": "1-2-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1-3-5",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1-2-5",
+         "odds": 4.1,
+         "payout": 410
+        },
+        {
+         "key": "20261112-23-11",
+         "venue_name": "唐津",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-2-3",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-22-03",
+         "venue_name": "福岡",
+         "race": 3,
+         "combo": "1-2-3",
+         "odds": 3.8,
+         "payout": 380
+        },
+        {
+         "key": "20261112-22-04",
+         "venue_name": "福岡",
+         "race": 4,
+         "combo": "1-2-4",
+         "odds": 4.2,
+         "payout": 420
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1-2-4",
+         "odds": 19.1,
+         "payout": 1910
+        },
+        {
+         "key": "20261112-22-11",
+         "venue_name": "福岡",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 4.9,
+         "payout": 490
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2-4",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1-4-5",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-21-04",
+         "venue_name": "芦屋",
+         "race": 4,
+         "combo": "1-2-3",
+         "odds": 6.4,
+         "payout": 640
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1-2-3",
+         "odds": 1.5,
+         "payout": 150
+        },
+        {
+         "key": "20261112-21-06",
+         "venue_name": "芦屋",
+         "race": 6,
+         "combo": "1-2-4",
+         "odds": 2.9,
+         "payout": 290
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1-2-4",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-21-09",
+         "venue_name": "芦屋",
+         "race": 9,
+         "combo": "1-2-3",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-21-10",
+         "venue_name": "芦屋",
+         "race": 10,
+         "combo": "1-2-5",
+         "odds": 5.1,
+         "payout": 510
+        },
+        {
+         "key": "20261112-21-11",
+         "venue_name": "芦屋",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1-2-3",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1-3-4",
+         "odds": 5.4,
+         "payout": 540
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1-2-5",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-19-09",
+         "venue_name": "下関",
+         "race": 9,
+         "combo": "1-2-4",
+         "odds": 7.6,
+         "payout": 760
+        },
+        {
+         "key": "20261112-19-10",
+         "venue_name": "下関",
+         "race": 10,
+         "combo": "1-2-4",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-17-01",
+         "venue_name": "宮島",
+         "race": 1,
+         "combo": "1-3-4",
+         "odds": 6.0,
+         "payout": 600
+        },
+        {
+         "key": "20261112-17-02",
+         "venue_name": "宮島",
+         "race": 2,
+         "combo": "1-2-4",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-17-04",
+         "venue_name": "宮島",
+         "race": 4,
+         "combo": "1-2-5",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-17-05",
+         "venue_name": "宮島",
+         "race": 5,
+         "combo": "1-3-6",
+         "odds": 5.5,
+         "payout": 550
+        },
+        {
+         "key": "20261112-17-06",
+         "venue_name": "宮島",
+         "race": 6,
+         "combo": "1-2-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-17-07",
+         "venue_name": "宮島",
+         "race": 7,
+         "combo": "1-2-3",
+         "odds": 4.4,
+         "payout": 440
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1-2-6",
+         "odds": 6.1,
+         "payout": 610
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1-2-3",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-17-11",
+         "venue_name": "宮島",
+         "race": 11,
+         "combo": "1-2-4",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1-2-3",
+         "odds": 5.7,
+         "payout": 570
+        },
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1-2-3",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1-3-4",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-16-07",
+         "venue_name": "児島",
+         "race": 7,
+         "combo": "1-2-6",
+         "odds": 9.8,
+         "payout": 980
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1-2-4",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-16-10",
+         "venue_name": "児島",
+         "race": 10,
+         "combo": "1-3-6",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1-2-3",
+         "odds": 4.0,
+         "payout": 400
+        },
+        {
+         "key": "20261112-13-01",
+         "venue_name": "尼崎",
+         "race": 1,
+         "combo": "1-3-5",
+         "odds": 4.0,
+         "payout": 400
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1-3-5",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-13-07",
+         "venue_name": "尼崎",
+         "race": 7,
+         "combo": "2-3-4",
+         "odds": 4.2,
+         "payout": 420
+        },
+        {
+         "key": "20261112-10-01",
+         "venue_name": "三国",
+         "race": 1,
+         "combo": "1-2-5",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-10-03",
+         "venue_name": "三国",
+         "race": 3,
+         "combo": "1-2-3",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-10-04",
+         "venue_name": "三国",
+         "race": 4,
+         "combo": "1-4-5",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-2-3",
+         "odds": 3.7,
+         "payout": 370
+        },
+        {
+         "key": "20261112-10-10",
+         "venue_name": "三国",
+         "race": 10,
+         "combo": "1-2-4",
+         "odds": 5.0,
+         "payout": 500
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1-2-4",
+         "odds": 5.3,
+         "payout": 530
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1-2-5",
+         "odds": 4.3,
+         "payout": 430
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1-3-4",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-09-03",
+         "venue_name": "津",
+         "race": 3,
+         "combo": "3-4-5",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-09-04",
+         "venue_name": "津",
+         "race": 4,
+         "combo": "1-3-6",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1-2-3",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1-2-3",
+         "odds": 8.7,
+         "payout": 870
+        },
+        {
+         "key": "20261112-09-11",
+         "venue_name": "津",
+         "race": 11,
+         "combo": "1-2-4",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-09-12",
+         "venue_name": "津",
+         "race": 12,
+         "combo": "1-3-4",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-07-05",
+         "venue_name": "蒲郡",
+         "race": 5,
+         "combo": "1-2-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-07-06",
+         "venue_name": "蒲郡",
+         "race": 6,
+         "combo": "1-2-5",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1-3-4",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-07-08",
+         "venue_name": "蒲郡",
+         "race": 8,
+         "combo": "1-2-6",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-07-12",
+         "venue_name": "蒲郡",
+         "race": 12,
+         "combo": "1-4-5",
+         "odds": 6.1,
+         "payout": 610
+        },
+        {
+         "key": "20261112-04-01",
+         "venue_name": "平和島",
+         "race": 1,
+         "combo": "1-2-4",
+         "odds": 5.4,
+         "payout": 540
+        },
+        {
+         "key": "20261112-04-04",
+         "venue_name": "平和島",
+         "race": 4,
+         "combo": "2-4-5",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-04-05",
+         "venue_name": "平和島",
+         "race": 5,
+         "combo": "1-3-5",
+         "odds": 4.6,
+         "payout": 460
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "1-2-3",
+         "odds": 12.5,
+         "payout": 1250
+        },
+        {
+         "key": "20261112-04-08",
+         "venue_name": "平和島",
+         "race": 8,
+         "combo": "1-3-4",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-04-09",
+         "venue_name": "平和島",
+         "race": 9,
+         "combo": "1-2-4",
+         "odds": 5.8,
+         "payout": 580
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "2-3-4",
+         "odds": 14.6,
+         "payout": 1460
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1-3-5",
+         "odds": 3.3,
+         "payout": 330
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "1-2-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-02-05",
+         "venue_name": "戸田",
+         "race": 5,
+         "combo": "1-4-5",
+         "odds": 4.6,
+         "payout": 460
+        },
+        {
+         "key": "20261112-02-07",
+         "venue_name": "戸田",
+         "race": 7,
+         "combo": "1-2-4",
+         "odds": 3.9,
+         "payout": 390
+        },
+        {
+         "key": "20261112-02-09",
+         "venue_name": "戸田",
+         "race": 9,
+         "combo": "1-2-4",
+         "odds": 5.7,
+         "payout": 570
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1-2-3",
+         "odds": 5.9,
+         "payout": 590
+        },
+        {
+         "key": "20261112-02-12",
+         "venue_name": "戸田",
+         "race": 12,
+         "combo": "1-2-5",
+         "odds": 8.3,
+         "payout": 830
+        }
+       ],
+       "roi": 0.8199,
+       "avg_odds": 4.62,
+       "pnl": -8430
+      },
+      {
+       "key": "exacta1",
+       "kind": "2連単",
+       "label": "1点",
+       "races": 156,
+       "hits": 37,
+       "stake": 15600,
+       "return": 12730,
+       "hit_list": [
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.9,
+         "payout": 290
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1-5",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-23-09",
+         "venue_name": "唐津",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1-4",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 2.9,
+         "payout": 290
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1-4",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-17-12",
+         "venue_name": "宮島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 3.8,
+         "payout": 380
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.3,
+         "payout": 330
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 6.7,
+         "payout": 670
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1-2",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-09-01",
+         "venue_name": "津",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 6.0,
+         "payout": 600
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "2-1",
+         "odds": 4.3,
+         "payout": 430
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "3-4",
+         "odds": 6.0,
+         "payout": 600
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 5.8,
+         "payout": 580
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 8.1,
+         "payout": 810
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1-3",
+         "odds": 3.7,
+         "payout": 370
+        }
+       ],
+       "roi": 0.816,
+       "avg_odds": 3.44,
+       "pnl": -2870
+      },
+      {
+       "key": "quinella1",
+       "kind": "2連複",
+       "label": "1点",
+       "races": 156,
+       "hits": 56,
+       "stake": 15600,
+       "return": 14520,
+       "hit_list": [
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-24-09",
+         "venue_name": "大村",
+         "race": 9,
+         "combo": "1-4",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-23-01",
+         "venue_name": "唐津",
+         "race": 1,
+         "combo": "1-2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1-5",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-23-09",
+         "venue_name": "唐津",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-22-05",
+         "venue_name": "福岡",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1-4",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-21-04",
+         "venue_name": "芦屋",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1-4",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-17-04",
+         "venue_name": "宮島",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-17-05",
+         "venue_name": "宮島",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-17-07",
+         "venue_name": "宮島",
+         "race": 7,
+         "combo": "1-2",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 3.4,
+         "payout": 340
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1-3",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-17-11",
+         "venue_name": "宮島",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-17-12",
+         "venue_name": "宮島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 2.8,
+         "payout": 280
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1-2",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-16-12",
+         "venue_name": "児島",
+         "race": 12,
+         "combo": "1-3",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        },
+        {
+         "key": "20261112-13-07",
+         "venue_name": "尼崎",
+         "race": 7,
+         "combo": "2-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-10-03",
+         "venue_name": "三国",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 2.1,
+         "payout": 210
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-10-10",
+         "venue_name": "三国",
+         "race": 10,
+         "combo": "1-2",
+         "odds": 9.4,
+         "payout": 940
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1-2",
+         "odds": 2.7,
+         "payout": 270
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1-2",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-09-01",
+         "venue_name": "津",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1-3",
+         "odds": 2.5,
+         "payout": 250
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1-3",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-07-04",
+         "venue_name": "蒲郡",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 4.7,
+         "payout": 470
+        },
+        {
+         "key": "20261112-07-06",
+         "venue_name": "蒲郡",
+         "race": 6,
+         "combo": "1-2",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-07-08",
+         "venue_name": "蒲郡",
+         "race": 8,
+         "combo": "1-2",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-04-01",
+         "venue_name": "平和島",
+         "race": 1,
+         "combo": "1-4",
+         "odds": 6.8,
+         "payout": 680
+        },
+        {
+         "key": "20261112-04-04",
+         "venue_name": "平和島",
+         "race": 4,
+         "combo": "2-5",
+         "odds": 5.2,
+         "payout": 520
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "1-2",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 3.0,
+         "payout": 300
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "1-2",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-02-05",
+         "venue_name": "戸田",
+         "race": 5,
+         "combo": "1-4",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1-3",
+         "odds": 3.6,
+         "payout": 360
+        }
+       ],
+       "roi": 0.9308,
+       "avg_odds": 2.59,
+       "pnl": -1080
+      },
+      {
+       "key": "fukusho",
+       "kind": "複勝",
+       "label": "◎ 1点",
+       "races": 156,
+       "hits": 117,
+       "stake": 15600,
+       "return": 13430,
+       "hit_list": [
+        {
+         "key": "20261112-24-01",
+         "venue_name": "大村",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-24-02",
+         "venue_name": "大村",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-24-07",
+         "venue_name": "大村",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-24-08",
+         "venue_name": "大村",
+         "race": 8,
+         "combo": "3",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-24-09",
+         "venue_name": "大村",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-24-11",
+         "venue_name": "大村",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-24-12",
+         "venue_name": "大村",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-01",
+         "venue_name": "唐津",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-02",
+         "venue_name": "唐津",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-04",
+         "venue_name": "唐津",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-23-05",
+         "venue_name": "唐津",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-23-06",
+         "venue_name": "唐津",
+         "race": 6,
+         "combo": "2",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-23-07",
+         "venue_name": "唐津",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-09",
+         "venue_name": "唐津",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-23-10",
+         "venue_name": "唐津",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-23-11",
+         "venue_name": "唐津",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-23-12",
+         "venue_name": "唐津",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-02",
+         "venue_name": "福岡",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-03",
+         "venue_name": "福岡",
+         "race": 3,
+         "combo": "3",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-22-04",
+         "venue_name": "福岡",
+         "race": 4,
+         "combo": "2",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-05",
+         "venue_name": "福岡",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-22-08",
+         "venue_name": "福岡",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-22-10",
+         "venue_name": "福岡",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-11",
+         "venue_name": "福岡",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-12",
+         "venue_name": "福岡",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-02",
+         "venue_name": "芦屋",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-04",
+         "venue_name": "芦屋",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-05",
+         "venue_name": "芦屋",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-06",
+         "venue_name": "芦屋",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-21-07",
+         "venue_name": "芦屋",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-08",
+         "venue_name": "芦屋",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-09",
+         "venue_name": "芦屋",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-21-10",
+         "venue_name": "芦屋",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-11",
+         "venue_name": "芦屋",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-12",
+         "venue_name": "芦屋",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-01",
+         "venue_name": "下関",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-02",
+         "venue_name": "下関",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-03",
+         "venue_name": "下関",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-19-04",
+         "venue_name": "下関",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-06",
+         "venue_name": "下関",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-07",
+         "venue_name": "下関",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-09",
+         "venue_name": "下関",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-19-10",
+         "venue_name": "下関",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-19-11",
+         "venue_name": "下関",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-17-01",
+         "venue_name": "宮島",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-02",
+         "venue_name": "宮島",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-17-03",
+         "venue_name": "宮島",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.5,
+         "payout": 150
+        },
+        {
+         "key": "20261112-17-04",
+         "venue_name": "宮島",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-17-05",
+         "venue_name": "宮島",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-06",
+         "venue_name": "宮島",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-07",
+         "venue_name": "宮島",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-08",
+         "venue_name": "宮島",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-17-09",
+         "venue_name": "宮島",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-10",
+         "venue_name": "宮島",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-11",
+         "venue_name": "宮島",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-17-12",
+         "venue_name": "宮島",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-16-01",
+         "venue_name": "児島",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1",
+         "odds": 2.6,
+         "payout": 260
+        },
+        {
+         "key": "20261112-16-04",
+         "venue_name": "児島",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-16-06",
+         "venue_name": "児島",
+         "race": 6,
+         "combo": "2",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-16-07",
+         "venue_name": "児島",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-16-09",
+         "venue_name": "児島",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-16-11",
+         "venue_name": "児島",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-16-12",
+         "venue_name": "児島",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-13-02",
+         "venue_name": "尼崎",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-13-03",
+         "venue_name": "尼崎",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-13-04",
+         "venue_name": "尼崎",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-13-05",
+         "venue_name": "尼崎",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-13-06",
+         "venue_name": "尼崎",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-13-07",
+         "venue_name": "尼崎",
+         "race": 7,
+         "combo": "2",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-13-09",
+         "venue_name": "尼崎",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-10-01",
+         "venue_name": "三国",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-10-03",
+         "venue_name": "三国",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-10-05",
+         "venue_name": "三国",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.4,
+         "payout": 140
+        },
+        {
+         "key": "20261112-10-07",
+         "venue_name": "三国",
+         "race": 7,
+         "combo": "1",
+         "odds": 2.0,
+         "payout": 200
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "3",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-10-09",
+         "venue_name": "三国",
+         "race": 9,
+         "combo": "2",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-10-10",
+         "venue_name": "三国",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-10-11",
+         "venue_name": "三国",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-10-12",
+         "venue_name": "三国",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-01",
+         "venue_name": "津",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-02",
+         "venue_name": "津",
+         "race": 2,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-03",
+         "venue_name": "津",
+         "race": 3,
+         "combo": "3",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-09-05",
+         "venue_name": "津",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-08",
+         "venue_name": "津",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-09",
+         "venue_name": "津",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-09-11",
+         "venue_name": "津",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-09-12",
+         "venue_name": "津",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-01",
+         "venue_name": "蒲郡",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-07-04",
+         "venue_name": "蒲郡",
+         "race": 4,
+         "combo": "3",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-07-06",
+         "venue_name": "蒲郡",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-07",
+         "venue_name": "蒲郡",
+         "race": 7,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-08",
+         "venue_name": "蒲郡",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-09",
+         "venue_name": "蒲郡",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-10",
+         "venue_name": "蒲郡",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-11",
+         "venue_name": "蒲郡",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-12",
+         "venue_name": "蒲郡",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-04-01",
+         "venue_name": "平和島",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-04-04",
+         "venue_name": "平和島",
+         "race": 4,
+         "combo": "2",
+         "odds": 1.9,
+         "payout": 190
+        },
+        {
+         "key": "20261112-04-05",
+         "venue_name": "平和島",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-04-06",
+         "venue_name": "平和島",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.6,
+         "payout": 160
+        },
+        {
+         "key": "20261112-04-07",
+         "venue_name": "平和島",
+         "race": 7,
+         "combo": "2",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-04-08",
+         "venue_name": "平和島",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-04-10",
+         "venue_name": "平和島",
+         "race": 10,
+         "combo": "3",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-04-11",
+         "venue_name": "平和島",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-04-12",
+         "venue_name": "平和島",
+         "race": 12,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-02-03",
+         "venue_name": "戸田",
+         "race": 3,
+         "combo": "3",
+         "odds": 1.2,
+         "payout": 120
+        },
+        {
+         "key": "20261112-02-04",
+         "venue_name": "戸田",
+         "race": 4,
+         "combo": "2",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-02-05",
+         "venue_name": "戸田",
+         "race": 5,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        },
+        {
+         "key": "20261112-02-08",
+         "venue_name": "戸田",
+         "race": 8,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-02-09",
+         "venue_name": "戸田",
+         "race": 9,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-02-10",
+         "venue_name": "戸田",
+         "race": 10,
+         "combo": "1",
+         "odds": 1.3,
+         "payout": 130
+        },
+        {
+         "key": "20261112-02-11",
+         "venue_name": "戸田",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        }
+       ],
+       "roi": 0.8609,
+       "avg_odds": 1.15,
+       "pnl": -2170
+      }
+     ]
+    },
+    "star": {
+     "races": 5,
+     "rows": [
+      {
+       "key": "tansho",
+       "kind": "単勝",
+       "label": "◎ 1点",
+       "races": 5,
+       "hits": 4,
+       "stake": 500,
+       "return": 410,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-11",
+         "venue_name": "蒲郡",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.1,
+         "payout": 110
+        }
+       ],
+       "roi": 0.82,
+       "avg_odds": 1.02,
+       "pnl": -90
+      },
+      {
+       "key": "exacta3",
+       "kind": "2連単",
+       "label": "上位3点",
+       "races": 5,
+       "hits": 3,
+       "stake": 1500,
+       "return": 790,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2",
+         "odds": 2.5,
+         "payout": 250
+        }
+       ],
+       "roi": 0.5267,
+       "avg_odds": 2.63,
+       "pnl": -710
+      },
+      {
+       "key": "quinella3",
+       "kind": "2連複",
+       "label": "上位3点",
+       "races": 5,
+       "hits": 4,
+       "stake": 1500,
+       "return": 1220,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2",
+         "odds": 2.3,
+         "payout": 230
+        },
+        {
+         "key": "20261112-13-06",
+         "venue_name": "尼崎",
+         "race": 6,
+         "combo": "1-6",
+         "odds": 5.7,
+         "payout": 570
+        }
+       ],
+       "roi": 0.8133,
+       "avg_odds": 3.05,
+       "pnl": -280
+      },
+      {
+       "key": "trifecta3",
+       "kind": "3連単",
+       "label": "上位3点",
+       "races": 5,
+       "hits": 2,
+       "stake": 1500,
+       "return": 1270,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 6.1,
+         "payout": 610
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3-2",
+         "odds": 6.6,
+         "payout": 660
+        }
+       ],
+       "roi": 0.8467,
+       "avg_odds": 6.35,
+       "pnl": -230
+      },
+      {
+       "key": "trio3",
+       "kind": "3連複",
+       "label": "上位3点",
+       "races": 5,
+       "hits": 3,
+       "stake": 1500,
+       "return": 860,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-2-3",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2-4",
+         "odds": 3.4,
+         "payout": 340
+        }
+       ],
+       "roi": 0.5733,
+       "avg_odds": 2.87,
+       "pnl": -640
+      },
+      {
+       "key": "exacta1",
+       "kind": "2連単",
+       "label": "1点",
+       "races": 5,
+       "hits": 2,
+       "stake": 500,
+       "return": 540,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        }
+       ],
+       "roi": 1.08,
+       "avg_odds": 2.7,
+       "pnl": 40
+      },
+      {
+       "key": "quinella1",
+       "kind": "2連複",
+       "label": "1点",
+       "races": 5,
+       "hits": 2,
+       "stake": 500,
+       "return": 420,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        }
+       ],
+       "roi": 0.84,
+       "avg_odds": 2.1,
+       "pnl": -80
+      },
+      {
+       "key": "fukusho",
+       "kind": "複勝",
+       "label": "◎ 1点",
+       "races": 5,
+       "hits": 5,
+       "stake": 500,
+       "return": 500,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-13-06",
+         "venue_name": "尼崎",
+         "race": 6,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        },
+        {
+         "key": "20261112-07-11",
+         "venue_name": "蒲郡",
+         "race": 11,
+         "combo": "1",
+         "odds": 1.0,
+         "payout": 100
+        }
+       ],
+       "roi": 1.0,
+       "avg_odds": 1.0,
+       "pnl": 0
+      },
+      {
+       "key": "h1_ex2",
+       "kind": "2連単",
+       "label": "1-a・1-b 2点",
+       "races": 5,
+       "hits": 2,
+       "stake": 1000,
+       "return": 540,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 2.2,
+         "payout": 220
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        }
+       ],
+       "roi": 0.54,
+       "avg_odds": 2.7,
+       "pnl": -460
+      },
+      {
+       "key": "h1_qn2",
+       "kind": "2連複",
+       "label": "1=a・1=b 2点",
+       "races": 5,
+       "hits": 2,
+       "stake": 1000,
+       "return": 420,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2",
+         "odds": 1.8,
+         "payout": 180
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3",
+         "odds": 2.4,
+         "payout": 240
+        }
+       ],
+       "roi": 0.42,
+       "avg_odds": 2.1,
+       "pnl": -580
+      },
+      {
+       "key": "h1_tri2",
+       "kind": "3連単",
+       "label": "1-a-b・1-b-a 2点",
+       "races": 5,
+       "hits": 2,
+       "stake": 1000,
+       "return": 1270,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 6.1,
+         "payout": 610
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3-2",
+         "odds": 6.6,
+         "payout": 660
+        }
+       ],
+       "roi": 1.27,
+       "avg_odds": 6.35,
+       "pnl": 270
+      },
+      {
+       "key": "h1_tri4",
+       "kind": "3連単",
+       "label": "1-ab-abc 4点",
+       "races": 5,
+       "hits": 2,
+       "stake": 2000,
+       "return": 1270,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 6.1,
+         "payout": 610
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-3-2",
+         "odds": 6.6,
+         "payout": 660
+        }
+       ],
+       "roi": 0.635,
+       "avg_odds": 6.35,
+       "pnl": -730
+      },
+      {
+       "key": "h1_trio2",
+       "kind": "3連複",
+       "label": "1を含む上位2点",
+       "races": 5,
+       "hits": 3,
+       "stake": 1000,
+       "return": 860,
+       "hit_list": [
+        {
+         "key": "20261112-23-03",
+         "venue_name": "唐津",
+         "race": 3,
+         "combo": "1-2-4",
+         "odds": 3.5,
+         "payout": 350
+        },
+        {
+         "key": "20261112-22-01",
+         "venue_name": "福岡",
+         "race": 1,
+         "combo": "1-2-3",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-21-01",
+         "venue_name": "芦屋",
+         "race": 1,
+         "combo": "1-2-4",
+         "odds": 3.4,
+         "payout": 340
+        }
+       ],
+       "roi": 0.86,
+       "avg_odds": 2.87,
+       "pnl": -140
+      }
+     ]
+    },
+    "are": {
+     "races": 3,
+     "lane1_lost": 0,
+     "rows": [
+      {
+       "key": "tansho",
+       "kind": "単勝",
+       "label": "◎ 1点",
+       "races": 3,
+       "hits": 3,
+       "stake": 300,
+       "return": 750,
+       "hit_list": [
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1",
+         "odds": 1.7,
+         "payout": 170
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1",
+         "odds": 4.3,
+         "payout": 430
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1",
+         "odds": 1.5,
+         "payout": 150
+        }
+       ],
+       "roi": 2.5,
+       "avg_odds": 2.5,
+       "pnl": 450
+      },
+      {
+       "key": "exacta3",
+       "kind": "2連単",
+       "label": "上位3点",
+       "races": 3,
+       "hits": 3,
+       "stake": 900,
+       "return": 1430,
+       "hit_list": [
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 4.5,
+         "payout": 450
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 6.7,
+         "payout": 670
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 3.1,
+         "payout": 310
+        }
+       ],
+       "roi": 1.5889,
+       "avg_odds": 4.77,
+       "pnl": 530
+      },
+      {
+       "key": "quinella3",
+       "kind": "2連複",
+       "label": "上位3点",
+       "races": 3,
+       "hits": 3,
+       "stake": 900,
+       "return": 990,
+       "hit_list": [
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1-3",
+         "odds": 4.8,
+         "payout": 480
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3",
+         "odds": 3.2,
+         "payout": 320
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3",
+         "odds": 1.9,
+         "payout": 190
+        }
+       ],
+       "roi": 1.1,
+       "avg_odds": 3.3,
+       "pnl": 90
+      },
+      {
+       "key": "trifecta3",
+       "kind": "3連単",
+       "label": "上位3点",
+       "races": 3,
+       "hits": 2,
+       "stake": 900,
+       "return": 3210,
+       "hit_list": [
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-3-2",
+         "odds": 12.3,
+         "payout": 1230
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3-5",
+         "odds": 19.8,
+         "payout": 1980
+        }
+       ],
+       "roi": 3.5667,
+       "avg_odds": 16.05,
+       "pnl": 2310
+      },
+      {
+       "key": "trio3",
+       "kind": "3連複",
+       "label": "上位3点",
+       "races": 3,
+       "hits": 3,
+       "stake": 900,
+       "return": 1710,
+       "hit_list": [
+        {
+         "key": "20261112-16-03",
+         "venue_name": "児島",
+         "race": 3,
+         "combo": "1-2-3",
+         "odds": 5.6,
+         "payout": 560
+        },
+        {
+         "key": "20261112-10-08",
+         "venue_name": "三国",
+         "race": 8,
+         "combo": "1-2-3",
+         "odds": 3.7,
+         "payout": 370
+        },
+        {
+         "key": "20261112-24-04",
+         "venue_name": "大村",
+         "race": 4,
+         "combo": "1-3-5",
+         "odds": 7.8,
+         "payout": 780
+        }
+       ],
+       "roi": 1.9,
+       "avg_odds": 5.7,
+       "pnl": 810
+      },
+      {
+       "key": "tan_34",
+       "kind": "単勝",
+       "label": "3・4号艇の上位1点",
+       "races": 3,
+       "hits": 0,
+       "stake": 300,
+       "return": 0,
+       "hit_list": [],
+       "roi": 0.0,
+       "avg_odds": null,
+       "pnl": -300
+      },
+      {
+       "key": "tri_34_6",
+       "kind": "3連単",
+       "label": "3・4号艇頭 6点",
+       "races": 3,
+       "hits": 0,
+       "stake": 1800,
+       "return": 0,
+       "hit_list": [],
+       "roi": 0.0,
+       "avg_odds": null,
+       "pnl": -1800
+      },
+      {
+       "key": "tri_non1_10",
+       "kind": "3連単",
+       "label": "1号艇以外が頭 10点",
+       "races": 3,
+       "hits": 0,
+       "stake": 3000,
+       "return": 0,
+       "hit_list": [],
+       "roi": 0.0,
+       "avg_odds": null,
+       "pnl": -3000
+      },
+      {
+       "key": "cands",
+       "kind": "3連単",
+       "label": "狙い 1号艇なし3点(本命なしの全レース)",
+       "races": 14,
+       "hits": 1,
+       "stake": 4200,
+       "return": 4140,
+       "hit_list": [
+        {
+         "key": "20261112-02-02",
+         "venue_name": "戸田",
+         "race": 2,
+         "combo": "2-5-6",
+         "odds": 41.4,
+         "payout": 4140
+        }
+       ],
+       "roi": 0.9857,
+       "avg_odds": 41.4,
+       "pnl": -60
       }
      ]
     }
