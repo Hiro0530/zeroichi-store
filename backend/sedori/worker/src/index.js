@@ -105,11 +105,15 @@ async function importPkcs8(pem) {
 /* FIREBASE_SA_KEY は「秘密鍵(PEM)だけ」でも「サービスアカウントのJSON全体」でも受ける(2026-11-12: JSON全体が貼られて決済画面が開かなかったため) */
 export function saOf(env) {
   const raw = String(env.FIREBASE_SA_KEY || '').trim();
-  if (raw.startsWith('{')) {
-    try { const j = JSON.parse(raw); return { key: String(j.private_key || ''), email: String(j.client_email || env.FIREBASE_SA_EMAIL || '') }; }
-    catch { throw new Error('FIREBASE_SA_KEY json'); }
+  let key = raw, email = String(env.FIREBASE_SA_EMAIL || '');
+  const a = raw.indexOf('{'), b = raw.lastIndexOf('}');
+  if (a >= 0 && b > a) { // JSON 全体(前後に余計な文字が付いていても拾う)
+    try { const j = JSON.parse(raw.slice(a, b + 1)); if (j.private_key) { key = String(j.private_key); if (j.client_email) email = String(j.client_email); } } catch { /* 下の PEM 抜き出しに任せる */ }
   }
-  return { key: raw, email: String(env.FIREBASE_SA_EMAIL || '') };
+  // 「-----BEGIN ... END-----」の間だけを取り出し、文字として入った \n や引用符、空白を落とす
+  const m = key.match(/-----BEGIN [A-Z ]*PRIVATE KEY-----([\s\S]*?)-----END [A-Z ]*PRIVATE KEY-----/);
+  const body = (m ? m[1] : key).replace(/\\n/g, '').replace(/[^A-Za-z0-9+/=]/g, '');
+  return { key: '-----BEGIN PRIVATE KEY-----\n' + body + '\n-----END PRIVATE KEY-----\n', email, shape: (a >= 0 && b > a ? 'json' : m ? 'pem' : 'other') + ':' + raw.length + ':' + body.length };
 }
 async function googleToken(env) {
   if (gTok && gTok.exp > Date.now() + 60000) return gTok.token;
@@ -798,7 +802,7 @@ export default {
         catch (e) { prices[key] = { ok: false, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 160) }; }
       }
       let store = 'none';
-      if (env.FIREBASE_SA_KEY) { try { await getDoc(env, 'public/founders'); store = 'ok'; } catch (e) { store = String(e.message || e).replace(/-----[\s\S]*/g, '***').slice(0, 80); } }
+      if (env.FIREBASE_SA_KEY) { try { await getDoc(env, 'public/founders'); store = 'ok'; } catch (e) { store = String(e.message || e).replace(/-----[\s\S]*/g, '***').slice(0, 80) + ' / ' + (() => { try { return saOf(env).shape; } catch { return '?'; } })(); } }
       return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, prices }, 200, c);
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);

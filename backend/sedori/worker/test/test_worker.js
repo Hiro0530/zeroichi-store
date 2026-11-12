@@ -557,7 +557,7 @@ console.log('OK ' + n + '件');
   if (a.email !== 'x@y' || !a.key.includes('AAA')) throw new Error('saOf pem');
   const b = saOf({ FIREBASE_SA_KEY: JSON.stringify({ private_key: '-----BEGIN PRIVATE KEY-----\nBBB\n-----END PRIVATE KEY-----\n', client_email: 'j@k' }), FIREBASE_SA_EMAIL: 'x@y' });
   if (b.email !== 'j@k' || !b.key.includes('BBB')) throw new Error('saOf json');
-  let threw = false; try { saOf({ FIREBASE_SA_KEY: '{bad' }); } catch { threw = true; }
-  if (!threw) throw new Error('saOf bad json');
+  const c = saOf({ FIREBASE_SA_KEY: 'FIREBASE_SA_KEY の値 "-----BEGIN PRIVATE KEY-----\\nCC\\nDD==\\n-----END PRIVATE KEY-----\\n",', FIREBASE_SA_EMAIL: 'x@y' });
+  if (!c.key.includes('\nCCDD==\n') || c.email !== 'x@y') throw new Error('saOf quoted ' + c.key);
   console.log('saOf ok');
 }
