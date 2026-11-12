@@ -549,3 +549,15 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
 }
 
 console.log('OK ' + n + '件');
+
+// 2026-11-12: FIREBASE_SA_KEY に JSON 全体が入っていても鍵とメールを取り出せる
+{
+  const { saOf } = await import('../src/index.js');
+  const a = saOf({ FIREBASE_SA_KEY: '-----BEGIN PRIVATE KEY-----\nAAA\n-----END PRIVATE KEY-----\n', FIREBASE_SA_EMAIL: 'x@y' });
+  if (a.email !== 'x@y' || !a.key.includes('AAA')) throw new Error('saOf pem');
+  const b = saOf({ FIREBASE_SA_KEY: JSON.stringify({ private_key: '-----BEGIN PRIVATE KEY-----\nBBB\n-----END PRIVATE KEY-----\n', client_email: 'j@k' }), FIREBASE_SA_EMAIL: 'x@y' });
+  if (b.email !== 'j@k' || !b.key.includes('BBB')) throw new Error('saOf json');
+  let threw = false; try { saOf({ FIREBASE_SA_KEY: '{bad' }); } catch { threw = true; }
+  if (!threw) throw new Error('saOf bad json');
+  console.log('saOf ok');
+}

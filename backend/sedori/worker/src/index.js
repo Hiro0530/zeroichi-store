@@ -102,12 +102,22 @@ async function importPkcs8(pem) {
   const body = pem.replace(/-----[^-]+-----/g, '').replace(/\\n/g, '').replace(/\s+/g, '');
   return crypto.subtle.importKey('pkcs8', b64urlDecode(body.replace(/\+/g, '-').replace(/\//g, '_')), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
 }
+/* FIREBASE_SA_KEY は「秘密鍵(PEM)だけ」でも「サービスアカウントのJSON全体」でも受ける(2026-11-12: JSON全体が貼られて決済画面が開かなかったため) */
+export function saOf(env) {
+  const raw = String(env.FIREBASE_SA_KEY || '').trim();
+  if (raw.startsWith('{')) {
+    try { const j = JSON.parse(raw); return { key: String(j.private_key || ''), email: String(j.client_email || env.FIREBASE_SA_EMAIL || '') }; }
+    catch { throw new Error('FIREBASE_SA_KEY json'); }
+  }
+  return { key: raw, email: String(env.FIREBASE_SA_EMAIL || '') };
+}
 async function googleToken(env) {
   if (gTok && gTok.exp > Date.now() + 60000) return gTok.token;
   const now = Math.floor(Date.now() / 1000);
   const head = b64url(enc.encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' })));
-  const claim = b64url(enc.encode(JSON.stringify({ iss: env.FIREBASE_SA_EMAIL, scope: 'https://www.googleapis.com/auth/datastore', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 })));
-  const key = await importPkcs8(env.FIREBASE_SA_KEY);
+  const sa = saOf(env);
+  const claim = b64url(enc.encode(JSON.stringify({ iss: sa.email, scope: 'https://www.googleapis.com/auth/datastore', aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600 })));
+  const key = await importPkcs8(sa.key);
   const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, enc.encode(head + '.' + claim));
   const r = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -787,7 +797,9 @@ export default {
         try { const pr = await stripe(env, 'GET', '/prices/' + id); prices[key] = { ok: true, livemode: !!pr.livemode, active: !!pr.active }; }
         catch (e) { prices[key] = { ok: false, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 160) }; }
       }
-      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, prices }, 200, c);
+      let store = 'none';
+      if (env.FIREBASE_SA_KEY) { try { await getDoc(env, 'public/founders'); store = 'ok'; } catch (e) { store = String(e.message || e).replace(/-----[\s\S]*/g, '***').slice(0, 80); } }
+      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, prices }, 200, c);
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
     if (url.pathname === '/stripe/webhook') {
