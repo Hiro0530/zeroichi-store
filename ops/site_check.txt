@@ -1,4 +1,4 @@
-Thu Nov 12 06:40:10 UTC 2026
+Thu Nov 12 06:44:07 UTC 2026
 == https://zeroichiworks.net/
 200  ssl=0
 == https://zeroichiworks.net/sedori/
@@ -17,19 +17,19 @@ issuer=C=US, O=Let's Encrypt, CN=YR1
 notBefore=Oct 28 10:12:08 2026 GMT
 notAfter=Jan 26 10:12:07 2027 GMT
 == dig
+185.199.108.153
 185.199.111.153
 185.199.109.153
-185.199.108.153
 185.199.110.153
 hiro0530.github.io.
-185.199.108.153
-185.199.110.153
 185.199.111.153
+185.199.110.153
+185.199.108.153
 185.199.109.153
 == worker health
 {"ok":true}
 == worker diag
-{"mode":"test","webhook":true,"firebase":true,"prices":{"light_month":{"ok":true,"livemode":false,"active":true},"light_year":{"ok":true,"livemode":false,"active":true},"total_month":{"ok":true,"livemode":false,"active":true},"total_year":{"ok":true,"livemode":false,"active":true},"founder_month":{"ok":true,"livemode":false,"active":true},"founder_year":{"ok":true,"livemode":false,"active":true},"business_month":{"ok":true,"livemode":false,"active":true},"business_year":{"ok":true,"livemode":false,"active":true}}}
+{"mode":"test","webhook":true,"firebase":true,"store":"atob() called with invalid base64-encoded data. (Only whitespace, '+', '/', alph","prices":{"light_month":{"ok":true,"livemode":false,"active":true},"light_year":{"ok":true,"livemode":false,"active":true},"total_month":{"ok":true,"livemode":false,"active":true},"total_year":{"ok":true,"livemode":false,"active":true},"founder_month":{"ok":true,"livemode":false,"active":true},"founder_year":{"ok":true,"livemode":false,"active":true},"business_month":{"ok":true,"livemode":false,"active":true},"business_year":{"ok":true,"livemode":false,"active":true}}}
 == worker plans
 HTTP/2 200 
 access-control-allow-origin: https://zeroichiworks.net
