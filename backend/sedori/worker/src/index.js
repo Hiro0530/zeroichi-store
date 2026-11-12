@@ -545,7 +545,6 @@ export async function handleStripeUser(path, body, who, env) {
     const params = {
       mode: 'subscription', locale: 'ja', client_reference_id: uid,
       line_items: [{ price: prices[key], quantity: 1 }],
-      payment_method_types: ['card'], // Apple Pay・Google Pay はカードの中に出る(Stripe の管理画面で有効にしておく)
       success_url: app + 'mypage/?subscribed=1&session_id={CHECKOUT_SESSION_ID}',
       cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
       metadata: meta,

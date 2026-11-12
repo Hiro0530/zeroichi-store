@@ -311,8 +311,8 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
   j = await r.json();
   const f = stripeSessions.cs_1.form;
   eq([r.status, j.url, j.trial], [200, 'https://checkout.stripe.com/c/pay/cs_1', true], '申し込み画面の URL を返す');
-  eq([f.mode, f['line_items[0][price]'], f['line_items[0][quantity]'], f.client_reference_id, f.locale, f['payment_method_types[0]'], f['subscription_data[trial_period_days]'], f['subscription_data[metadata][uid]'], f.customer_email],
-    ['subscription', 'price_tm', '1', 'u10', 'ja', 'card', '14', 'u10', 'u10@example.com'], 'Checkout に渡す中身(月額・本人・日本語・カード・14日無料)');
+  eq([f.mode, f['line_items[0][price]'], f['line_items[0][quantity]'], f.client_reference_id, f.locale, f['payment_method_types[0]'] === undefined, f['subscription_data[trial_period_days]'], f['subscription_data[metadata][uid]'], f.customer_email],
+    ['subscription', 'price_tm', '1', 'u10', 'ja', true, '14', 'u10', 'u10@example.com'], 'Checkout に渡す中身(月額・本人・日本語・カード・14日無料)');
   eq([f.success_url, f.cancel_url], ['https://zeroichiworks.net/sedori/mypage/?subscribed=1&session_id={CHECKOUT_SESSION_ID}', 'https://zeroichiworks.net/sedori/plans/?plan=total_month#pl-step2'], '戻り先はサイトの中');
   eq([/14日間は無料/.test(f['custom_text[submit][message]']), /4,980円\(税込\)/.test(f['custom_text[submit][message]']), /解約はマイページ/.test(f['custom_text[submit][message]'])], [true, true, true], 'Stripe の画面にも無料期間・金額・解約を書く');
   r = await scall('u10', '/stripe/checkout', { planKey: 'light_year' });
