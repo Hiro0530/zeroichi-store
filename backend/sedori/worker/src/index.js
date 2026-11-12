@@ -803,7 +803,17 @@ export default {
       }
       let store = 'none';
       if (env.FIREBASE_SA_KEY) { try { await getDoc(env, 'public/founders'); store = 'ok'; } catch (e) { store = String(e.message || e).replace(/-----[\s\S]*/g, '***').slice(0, 80) + ' / ' + (() => { try { return saOf(env).shape; } catch { return '?'; } })(); } }
-      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, prices }, 200, c);
+      // 申込の通し確認(テスト鍵のときだけ): 利用者の代わりに「診断用」の名前で申込画面を作ってみて、どこで何秒かかり何で止まるかを返す
+      let checkout;
+      if (mode === 'test' && url.searchParams.get('co')) {
+        checkout = {};
+        for (const key of ['light_month', 'total_year']) {
+          const t0 = Date.now();
+          try { const o = await handleStripeUser('/stripe/checkout', { planKey: key }, { uid: 'diag-honbu', email: '' }, env); checkout[key] = { ok: /^https:\/\/checkout\.stripe\.com\//.test(String(o.url || '')), ms: Date.now() - t0 }; }
+          catch (e) { checkout[key] = { ok: false, ms: Date.now() - t0, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 300) }; }
+        }
+      }
+      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices }, 200, c);
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
     if (url.pathname === '/stripe/webhook') {

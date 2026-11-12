@@ -18,6 +18,9 @@ jobs:
             W=https://zw-sedori-billing.zeroichi-works-jp.workers.dev
             echo "== worker health"; curl -sS -m 20 "$W/health"; echo
             echo "== worker diag"; curl -sS -m 30 "$W/stripe/diag"; echo
+            echo "== worker checkout diag"; curl -sS -m 60 -w "\n%{http_code} %{time_total}s\n" "$W/stripe/diag?co=1" | cut -c1-900; echo
+            echo "== worker checkout noauth"; curl -sS -m 40 -w "\n%{http_code} %{time_total}s\n" -X POST -H "Origin: https://zeroichiworks.net" -H "Content-Type: application/json" -d '{"planKey":"light_month"}' "$W/stripe/checkout"; echo
+            echo "== worker checkout badtoken"; curl -sS -m 40 -w "\n%{http_code} %{time_total}s\n" -X POST -H "Origin: https://zeroichiworks.net" -H "Authorization: Bearer a.b.c" -H "Content-Type: application/json" -d '{"planKey":"light_month"}' "$W/stripe/checkout"; echo
             echo "== worker plans"; curl -sS -m 20 -H "Origin: https://zeroichiworks.net" -D - "$W/stripe/plans" | grep -i -E "^HTTP|access-control-allow-origin|^\{"; echo
           } > ops/site_check.txt 2>&1; true
       - run: |
