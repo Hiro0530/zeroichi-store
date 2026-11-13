@@ -178,7 +178,12 @@
 
   /* ---------- 通知 ---------- */
   var nb = $('#lg-notify');
-  function paintNotify() { var on = U.notifyOn(); nb.setAttribute('aria-pressed', String(on)); nb.textContent = on ? '終了60分前の通知: オン' : '終了60分前の通知: オフ'; }
+  // 入・切の切り替え(行全体が押せる。右に「入/切」の文字と切り替え)。ウォッチの通知の行と同じ形
+  function paintNotify() {
+    var on = U.notifyOn(), v = nb.querySelector('.sw-v');
+    nb.setAttribute('aria-pressed', String(on)); nb.setAttribute('aria-checked', String(on));
+    if (v) v.textContent = on ? '入' : '切'; else nb.textContent = on ? '終了60分前の通知: オン' : '終了60分前の通知: オフ';
+  }
   nb.addEventListener('click', function () { U.enableNotify(!U.notifyOn()).then(paintNotify); });
   document.addEventListener('sedori:notify', paintNotify);
 

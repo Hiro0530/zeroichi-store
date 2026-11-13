@@ -1,13 +1,18 @@
 /* せどり 利益チェック: オフラインでも計算できるように画面と手数料データを保存する。
    HTML・JSON・config.js は通信を優先(新しい手数料・設定を使う)、それ以外は保存済みを優先。外部(楽天・Yahoo!・Keepa・Firebase・Stripe・PayPal)は扱わない。
    ヤフオクの終了の通知で「出品停止にした」を押すと、開いているページに知らせる(無ければ台帳を開く)。 */
-var CACHE = 'zw-sedori-v14';
+var CACHE = 'zw-sedori-v16';
 var CORE = ['./', 'rakuten-amazon/', 'muzaiko-amazon/', 'mercari-calc/', 'yahuoku-mercari/', 'auction-mercari/', 'daicho/', 'scan/', 'books/', 'plans/', 'mypage/', 'terms/', 'privacy/', 'shikumi/', 'chigai/',
   'assets/sedori.css', 'assets/calc.js', 'assets/ui.js', 'assets/sync.js', 'assets/books-sync.js', 'assets/seller-check.js', 'assets/account.js', 'assets/ra.js', 'assets/market.js', 'assets/mz.js', 'assets/ledger.js', 'assets/top.js', 'assets/shindan.js',
   'assets/plans.js', 'assets/mypage.js', 'assets/ai.js', 'assets/scan.css', 'assets/scan.js', 'assets/scan-decoder.js', 'assets/scan-sync.js', 'books/books.css', 'books/assets/books-core.js', 'books/assets/books.js', 'assets/vendor/qrcode-generator.js', 'assets/vendor/zxing-library-0.21.3.min.js',
   'data/fees.json', 'icon-192.png'];
+/* あとから足す部品(まとめて・台帳の追加・ウォッチの取り直し・仕入れる前の確かめ・手引き)。まだ無いファイルがあっても、保存の準備を止めない */
+var OPT = ['assets/config.js', 'assets/bulk.js', 'assets/ledger-plus.js', 'assets/ledger-plus.css', 'assets/watch-check.js', 'assets/precheck.js', 'assets/tools.css',
+  'guide/', 'guide/guide.css', 'guide/hajimeru/', 'guide/hajimeru/hajimeru.js', 'guide/kobutsu-shinsei/'];
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) {
+    return c.addAll(CORE).then(function () { return Promise.all(OPT.map(function (u) { return c.add(u).catch(function () { /* 無ければ飛ばす */ }); })); });
+  }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {

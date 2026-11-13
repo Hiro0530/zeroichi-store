@@ -1,5 +1,6 @@
 /* 古物台帳のページ: 状態のタブ・期間・検索で絞り込み、状態を1クリックで進める(売れたで売却欄を自動記入)、
-   行の編集(取引相手の情報の貼り付けつき)、手で追加、CSV・Excel(古物台帳の形) */
+   行の編集(取引相手の情報の貼り付けつき)、手で追加、CSV・Excel(古物台帳の形)。
+   「また仕入れる」の候補・納品リスト・仕入れの証拠の書き出しは assets/ledger-plus.js(読み込みの順はどちらが先でもよい) */
 (function () {
   'use strict';
   var U = window.SedoriUI;
@@ -9,6 +10,8 @@
   var p = new URLSearchParams(location.search); if (p.get('q')) q = p.get('q');
   if (p.get('tab')) tab = p.get('tab');
   var focusId = p.get('focus') || p.get('stop');
+  /** 追加の働き(ledger-plus.js)。置き場に取り付いた時だけ使う */
+  function LP() { var x = window.SedoriLedgerPlus; return x && x.on() ? x : null; }
   $('#lg-period').value = U.store.get('lg-period', 'all');
 
   function inPeriod(r) {
@@ -26,10 +29,13 @@
   }
   function rows() {
     if (tab === 'ending') return U.endingRows(L.all().filter(function (r) { return inPeriod(r) && match(r); })).map(function (x) { return x.r; });
+    var rp = tab === 'repeat' && LP() ? LP().repeatIds() : {};
     return L.all().filter(function (r) {
       if (!inPeriod(r) || !match(r)) return false;
       if (tab === 'all') return true;
       if (tab === 'need') return U.checkState(r) === 'need';
+      if (tab === 'proof') return !!LP() && LP().core.proofNeeded(r);
+      if (tab === 'repeat') return !!rp[r.id];
       return (r.status || '仕入れ済') === tab;
     });
   }
@@ -40,13 +46,15 @@
     var need = cnt(function (r) { return U.checkState(r) === 'need'; });
     var ending = U.endingRows(all), soon = ending.filter(function (x) { return x.e.state !== 'far'; }).length;
     var list = [['all', 'すべて', all.length]].concat(ST.map(function (s) { return [s, s, cnt(function (r) { return (r.status || '仕入れ済') === s; })]; }),
-      [['ending', '終了が近い順', ending.length, soon], ['need', '売り手の確認が未入力', need]]);
+      LP() ? [['repeat', 'また仕入れる', LP().count()]] : [],
+      [['ending', '終了が近い順', ending.length, soon], ['need', '売り手の確認が未入力', need]],
+      LP() ? [['proof', '証拠が未入力', cnt(LP().core.proofNeeded)]] : []);
     $('#lg-tabs').innerHTML = list.map(function (t) {
-      return '<button type="button" role="tab" data-tab="' + esc(t[0]) + '" aria-selected="' + (t[0] === tab) + '">' + esc(t[1]) + '<span class="n' + ((t[0] === 'need' && t[2]) || t[3] ? ' w' : '') + '">' + (t[3] ? t[3] + '/' : '') + t[2] + '</span></button>';
+      return '<button type="button" role="tab" data-tab="' + esc(t[0]) + '" aria-selected="' + (t[0] === tab) + '">' + esc(t[1]) + '<span class="n' + (((t[0] === 'need' || t[0] === 'proof') && t[2]) || t[3] ? ' w' : '') + '">' + (t[3] ? t[3] + '/' : '') + t[2] + '</span></button>';
     }).join('');
     var tb = $('#lg-tabs'), cur = $('#lg-tabs [aria-selected="true"]');
     if (cur && (cur.offsetLeft + cur.offsetWidth > tb.scrollLeft + tb.clientWidth || cur.offsetLeft < tb.scrollLeft)) tb.scrollLeft = Math.max(0, cur.offsetLeft - 16);
-    $$('#lg-tabs button').forEach(function (b) { b.addEventListener('click', function () { tab = b.getAttribute('data-tab'); U.store.set('lg-tab', tab); openId = null; render(); }); });
+    $$('#lg-tabs button').forEach(function (b) { b.addEventListener('click', function () { tab = b.getAttribute('data-tab'); pend = null; U.store.set('lg-tab', tab); openId = null; render(); }); });
   }
 
   function summary(list) {
@@ -102,18 +110,23 @@
       if (e.state !== 'far') rowCls += ' end-' + e.state;
     } else if (r.yEnd && r.status === '出品停止') endHTML = '<span class="meta">ヤフオク終了 ' + esc(r.yEnd.slice(5).replace('T', ' ').replace('-', '/')) + '</span>';
     if (focusId === r.id) rowCls += ' focus';
+    var lp = LP(), on = lp && lp.marked(r);
+    var pc = r.precheck && r.precheck.of ? '<span class="lp-pc">確かめ ' + esc(r.precheck.n) + '/' + esc(r.precheck.of) + '</span>' : '';
+    var tags = (lp && !r.wait ? (on ? '<button type="button" class="rp-tag" data-rp="' + esc(r.id) + '" aria-pressed="true" title="押すと、また仕入れる印を外します">また仕入れる</button>'
+      : '<button type="button" class="lnk" data-rp="' + esc(r.id) + '" aria-pressed="false">また仕入れる印を付ける</button>') : '') +
+      (lp && lp.core.proofNeeded(r) ? '<button type="button" class="lnk warnt lp-need" data-edit="' + esc(r.id) + '" data-sec="proof">▲ 証拠が未入力</button>' : '') + pc;
     var url = r.ref ? '<a href="' + esc(r.ref) + '" target="_blank" rel="noopener">取引ページ</a>' : '';
     return '<tr data-id="' + esc(r.id) + '"' + (rowCls.trim() ? ' class="' + rowCls.trim() + '"' : '') + '>' +
-      '<td data-k="状態"><div class="st"><span class="st1"><span class="stl s' + si + '">' + esc(r.status || '仕入れ済') + '</span>' + endHTML.replace(/<button[\s\S]*$/, '') + '</span><span class="st2">' + (endHTML.match(/<button[\s\S]*$/) || [''])[0] + nx + '</span><span class="meta">' + (r.wait ? '仕入れ前(無在庫)' : esc(U.SHIP_LABEL[r.ship] || '発送代行')) + '</span></div></td>' +
+      '<td data-k="状態"><div class="st"><span class="st1"><span class="stl s' + si + '">' + esc(r.status || '仕入れ済') + '</span>' + endHTML.replace(/<button[\s\S]*$/, '') + '</span><span class="st2">' + (endHTML.match(/<button[\s\S]*$/) || [''])[0] + nx + '</span><span class="meta">' + (r.wait ? '仕入れ前(無在庫)' : esc(U.SHIP_LABEL[r.ship] || '発送代行')) + '</span>' + (r.prepSent ? '<span class="meta">発送代行へ連絡済 ' + esc(String(r.prepSent).slice(5).replace('-', '/')) + '</span>' : '') + '</div></td>' +
       '<td data-k="仕入日" class="nw">' + esc(r.date || '') + '</td>' +
-      '<td class="nmc"><div class="nm">' + esc(r.name || '(名前なし)') + '</div><div class="meta">' + [esc(r.cond || ''), r.hinmoku ? esc(r.hinmoku) : '<span class="warnt">品目未選択</span>', esc(r.feature || ''), url].filter(Boolean).join('<span aria-hidden="true">　</span>') + '</div></td>' +
+      '<td class="nmc"><div class="nm">' + esc(r.name || '(名前なし)') + '</div><div class="meta">' + [esc(r.cond || ''), r.hinmoku ? esc(r.hinmoku) : '<span class="warnt">品目未選択</span>', esc(r.feature || ''), url].filter(Boolean).join('<span aria-hidden="true">　</span>') + '</div>' + (tags ? '<div class="lp-tags">' + tags + '</div>' : '') + '</td>' +
       '<td class="r" data-k="数量">' + qn + '</td>' +
       '<td class="r" data-k="仕入れ値"><span class="yen">' + yen(r.unit) + '<i>円</i></span>' + (qn > 1 ? '<div class="meta">計 ' + yen((Number(r.unit) || 0) * qn) + '円</div>' : '') + '</td>' +
       '<td data-k="仕入れ先・相手">' + esc(r.party || '') + (r.pName ? '<div class="meta">' + esc(r.pName) + '</div>' : '') + '</td>' +
-      '<td data-k="売り手の確認">' + (st === 'need' ? '<span class="badge" data-edit="' + esc(r.id) + '">売り手の確認が未入力</span>' : (st === 'ok' ? '<span class="badge ok">済</span><div class="meta">' + esc(r.verify || '') + '</div>' : '<span class="muted">不要</span>')) + '</td>' +
-      '<td data-k="売却">' + (r.saleDate ? '<span class="nw">' + esc(r.saleDate) + '</span>' : '<span class="muted">未売却</span>') + '<div class="meta">' + esc(r.saleParty || (r.sellTo ? r.sellTo + 'で販売予定' : '')) + '</div></td>' +
+      '<td data-k="売り手の確認"' + (st === 'need' || st === 'ok' ? '' : ' class="nv"') + '>' + (st === 'need' ? '<span class="badge" data-edit="' + esc(r.id) + '">売り手の確認が未入力</span>' : (st === 'ok' ? '<span class="badge ok">済</span><div class="meta">' + esc(r.verify || '') + '</div>' : '<span class="muted">不要</span>')) + '</td>' +
+      '<td data-k="売却"' + (r.saleDate ? '' : ' class="nv"') + '>' + (r.saleDate ? '<span class="nw">' + esc(r.saleDate) + '</span>' : '<span class="muted">未売却</span>') + '<div class="meta">' + esc(r.saleParty || (r.sellTo ? r.sellTo + 'で販売予定' : '')) + '</div></td>' +
       '<td class="r" data-k="売値">' + (r.salePrice ? '<span class="yen">' + yen(r.salePrice) + '<i>円</i></span>' : (r.sellPrice ? '<span class="muted">予定 ' + yen(r.sellPrice) + '</span>' : '')) + '</td>' +
-      '<td class="r" data-k="見込み利益">' + (r.profit === '' || r.profit == null ? '' : '<span class="pf ' + (r.profit < 0 ? 'bad' : '') + '">' + yen(Number(r.profit) * qn) + '</span>') + '</td>' +
+      '<td class="r' + (r.profit === '' || r.profit == null ? ' nv' : '') + '" data-k="見込み利益">' + (r.profit === '' || r.profit == null ? '' : '<span class="pf ' + (r.profit < 0 ? 'bad' : '') + '">' + yen(Number(r.profit) * qn) + '</span>') + '</td>' +
       '<td class="ops"><button type="button" data-edit="' + esc(r.id) + '">' + (openId === r.id ? '閉じる' : '編集') + '</button><button type="button" data-del="' + esc(r.id) + '">消す</button></td></tr>' +
       (openId === r.id ? '<tr class="ed"><td colspan="11">' + editHTML(r) + '</td></tr>' : '');
   }
@@ -123,13 +136,15 @@
     ['date', '仕入日', 'date'], ['cond', '新品/中古', ['新品', '中古']], ['hinmoku', '品目', [''].concat(U.HINMOKU)], ['status', '状態', 'flow'], ['ship', '発送のしかた', 'ship'],
     ['name', '品名', 'text', 'w2'], ['feature', '特徴(型番・色・シリアル)', 'text', 'w2'],
     ['qty', '数量', 'number'], ['unit', '仕入れ値(1個)', 'number'], ['party', '仕入れ先', 'text', 'w2'],
-    ['media', 'ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等', 'check', 'w2'], ['recvId', '受取先・入庫ID', 'text'], ['memo', 'メモ', 'text'],
+    ['media', 'ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等', 'check', 'w2'], ['recvId', '受取先・入庫ID', 'text'], ['trackNo', '追跡番号', 'text'], ['memo', 'メモ', 'text', 'w2'],
+    ['sec', '仕入れの証拠', '書類の画像は預かりません。手元の保管場所を文字で残します'],
+    ['orderNo', '注文番号', 'text'], ['docType', '書類の種類', ['', '領収書', '請求書', '納品書', '購入履歴の画面', 'なし']], ['docName', '宛名は出品者の名前と同じ', 'check'], ['docRef', '保管場所(ファイル名・フォルダ・メールの件名など)', 'text', 'w4'],
     ['sec', '無在庫の見張り(ヤフオク)'], ['yEnd', 'ヤフオク終了日時', 'datetime-local'], ['yEndPaste', '終了日時の文字を貼り付け', 'paste', 'w2'], ['wait', 'まだ仕入れていない(売れてから仕入れる)', 'check'],
     ['sec', '売却'], ['sellTo', '売り先', 'text'], ['sellPrice', '予定売値(1個)', 'number'], ['saleDate', '売却日', 'date'], ['salePrice', '売値(1個)', 'number'], ['saleParty', '売却相手', 'text', 'w2'], ['profit', '見込み利益(1個)', 'number']
   ];
   function editHTML(r) {
     var left = F.map(function (f) {
-      if (f[0] === 'sec') return '<div class="sec">' + f[1] + '</div>';
+      if (f[0] === 'sec') return '<div class="sec"' + (f[2] ? ' data-sec="proof"' : '') + '>' + f[1] + (f[2] ? '<span class="hint">' + f[2] + '</span>' : '') + '</div>';
       var v = r[f[0]] == null ? '' : r[f[0]], cls = f[3] ? ' class="' + f[3] + '"' : '';
       if (f[2] === 'flow' || f[2] === 'ship') {
         var opts = f[2] === 'flow' ? U.flowOf(r).concat(['出品停止']).map(function (s) { return [s, s]; }) : [['self', '自分で発送'], ['3pl', '発送代行'], ['fba', 'FBA(Amazonが発送)']];
@@ -137,7 +152,7 @@
       }
       if (Array.isArray(f[2])) return '<label' + cls + '>' + f[1] + '<select data-e="' + f[0] + '">' + f[2].map(function (o) { return '<option value="' + esc(o) + '"' + (String(v) === o ? ' selected' : '') + '>' + (o || '選んでください') + '</option>'; }).join('') + '</select></label>';
       if (f[2] === 'paste') return '<label' + cls + '>' + f[1] + '<input data-endpaste type="text" autocomplete="off" placeholder="例: 終了日時 10月29日（水）22時15分"></label>';
-      if (f[2] === 'check') return '<label class="ck ' + (f[3] || '') + '" style="flex-direction:row"><input type="checkbox" data-e="' + f[0] + '"' + (v ? ' checked' : '') + '>' + f[1] + '</label>';
+      if (f[2] === 'check') return '<label class="ck ' + (f[3] || '') + '" style="flex-direction:row"><input type="checkbox" data-e="' + f[0] + '"' + ((f[0] === 'docName' ? v === 'はい' : v) ? ' checked' : '') + '>' + f[1] + '</label>';
       return '<label' + cls + '>' + f[1] + '<input data-e="' + f[0] + '" type="' + f[2] + '" value="' + esc(v) + '"' + (f[2] === 'number' ? ' inputmode="numeric"' : '') + '></label>';
     }).join('');
     return '<div class="edwrap"><div class="edf">' + left +
@@ -145,14 +160,30 @@
   }
 
   function render() {
+    // 追加の働きがまだ読まれていない間は「すべて」で描き、取り付いたら元のタブに戻す
+    if (pend && LP()) { tab = pend; pend = null; }
+    if ((tab === 'repeat' || tab === 'proof') && !LP()) { pend = tab; tab = 'all'; }
     var list = rows();
     tabs(); summary(list); upsell();
-    var label = tab === 'all' ? 'すべて' : (tab === 'need' ? '売り手の確認が未入力' : (tab === 'ending' ? '終了が近い順(出品中でヤフオク終了日時がある行)' : tab));
-    $('#lg-title').innerHTML = esc(label) + '<small>' + list.length + '件' + (q ? '　「' + esc(q) + '」で絞り込み <button type="button" class="lnk" id="lg-clear">解除</button>' : '') + '</small>';
-    var c = $('#lg-clear'); if (c) c.addEventListener('click', function () { q = ''; $('#sb-q').value = ''; history.replaceState(null, '', location.pathname); render(); });
+    title(list);
+    var gw = $('#lg-grid').parentNode; gw.hidden = tab === 'repeat';
+    if (LP()) LP().paint(tab);
+    if (tab === 'repeat') { $('#lg-rows').innerHTML = ''; return; }
     var empty = L.all().length ? '条件に合う行がありません。' : 'まだ記録がありません。<br>計算ページで「仕入れた」を押すと、ここに自動で1行できます。手で入れる場合は「手で追加」。';
-    $('#lg-rows').innerHTML = list.length ? list.map(rowHTML).join('') : '<tr><td colspan="11" class="empty emp">' + empty + '</td></tr>';
+    var vk = tab + '|' + q + '|' + $('#lg-period').value; if (vk !== viewKey) { viewKey = vk; shown = PAGE; }
+    var oi = openId ? list.findIndex(function (r) { return r.id === openId; }) : -1; if (oi >= shown) shown = oi + 1;   // 開いた行・キーで動いた行は必ず出す
+    var rest = list.length - Math.min(shown, list.length);
+    $('#lg-rows').innerHTML = list.length ? list.slice(0, shown).map(rowHTML).join('') +
+      (rest > 0 ? '<tr class="more"><td colspan="11"><button type="button" class="btn ghost lp-more" data-more>次の' + Math.min(PAGE, rest) + '件を見る(残り' + rest + '件)</button></td></tr>' : '')
+      : '<tr><td colspan="11" class="empty emp">' + empty + '</td></tr>';
     if (openId) bindEdit();
+  }
+  var pend = null, PAGE = 30, shown = PAGE, viewKey = '';
+  var LABEL = { all: 'すべて', need: '売り手の確認が未入力', ending: '終了が近い順(出品中でヤフオク終了日時がある行)', repeat: 'また仕入れる', proof: '証拠が未入力(新品でAmazonに売る行)' };
+  function title(list) {
+    list = list || rows();
+    $('#lg-title').innerHTML = esc(LABEL[tab] || tab) + '<small>' + (tab === 'repeat' && LP() ? esc(LP().reviewLabel()) : list.length + '件') + (q ? '　「' + esc(q) + '」で絞り込み <button type="button" class="lnk" id="lg-clear">解除</button>' : '') + '</small>';
+    var c = $('#lg-clear'); if (c) c.addEventListener('click', function () { q = ''; $('#sb-q').value = ''; history.replaceState(null, '', location.pathname); render(); });
   }
 
   function bindEdit() {
@@ -161,6 +192,7 @@
       el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', function () {
         var k = el.getAttribute('data-e'), v = el.type === 'checkbox' ? el.checked : el.value;
         if (el.type === 'number') v = v === '' ? '' : Number(v);
+        if (k === 'docName') v = v ? 'はい' : '';   // 書き出しの「宛名の一致」は文字で持つ
         var patch = {}; patch[k] = v;
         if (k === 'status' && v === '売約') { var r0 = L.get(openId); if (r0 && !r0.saleDate) { patch.saleDate = U.today(); patch.salePrice = r0.salePrice || r0.sellPrice || ''; patch.saleParty = r0.saleParty || ((r0.sellTo || '') + ' 購入者').trim(); } }
         L.update(openId, patch);
@@ -193,16 +225,25 @@
   }
 
   $('#lg-rows').addEventListener('click', function (e) {
+    if (e.target.closest('[data-more]')) { shown += PAGE; render(); return; }
     var sp = e.target.closest('[data-stop]');
     if (sp) { U.stopListing(sp.getAttribute('data-stop')); render(); return; }
-    var a = e.target.closest('[data-adv]'), ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]');
-    if (a) {
+    var a = e.target.closest('[data-adv]'), ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), rpb = e.target.closest('[data-rp]');
+    if (rpb && LP()) {
+      var all0 = L.all(), on = LP().toggle(rpb.getAttribute('data-rp')); render();
+      U.toast(on ? 'また仕入れる印を付けました。「また仕入れる」タブに並びます' : 'また仕入れる印を外しました', '元に戻す', function () { L.save(all0); render(); });
+    } else if (a) {
       var id = a.getAttribute('data-adv'), before = JSON.parse(JSON.stringify(L.get(id)));
       var r = L.advance(id); render();
       U.toast(r.status === '売約' ? '売れた: 売却日・売値・相手を記入しました' : '「' + r.status + '」にしました', '元に戻す', function () { L.update(id, before); render(); });
+      if (r.status === '売約' && LP() && !LP().marked(r)) { // 売れた直後のお知らせに、印を付ける口を1つ足す(画面は増やさない)
+        var tb = $('#toast'), b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'toast-act'; b2.textContent = 'また仕入れる'; b2.setAttribute('aria-label', 'また仕入れる印を付ける');
+        b2.addEventListener('click', function () { tb.classList.remove('on'); LP().toggle(id); render(); });
+        tb.appendChild(b2);
+      }
     } else if (ed) {
       var id2 = ed.getAttribute('data-edit'); openId = openId === id2 ? null : id2; render();
-      if (openId) { var t = $('#lg-rows tr.ed'); if (t) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+      if (openId) { var t = $('#lg-rows tr.ed'); if (ed.getAttribute('data-sec') && t) t = $('[data-sec="proof"]', t) || t; if (t) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
     } else if (del) {
       var all = L.all(), id3 = del.getAttribute('data-del');
       L.remove(id3); if (openId === id3) openId = null; render();
@@ -243,6 +284,7 @@
   document.addEventListener('sedori:remote', function () {
     var a = document.activeElement;
     if (openId && a && a.closest && a.closest('#lg-rows tr.ed')) { tabs(); summary(rows()); return; }
+    if (a && a.closest && a.closest('tr.rp-ed')) { tabs(); return; }
     render();
   });
   /* 残り時間を1秒ごとに書き換える(2時間に入った・終了した行は描き直す) */
@@ -257,6 +299,13 @@
     if (redraw) { var a = document.activeElement; if (!(openId && a && a.closest && a.closest('#lg-rows tr.ed'))) render(); }
   }, 1000);
 
+  /* 追加の働き(ledger-plus.js)へ渡す口。先に読まれていればここで取り付け、後から読まれた時は向こうから取り付く */
+  window.SedoriLedgerPage = {
+    render: render, rows: rows, title: function () { tabs(); title(); }, tab: function () { return tab; },
+    setTab: function (t) { tab = t; U.store.set('lg-tab', tab); openId = null; render(); },
+    scope: function () { var s = $('#lg-period'); return '期間: ' + s.options[s.selectedIndex].text + (q ? '・検索「' + q + '」' : '') + (tab !== 'all' ? '・' + (LABEL[tab] || tab) : ''); }
+  };
+  if (window.SedoriLedgerPlus) window.SedoriLedgerPlus.mount(window.SedoriLedgerPage);
   // 通知の「出品停止にした」(ページが閉じていた時)
   if (p.get('stop')) { var sid = p.get('stop'), sr = L.get(sid); if (sr && sr.status === '出品中') U.stopListing(sid); history.replaceState(null, '', location.pathname + '?tab=' + tab); }
   render();

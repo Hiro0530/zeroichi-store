@@ -7,7 +7,7 @@
   var MAIL = 'zeroichi.works.jp@gmail.com';
 
   /** 端末をまたいで揃える設定(ログイン中・有料のみクラウドへ) */
-  var SYNC_KEYS = ['target', 'ship', 'wh'];
+  var SYNC_KEYS = ['target', 'ship', 'wh', 'prep', 'fixed'];
   function emit(name, detail) { try { document.dispatchEvent(new CustomEvent(name, { detail: detail })); } catch (e) { /* 何もしない */ } }
   var store = {
     get: function (k, d) {
@@ -21,6 +21,14 @@
     del: function (k) { try { localStorage.removeItem(PREFIX + k); } catch (e) { /* 何もしない */ } }
   };
 
+  /* ---------- 差し込み口(ほかの部品が、元のファイルを直さずに働きを足すための口) ----------
+     hook('名前', fn) で登録し、fire('名前', 渡す物) で呼ぶ。使い方は本部の docs/sedori_app/build_slots_2026-11-13.md */
+  var hooks = {};
+  function hook(name, fn) { (hooks[name] = hooks[name] || []).push(fn); }
+  function fire(name, payload) { (hooks[name] || []).forEach(function (fn) { try { fn(payload); } catch (e) { /* ほかの部品の誤りで元の動きを止めない */ } }); return payload; }
+  /** できることの段: 'free' / 'light' / 'total' / 'business'(14日無料の間は business) */
+  function tier() { var A = window.SedoriAccount; return A && A.paid() ? A.tier() : 'free'; }
+
   function base() { return document.body.getAttribute('data-base') || './'; }
   function $(s, el) { return (el || document).querySelector(s); }
   function $$(s, el) { return Array.prototype.slice.call((el || document).querySelectorAll(s)); }
@@ -33,13 +41,13 @@
   function narrow() { return window.matchMedia && window.matchMedia('(max-width:860px)').matches; }
 
   /* ---------- 手数料 ---------- */
-  var feesPromise = null;
+  var feesPromise = null, feesNow = null;
   function loadFees() {
     if (!feesPromise) {
       feesPromise = fetch(base() + 'data/fees.json', { cache: 'no-cache' }).then(function (r) {
         if (!r.ok) throw new Error('fees ' + r.status);
         return r.json();
-      });
+      }).then(function (f) { feesNow = f; return f; });
     }
     return feesPromise;
   }
@@ -110,25 +118,51 @@
     function paint() { var m = shipMode(); $$('button', box).forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-s') === m)); }); document.body.setAttribute('data-ship', m); }
     paint();
     $$('button', box).forEach(function (b) {
-      b.addEventListener('click', function () { store.set('ship', b.getAttribute('data-s')); paint(); fireTarget(); toast(b.getAttribute('data-s') === '3pl' ? '発送代行に任せる: 倉庫の費用を足して計算します' : '自分で発送: 倉庫の費用なし、送料は運送会社の料金で計算します'); });
+      b.addEventListener('click', function () { store.set('ship', b.getAttribute('data-s')); paint(); fireTarget(); toast(b.getAttribute('data-s') === '3pl' ? '発送代行に任せる: 発送代行の費用を入れて計算します' : '自分で発送: 倉庫の費用なし、送料は運送会社の料金で計算します'); });
     });
   }
-  /** 発送代行の費用の欄(内訳の上)。自分で発送の時は1行の説明だけ */
-  function mountWh(box, fees, note) {
+  /* ---------- 発送代行にFBAへの納品を任せる時の費用(代行料+1箱ごとの費用÷1箱の個数)。端末に保存し、設定として同期 ---------- */
+  function prepCosts(fees) {
+    var d = (fees && fees.fba_prep && fees.fba_prep.defaults) || { fee: 100, box: 870, per: 20 };
+    var p = store.get('prep', null) || {};
+    return { fee: p.fee != null ? p.fee : d.fee, box: p.box != null ? p.box : d.box, per: p.per != null ? p.per : d.per };
+  }
+  /** 発送代行にFBAへの納品を任せる時の、1個あたりの費用 */
+  function prepUnit(fees) { return window.SedoriCalc.prepCost(prepCosts(fees)); }
+  function prepLabel(fees) { var p = prepCosts(fees), n = Math.max(1, Math.round(Number(p.per) || 1)); return '発送代行(代行料' + yen(p.fee) + '円+箱' + yen(p.box) + '円÷' + n + '個)'; }
+
+  /** 発送代行の費用の欄(内訳の上)。自分で発送の時は1行の説明だけ。
+      opts.prep が true(または true を返す関数)の時は、FBAへ納品してもらう時の費用(3項目)を出す */
+  function mountWh(box, fees, note, opts) {
     if (!box) return;
+    opts = opts || {};
+    function isPrep() { return typeof opts.prep === 'function' ? !!opts.prep() : !!opts.prep; }
     function draw() {
       var n = typeof note === 'function' ? note() : (note || '');
       var sn = n && typeof n === 'object' ? n : { self: '自分で発送: 倉庫の費用なし' + (n ? '。' + n : ''), pl: n };
       if (shipMode() !== '3pl') { box.innerHTML = '<p class="shipnote">' + sn.self + '</p>'; return; }
-      note = sn.pl;
+      if (isPrep()) { drawPrep(sn.pl); return; }
       var w = whCosts(fees), L = (fees.warehouse && fees.warehouse.labels) || { in: '入庫', store: '保管(1か月)', photo: '撮影', out: '出荷作業' };
       box.innerHTML = '<div class="whbox"><p class="whh">発送代行の費用(1個)<span>合計 <b>' + yen(whTotal(fees)) + '円</b></span></p><div class="whg">' +
         ['in', 'store', 'photo', 'out'].map(function (k) { return '<label><span>' + esc(L[k]) + '</span><input type="number" inputmode="numeric" min="0" data-wh="' + k + '" value="' + esc(w[k]) + '"></label>'; }).join('') +
-        '</div>' + (note ? '<p class="shipnote">' + note + '</p>' : '') + '</div>';
+        '</div>' + (sn.pl ? '<p class="shipnote">' + sn.pl + '</p>' : '') + '</div>';
       $$('[data-wh]', box).forEach(function (el) {
         el.addEventListener('input', function () {
           var cur = whCosts(fees); cur[el.getAttribute('data-wh')] = Number(el.value) || 0; store.set('wh', cur);
           $('.whh b', box).textContent = yen(whTotal(fees)); document.dispatchEvent(new CustomEvent('sedori:wh'));
+        });
+      });
+    }
+    function drawPrep(pl) {
+      var p = prepCosts(fees), L = (fees.fba_prep && fees.fba_prep.labels) || { fee: '代行料(1個)', box: '1箱ごとの費用', per: '1箱の個数' };
+      box.innerHTML = '<div class="whbox prep"><p class="whh">発送代行の費用(1個)<span>合計 <b>' + yen(prepUnit(fees)) + '円</b></span></p><div class="whg g3">' +
+        ['fee', 'box', 'per'].map(function (k) { return '<label><span>' + esc(L[k]) + '</span><input type="number" inputmode="numeric" min="0" data-prep="' + k + '" value="' + esc(p[k]) + '"></label>'; }).join('') +
+        '</div><p class="shipnote">1箱ごとの費用は、荷受・箱・Amazonの倉庫への送料の合計です。初めの数字は仮の値です。ご自身の契約の料金に直してください。</p>' +
+        (pl ? '<p class="shipnote">' + pl + '</p>' : '') + '</div>';
+      $$('[data-prep]', box).forEach(function (el) {
+        el.addEventListener('input', function () {
+          var cur = prepCosts(fees); cur[el.getAttribute('data-prep')] = Number(el.value) || 0; store.set('prep', cur);
+          $('.whh b', box).textContent = yen(prepUnit(fees)); document.dispatchEvent(new CustomEvent('sedori:wh'));
         });
       });
     }
@@ -142,6 +176,133 @@
     return Object.keys(g).map(function (k) {
       return '<optgroup label="' + esc(k) + '">' + g[k].map(function (c) { return '<option value="' + c.id + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.label) + (c.id === 'custom' ? '' : ' ' + yen(c.fee + c.material) + '円') + '</option>'; }).join('') + '</optgroup>';
     }).join('');
+  }
+
+  /* ---------- 月の固定費(全ページ共通・端末に保存・設定として同期) ----------
+     行ごとに 名前・月額・入/切。金額を入れていない行は、初めの値(大口出品=手数料データの月額×消費税、このアプリ=契約中のプランの月額)を使う */
+  var FIX_DEF = [{ id: 'amz', name: 'Amazon 大口出品' }, { id: 'keepa', name: 'Keepa' }, { id: 'app', name: 'このアプリ' }, { id: 'o1', name: 'その他' }];
+  function fixAuto(id, fees) {
+    fees = fees || feesNow;
+    if (id === 'amz') { var a = fees && fees.amazon; return a && a.monthly_plan_fee_ex_tax ? Math.round(a.monthly_plan_fee_ex_tax * (1 + (a.tax_rate == null ? 0.1 : a.tax_rate))) : 0; }
+    if (id === 'app') {
+      try {
+        var A = window.SedoriAccount; if (!A || !A.paid()) return 0;
+        var st = A.state(), c = ((window.ZW_CONFIG || {}).PLAN_CATALOG || {})[st && st.sub && st.sub.planKey];
+        return c ? Math.round(c.cycle === 'year' ? c.price / 12 : c.price) : 0;
+      } catch (e) { return 0; }
+    }
+    return 0;
+  }
+  function fixedIsSet() { return Array.isArray(store.get('fixed', null)); }
+  /** 行の一覧 [{id,name,on,v,amount}]。まだ決めていない時は、初めの並び(大口出品だけ入) */
+  function fixedRows(fees) {
+    var saved = store.get('fixed', null);
+    var list = Array.isArray(saved) ? saved : FIX_DEF.map(function (d) { return { id: d.id, name: d.name, on: d.id === 'amz' || (d.id === 'app' && fixAuto('app', fees) > 0), v: null }; });
+    return list.map(function (r) {
+      var v = r.v == null || r.v === '' ? null : Math.max(0, Math.round(Number(r.v) || 0));
+      return { id: r.id, name: r.name || '', on: !!r.on, v: v, amount: v != null ? v : fixAuto(r.id, fees) };
+    });
+  }
+  /** 入になっている行の合計(円)。まだ決めていない時は 0 */
+  function fixedTotal(fees) { return fixedIsSet() ? window.SedoriCalc.fixedTotal(fixedRows(fees)) : 0; }
+  function saveFixed(rows) {
+    store.set('fixed', rows.map(function (r) { return { id: r.id, name: r.name, on: !!r.on, v: r.v }; }));
+    paintFixed(); fireTarget(); emit('sedori:fixed', {});
+  }
+  function paintFixed() {
+    var v = $('#hd-fix-v'); if (!v) return;
+    var t = fixedTotal();
+    v.textContent = t > 0 ? yen(t) + '円' : ''; v.hidden = !(t > 0);
+  }
+  var fixDlg = null;
+  function fixRowHTML(r) {
+    var builtin = FIX_DEF.some(function (d) { return d.id === r.id; }) && r.id !== 'o1';
+    return '<div class="fixrow" data-fx="' + esc(r.id) + '"><label class="fixon"><input type="checkbox" data-fx-on' + (r.on ? ' checked' : '') + '>' +
+      (builtin ? '<span>' + esc(r.name) + '</span>' : '<span class="sr">計算に入れる</span>') + '</label>' +
+      (builtin ? '' : '<input class="fixnm" type="text" data-fx-nm value="' + esc(r.name) + '" aria-label="費用の名前" placeholder="費用の名前">') +
+      '<span class="fixamt"><input type="number" inputmode="numeric" min="0" data-fx-v value="' + (r.v != null ? r.v : (r.amount || '')) + '" aria-label="' + esc(r.name || '費用') + 'の月額"><span class="u">円</span></span></div>';
+  }
+  function drawFixed() {
+    var rows = fixedRows();
+    $('#fix-rows', fixDlg).innerHTML = rows.map(fixRowHTML).join('');
+    $('#fix-total', fixDlg).textContent = yen(window.SedoriCalc.fixedTotal(rows)) + '円';
+    var a = feesNow && feesNow.amazon;
+    $('#fix-src', fixDlg).textContent = a && a.monthly_plan_fee_ex_tax ? 'Amazon 大口出品の初めの金額は、手数料データの月額(税抜' + yen(a.monthly_plan_fee_ex_tax) + '円)に消費税を足した値です(' + (feesNow.checked_label || '') + ' 確認)。' : '';
+  }
+  function openFixed() {
+    if (!fixDlg) {
+      fixDlg = document.createElement('dialog'); fixDlg.className = 'dlg fix-dlg'; fixDlg.id = 'fix-dlg'; fixDlg.setAttribute('aria-labelledby', 'fix-h');
+      fixDlg.innerHTML = '<div class="dlg-in"><div class="dlg-h"><h2 id="fix-h">月の固定費</h2><button type="button" class="dlg-x" data-x aria-label="閉じる">×</button></div>' +
+        '<p class="dlg-lead">毎月かかる費用を入れておくと、計算の内訳の下に「月に何個で固定費に届くか」の目安が出ます。</p>' +
+        '<div class="fixrows" id="fix-rows"></div>' +
+        '<p class="fixsum"><span>入れた費用の合計(1か月)</span><b id="fix-total"></b></p>' +
+        '<p class="fixadd"><button type="button" class="btn ghost" id="fix-add">行を足す</button></p>' +
+        '<p class="hint"><span id="fix-src"></span>Keepaなど、ほかの費用はご自身の契約の金額を入れてください。入れた内容はこの端末に保存します。</p>' +
+        '<div class="fixend"><button type="button" class="btn ghost" data-x>閉じる</button></div></div>';
+      document.body.appendChild(fixDlg);
+      fixDlg.addEventListener('click', function (e) {
+        if (e.target === fixDlg || (e.target.closest && e.target.closest('[data-x]'))) { fixDlg.close(); return; }
+        if (e.target.id === 'fix-add') {
+          var rows = fixedRows(); rows.push({ id: 'o' + Date.now().toString(36), name: '', on: true, v: null }); saveFixed(rows); drawFixed();
+          var nm = $$('[data-fx-nm]', fixDlg).pop(); if (nm) nm.focus();
+        }
+      });
+      var edit = function (e) {
+        var row = e.target.closest && e.target.closest('[data-fx]'); if (!row) return;
+        var rows = fixedRows(), r = rows.filter(function (x) { return x.id === row.getAttribute('data-fx'); })[0]; if (!r) return;
+        if (e.target.hasAttribute('data-fx-on')) r.on = e.target.checked;
+        if (e.target.hasAttribute('data-fx-nm')) r.name = e.target.value.trim();
+        if (e.target.hasAttribute('data-fx-v')) {
+          r.v = e.target.value === '' ? null : Math.max(0, Math.round(Number(e.target.value) || 0));
+          if (r.v > 0 && !r.on) { r.on = true; $('[data-fx-on]', row).checked = true; }   // 金額を入れたら、その行を計算に入れる
+        }
+        saveFixed(rows);
+        $('#fix-total', fixDlg).textContent = yen(window.SedoriCalc.fixedTotal(fixedRows())) + '円';
+      };
+      fixDlg.addEventListener('input', edit); fixDlg.addEventListener('change', edit);
+      fixDlg.addEventListener('close', function () { var b = $('#hd-fix'); if (b) b.setAttribute('aria-expanded', 'false'); });
+    }
+    if (!fixedIsSet()) saveFixed(fixedRows());   // 初めて開いた時に、初めの並びをそのまま使い始める
+    drawFixed();
+    var hb = $('#hd-fix'); if (hb) hb.setAttribute('aria-expanded', 'true');
+    if (fixDlg.showModal) fixDlg.showModal(); else fixDlg.setAttribute('open', '');
+  }
+  function mountFixed() {
+    paintFixed();
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#hd-fix,[data-fix-open]')) { e.preventDefault(); openFixed(); } });
+    document.addEventListener('sedori:acct', paintFixed);
+    loadFees().then(paintFixed).catch(function () { /* 帯の金額は出さないだけ */ });
+  }
+  /** 内訳の下の1行。unit = 1個の利益(ポイント抜き)。売値が未入力(unit が無い)の時は出さない */
+  function fixLineHTML(unit) {
+    if (unit == null || !isFinite(Number(unit))) return '';
+    if (!fixedIsSet()) return '<p class="fixl"><button type="button" class="lnk" data-fix-open>月の固定費を入れる</button>と、月に何個で固定費に届くかの目安が出ます。</p>';
+    var F = fixedTotal(); if (!(F > 0)) return '';
+    var n = window.SedoriCalc.breakEvenUnits(F, unit);
+    var head = '<button type="button" class="lnk" data-fix-open>月の固定費</button> <b>' + yen(F) + '円</b>。';
+    return '<p class="fixl">' + head + (n == null ? 'この利益では固定費に届きません。' :
+      'この利益(1個 ' + yen(unit) + '円)なら、月に<b class="fixn">' + yen(n) + '個</b>で固定費に届きます。') + '</p>';
+  }
+
+  /* ---------- 仕入れの証拠(「仕入れた」の直後に出す2項目。台帳の行の orderNo・docType に入れる) ---------- */
+  var DOC_TYPES = ['領収書', '請求書', '納品書', '購入履歴の画面', 'なし'];
+  function evidenceMini(box, id) {
+    var r = ledger.get(id); if (!box || !r) return;
+    box.innerHTML = '<div class="evi"><p class="evi-h">仕入れの証拠<small>任意。あとから台帳でも入れられます</small></p><div class="evi-g">' +
+      '<label><span>注文番号</span><input type="text" data-ev="orderNo" autocomplete="off" spellcheck="false" value="' + esc(r.orderNo || '') + '"></label>' +
+      '<label><span>書類の種類</span><select data-ev="docType"><option value="">選んでください</option>' + DOC_TYPES.map(function (v) { return '<option' + (r.docType === v ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('') + '</select></label></div></div>';
+    $$('[data-ev]', box).forEach(function (el) {
+      el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', function () { var p = {}; p[el.getAttribute('data-ev')] = el.value.trim(); ledger.update(id, p); });
+    });
+  }
+
+  /* ---------- トップの「始める道順(3/10)」。印は手引きのページが端末の start-check に残す ---------- */
+  function mountStart() {
+    var el = $('#start-n'); if (!el) return;
+    var v = store.get('start-check', null), n = 0;
+    if (Array.isArray(v)) n = v.filter(Boolean).length;
+    else if (v && typeof v === 'object') n = Object.keys(v).filter(function (k) { return !!v[k]; }).length;
+    el.textContent = '(' + n + '/' + (el.getAttribute('data-total') || '10') + ')';
   }
 
   /* ---------- 検索バー ---------- */
@@ -172,6 +333,11 @@
       var s = src.value, text = q.value.trim();
       if (api.onSearch && api.onSearch(s, text) === true) return;
       if (!text) { q.focus(); toast('キーワードかJAN・ASINを入れてください'); return; }
+      // JAN・ASINが2つ以上並んでいたら、楽天・Yahoo!→Amazon の「まとめて」へ送る
+      var Cc = window.SedoriCalc, codes = text.split(/[\s,、]+/);
+      if ((s === 'rakuten' || s === 'amazon') && Cc && Cc.parseCodes && codes.length >= 2 && !/[^\sA-Za-z0-9,、\-]/.test(text) && Cc.parseCodes(codes.join('\n')).items.length >= 2) {
+        location.href = base() + 'rakuten-amazon/?bulk=' + encodeURIComponent(codes.join(',')); return;
+      }
       if (s === 'rakuten') { location.href = base() + 'rakuten-amazon/?q=' + encodeURIComponent(text); return; }
       if (s === 'ledger') { location.href = base() + 'daicho/?q=' + encodeURIComponent(text); return; }
       if (s === 'amazon' && document.body.getAttribute('data-page') !== 'muzaiko-amazon' && document.body.getAttribute('data-page') !== 'rakuten-amazon') {
@@ -581,6 +747,9 @@
   function xe(s) { return String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function colName(i) { var s = ''; i++; while (i > 0) { var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
   function xlsx(rows, o) {
+    // o.sheet = シートの名前(既定は「古物台帳」)。Excelの決まりで、使えない記号を除き31字まで
+    var sheetName = String(o.sheet || '古物台帳').replace(/[\[\]:*?\/\\']/g, '').slice(0, 31) || '古物台帳';
+    var sheetRef = xe("'" + sheetName + "'");
     var ncol = Math.max.apply(null, rows.map(function (r) { return r.length; }));
     var sd = rows.map(function (r, ri) {
       var cells = r.map(function (v, ci) {
@@ -610,7 +779,7 @@
     return zip([
       ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
       ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
-      ['xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="古物台帳" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">古物台帳!$A$2:$' + colName(ncol - 1) + '$' + Math.max(2, rows.length) + '</definedName><definedName name="_xlnm.Print_Titles" localSheetId="0">古物台帳!$2:$2</definedName></definedNames></workbook>'],
+      ['xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + xe(sheetName) + '" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">' + sheetRef + '!$A$2:$' + colName(ncol - 1) + '$' + Math.max(2, rows.length) + '</definedName><definedName name="_xlnm.Print_Titles" localSheetId="0">' + sheetRef + '!$2:$2</definedName></definedNames></workbook>'],
       ['xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
       ['xl/styles.xml', styles],
       ['xl/worksheets/sheet1.xml', sheet]
@@ -626,12 +795,12 @@
   function profitHead(label, profit, cls) {
     return '<div class="pfbox"><div class="hl"><span>' + esc(label) + '</span><b class="' + cls + '">' + yen(profit) + '<i>円</i></b></div>';
   }
-  /** 結果を2か所に描く: 上(利益・目安の価格)と、ボタンの下(内訳) */
-  function result(sumEl, sum, rows, notes) {
+  /** 結果を2か所に描く: 上(利益・目安の価格)と、ボタンの下(内訳)。unit(1個の利益・ポイント抜き)を渡すと、内訳の下に月の固定費の1行を出す */
+  function result(sumEl, sum, rows, notes, unit) {
     sumEl.innerHTML = sum;
     var b = $('#brk'); if (!b) return;
     var open = store.get('brk-open', true);
-    b.innerHTML = rows ? '<details class="brkd"' + (open ? ' open' : '') + '><summary>内訳</summary>' + brkRows(rows) + (notes || '') + '</details>' : (notes || '');
+    b.innerHTML = rows ? '<details class="brkd"' + (open ? ' open' : '') + '><summary>内訳</summary>' + brkRows(rows) + (notes || '') + '</details>' + fixLineHTML(unit) : (notes || '');
     var d = $('details', b); if (d) d.addEventListener('toggle', function () { store.set('brk-open', d.open); });
   }
   /* ---------- 価格差が先、ポイントは後(各計算ページ共通) ----------
@@ -696,7 +865,7 @@
   }
 
   function init() {
-    mountTarget(); mountShip(); mountSearch(); mountKeys(); wireMail(); mountSide(); updateCount(); registerSW(); mountEndWatch();
+    mountTarget(); mountShip(); mountFixed(); mountSearch(); mountKeys(); wireMail(); mountSide(); mountStart(); updateCount(); registerSW(); mountEndWatch();
     loadFees().then(showFeeDate).catch(function () {
       $$('[data-feedate]').forEach(function (el) { el.textContent = '手数料データを読み込めませんでした。再読み込みしてください'; });
     });
@@ -711,6 +880,10 @@
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
     brkRows: brkRows, profitHead: profitHead, result: result, gateHTML: gateHTML, compareHTML: compareHTML, askActualHTML: askActualHTML,
     shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS,
-    preregHTML: preregHTML, setPreregPlan: setPreregPlan
+    preregHTML: preregHTML, setPreregPlan: setPreregPlan,
+    hook: hook, fire: fire, tier: tier, isTyping: isTyping,
+    prepCosts: prepCosts, prepUnit: prepUnit, prepLabel: prepLabel,
+    fixedRows: fixedRows, fixedTotal: fixedTotal, fixedIsSet: fixedIsSet, openFixed: openFixed, fixLineHTML: fixLineHTML,
+    DOC_TYPES: DOC_TYPES, evidenceMini: evidenceMini
   };
 })();

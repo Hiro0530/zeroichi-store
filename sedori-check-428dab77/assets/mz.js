@@ -143,7 +143,7 @@
       U.brkRows(keyRows) + '</div>' +
       (maxc != null && x.cost > maxc ? '<p class="warn-line">ヤフオクの価格が上限を' + yen(x.cost - maxc) + '円超えています</p>' : '') +
       (r.cost >= 10000 || $('#mz-media').checked ? '<p class="note"><span class="badge">売り手の確認が必要</span> 仕入れた後、出てくる欄に取引ナビの本文を貼り付けてください。</p>' : ''),
-      rows, '<p class="note">保管・返品・キャンセル時の費用は含みません。売れてから仕入れるため、仕入れ先が売り切れたらキャンセルになります。</p>');
+      rows, '<p class="note">保管・返品・キャンセル時の費用は含みません。売れてから仕入れるため、仕入れ先が売り切れたらキャンセルになります。</p>', m.profit);
   }
 
   function listAt() {
@@ -170,7 +170,7 @@
     var media = $('#mz-media').checked, code = $('#mz-code').value.trim();
     var row = U.ledger.add({ ship: U.shipMode(), cond: '中古', media: media, hinmoku: U.hinmokuFor($('#mz-cat').value), name: $('#mz-name').value || $('#mz-q').value || '(名前なし)',
       feature: code ? (/^B0/i.test(code) ? 'ASIN ' : 'JAN ') + code : '', qty: 1, unit: r.cost + r.inShip, party: 'Yahoo!オークション 出品者',
-      sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, route: '無在庫 Amazon中古',
+      sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, pnp: true, route: '無在庫 Amazon中古',
       yEnd: $('#mz-yend').value || '', status: watching() ? '出品中' : '仕入れ済', wait: watching() });
     if (!row) return;
     paintBuy(true);

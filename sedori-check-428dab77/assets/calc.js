@@ -119,12 +119,26 @@
     var z = amazonProfit(fees, x);             // 売値0円のときの利益 = -(原価) + ポイント
     var start = Math.max(1, -z.profit);
     limit = limit || Math.max(start * 20, 100000);
-    for (var p = start; p <= limit; p++) {
+    // 1円ずつ確かめるのと同じ答えを、飛ばしながら探す(仕入れ値が大きい時に画面が固まらないように)。
+    // 売値を1円上げても利益は1円までしか増えないので、目標まで d 円足りなければ、次の候補は d 円先。
+    // ただし手数料の段が替わる所(販売手数料の価格帯・FBAの1,000円の境目)は利益が跳ぶことがあるので、境目とその次の1円では必ず止まって確かめる
+    var marks = [], cat = findCategory(fees, x.category);
+    (cat.tiers || []).forEach(function (t) { if (t.upto != null) marks.push(t.upto, t.upto + 1); if (t.split) marks.push(t.split, t.split + 1); });
+    if (fees.amazon.fba_price_threshold) marks.push(fees.amazon.fba_price_threshold, fees.amazon.fba_price_threshold + 1);
+    marks.sort(function (a, b) { return a - b; });
+    for (var p = start, guard = 0; p <= limit && guard < 200000; guard++) {
       x.sell = p;
-      if (amazonProfit(fees, x).profit >= needProfit(p, target)) return p;
+      var d = needProfit(p, target) - amazonProfit(fees, x).profit;
+      if (d <= 0) return p;
+      var next = p + d;
+      for (var i = 0; i < marks.length; i++) if (marks[i] > p) { next = Math.min(next, marks[i]); break; }
+      p = next;
     }
     return null;
   }
+  /** 計算する金額の上限(円)。これ以上は入れ間違い(金額の欄にJANを貼ったなど)として、計算せずに「金額を確かめてください」と出す */
+  var MAX_YEN = 10000000;
+  function tooBig(v) { return Number(v) >= MAX_YEN; }
 
   /** 利益が0円以上になる最安の販売価格(損益分岐) */
   function amazonBreakEvenSell(fees, input, limit) { return amazonPriceFor(fees, input, 0, limit); }
@@ -317,7 +331,100 @@
     return mode === 'self' ? ['仕入れ済', '出品中', '売約', '発送済'] : ['仕入れ済', '入庫', '出品中', '売約', '発送済'];
   }
 
+
+  /* ---------- FBAの納品代行の費用 ---------- */
+  /** 納品代行の1個あたりの費用 = 代行料 + 切り上げ(1箱ごとの費用 ÷ 1箱の個数)。個数が0や空なら1個として扱う */
+  function prepCost(p) {
+    if (!p) return 0;
+    var per = Math.max(1, int(p.per) || 1), box = Math.max(0, int(p.box));
+    return Math.max(0, int(p.fee)) + Math.ceil(box / per - EPS);
+  }
+
+  /* ---------- 月の固定費 ---------- */
+  /** 入になっている行の月額の合計。rows: [{on, amount}] */
+  function fixedTotal(rows) {
+    return (rows || []).reduce(function (s, r) { return s + (r && r.on ? Math.max(0, int(r.amount)) : 0); }, 0);
+  }
+  /** 月に何個で固定費に届くか = 切り上げ(固定費 ÷ 1個の利益)。利益が0円以下、固定費が0円以下なら null */
+  function breakEvenUnits(fixed, unitProfit) {
+    fixed = int(fixed); unitProfit = int(unitProfit);
+    if (!(fixed > 0) || !(unitProfit > 0)) return null;
+    return Math.ceil(fixed / unitProfit - EPS);
+  }
+
+  /* ---------- まとめてチェック: 貼った一覧を読む ---------- */
+  var BULK_LIMIT = { free: 20, light: 100, total: 500, business: 500 };
+  /** プランごとの1回の行数の上限 */
+  function bulkLimit(tier) { return BULK_LIMIT[tier] || BULK_LIMIT.free; }
+  function money(v) {
+    var t = String(v == null ? '' : v).replace(/[\s,¥￥\\円]/g, '');
+    if (!/^\d+(\.\d+)?$/.test(t)) return null;
+    var n = Math.round(Number(t)); return n > 0 ? n : null;
+  }
+  /** 1行を列に分ける。タブがあればタブ、無くて空白があれば空白(金額の「,」は桁区切り)、どちらも無ければカンマ(""で囲んだ列に対応) */
+  function splitCols(line) {
+    if (line.indexOf('\t') >= 0) return line.split('\t').map(function (c) { return c.trim().replace(/^"(.*)"$/, '$1'); });
+    var t = line.trim();
+    if (/\s/.test(t) && !/^[^\s,]+,\s/.test(t)) return t.split(/\s+/).map(function (c) { return c.replace(/^"(.*)"$/, '$1'); });
+    var out = [], cur = '', q = false;
+    for (var i = 0; i < t.length; i++) {
+      var ch = t[i];
+      if (ch === '"') { if (q && t[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+      else if (ch === ',' && !q) { out.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    out.push(cur.trim());
+    return out;
+  }
+  /**
+   * 貼った文字を1行=1商品として読む。1列目=JAN(13桁・8桁)かASIN(B0で始まる10桁)、2列目=仕入れ値(任意)、3列目=Amazonの売値(任意)。
+   * 全角は半角に直し、同じコードは1つにまとめる(後の行にだけ金額があれば、それを足す)。
+   * 返り値: { items: [{code, type:'jan'|'asin', cost, sell, line}], bad: [{line, text, why}], dup: まとめた行の数, total: 空行を除いた行の数 }
+   */
+  function parseCodes(text) {
+    var lines = half(text).replace(/\r/g, '').split('\n');
+    var items = [], bad = [], seen = {}, dup = 0, total = 0, first = true;
+    lines.forEach(function (raw, idx) {
+      if (!raw.trim()) return;
+      var cols = splitCols(raw), c0 = String(cols[0] || '').replace(/[\s\-‐－ー]/g, '').toUpperCase();
+      if (!/\d/.test(c0) && first) { first = false; return; }   // 最初の行が見出し(JAN、コード など)なら数えない。2行目からの文字だけの行は、読めなかった行に出す
+      first = false;
+      total++;
+      var type = null;
+      if (/^B0[A-Z0-9]{8}$/.test(c0)) type = 'asin';
+      else if (/^\d{13}$/.test(c0) || /^\d{8}$/.test(c0)) {
+        if (!janValid(c0)) { bad.push({ line: idx + 1, text: raw.trim(), why: 'JANの検査の数字が合いません(打ち間違いの可能性)' }); return; }
+        type = 'jan';
+      } else { bad.push({ line: idx + 1, text: raw.trim(), why: '1列目がJAN(13桁・8桁)でもASIN(B0で始まる10桁)でもありません' }); return; }
+      var cost = money(cols[1]), sell = money(cols[2]);
+      if (tooBig(cost) || tooBig(sell)) { bad.push({ line: idx + 1, text: raw.trim(), why: '金額を確かめてください(1,000万円以上は計算しません。金額の列にJANを貼っていないか見てください)' }); return; }
+      if (seen[c0]) {
+        dup++;
+        if (seen[c0].cost == null && cost != null) seen[c0].cost = cost;
+        if (seen[c0].sell == null && sell != null) seen[c0].sell = sell;
+        return;
+      }
+      seen[c0] = { code: c0, type: type, cost: cost, sell: sell, line: idx + 1 };
+      items.push(seen[c0]);
+    });
+    return { items: items, bad: bad, dup: dup, total: total };
+  }
+  /** 配列を n 件ずつに分ける(Keepaは1回100件まで) */
+  function chunk(list, n) {
+    var out = []; n = Math.max(1, int(n) || 1);
+    for (var i = 0; i < (list || []).length; i += n) out.push(list.slice(i, i + n));
+    return out;
+  }
+  /** まとめての1行の判定。r = 計算の結果(ポイント抜きの利益 profitNoPoints・必要な利益 need・売値が未入力なら est)、maxCost = 仕入れ値が無い行の上限。
+      'ok'(目標に届く)/'ng'(届かない)/'unk'(売値か仕入れ値が無く、確かめられない) */
+  function bulkJudge(r, hasCost, maxCost) {
+    if (!hasCost) return maxCost === null ? 'ng' : 'unk';  // 売値も無い(上限が出せない=undefined)なら未入力。仕入れ値0円でも目標に届かない売値(null)だけ「届かない」
+    if (!r || r.est || !(r.sell > 0)) return 'unk';
+    return r.profitNoPoints >= r.need ? 'ok' : 'ng';
+  }
+
   return {
+    MAX_YEN: MAX_YEN, tooBig: tooBig, prepCost: prepCost, fixedTotal: fixedTotal, breakEvenUnits: breakEvenUnits, bulkLimit: bulkLimit, parseCodes: parseCodes, chunk: chunk, bulkJudge: bulkJudge, splitCols: splitCols,
     findCarrier: findCarrier, carrierCost: carrierCost, warehouseCost: warehouseCost, statusFlow: statusFlow,
     findCategory: findCategory, referralExTax: referralExTax, referralFee: referralFee,
     findFbaTier: findFbaTier, fbaFee: fbaFee, guessFbaTier: guessFbaTier, points: points,

@@ -954,3 +954,297 @@ p.pc-sub[data-c="year"]{color:var(--good);font-weight:700}
   .det-links a,.det-links .lnk,.lnk.ai-lnk{display:inline-flex;align-items:center;min-height:44px}
   .det-links{row-gap:0;column-gap:14px}
 }
+
+/* ==================================================================
+   2026-11-13 追加(制作係A): 月の固定費・納品代行の費用・まとめて・絞り込み・仕入れの証拠の2項目・差し込み口
+   余白は 4/8/12/16/24px。数字は等幅(body の tabular-nums)で右ぞろえ。項目名は弱く、値を強く
+   ================================================================== */
+/* ---------- 帯: 月の固定費 ---------- */
+.hd-fix{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border:1px solid #4b6580;border-radius:3px;background:transparent;color:var(--hd-mute);font-size:11.5px;cursor:pointer;white-space:nowrap}
+.hd-fix:hover{background:rgba(255,255,255,.08);color:#fff}
+.hd-fix b{color:#fff;font-size:14px;font-weight:700}
+.hd-fix[aria-expanded="true"]{background:#fff;color:var(--hd)}
+.hd-fix[aria-expanded="true"] b{color:var(--hd)}
+.hd-watch{flex:0 0 auto;font-size:12px;font-weight:700;line-height:24px;padding:0 8px;border-radius:2px;background:var(--warn-bg);color:var(--warn-ink);text-decoration:none;white-space:nowrap}
+@media(max-width:1360px){.shipm .tgt-k{display:none}.hd-fix{padding:0 8px}}
+/* ---------- 月の固定費の小窓 ---------- */
+.fix-dlg{max-width:440px}
+.fixrow{display:flex;align-items:center;gap:8px;min-height:48px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.fixon{display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0;min-height:44px;font-size:14px;cursor:pointer}
+.fixon input{flex:0 0 auto;width:18px;height:18px;margin:0;accent-color:var(--ac)}
+.fixrow:has(.fixnm) .fixon{flex:0 0 auto}
+.fixnm{flex:1 1 auto;min-width:0;height:36px;font-size:14px}
+.fixamt{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.fixamt input{width:104px;height:36px;text-align:right;font-weight:700;font-size:16px}
+.fixamt .u{font-size:12px;color:var(--mute)}
+.fixsum{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 0;font-size:12.5px;color:var(--sub)}
+.fixsum b{font-size:20px;line-height:1.2;color:var(--ink)}
+.fixadd{margin:4px 0 8px}
+.fixadd .btn{height:44px;padding:0 16px;font-size:13px}
+.fixend{display:flex;justify-content:flex-end;margin-top:16px}
+.fixend .btn{height:40px;min-width:96px}
+/* ---------- 内訳の下: 月に何個で固定費に届くか ---------- */
+.fixl{margin:12px 0 0;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;line-height:1.7;color:var(--sub)}
+.fixl b{color:var(--ink)}
+.fixl .fixn{font-size:16px;margin:0 4px}
+.fixl .lnk{font-size:12.5px}
+/* ---------- 納品代行の費用(3項目) ---------- */
+.whg.g3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.whbox.prep{border:0}                          /* 板の中の箱にしない(地の色だけ) */
+.whbox.prep .whg label{font-size:12px}
+.whbox.prep .whh b{font-size:16px}
+/* 名前を取れていない行・写真が1枚も無い一覧 */
+.nm.ph{color:var(--mute)}
+#grid.noimg col.c-img{width:8px}
+#grid.noimg td.c-img{padding:0}
+#grid.noimg td.c-img>*{display:none}
+.grid .yen.est .estk{display:block;width:max-content;margin:0 0 2px auto}   /* 札「目標から逆算」は値の上の行に */
+.fr.unused .fk,.fr.unused .fv{opacity:.6}
+/* ---------- 絞り込み: Amazonの売れ方 ---------- */
+.fl-h{margin:12px 0 4px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;font-weight:700;color:var(--sub)}
+.fl-h small{display:block;font-weight:400;font-size:10.5px;color:var(--mute)}
+.fr:has(#f-sold) .u,.fr:has(#f-cnt) .u{width:auto;white-space:nowrap}
+.fr:has(#f-sold) input,.fr:has(#f-cnt) input{width:64px}
+.meta b.amz{color:var(--warn-ink);font-weight:700}
+.meta.kp{white-space:normal;line-height:1.5}   /* 月の販売・出品者数・印が切れないように折り返す */
+/* ---------- まとめて(貼った一覧を一度に計算) ---------- */
+.bulk{margin-top:8px}
+.bulk-in{border:1px solid var(--line);background:var(--rail);padding:0 12px}
+.bulk-in[open]{padding-bottom:12px}
+.bulk-in>summary{cursor:pointer;padding:8px 0;font-size:12.5px;font-weight:700;color:var(--sub)}
+.bulk-k{display:block;margin:0 0 8px;font-size:12px;color:var(--sub)}
+.bulk-k small{display:block;margin-top:4px;font-size:11.5px;line-height:1.6;color:var(--mute)}
+#bulk-text{display:block;width:100%;min-height:120px;padding:8px;font-size:13px;line-height:1.6;white-space:pre;overflow:auto;tab-size:16}
+.bulk-go{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin-top:8px}
+.bulk-go .btn{height:48px;padding:0 24px;font-size:14px}
+body[data-bulk-idle] .acts .btn.pri{background:#fff;color:var(--ac);border-color:var(--ac)}   /* まとめてで行を選ぶ前は、塗りのボタンを「まとめて計算する」1つにする */
+.bulk-lim{margin:0;font-size:12px;line-height:1.6;color:var(--mute)}
+.bulk-st{margin-top:8px}
+.bulk-st:empty{display:none}
+.bulk-prog{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px;font-size:13px}
+.bulk-prog progress{flex:1 1 160px;height:8px;accent-color:var(--ac)}
+.bulk-prog .btn{height:44px;min-width:96px}
+.bulk-prog{font-size:14px}.bulk-prog b{font-size:14px;font-weight:700}
+.bulk-sum{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 4px;margin:0;line-height:1.4}
+.bulk-sum .bs-k{font-size:14px;color:var(--sub);margin-right:4px}
+.bulk-sum b{font-size:20px;font-weight:700;color:var(--good)}
+.bulk-sum .bs-u{font-size:14px;color:var(--good);font-weight:700}
+.bulk-sum .bs-rest{font-size:14px;color:var(--sub);margin-left:12px}
+.bulk-act{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin:8px 0 0}
+.bulk-act p{flex:1 1 280px;margin:0;font-size:14px;line-height:1.6;color:var(--ink)}
+.bulk-act .btn{flex:0 0 auto;height:44px;padding:0 16px;font-size:14px}
+.bulk-act.err p{color:var(--bad)}
+.bulk-act p small{margin-left:8px;font-size:12px;color:var(--mute)}
+.bulk-ic{display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:50%;background:var(--bad);color:#fff;font-size:12px;font-weight:700;line-height:16px;text-align:center;vertical-align:1px}
+.bulk-note{margin:8px 0 0;font-size:12.5px;line-height:1.7;color:var(--sub)}
+.bulk-note .lnk,.bulk-note a{font-size:12.5px}
+.bulk-bad{margin:8px 0 0;font-size:12.5px}
+.bulk-bad summary{cursor:pointer;color:var(--sub);font-weight:700;padding:4px 0}
+.bulk-bad ol{margin:4px 0 0;padding:0;list-style:none}
+.bulk-bad li{display:flex;gap:12px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.bulk-bad li span:first-child{flex:0 0 56px;color:var(--mute);text-align:right}
+.bulk-bad li code{background:none;padding:0;font-size:12.5px;font-weight:700;overflow-wrap:anywhere}
+.bulk-bad li small{display:block;font-size:11.5px;color:var(--mute)}
+/* ---------- 仕入れの証拠(「仕入れた」の直後の2項目) ---------- */
+.evi{margin-top:12px;padding-top:8px;border-top:1px solid var(--line)}
+.evi-h{margin:0 0 8px;font-size:12px;font-weight:700}
+.evi-h small{margin-left:8px;font-size:11.5px;font-weight:400;color:var(--mute)}
+.evi-g{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.evi-g label{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:11.5px;color:var(--sub)}
+.evi-g input,.evi-g select{width:100%}
+/* ---------- トップ: 始める道順の入口 ---------- */
+.start-line{margin:16px 0 0;font-size:13px}
+.start-line a{font-weight:700}
+.start-line span{margin-left:4px;color:var(--sub)}
+.start-line small{display:block;margin-top:4px;font-size:11.5px;color:var(--mute)}
+/* ---------- 差し込み口(中身が無い間は場所を取らない) ---------- */
+.slot-act{display:contents}
+#slot-watch-top:empty,#precheck:empty,#slot-evidence:empty,#slot-lg-top:empty,#lg-plus:empty,#slot-lg-foot:empty{display:none}
+#slot-watch-top,#slot-lg-top{margin:8px 0}
+#slot-lg-foot{margin-top:16px}
+@media(max-width:860px){
+  .hd-fix,.hd-watch{display:none}               /* スマホ幅の帯には出さない(帯は3段)。月の固定費は内訳の下の行と足のリンクから、ウォッチの変化はタブの数字で */
+  /* 一覧の行(スマホ幅): 項目名12px、2行目12px、値16px太字 */
+  .mc tbody tr>td[data-k]::before{font-size:12px}
+  .mc .yen,.mc .pf{font-size:16px;font-weight:700}
+  .mc .yen.est{font-weight:400}
+  .mc .meta,.mc .ptadd,.mc .muted{font-size:12px}
+  .mc .yen.est .estk{display:block;width:max-content;margin:0 0 4px;font-size:12px;line-height:16px}   /* 札は値の上の行に(隣の欄に重ならないように) */
+  .mc .nm{font-size:14px}
+  .mc.noimg tbody tr>td.c-img{display:none!important}
+  .mc.noimg tbody tr:has(td.c-img){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mc.noimg tbody tr:has(td.c-img)>td:not([data-k]):not(.c-img){grid-column:1/-1}
+  .bulk-sum .bs-rest{flex:1 1 100%;margin-left:0}
+  .bulk-act .btn{flex:1 1 100%}
+  .whbox.prep .whg input{height:44px}
+  .fixamt input,.fixnm{height:44px}
+  .fixon input{width:22px;height:22px}
+  .fixend .btn{height:48px;flex:1}
+  .fixl{line-height:2}.fixl .lnk{padding:12px 0}
+  #bulk-text{font-size:16px;min-height:144px}
+  .bulk-in>summary{min-height:44px;display:flex;align-items:center}
+  .bulk-go .btn{flex:1 1 100%;height:48px;font-size:15px}
+  .bulk-bad summary{min-height:44px;display:flex;align-items:center}
+  .evi-g{grid-template-columns:minmax(0,1fr)}
+  .start-line a{display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* ==================================================================
+   ここから下は、ほかの係の置き場。原則は自分のファイルに書く(制作係B = assets/ledger-plus.css、制作係C = assets/tools.css。
+   置けば次の書き出しから自動で読み込む)。どうしても sedori.css に要る数行だけ、自分の区切りの中に書く。区切りの外はさわらない
+   ================================================================== */
+/* ==== 制作係B(台帳) ここから ==== */
+/* 台帳の追加(また仕入れる候補・書き出し・仕入れの証拠・固定費の行)。assets/ledger.js と assets/ledger-plus.js が使う。
+   批評 2026-11-13 の直し: 書き出しの入口は1つ、無い値は出さない、押す所44px、塗りは行の「売れた」だけ */
+.lg-act #lg-add{order:-1}
+.lp-bar{display:flex;gap:8px;margin:0 0 8px}
+.lp-fix{margin:0;font-size:16px;font-weight:700;line-height:1.5;color:var(--ink)}
+.lp-fix b{font-variant-numeric:tabular-nums}
+.lp-fix small{display:block;font-size:12px;font-weight:400;line-height:1.6;color:var(--mute)}
+.lp-fix .lnk{font-size:12px}
+.lp-tags{display:flex;gap:4px 12px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.lp-tags .lnk,.rp-tag{min-height:28px;display:inline-flex;align-items:center}
+.rp-tag{border:0;cursor:pointer;font-size:12px;font-weight:700;color:var(--ac-d);background:var(--ac-soft);padding:0 8px;border-radius:2px;white-space:nowrap}
+.rp-tag:hover{background:#dfeaf9}
+.lp-pc{font-size:12px;color:var(--mute);white-space:nowrap}
+.ledger .st .meta{white-space:normal;overflow:visible;max-width:120px}
+.ledger tr.more td{padding:12px 8px;background:#fff}
+.lp-more{display:flex;width:100%;height:48px;font-size:14px;margin:12px 0 0}
+.ledger .lp-more{margin:0}
+.edf .sec .hint{margin:0;font-weight:400;text-align:right}
+/* また仕入れる候補(PC幅は表、スマホ幅は1商品3行) */
+.grid.rp th{font-size:12px}
+.grid.rp td{font-size:14px;vertical-align:middle;padding:8px}
+.grid.rp .nm{font-size:14px;font-weight:700;max-width:340px;-webkit-line-clamp:2}
+.grid.rp .nw{white-space:nowrap}
+.grid.rp td.rp-n{width:30%}
+.rp-m{white-space:nowrap}
+.rp-m .pf,.rp-now .pf{font-size:16px;margin-right:8px}
+.rp-j{font-weight:700;white-space:nowrap}
+.rp-j.ok{color:var(--good)}
+.rp-j.ok::before{content:"✓ "}
+.rp-j.ng{color:var(--bad)}
+.rp-s{white-space:nowrap;color:var(--mute);font-weight:400}
+.rp-s.done{color:var(--good)}
+.rp-s.done::before{content:"✓ "}
+.grid.rp td.rp-a{white-space:nowrap;text-align:right}
+.rp-a .btn+.btn{margin-left:8px}
+.grid.rp tr.open td{background:var(--sel)}
+.grid.rp tr.rp-ed>td{background:#fafbfc;padding:16px;border-bottom:2px solid var(--line2)}
+.rp-f{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+.rp-f label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub)}
+.rp-f input{width:168px;height:36px;text-align:right;font-size:16px;font-weight:700}
+.rp-f input::placeholder{font-weight:400;font-size:14px;color:var(--mute)}
+.rp-o{flex:1 1 320px;margin:0;font-size:14px;line-height:1.6;padding-bottom:6px}
+.rp-o b{font-size:16px}
+.rp-pn .hint{margin:12px 0 0;font-size:12px}
+.rp-l{display:flex;gap:4px 24px;flex-wrap:wrap;margin-top:12px;font-size:14px}
+.rp-l a,.rp-l .lnk{font-size:14px;min-height:28px;display:inline-flex;align-items:center}
+.rp-cards{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.rp-cards li{border-bottom:1px solid var(--line);padding:16px 8px}
+.rp-cards li.open{background:var(--sel)}
+.rp-cards .nm{margin:0;font-size:16px;font-weight:700;line-height:1.4;-webkit-line-clamp:2}
+.rp-p{margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--sub)}
+.rp-p small{font-size:12px;color:var(--mute);margin-left:8px;white-space:nowrap}
+.rp-p .rp-s{font-size:12px;margin-left:8px}
+.rp-now{margin:4px 0 0;font-size:14px;line-height:1.5}
+.rp-cards .rp-a{display:flex;gap:8px;margin-top:12px}
+.rp-cards .rp-a .btn{flex:1 1 0;min-height:44px;font-size:14px;padding:0 8px;margin:0}
+.rp-cards .rp-pn{margin-top:16px}
+.rp-empty{padding:48px 16px;text-align:center}
+.rp-empty p{margin:0 0 16px;font-size:14px;line-height:1.7;color:var(--sub)}
+.rp-empty .btn{height:44px;padding:0 24px;font-size:14px}
+/* 書き出しの確かめ */
+.lp-dlg{max-width:560px}
+.lp-dlg .dlg-x{min-width:44px;min-height:44px;margin:-8px -12px -8px 0}
+.lp-dlg .dlg-lead{font-size:14px;line-height:1.6}
+.lp-list{list-style:none;margin:0 0 4px;padding:0;max-height:48vh;overflow-y:auto;border-top:1px solid var(--line)}
+.lp-list li{border-bottom:1px solid var(--line)}
+.lp-list li.lp-sep{padding:16px 4px 4px;font-size:12px;font-weight:700;color:var(--sub)}
+.lp-list label{display:flex;gap:12px;align-items:center;min-height:48px;padding:8px 4px;cursor:pointer}
+.lp-list input{flex:0 0 auto;width:20px;height:20px;margin:0}
+.lp-list label>span{min-width:0}
+.lp-list b{display:block;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.lp-list label>span>span{display:block;font-size:14px;color:var(--sub);margin-top:2px}
+.lp-list small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
+.lp-tot{margin:0 0 8px;font-size:16px;font-weight:700;line-height:1.5}
+.lp-dlg .hint{font-size:12px}
+.lp-go{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.lp-go .btn{flex:1 1 180px;height:48px;font-size:14px}
+.lp-no{flex:1 1 100%;min-height:44px;font-size:14px;text-align:center}
+.lp-menu .lp-go{flex-direction:column;margin-top:8px}
+.lp-menu .lp-go .btn{flex:0 0 auto;height:auto;min-height:56px;flex-direction:column;align-items:flex-start;gap:0;padding:8px 16px;text-align:left}
+.lp-menu .lp-go .btn b{font-size:16px}
+.lp-menu .lp-go .btn small{font-size:12px;font-weight:400;color:var(--mute)}
+/* お知らせ: 画面の下端に出す。中のボタンは文字が折れないように、押す所を44pxに(台帳で2つ並ぶ時がある) */
+.toast{bottom:16px;flex-wrap:wrap;row-gap:0;column-gap:24px;width:max-content;align-items:center}
+.toast-act{white-space:nowrap;flex:0 0 auto;min-height:44px}
+@media(max-width:860px){
+  .lg-act .btn{min-height:44px}
+  .lg #lg-notify{display:none}
+  .lg .tbar{flex-wrap:nowrap}
+  .lg .tbar-r{width:auto;flex:0 0 auto}
+  .lp-fix .lnk{min-height:44px;display:inline-flex;align-items:center;vertical-align:middle}
+  /* 題・件数・ボタンを詰めて、1件目を上げる。件数は箱をやめて1行に */
+  .lg .lg-head{gap:8px 12px;margin-bottom:8px}
+  .lg .lg-head h1{flex:1 1 auto}
+  .lg .lg-act{width:auto;flex:0 0 auto}
+  .lg .lg-act .btn{flex:0 0 auto;padding:0 12px}
+  .lg .sum{order:3;border:0;gap:16px}
+  .lg .sum div{flex:0 1 auto;border:0;padding:0}
+  /* 1件: 値が決まっていない項目は出さない。状態は横1行(右に進めるボタン) */
+  .ledger tr:not(.ed)>td.nv{display:none}
+  .ledger tr:not(.ed)>td[data-k="状態"]{grid-column:1/-1}
+  .ledger td[data-k="状態"]::before{display:none}
+  .ledger .st{flex-direction:row;flex-wrap:wrap;align-items:center;gap:0 12px;min-width:0}
+  .ledger .st .st2{margin-left:auto;order:3}
+  .ledger .st .meta{margin:0;max-width:none}
+  .ledger .ops button,.ledger .adv{min-height:44px;min-width:44px}
+  .ledger .ops button+button{margin-left:24px}
+  .ledger .lp-tags .lnk,.ledger .rp-tag{min-height:44px;font-size:14px}
+  .ledger .rp-tag{background:linear-gradient(var(--ac-soft),var(--ac-soft)) center/100% 28px no-repeat}
+  .ledger tr.more{display:block;padding:0}
+  .ledger tr.more>td{display:block;padding:12px 4px!important}
+  .edf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .edf .sec{flex-wrap:wrap;gap:0 12px}
+  .edf .sec .hint{text-align:left}
+  .edf label{font-size:12px}
+  .rp-f label{flex:1 1 140px;font-size:14px}
+  .rp-f input{width:100%;height:44px}
+  .rp-o{flex-basis:100%;padding:0}
+  .rp-pn .hint,.lp-dlg .hint{font-size:14px;line-height:1.6}
+  .rp-l{gap:0 24px}
+  .rp-l a,.rp-l .lnk{min-height:44px}
+  .lp-go .btn{flex:1 1 100%;font-size:16px}
+}
+/* ==== 制作係B(台帳) ここまで ==== */
+/* ==== 制作係C(お知らせ・確かめ・手引き) ここから ==== */
+/* ==== 制作係C(お知らせ・確かめ・手引き) ここまで ==== */
+
+/* ==================================================================
+   2026-11-13 デザイン批評の直し(制作係A・全ページ共通の分): 知らせの位置、AIに相談、通知の切り替えの並び
+   ================================================================== */
+/* 知らせ(黒い帯)は全ページで画面の下端。スマホ幅で「この価格で出品/仕入れた」が下端に貼り付くページでは、その上に逃がす */
+@media(max-width:860px){
+  body:has(#precheck + .acts) .toast{bottom:calc(88px + env(safe-area-inset-bottom))}
+}
+/* AIに相談: 相談の種類は横に流れる札(高さ44px・間8px)。注意書きは相談文の下に、黄色の地を外して14px・副の色で */
+.ai-in{display:flex;flex-direction:column}
+.ai-in>.ai-from~*{order:2}
+.ai-in>.ai-warn{order:1;margin:8px 0;padding:0;border:0;background:none;color:var(--sub);font-size:14px;line-height:1.7}
+.ai-in>.ai-warn b{color:var(--ink)}
+.ai-kinds{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.ai-kinds button{flex:0 0 auto;min-height:44px;padding:0 16px;border-radius:999px;font-size:14px}
+@media(max-width:860px){
+  .ai-kinds{display:flex}
+  .ai-kinds button{padding:0 16px;font-size:14px}
+}
+/* マイページの通知: 入・切の切り替えを並べる。箱と灰色の見出し帯は使わず、行の間は線1本 */
+.sw-list{border-top:1px solid var(--line)}
+.sw-item{border-bottom:1px solid var(--line);padding:4px 0}
+.sw-item .hint{margin:0 0 8px;max-width:640px}
+
+/* 2026-11-13 検品の直し(制作係A): 月の固定費の小窓の押す所と欄の高さ */
+.fix-dlg .dlg-x{min-width:44px;min-height:44px}
+.fix-dlg .fixamt input{width:128px}
+@media(max-width:860px){.fix-dlg .fixnm,.fix-dlg .fixamt input{height:44px}}

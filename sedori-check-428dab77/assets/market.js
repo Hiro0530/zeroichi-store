@@ -117,7 +117,7 @@
       (route === 'yahuoku' ? U.gateHTML({ noPt: r0.profit, pt: pt, ptLabel: '落札価格の' + val('b-pt') + '%' }) : U.gateHTML({ noPt: r0.profit, title: '利益(1個)', plain: true })) +
       '<div class="kpi"><div><b>' + U.pct(r0.margin) + '</b>利益率' + (route === 'yahuoku' ? '(ポイント抜き)' : '') + '</div><div><b>' + U.pct(r0.roi, 0) + '</b>仕入れに対して</div><div><b>' + yen(r.payout) + '円</b>手数料を引いた売上</div></div>' + U.brkRows(keyRows);
     U.result(out, head + '</div>', rows,
-      '<p class="note">手数料は1円未満切り捨て。' + (market === 'mercari' ? '振込申請手数料(1回' + fees.mercari.transfer_fee + '円)は含みません。' : '') + '</p>');
+      '<p class="note">手数料は1円未満切り捨て。' + (market === 'mercari' ? '振込申請手数料(1回' + fees.mercari.transfer_fee + '円)は含みません。' : '') + '</p>', r0.profit);
   }
 
   function guard(b) {
@@ -165,7 +165,7 @@
       name: $('#m-name').value || '(名前なし)', qty: b.qty, unit: b.unit,
       party: route === 'auction' ? (p ? p.label : '') : (route === 'yahuoku' ? 'Yahoo!オークション 出品者' : ''),
       verify: route === 'auction' ? '古物商・法人から購入' : '',
-      sellTo: MK_LABEL[market], sellPrice: L.r.sell, profit: L.r.profit, memo: L.sh.label,
+      sellTo: MK_LABEL[market], sellPrice: L.r.sell, profit: L.c.r0.profit, pnp: true, memo: L.sh.label,
       route: document.body.getAttribute('data-route-label') || '' });
     if (!row) return;
     paintBuy(true);

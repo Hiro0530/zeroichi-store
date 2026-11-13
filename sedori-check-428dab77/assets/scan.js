@@ -112,6 +112,7 @@
     paintTo(r.to || 'amazon');
     calc();
     renderList();
+    if (PC) PC.paint();
   }
   function paintTo(to) {
     $$('#now-to button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-to') === to)); });
@@ -181,8 +182,12 @@
   $('#n-cat').addEventListener('change', function () { U.store.set('scan-cat', this.value); saveCur({ cat: this.value }); });
   $('#n-tier').addEventListener('change', function () { U.store.set('scan-tier', this.value); saveCur({ tier: this.value }); });
   $('#n-ship').addEventListener('change', function () { U.store.set('scan-ship', this.value); saveCur({ ship: this.value }); });
-  $$('#now-to button').forEach(function (b) { b.addEventListener('click', function () { var to = b.getAttribute('data-to'); U.store.set('scan-to', to); paintTo(to); saveCur({ to: to }); }); });
+  $$('#now-to button').forEach(function (b) { b.addEventListener('click', function () { var to = b.getAttribute('data-to'); U.store.set('scan-to', to); paintTo(to); saveCur({ to: to }); if (PC) PC.paint(); }); });
   document.addEventListener('sedori:target', function () { calc(); renderList(); paintTarget(); });
+
+  /* ---------- 仕入れる前の確かめ(precheck.js。Amazonに売る時だけ出す。読み取りではKeepaの値も寸法も無いので、自動の印は付かない) ---------- */
+  var PC = window.SedoriPrecheck && window.SedoriPrecheck.mount ? window.SedoriPrecheck : null;
+  if (PC && $('#precheck')) PC.mount($('#precheck'), function () { var r = cur ? S.find(cur) : null; return { code: cur || '', kp: null, tierAuto: false, hide: !r || r.to === 'mercari' }; });
 
   /* ---------- 1タップ: ウォッチ・台帳 ---------- */
   function addWatch(r) {
@@ -200,8 +205,10 @@
       ship: r.to === 'amazon' ? 'fba' : U.shipMode(), cond: '新品', hinmoku: r.to === 'amazon' ? U.hinmokuFor(r.cat) : '道具類',
       name: r.name || '(品名未入力) JAN ' + r.jan, feature: 'JAN ' + r.jan, qty: 1, unit: Number(r.cost) || 0,
       party: '店舗', sellTo: r.to === 'mercari' ? 'メルカリ' : 'Amazon', sellPrice: Number(r.sell) || o.sug || '',
-      profit: o.profit != null ? o.profit : '', route: '店舗(バーコード読み取り)'
+      profit: o.profit != null ? o.profit : '', route: '店舗(バーコード読み取り)',
+      precheck: PC && r.to !== 'mercari' ? PC.resultFor(r.jan) : undefined   // 仕入れる前の確かめの結果(Amazonに売る時だけ)
     }, true);
+    if (row && row.precheck && PC) PC.afterBuy(row.precheck);
     if (row) S.upsert(r.jan, { ledger: row.id });
     return row;
   }

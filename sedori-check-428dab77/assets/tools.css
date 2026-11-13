@@ -1,0 +1,58 @@
+/* せどり 利益チェック — 制作係Cの部品の見た目(仕入れる前の確かめ・ウォッチの確かめ)。色と文字は sedori.css の変数を使う。
+   余白は 4/8/12/16/24。スマホ幅では押す所を44px以上にする */
+
+/* ---- 仕入れる前の確かめ(precheck.js) ---- */
+.pk-box{margin:8px 0}
+.pk-box[hidden]{display:none}
+.pk>summary{display:flex;align-items:center;gap:8px;min-height:32px;cursor:pointer;font-weight:700;font-size:13px;color:var(--ink)}
+.pk-n{font-weight:700;font-variant-numeric:tabular-nums;color:var(--sub)}
+.pk-l{list-style:none;margin:4px 0 8px;padding:0}
+.pk-l li{padding:4px 0}
+.pk-l label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;line-height:1.5}
+.pk-l input{flex:0 0 auto;width:16px;height:16px;margin:2px 0 0;accent-color:var(--ac)}
+.pk-l small{display:block;margin:0 0 0 24px;font-size:11.5px;line-height:1.5;color:var(--mute)}
+.pk-a{margin-left:8px;font-size:11px;font-weight:700;color:var(--good);white-space:nowrap}
+.pk-a.ng{color:var(--bad);white-space:normal}
+.pk-msg{margin:4px 0 8px;font-size:12px;line-height:1.5;color:var(--sub)}
+
+/* ---- ウォッチの確かめ(watch-check.js) ---- */
+.wc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
+.wc-bar[hidden],.wc-bar:empty{display:none}
+.wc-st{flex:1 1 100%;margin:0;font-size:12px;line-height:1.5;color:var(--sub)}
+/* 行の印は ra.js が2行目(.meta)の末尾に出す。印のある行だけ折り返しを許し、印を次の行に置く(切れて読めなくならないように) */
+.meta:has(.wc-b){white-space:normal;overflow:visible}
+.wc-b{display:flex;flex-wrap:wrap;gap:0 8px;margin-top:4px;font-size:12px;line-height:1.5;color:var(--sub)}
+.wc-k{font-weight:700;color:var(--ink)}
+.wc-k.ng{color:var(--bad)}
+.wc-k.ok{color:var(--good)}
+.wc-t{font-size:11.5px;color:var(--mute);white-space:nowrap}
+#slot-notify-watch .hint{margin:4px 0 0}
+/* 入・切の切り替え(マイページの通知)。左に名前、右に「入/切」の文字と切り替え。行全体(高さ48px)が押せる */
+.sw-row{display:flex;align-items:center;gap:8px;width:100%;min-height:48px;padding:0;border:0;background:none;color:var(--ink);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.sw-k{flex:1 1 auto}
+.sw-v{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--sub)}
+.sw{flex:0 0 auto;position:relative;width:52px;height:32px;border-radius:999px;background:#8a94a1}
+.sw i{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
+.sw-row[aria-checked="true"] .sw{background:var(--ac)}
+.sw-row[aria-checked="true"] .sw i{left:24px}
+.sw-row[aria-checked="true"] .sw-v{color:var(--ac-d)}
+.sw-row:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.sw i{transition:none}}
+
+/* ---- 「この価格で出品」「仕入れた」を下端に貼り付ける(批評C3)。確かめ欄を開いても、ボタンが画面の外へ行かない。
+        PCは右の欄(それ自体が縦に動く)の下端、スマホ幅は画面の下端。白地+上に線1本 ---- */
+#precheck+.acts{position:sticky;bottom:0;z-index:5;margin:8px -16px 0;padding:8px 16px;background:#fff;border-top:1px solid var(--line)}
+
+@media(max-width:860px){
+  .pk>summary{min-height:44px}
+  .pk-l li{padding:0 0 8px}
+  .pk-l label{min-height:44px;padding:12px 0 4px;font-size:14px}
+  .pk-l input{width:20px;height:20px;margin:0}
+  .pk-l small{margin-left:28px;font-size:12px}
+  .wc-bar .btn{height:44px}
+  /* スマホ幅では右の欄は縦に動かない(ページごと動く)。欄の overflow を外して、画面の下端に貼り付くようにする */
+  .det:has(#precheck){overflow:visible;max-height:none}
+  #precheck+.acts{margin:8px -12px 0;padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+  #precheck+.acts .btn{height:48px}
+  .wc-b .lnk,.wc-b a{display:inline-block;padding:8px 0}
+}
