@@ -135,4 +135,57 @@ eq(C.marketProfit({ sell: 3000, rate: 0.10, shipFee: 750, material: 0, cost: 150
 // 目標の売値も倉庫の費用で上がる
 eq(C.marketPriceFor({ rate: 0.10, shipFee: 750, material: 0, cost: 1500, other: 750 }, 0) > C.marketPriceFor({ rate: 0.10, shipFee: 750, material: 0, cost: 1500, other: 0 }, 0), true, '発送代行は損益分岐が上がる');
 
+// ---- 2026-11-13 追加: FBAの納品代行の費用、月の固定費 ----
+// 納品代行: 代行料100 + 切り上げ(箱870÷20個=43.5→44) = 144
+eq(C.prepCost({ fee: 100, box: 870, per: 20 }), 144, '納品代行 100+870÷20→144');
+eq(C.prepCost({ fee: 100, box: 870, per: 0 }), 970, '1箱の個数が0なら1個として扱う');
+eq(C.prepCost({ fee: 100, box: 870, per: '' }), 970, '1箱の個数が空でも落ちない(1個)');
+eq(C.prepCost({ fee: 80, box: 800, per: 20 }), 120, '割り切れる時 80+40');
+eq(C.prepCost(null), 0, '値が無ければ0');
+eq(C.prepCost(fees.fba_prep.defaults), 144, '手数料データの初期値(仮置き)で144円');
+// 例A(3,980円・おもちゃ・標準2c・仕入れ2,500): 自分で納品(納品送料100) 505円 / 納品代行(144) 461円。二重に引かない
+const prepIn = { sell: 3980, category: 'toys', fbaTier: 'std2c', cost: 2500, inShip: 0, other: 0, usePoints: false };
+eq(C.amazonProfit(fees, Object.assign({}, prepIn, { inbound: 100 })).profit, 505, '自分で納品: 3980-455-420-100-2500=505');
+eq(C.amazonProfit(fees, Object.assign({}, prepIn, { inbound: C.prepCost({ fee: 100, box: 870, per: 20 }) })).profit, 461, '納品代行: 3980-455-420-144-2500=461(納品送料100は引かない)');
+eq(C.amazonProfit(fees, Object.assign({}, prepIn, { inbound: 100 })).profit, 505, '自分で納品に戻すと元の利益');
+// 月の固定費: 個数 = 切り上げ(固定費÷1個の利益)
+eq(C.breakEvenUnits(13890, 620), 23, '13,890÷620=22.4→23個');
+eq(C.breakEvenUnits(12400, 620), 20, '割り切れる時は20個');
+eq(C.breakEvenUnits(13890, 0), null, '利益0円は出さない');
+eq(C.breakEvenUnits(13890, -50), null, '赤字は出さない');
+eq(C.breakEvenUnits(0, 620), null, '固定費0円は出さない');
+eq(C.breakEvenUnits(1, 620), 1, '固定費が利益より小さければ1個');
+eq(C.fixedTotal([{ on: true, amount: 5390 }, { on: true, amount: 8500 }, { on: false, amount: 4980 }]), 13890, '入の行だけ足す');
+eq(C.fixedTotal([{ on: false, amount: 5390 }]), 0, '全部切なら0');
+eq(C.fixedTotal([]), 0, '行が無ければ0');
+// 大口出品の月額は手数料データから(税抜4,900円×1.1=5,390円)。データを直すと変わる
+eq(Math.round(fees.amazon.monthly_plan_fee_ex_tax * (1 + fees.amazon.tax_rate)), 5390, '大口出品 税込5,390円');
+
+// ---- 2026-11-13 検品の直し: 目標の売値の探し方を速くした(非常に大きい仕入れ値で固まらない)。答えは1円ずつ確かめた時と同じ ----
+function slowPriceFor(input, target) {            // 前の探し方(1円ずつ)。照らし合わせ用
+  const x = Object.assign({}, input, { sell: 0 }), start = Math.max(1, -C.amazonProfit(fees, x).profit);
+  for (let p = start; p <= Math.max(start * 20, 100000); p++) { x.sell = p; if (C.amazonProfit(fees, x).profit >= C.needProfit(p, target)) return p; }
+  return null;
+}
+let same = 0, cases = 0;
+for (const cat of ['toys', 'clothes', 'home', 'beauty', 'jewelry', 'food', 'electronics']) {
+  for (const cost of [1, 30, 120, 480, 610, 700, 745, 880, 990, 2500, 2890, 9800, 31000]) {
+    for (const tg of [0, 300, { mode: 'pct', value: 15 }, { mode: 'pct', value: 40 }, { mode: 'yen', value: 1000 }]) {
+      for (const extra of [{ fbaTier: 'std2c', inbound: 100 }, { fbaTier: 'small', inbound: 0, pointRate: 0.1 }, { selfShip: true, selfShipCost: 970 }]) {
+        const inp = Object.assign({ category: cat, cost, inShip: 0, other: 0, usePoints: !!extra.pointRate }, extra);
+        cases++; if (C.amazonPriceFor(fees, inp, tg) === slowPriceFor(inp, tg)) same++;
+      }
+    }
+  }
+}
+eq(same, cases, `目標の売値: 速い探し方と1円ずつの探し方が ${cases} 通りすべて同じ`);
+const t0 = Date.now();
+const big = C.amazonPriceFor(fees, { category: 'toys', fbaTier: 'std2c', cost: 100000000, inShip: 0, inbound: 100, other: 0, usePoints: false }, { mode: 'pct', value: 15 });
+eq(big > 100000000, true, '仕入れ値1億円でも答えが出る');
+C.amazonPriceFor(fees, { category: 'toys', fbaTier: 'std2c', cost: 4902370500028, inShip: 0, inbound: 100, other: 0, usePoints: false }, { mode: 'pct', value: 15 });
+C.amazonBreakEvenSell(fees, { category: 'toys', fbaTier: 'std2c', cost: 4902370500028, inShip: 0, inbound: 100, other: 0, usePoints: false });
+eq(Date.now() - t0 < 500, true, '仕入れ値が1億円・13桁でも0.5秒以内に終わる(前は固まった)');
+eq(C.tooBig(9999999), false, '999万9,999円は計算する');
+eq(C.tooBig(10000000) && C.tooBig(4902370500028), true, '1,000万円以上は入れ間違いとして扱う');
+
 console.log(`OK ${n}件`);

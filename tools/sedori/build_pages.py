@@ -43,7 +43,21 @@ S = ROOT / OUT
 NOINDEX = OUT != "sedori"
 ROBOTS = '<meta name="robots" content="noindex,nofollow">'
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261108b"  # 11/8 テストで直した部品を確実に読み込ませるため更新
+VER = "20261113b"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
+
+# ---- 差し込み口(制作係B・Cの部品)。ファイルが assets/ に置かれたら、次の書き出しから自動で読み込む。無い間は読み込まない ----
+# 使い方は本部の docs/sedori_app/build_slots_2026-11-13.md
+OPT_JS = {"bulk.js", "ledger-plus.js", "watch-check.js", "precheck.js"}
+# 全ページ(計算の部品 calc.js を読むページ)で読む部品: ウォッチの取り直しは、どのページを開いていても動くため
+OPT_COMMON = ["watch-check.js"]
+# ページごとの追加のCSS(sedori.css の後に読む)。tools.css は全ページ
+OPT_CSS_ALL = ["tools.css"]
+OPT_CSS = {"daicho/": ["ledger-plus.css"]}
+
+
+def has_asset(name: str) -> bool:
+    return (S / "assets" / name).exists()
+
 
 _CONFIG = (S / "assets/config.js").read_text(encoding="utf-8")
 # 料金は sedori/assets/config.js の PLAN_CATALOG だけで決める(/*PLANS*/ と /*/PLANS*/ の間の JSON)
@@ -113,13 +127,14 @@ YEAR_DEAL = f"{PAY_MONTHS}か月分の料金で1年({SAVE_MONTHS}か月分お得
 def mk(*keys: str) -> str:
     return "" if ready(*keys) else '<sup class="mk">※</sup>'
 
-# プランごとにできること(料金ページの「機能を詳しく比べる」)。列は 無料/ライト/総合/業務。8行まで
+# プランごとにできること(料金ページの「機能を詳しく比べる」)。列は 無料/ライト/総合/業務。9行まで(2026-11-13 まとめてチェックの行を足した)
 FEATURES = [
     ("計算ページ(5つ)", "回数制限なし", "回数制限なし", "回数制限なし", "回数制限なし"),
     ("古物台帳の保存", "この端末だけ", f"クラウド(月{LIGHT_LIMIT}件まで)", "クラウド(件数の制限なし)", "クラウド(件数の制限なし)"),
     ("パソコンとスマホで同じ台帳", "—", "○", "○", "○"),
     ("ヤフオク終了60分前の通知", "入れた端末だけ", "どの端末の出品も", "どの端末の出品も", "どの端末の出品も"),
-    ("楽天の検索", "1日20回", "制限なし", "制限なし", "制限なし"),
+    ("楽天の検索・まとめてチェック(一覧を貼って計算)", "検索は1日20回・まとめては1回20行", "検索は制限なし・まとめては1回100行", "検索は制限なし・まとめては1回500行", "検索は制限なし・まとめては1回500行"),
+    ("ウォッチの値段と在庫(ページを開いている間)", "手で確かめる・変化のお知らせ", "自動で取り直す・変化のお知らせ", "自動で取り直す・変化のお知らせ", "自動で取り直す・変化のお知らせ"),
     ("売上・経費・月ごとの利益", "台帳の期間合計", "台帳の期間合計", f"○{mk('books')}", f"○{mk('books')}"),
     ("在庫", "状態ごとの件数", "状態ごとの件数", f"売れ残りアラート{mk('books')}", f"売れ残りアラート{mk('books')}・期末の棚卸{mk('stock')}"),
     ("確定申告と複数人", "—", "—", "—", f"申告用の数字と書き出し・仕入税額控除の特例チェック{mk('tax')}・3人まで{mk('team')}・発送代行への指示{mk('threepl')}・警察提出用PDF{mk('policepdf')}"),
@@ -156,7 +171,7 @@ def _amount(parts: list[tuple[str, tuple]]) -> str:
 
 # お申し込み内容の確認の「分量」(プランの段ごと。短く)
 AMOUNT = {
-    "light": f"台帳のクラウド保存(月{LIGHT_LIMIT}件まで)、パソコンとスマホの同期、ヤフオク終了前の通知、楽天の検索 制限なし。1アカウント",
+    "light": f"台帳のクラウド保存(月{LIGHT_LIMIT}件まで)、パソコンとスマホの同期、ヤフオク終了前の通知、楽天の検索 制限なし、まとめてチェック 1回100行(総合・業務は500行)、ウォッチの値段と在庫の自動の取り直し(このアプリのページを開いている間)。1アカウント",
     "total": "ライトのすべてと、台帳の件数の制限なし。" + _amount([("売上の取り込み", ("books",)), ("経費", ("books",)), ("月ごとの利益", ("books",)), ("売れ残りアラート", ("books",))]) + "。1アカウント",
     "business": "総合のすべてと、" + _amount([("期末の棚卸", ("stock",)), ("確定申告用の数字と会計ソフト向けの書き出し", ("tax",)), ("仕入税額控除の特例チェック", ("tax",)), ("3人まで", ("team",)), ("発送代行への指示", ("threepl",)), ("警察提出用の台帳PDF", ("policepdf",))]),
 }
@@ -212,7 +227,9 @@ def header(base: str, current: str, src: str) -> str:
       <input id="t-val" type="number" inputmode="decimal" min="0" step="1" aria-label="目標の利益">
       <span class="seg" role="group" aria-label="単位"><button type="button" data-m="yen">円</button><button type="button" data-m="pct">%</button></span>
     </div>
+    <button type="button" class="hd-fix" id="hd-fix" aria-haspopup="dialog" aria-expanded="false">月の固定費<b id="hd-fix-v" hidden></b></button>
     <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
+    <a class="hd-watch" id="hd-watch" href="{base}rakuten-amazon/?tab=w" hidden></a>
     <a class="hd-ledger" href="{base}daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
     <a class="hd-acct" id="hd-acct" href="{base}mypage/">ログイン</a>
   </div>
@@ -240,7 +257,7 @@ LEGAL = """<details class="legal" id="legal">
         <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
         <ul>
           <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
-          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。出荷前キャンセル率の目安は2.5%未満です。</li>
+          <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。Amazonの出品者向けの案内で、出荷前キャンセル率の基準を確かめてください。</li>
           <li>ブランドやカテゴリーによっては出品の許可が要ります。セラーセントラルで確かめてから仕入れてください。</li>
         </ul>
         <h3>写真と説明文</h3>
@@ -259,11 +276,13 @@ def footer(base: str, scripts: list[str]) -> str:
     # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む。
     # 帳簿の同期(books-sync.js)は account.js より前、売り手の確認の判定(seller-check.js)は ui.js より前
     first = ["books-sync.js"] if "books-sync.js" in scripts else []
-    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")] + ["ai.js"]
+    common = [x for x in OPT_COMMON if "calc.js" in scripts and x not in scripts]
+    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")] + common + ["ai.js"]
+    order = [x for x in order if x not in OPT_JS or has_asset(x)]
     sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in order)
     return f"""<footer class="ft">
   <div class="ft-in">
-    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}shikumi/">利益の仕組み</a><a href="{base}chigai/">コンサル・スクールとの違い</a><a href="{base}#ai" data-ai-open>AIに相談</a><a href="{base}guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}shikumi/">利益の仕組み</a><a href="{base}chigai/">コンサル・スクールとの違い</a><a href="#" data-fix-open>月の固定費</a><a href="{base}#ai" data-ai-open>AIに相談</a><a href="{base}guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     {LEGAL}
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
@@ -272,6 +291,11 @@ def footer(base: str, scripts: list[str]) -> str:
 </body>
 </html>
 """
+
+
+def extra_css(path: str, base: str) -> str:
+    names = [n for n in OPT_CSS_ALL + OPT_CSS.get(path, []) if has_asset(n)]
+    return "".join(f'\n<link rel="stylesheet" href="{base}assets/{n}?v={VER}">' for n in names)
 
 
 def head(title: str, desc: str, path: str, base: str, body_attrs: str) -> str:
@@ -293,7 +317,7 @@ def head(title: str, desc: str, path: str, base: str, body_attrs: str) -> str:
 <link rel="icon" href="{base}icon-192.png">
 <link rel="apple-touch-icon" href="{base}icon-192.png">
 <meta name="theme-color" content="#1e3348">
-<link rel="stylesheet" href="{base}assets/sedori.css?v={VER}">
+<link rel="stylesheet" href="{base}assets/sedori.css?v={VER}">{extra_css(path, base)}
 </head>
 <body data-base="{base}" {body_attrs}>
 """
@@ -365,6 +389,7 @@ DETAIL_ACTIONS = """<div class="acts">
           <button type="button" class="btn buy" data-act="buy">仕入れた<kbd>S</kbd></button>
         </div>
         <div id="party"></div>
+        <div id="slot-evidence"></div>
         <div id="brk"></div>"""
 
 
@@ -451,7 +476,7 @@ NOJS = ('<noscript><p class="nojs">この計算ページは JavaScript で動き
         '利益は「実際の売値 − 仕入れ値 − 手数料 − 送料」で、ポイントはその後に上乗せとして足します。</p></noscript>')
 
 # ポイント還元率の目安とヒント(計算は 仕入れ値÷1.1×率。率はご自身の実際の率が正)
-PT_HINT_RA = ('<p class="hint pt-hint">ポイントの率の目安: 楽天の通常分は1%(ショップの倍率がP1倍の時)。SPU・お買い物マラソンなどのキャンペーンや、カードの分は人によって違うので、'
+PT_HINT_RA = ('<p class="hint pt-hint">ポイントの率の目安: 楽天の通常分は1%(ショップの倍率が1倍の時)。SPU・お買い物マラソンなどのキャンペーンや、カードの分は人によって違うので、'
               'ご自身の実際の率を入れてください。ポイントは 仕入れ値÷1.1×率 で計算し、利益には上乗せとして後から足します。</p>')
 
 # ------------------------------------------------------------------
@@ -464,12 +489,14 @@ RA_BODY = f"""<div class="lay3">
           ''' + chk("ptonly", "ポイント2倍以上") + chk("freeonly", "送料無料のみ") + '''
           <div class="fr2"><span class="fk">価格</span><span class="rng">''' + num("pmin", "", ' placeholder="下限" aria-label="価格の下限"') + '<span>〜</span>' + num("pmax", "", ' placeholder="上限" aria-label="価格の上限"') + '''</span></div>
           ''' + chk("profitonly", "目標を満たす行だけ") + '''
+          <p class="fl-h">Amazonの売れ方<small>Keepaの値がある行で絞ります</small></p>
+          ''' + chk("f-noamz", "Amazon本体が販売中の品を除く") + fld("月の販売", num("f-sold", "", ' placeholder="指定なし"'), "個以上") + fld("出品者", num("f-cnt", "", ' placeholder="指定なし"'), "人以下") + '''
         </div>''')}
       {box("Amazon側の条件", '''<p class="hint">一覧の全行にこの条件で計算します。</p>
         <div class="fl">
           <label class="fr col"><span class="fk">カテゴリー</span><select id="c-cat">''' + cat_options() + '''</select></label>
           <label class="fr col"><span class="fk">FBAのサイズ</span><select id="c-tier">''' + tier_options() + '''</select></label>
-          ''' + fld("納品送料", num("c-inbound", "100"), "円", "資材込み・1個") + fld("その他", num("c-other", "0"), "円", "1個") + fld("ポイント上乗せ", dec("c-pt-mine", "0"), "%", "SPU・キャンペーン・カード") +
+          ''' + fld("納品送料", num("c-inbound", "100"), "円", "自分で納品する時・資材込み・1個") + fld("その他", num("c-other", "0"), "円", "1個") + fld("ポイント上乗せ", dec("c-pt-mine", "0"), "%", "SPU・キャンペーン・カード") +
           '<p class="hint">ショップの倍率に足す分です。人によって違うので、ご自身の実際の率を入れてください(分からなければ0のまま)。</p>' +
           chk("c-usept", "ポイントを利益に含める(上乗せとして)", True) + chk("c-self", "FBAを使わない(自分か代行が発送)") +
           '<div id="c-selfship-w" hidden><label class="fr col"><span class="fk">運送会社・サイズ</span><select id="c-carrier">' + carrier_options() + '</select></label>' + fld("送料", num("c-selfship", "0"), "円", "自分で入力の時") + '''</div>
@@ -487,21 +514,33 @@ RA_BODY = f"""<div class="lay3">
   <section class="res" aria-label="一覧">
     <div class="tabs" role="tablist">
       <button type="button" role="tab" data-tab="s" aria-selected="true">検索結果<span class="n" id="n-s">0</span></button>
-      <button type="button" role="tab" data-tab="w" aria-selected="false">ウォッチ<span class="n" id="n-w">0</span></button>
+      <button type="button" role="tab" data-tab="b" aria-selected="false">まとめて<span class="n" id="n-b">0</span></button>
+      <button type="button" role="tab" data-tab="w" aria-selected="false">ウォッチ<span class="n" id="n-w">0</span><span class="n w" id="n-w-chg" hidden></span></button>
     </div>
+    <div id="bulk-box" class="bulk" hidden>
+      <details class="bulk-in" id="bulk-in" open>
+        <summary>一覧を貼る</summary>
+        <label class="bulk-k" for="bulk-text">JAN・ASINの一覧<small>1行に1商品。2列目に仕入れ値、3列目にAmazonの売値を入れられます(任意)。表計算ソフトからそのまま貼れます</small></label>
+        <textarea id="bulk-text" rows="6" spellcheck="false" autocomplete="off" placeholder="4902370548495&#9;4980&#10;4521329385723&#10;B0CHX3QBCH&#9;2480&#9;3980"></textarea>
+        <div class="bulk-go"><button type="button" class="btn" id="bulk-run">まとめて計算する</button><p class="bulk-lim" id="bulk-lim"></p></div>
+      </details>
+      <div class="bulk-st" id="bulk-st" aria-live="polite"></div>
+    </div>
+    <div id="slot-watch-top" hidden></div>
     <div class="tbar">
       <p class="tbar-t" id="res-title">検索結果<small>上の検索欄から探せます</small></p>
-      <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
+      <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="b-watch" hidden>残った行をウォッチに入れる</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
     </div>
     <div id="res-msg"></div>
     <div class="gridwrap">
       <table class="grid mc" id="grid">
         <colgroup><col class="c-img"><col><col class="c-n"><col class="c-pt"><col class="c-n"><col class="c-n c-fee"><col class="c-n"><col class="c-rt"></colgroup>
-        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r" title="ポイント抜きの利益。+Pはポイントの上乗せ">利益</th><th class="r">利益率</th></tr></thead>
+        <thead><tr><th class="c-img"></th><th>商品名</th><th class="r">仕入れ値</th><th class="r c-pt">ポイント</th><th class="r">Amazon売値</th><th class="r c-fee">手数料</th><th class="r" title="ポイント抜きの利益。下の「ポイント○円」は上乗せの分">利益</th><th class="r">利益率</th></tr></thead>
         <tbody id="rows">{empty_row(8, "検索欄にキーワードかJANコードを入れて、検索してください。")}</tbody>
       </table>
     </div>
-    <p class="credit" id="credit">「目安」の売値は、Amazonの実際の売値が未入力のため、目標の利益からポイント抜きで逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜き、+Pはポイントの上乗せです。</p>
+    <div id="bulk-bad"></div>
+    <p class="credit" id="credit">「目標から逆算」の売値は、Amazonの実際の売値が未入力のため、目標の利益からポイント抜きで逆算した値です(その値段で売れるという意味ではありません)。利益はポイント抜きで、その下の「ポイント○円」は上乗せの分です。</p>
   </section>
 
   <aside class="det" id="calc" aria-label="選んだ商品">
@@ -519,6 +558,7 @@ RA_BODY = f"""<div class="lay3">
       <div id="wh"></div>
       <div id="kp-out"></div>
       <div id="c-out" aria-live="polite"><p class="note">仕入れ値を入れると、目標の利益に届く売値の目安と、損益分岐が出ます。Amazonの実際の売値を入れると、利益の内訳が出ます。</p></div>
+      <div id="precheck"></div>
       {DETAIL_ACTIONS}
       <p class="det-links"><button type="button" class="lnk" id="c-watch">ウォッチに追加</button><a id="amz-link" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a><a id="kp-link" href="https://keepa.com/" target="_blank" rel="noopener">Keepaで見る</a></p>
       <details class="dims"><summary>寸法と重さからFBAのサイズを出す</summary>
@@ -533,7 +573,7 @@ RA_BODY = f"""<div class="lay3">
 
 route_page("rakuten-amazon", "楽天・Yahoo!→Amazon 利益チェック",
            "楽天市場・Yahoo!ショッピングの商品を、Amazon(FBA)で売った時の手数料・ポイント込みの利益を一覧で計算。目標の利益を満たす売値、損益分岐、仕入れ上限。仕入れると古物台帳に自動で記録。無料・登録不要。",
-           "rakuten", "ra", RA_BODY, ["calc.js", "ui.js", "ra.js"])
+           "rakuten", "ra", RA_BODY, ["calc.js", "ui.js", "ra.js", "bulk.js", "precheck.js"])
 
 # ------------------------------------------------------------------
 # 無在庫 Amazon中古 × ヤフオク
@@ -680,11 +720,13 @@ LEDGER_BODY = """<div class="lg">
   <div class="lg-head">
     <h1>古物台帳</h1>
     <dl class="sum" id="lg-sum"></dl>
-    <span class="lg-act"><button type="button" class="btn sm ghost" id="lg-add">手で追加</button><button type="button" class="btn sm ghost" id="lg-csv">CSVで書き出す</button><button type="button" class="btn sm" id="lg-xlsx">Excelで書き出す</button></span>
+    <span class="lg-act"><span id="slot-lg-act" class="slot-act"></span><button type="button" class="btn sm ghost" id="lg-add">手で追加</button><button type="button" class="btn sm ghost" id="lg-csv">CSVで書き出す</button><button type="button" class="btn sm" id="lg-xlsx">Excelで書き出す</button></span>
   </div>
   <div id="lg-up" aria-live="polite"></div>
+  <div id="slot-lg-top"></div>
   <div class="tabs" role="tablist" id="lg-tabs"></div>
   <div class="tbar"><p class="tbar-t" id="lg-title"></p><span class="tbar-r"><button type="button" class="btn sm ghost tg" id="lg-notify" aria-pressed="false" title="ヤフオクの終了60分前に、ブラウザの通知でお知らせ(このアプリのページを開いている間)">終了60分前の通知: オフ</button><label class="inl">期間 <select id="lg-period"><option value="all">すべて</option><option value="m0">今月</option><option value="m1">先月</option><option value="y0">今年</option></select></label></span></div>
+  <div id="lg-plus"></div>
   <div id="lg-form-box"></div>
   <div class="gridwrap">
     <table class="grid ledger" id="lg-grid">
@@ -698,10 +740,11 @@ LEDGER_BODY = """<div class="lg">
     <li>「出品中」の行にヤフオクの終了日時を入れると、終了が近い順に並び、2時間前から色が付きます。通知をオンにすると、このアプリのページを開いている間、60分前にお知らせします(ヤフオク・Amazonへの自動アクセスはしません)。</li>
     <li>無料プランのデータは、この端末のブラウザの中だけにあります。機種変更の前に書き出してください。</li>
   </ul>
+  <div id="slot-lg-foot"></div>
 </div>"""
 out = head("古物台帳", "仕入れた品を自動で記録する古物台帳。状態(仕入れ済→入庫→出品中→売約→発送済)を1クリックで進め、売れたら売却日・売値・相手を自動で記入。CSV・Excelで書き出し。",
            "daicho/", "../", 'data-page="daicho"')
-out += header("../", "daicho", "ledger") + crumb("../", "台帳") + f'<main class="wrap">\n{LEDGER_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "ledger.js"])
+out += header("../", "daicho", "ledger") + crumb("../", "台帳") + f'<main class="wrap">\n{LEDGER_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "ledger.js", "ledger-plus.js"])
 write("daicho", out)
 
 # ------------------------------------------------------------------
@@ -783,6 +826,9 @@ top_plans = "".join(_mini(c) for c in CARDS)
 HERO_FOUNDER = (f'<tr class="fd"><th>総合 {FOUNDER}</th><td>{yen(P_FM)}</td><td>{yen(P_FY)}</td></tr>'
                 if CAT.get("founder_month", {}).get("open", True) is not False else "")
 
+# 「始める道順」の入口(手引きのページ guide/hajimeru/ が書き出されている時だけ出す。数は ui.js が端末の印から入れる)
+START_LINE = ('<p class="start-line"><a href="guide/hajimeru/">始める道順</a><span id="start-n" data-total="10"></span>'
+              '<small>アカウントの用意から最初の1個の計算まで、順に確かめる点検表</small></p>') if (S / "guide/hajimeru/index.html").exists() else '<!-- 始める道順: guide/hajimeru/ ができたら出る -->'
 TOP_BODY = f"""<div class="lay2">
   <aside class="side" aria-label="メニュー">
     <div class="sbox"><p class="sbox-t">台帳の状況</p><div class="sbox-b" id="top-ledger"></div></div>
@@ -834,6 +880,7 @@ TOP_BODY = f"""<div class="lay2">
       <div class="row-btns"><button class="btn pri" type="submit">診断する</button><span class="hint">収入の見込みを示すものではありません。答えはこの端末の中だけで使います。</span></div>
     </form>
     <div id="shindan-out" class="out-box" hidden aria-live="polite"></div>
+    {START_LINE}
 
     <h2 class="sec-h" id="plans">料金</h2>
     <p>計算と、この端末に保存する台帳は無料です。台帳をクラウドに残すなら、3つのプランから選べます。月払いは<b>14日無料</b>、年払いは<b>{YEAR_DEAL}</b>で、<b>{YEAR_DAYS}日以内の解約は全額返金</b>です<span data-bill="prep">{PRE_SHORT}</span>。</p>
@@ -1030,7 +1077,11 @@ MYPAGE_BODY = """<div class="mp">
 
       <section id="mp-notify" class="mp-sec">
         <h2 class="sec-h">通知</h2>
-        <table class="kv wide"><tr><th>ヤフオクの終了60分前</th><td><button type="button" class="btn sm ghost tg" id="lg-notify" aria-pressed="false">終了60分前の通知: オフ</button><p class="hint">台帳で「出品中」の行にヤフオクの終了日時を入れると、60分前に「Amazonの在庫を0にしてください」と通知します。このアプリのページ(どれでも)を開いている間だけ届きます。ヤフオク・Amazonへの自動アクセスはしません。</p></td></tr></table>
+        <div class="sw-list">
+          <div class="sw-item"><button type="button" class="sw-row" id="lg-notify" role="switch" aria-checked="false" aria-pressed="false"><span class="sw-k">ヤフオクの終了60分前に知らせる</span><span class="sw-v">切</span><span class="sw" aria-hidden="true"><i></i></span></button>
+            <p class="hint">台帳で「出品中」の行にヤフオクの終了日時を入れると、60分前に「Amazonの在庫を0にしてください」と通知します。このアプリのページ(どれでも)を開いている間だけ届きます。ヤフオク・Amazonへの自動アクセスはしません。</p></div>
+          <div class="sw-item" id="slot-notify-watch-row" hidden><div id="slot-notify-watch"></div></div>
+        </div>
       </section>
     </div>
   </div>
@@ -1058,7 +1109,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <h2>第1条(本サービスの内容)</h2>
 <ol>
 <li>本サービスは、仕入れと販売の手数料・送料・ポイントを含めた利益の計算、古物台帳の項目に沿った記録(以下「台帳」)、その書き出しを行うウェブアプリです。</li>
-<li>無料プランでは、計算と台帳を、利用者の端末のブラウザの中に保存して使えます。登録は要りません。</li>
+<li>無料プランでは、計算と台帳を、利用者の端末のブラウザの中に保存して使えます。登録は要りません。まとめてチェックは1回20行まで、ウォッチの値段と在庫は手で確かめる形で使え、変化のお知らせも入にできます(自動の取り直しはライト以上)。</li>
 <li>有料プラン(ライト・総合・業務)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。総合・業務では、売上・経費・利益・棚卸・確定申告の数字をまとめる帳簿も使えます。{TERMS_LATER}中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
 </ol>
 
@@ -1136,7 +1187,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <p>ZEROICHI WORKS(事業者の名前・連絡先は<a href="../../tokushoho.html">特定商取引法に基づく表記</a>をご覧ください)/<a href="mailto:zeroichi.works.jp@gmail.com">zeroichi.works.jp@gmail.com</a></p>"""
 
 PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日・改定日 2026年10月29日(事前登録・メールマガジンのメールの扱いを追加。前回 2026年10月28日: 帳簿の記録のクラウド保存、カードでのお支払い(Stripe)を追加)</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年11月13日(クラウドに保存する設定に、月の固定費と、FBAへ納品してもらう時の発送代行の費用を追加。前回 2026年10月29日: 事前登録・メールマガジンのメールの扱いを追加)</p>
 <p>ZEROICHI WORKS(以下「当方」)は、「せどり 利益チェック」(以下「本サービス」)で扱う個人情報を、次のとおり取り扱います。事業者の氏名・住所等は、<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおり、ご請求があれば遅滞なく開示します。</p>
 
 <h2>1. 扱う情報</h2>
@@ -1144,7 +1195,7 @@ PRIVACY = """<h1>プライバシーポリシー(せどり 利益チェック)</h
 <tr><th>アカウント</th><td>メールアドレス。Googleでログインした場合はGoogleアカウントのメールアドレスと識別子(パスワードは当方に届きません)</td></tr>
 <tr><th>台帳(有料プラン)</th><td>利用者が入れた仕入れ・売却の記録。取引相手の氏名・住所・電話・メール・職業・年齢・確認の方法など、古物台帳の項目を含みます</td></tr>
 <tr><th>帳簿(総合・業務)</th><td>取り込んだ売上(Amazonのレポート・メルカリの取引の内容)、経費と支払先、毎月の経費、取り込みの履歴、売れ残りの目安、棚卸の数、申告用の数字の設定(消費税の区分・棚卸高・登録番号の無い仕入れ先の印など)</td></tr>
-<tr><th>設定(有料プラン)</th><td>目標の利益、発送のしかた、発送代行の費用</td></tr>
+<tr><th>設定(有料プラン)</th><td>目標の利益、発送のしかた、発送代行の費用(倉庫の作業料、FBAへ納品してもらう時の代行料・1箱ごとの費用・1箱の個数)、月の固定費(利用者が付けた名前と金額)</td></tr>
 <tr><th>契約</th><td>Stripeの顧客ID・契約ID、またはPayPalのサブスクリプションID、プラン、契約の状態、無料期間の終わり・次回の請求日。カード番号・有効期限・セキュリティコード・口座番号は当方に届かず、決済代行会社(Stripe・PayPal)が直接受け取って扱います</td></tr>
 <tr><th>事前登録・メールマガジン</th><td>登録のメールの送信元のメールアドレスと、本文に書いていただいた内容(任意の質問への答え)。登録は事業用のメール(Gmail)に届いたメールとして保管し、ほかの場所には写しません</td></tr>
 <tr><th>お問い合わせ</th><td>メールでいただいた内容</td></tr>
@@ -1469,9 +1520,19 @@ for _hp in ("lp/index.html", "scan/index.html", "widget/mercari/index.html"):
             _f.write_text(_n, encoding="utf-8")
 
 
+# ---- 手で作ったページ(読み取り・帳簿)が読む部品の版番号を、今の VER にそろえる(古い版番号のままだと、直した部品が届かないことがある) ----
+for _hp in ("scan/index.html", "books/index.html"):
+    _f = S / _hp
+    if _f.exists():
+        _t = _f.read_text(encoding="utf-8")
+        _n = _re.sub(r'(\.(?:js|css))\?v=[0-9A-Za-z]+', lambda m: m.group(1) + "?v=" + VER, _t)
+        if _n != _t:
+            _f.write_text(_n, encoding="utf-8")
+
+
 # ---- サイトマップ ----
 # 手書きのページ(紹介・読み取り・手引き)もサイトマップに載せる(このスクリプトでは書き出さない)
-HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tesuryo/", "0.7"), ("guide/kobutsu-daicho-excel/", "0.7"), ("guide/honnin-kakunin/", "0.7"), ("guide/neduke/", "0.7")]
+HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tesuryo/", "0.7"), ("guide/kobutsu-daicho-excel/", "0.7"), ("guide/honnin-kakunin/", "0.7"), ("guide/neduke/", "0.7"), ("guide/hajimeru/", "0.7"), ("guide/kobutsu-shinsei/", "0.7")]
 urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")] + [(u, p) for u, p in HAND if (S / u / "index.html").exists()] + [("shikumi/", "0.8"), ("chigai/", "0.6"), ("plans/", "0.6"), ("terms/", "0.2"), ("privacy/", "0.2")]
 sm = "\n".join(f"<url><loc>{BASE_URL}{u}</loc><lastmod>{FEES['checked']}</lastmod><priority>{p}</priority></url>" for u, p in urls)
 (S / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{sm}\n</urlset>\n', encoding="utf-8")

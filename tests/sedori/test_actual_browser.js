@@ -35,7 +35,7 @@ const server = http.createServer((req, res) => {
   try {
     // 楽天→Amazon: 実際の売値が未入力 → 入れてくださいの案内と、目標の売値は「目安」
     let p = await open('rakuten-amazon/');
-    eq(await p.$$eval('[data-tab]', bs => bs.map(b => b.getAttribute('data-tab'))), ['s', 'w'], '見本表のタブが無い');
+    eq(await p.$$eval('[data-tab]', bs => bs.map(b => b.getAttribute('data-tab'))), ['s', 'b', 'w'], '見本表のタブが無い(検索結果・まとめて・ウォッチの3つ)');
     await fill(p, [['c-cost', 1650]]);
     let out = await txt(p, '#c-out');
     eq([/Amazonの実際の売値を入れてください/.test(out), /逆算した目安/.test(out)], [true, true], '楽天→Amazon: 実際の売値が未入力の時');

@@ -61,7 +61,7 @@ const sandbox = { window: { ZW_CONFIG: win.ZW_CONFIG, SedoriUI: { $: () => null,
 sandbox.window.window = sandbox.window;
 vm.runInNewContext(aiSrc, Object.assign(sandbox, { window: sandbox.window }));
 const AI = sandbox.window.SedoriAI;
-eq(JSON.parse(JSON.stringify(AI.KINDS.map(k => k.label))), ['仕入れの判断', '売値の相談', '売れ残り対策', 'トラブルの返信', '月の振り返り', '確定申告の一般論'], '相談の型6つ');
+eq(JSON.parse(JSON.stringify(AI.KINDS.map(k => k.label))), ['仕入れの判断', '仕入れてよいかの確かめ', '売値の相談', '売れ残り対策', 'トラブルの返信', '月の振り返り', '確定申告の一般論'], '相談の型7つ');
 const m = AI.master('go');
 eq(['light_month', 'total_month', 'business_month', 'light_year', 'total_year', 'business_year'].map(k => m.includes(CAT[k].price.toLocaleString('ja-JP') + '円')), Array(6).fill(true), '前提の文の料金が config と同じ');
 eq([/税理士か税務署/.test(m), /弁護士などの専門家/.test(m), /断定したり保証したりしない/.test(m), /30日以内の解約は全額返金/.test(m)], [true, true, true, true], '前提の文の答え方の決まり');
