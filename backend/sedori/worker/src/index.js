@@ -781,6 +781,52 @@ function cors(env, req) {
   const allow = (env.ALLOWED_ORIGIN || 'https://hiro0530.github.io').split(',').map(s => s.trim());
   return allow.includes(origin) ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Vary': 'Origin' } : {};
 }
+// 毎時の定時: GitHub の workflow_dispatch を呼ぶ(2026-11-15)。対象の書き方: owner/repo:file:ref:k=v&k2=v2@5,35(@分 は省略で5分だけ)
+export const DAILY_CRON = '10 0 * * *';
+export function parseTargets(str) {
+  const out = [];
+  for (let raw of String(str || '').split(',')) {
+    // 分の指定「@5」「@5,35」はカンマで割れるので、数字だけの断片は直前の対象の分に足す
+    raw = raw.trim(); if (!raw) continue;
+    if (/^\d+$/.test(raw) && out.length) { out[out.length - 1].minutes.push(Number(raw)); continue; }
+    let minutes = [5]; const at = raw.lastIndexOf('@');
+    let spec = raw;
+    if (at >= 0) { spec = raw.slice(0, at); const m = raw.slice(at + 1); minutes = /^\d+$/.test(m) ? [Number(m)] : []; }
+    const [repo, file, ref, inp] = spec.split(':');
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo || '') || !file) continue;
+    const inputs = {};
+    for (const kv of String(inp || '').split('&')) { const i = kv.indexOf('='); if (i > 0) inputs[kv.slice(0, i)] = kv.slice(i + 1); }
+    out.push({ repo, file, ref: ref || 'main', inputs, minutes, explicit: at >= 0 });
+  }
+  return out;
+}
+export async function hourly(env, minute, now = Date.now(), fetchFn = fetch) {
+  const res = [];
+  if (!env.GH_DISPATCH_TOKEN) return res;
+  for (const t of parseTargets(env.GH_DISPATCH_TARGETS)) {
+    if (!t.minutes.includes(minute)) continue;
+    let status = 0;
+    try {
+      const r = await fetchFn(`https://api.github.com/repos/${t.repo}/actions/workflows/${encodeURIComponent(t.file)}/dispatches`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + env.GH_DISPATCH_TOKEN, Accept: 'application/vnd.github+json', 'User-Agent': 'zw-sedori-billing', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref: t.ref, inputs: t.inputs })
+      });
+      status = r.status;
+    } catch (e) { status = -1; }
+    res.push({ target: `${t.repo}:${t.file}`, status });
+    console.log(`dispatch ${t.repo}:${t.file} http=${status} at=${new Date(now).toISOString()}`);
+  }
+  return res;
+}
+export async function onSchedule(event, env, now = Date.now(), fetchFn = fetch) {
+  const cron = String(event && event.cron || '');
+  if (cron === DAILY_CRON) return { daily: await daily(env, now) };
+  const m = cron.match(/^(\d+) \* \* \* \*$/);
+  if (m) { try { return { hourly: await hourly(env, Number(m[1]), now, fetchFn) }; } catch (e) { console.log('dispatch error'); return { hourly: [] }; } }
+  return {};
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url), c = cors(env, req);
@@ -812,7 +858,7 @@ export default {
           catch (e) { checkout[key] = { ok: false, ms: Date.now() - t0, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 300) }; }
         }
       }
-      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices }, 200, c);
+      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices, dispatch: { token: !!env.GH_DISPATCH_TOKEN, targets: parseTargets(env.GH_DISPATCH_TARGETS).map(t => `${t.repo}:${t.file}:${t.ref}@${t.minutes.join(',')}`) } }, 200, c);
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
     if (url.pathname === '/stripe/webhook') {
@@ -845,5 +891,5 @@ export default {
     }
     return json({ error: 'not found' }, 404, c);
   },
-  async scheduled(event, env, ctx) { ctx.waitUntil(daily(env)); }
+  async scheduled(event, env, ctx) { ctx.waitUntil(onSchedule(event, env).catch(e => console.log('scheduled error', String(e && e.message || e).slice(0, 100)))); }
 };

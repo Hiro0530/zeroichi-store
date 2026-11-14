@@ -561,3 +561,41 @@ console.log('OK ' + n + '件');
   if (!c.key.includes('\nCCDD==\n') || c.email !== 'x@y') throw new Error('saOf quoted ' + c.key);
   console.log('saOf ok');
 }
+
+// 2026-11-15: 毎時の dispatch
+{
+  const { onSchedule, parseTargets } = await import('../src/index.js');
+  const calls = [];
+  const ff = async (u, o) => { calls.push({ u, o }); return { status: 204 }; };
+  const e0 = { GH_DISPATCH_TOKEN: 'ghp_secret', GH_DISPATCH_TARGETS: 'Hiro0530/arbitrage-scout:reverse.yml:main:slot=noon@5,35,Foo/bar:a.yml:dev' };
+  await onSchedule({ cron: '5 * * * *' }, e0, Date.now(), ff);
+  eq(calls.length, 2, '5分は2件');
+  eq(calls[0].u, 'https://api.github.com/repos/Hiro0530/arbitrage-scout/actions/workflows/reverse.yml/dispatches', '呼ぶ先');
+  eq(calls[0].o.method, 'POST', 'POST');
+  eq(calls[0].o.headers.Authorization, 'Bearer ghp_secret', '見出し');
+  eq(calls[0].o.headers.Accept, 'application/vnd.github+json', 'Accept');
+  eq(!!calls[0].o.headers['User-Agent'], true, 'UA');
+  eq(JSON.parse(calls[0].o.body), { ref: 'main', inputs: { slot: 'noon' } }, 'body');
+  eq(JSON.parse(calls[1].o.body), { ref: 'dev', inputs: {} }, '分の指定なし=5分');
+  calls.length = 0;
+  await onSchedule({ cron: '35 * * * *' }, e0, Date.now(), ff);
+  eq(calls.length, 1, '35分は1件');
+  calls.length = 0;
+  await onSchedule({ cron: '5 * * * *' }, { ...e0, GH_DISPATCH_TOKEN: '' }, Date.now(), ff);
+  eq(calls.length, 0, 'トークン無しは呼ばない');
+  // 毎日の定時では dispatch しない
+  calls.length = 0;
+  await onSchedule({ cron: '10 0 * * *' }, { ...env, ...e0 }, Date.now(), async (u, o) => { calls.push({ u }); return { status: 204 }; }).catch(() => {});
+  eq(calls.filter(c => /api\.github\.com/.test(c.u)).length, 0, '毎日の定時で dispatch しない');
+  // 毎時の定時で毎日の処理(Firestore/メール)が走らない
+  const seen = []; const rf = globalThis.fetch;
+  globalThis.fetch = async (u) => { seen.push(String(u)); return { status: 204, ok: true, json: async () => ({}), text: async () => '' }; };
+  try { await onSchedule({ cron: '5 * * * *' }, { ...env, ...e0 }, Date.now(), ff); } finally { globalThis.fetch = rf; }
+  eq(seen.length, 0, '毎時の定時で毎日の処理が走らない');
+  // 失敗しても続ける
+  let k = 0;
+  const r = await onSchedule({ cron: '5 * * * *' }, e0, Date.now(), async () => { if (k++ === 0) throw new Error('x'); return { status: 204 }; });
+  eq(r.hourly.map(x => x.status), [-1, 204], '失敗しても次へ');
+  eq(parseTargets('a/b:c.yml@5,35').map(t => t.minutes), [[5, 35]], '分の解析');
+  console.log('dispatch ok');
+}

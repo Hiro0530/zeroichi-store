@@ -140,3 +140,16 @@ ZEROICHI WORKS zeroichi.works.jp@gmail.com
 ```
 
 <!-- 2026-10-29: Cloudflare Workers の Git 連携の初回ビルド用 -->
+
+## 毎時の仕入れ探し(GitHub の workflow_dispatch を Worker から呼ぶ)
+
+GitHub Actions の定時実行は抜けが多いので、この Worker が毎時5分・35分(UTC)に GitHub の workflow_dispatch を呼ぶ。設定が無ければ何もしない(毎日 0:10 UTC の処理とは別。毎日の処理は毎時の定時では走らない)。
+
+1. GitHub で細かい権限のトークン(fine-grained personal access token)を作る。対象は arbitrage-scout だけ、権限は Actions: Read and write だけ。
+2. Cloudflare の zw-sedori-billing →「変数とシークレット」に入れる。
+   - `GH_DISPATCH_TOKEN` … 手順1のトークン(種類は「シークレット」)
+   - `GH_DISPATCH_TARGETS` … 変数。例 `Hiro0530/arbitrage-scout:reverse.yml:main:slot=noon`
+     - 書き方は `owner/repo:ファイル名:ref:キー=値&キー=値`。複数はカンマ区切り。
+     - 分の指定は末尾に `@5,35`(毎時5分と35分)。`@5` なら5分だけ。指定が無ければ5分だけ。
+3. デプロイする(main に push すると約2分で自動)。wrangler.toml は `keep_vars = true` なので、画面で入れた変数・シークレットはデプロイで消えない。
+4. `/stripe/diag` を開き、`dispatch` に `token: true` と対象の一覧が出ることを確かめる(トークンの中身は出ない)。実行結果は Worker のログ(`dispatch … http=204`)で見える。

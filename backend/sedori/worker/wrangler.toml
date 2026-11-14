@@ -7,7 +7,8 @@ keep_vars = true
 
 # 毎日 9:10(日本時間)= 0:10 UTC: 無料期間の終了3日前のメール・一時停止の自動再開・解約から3年たった台帳の削除
 [triggers]
-crons = ["10 0 * * *"]
+# 毎時 5分・35分(UTC): GitHub の workflow_dispatch を呼ぶ(GH_DISPATCH_TOKEN があるときだけ。README 参照)
+crons = ["10 0 * * *", "5 * * * *", "35 * * * *"]
 
 [vars]
 FIREBASE_PROJECT_ID = "zw-sedori"
