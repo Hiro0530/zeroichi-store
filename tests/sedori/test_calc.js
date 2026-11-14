@@ -188,4 +188,48 @@ eq(Date.now() - t0 < 500, true, '仕入れ値が1億円・13桁でも0.5秒以�
 eq(C.tooBig(9999999), false, '999万9,999円は計算する');
 eq(C.tooBig(10000000) && C.tooBig(4902370500028), true, '1,000万円以上は入れ間違いとして扱う');
 
+// ---- 2026-11-14 商品ページ: 売れ行きの目安・在庫で持つかの目安・価格の推移・送料が未入力の行 ----
+const js = o => JSON.stringify(o);
+// 売れ行き: 30日 = max(月間販売数, 30日の回数)、90日 = max(90日の回数, 30日の目安)、何日に1個 = 30÷30日の目安
+let st = C.sellThrough({ sold: 50, d30: 42, d90: 118 });
+eq(js([st.n30, st.n90, st.per, st.level, st.label, st.src]), js([50, 118, 0.6, 4, '速い', 'sold']), '月間販売50・回数42/118: 30日50個以上、90日118、30÷50=0.6日に1個、段階4');
+st = C.sellThrough({ sold: null, d30: 4, d90: 9 });
+eq(js([st.n30, st.n90, st.per, st.level, st.src]), js([4, 9, 7.5, 2, 'drops']), '月間販売なし・回数4/9: 30÷4=7.5日に1個、段階2(ゆっくり)');
+st = C.sellThrough({ sold: 300, d30: 20, d90: 70 });
+eq(js([st.n30, st.n90, st.level]), js([300, 300, 5]), '回数が月間販売より少ない時: 90日は30日の目安より小さくしない(300)、段階5');
+eq(C.sellThrough({ d30: 100 }).level + ',' + C.sellThrough({ d30: 99 }).level + ',' + C.sellThrough({ d30: 30 }).level + ',' + C.sellThrough({ d30: 29 }).level + ',' + C.sellThrough({ d30: 10 }).level + ',' + C.sellThrough({ d30: 9 }).level + ',' + C.sellThrough({ d30: 3 }).level + ',' + C.sellThrough({ d30: 2 }).level,
+  '5,4,4,3,3,2,2,1', '段階の境目: 100/30/10/3個');
+st = C.sellThrough({ d90: 12 });
+eq(js([st.n30, st.has30, st.n90, st.per, st.level]), js([null, false, 12, 7.5, 2]), '90日の回数だけ: 30日は出さない、90÷12=7.5日、月4個相当で段階2');
+st = C.sellThrough({ d30: 0, d90: 0 });
+eq(js([st.n30, st.per, st.level]), js([0, null, 1]), '回数0: ペースは出さない、段階1');
+eq(C.sellThrough({ sold: null, d30: null, d90: null }), null, '値が1つも無ければ出さない');
+eq(C.sellThrough(null), null, 'Keepaの値が無い行は出さない');
+eq(C.sellThrough({ d30: 12 }, { speed: [50, 20, 10, 5] }).level, 3, '基準の値を渡すと、その値で段階を決める');
+// 在庫で持つか
+const adv = o => C.stockAdvice(o).kind;
+eq(adv({ level: 4, sell: 3980, shops: null }), 'stock', '速い → 在庫で持つ向き');
+eq(adv({ level: 3, sell: 3980, shops: null }), 'stock', 'ふつう・金額が小さい・大型でない → 在庫で持つ向き');
+eq(adv({ level: 3, sell: 10000, shops: 5 }), 'order', 'ふつう・1万円以上・店5 → 注文後に仕入れる向き');
+eq(adv({ level: 3, sell: 9999, shops: 5, big: true }), 'order', 'ふつう・大型 → 注文後に仕入れる向き');
+eq(adv({ level: 3, sell: 10000, shops: 2 }), 'none', 'ふつう・1万円以上・店2 → どちらも向かない');
+eq(adv({ level: 2, sell: 3000, shops: 3 }), 'order', 'ゆっくり・店3 → 注文後に仕入れる向き');
+eq(adv({ level: 2, sell: 3000, shops: 2 }), 'none', 'ゆっくり・店2 → どちらも向かない');
+eq(js([adv({ level: 2, sell: 3000, shops: null }), C.stockAdvice({ level: 2, sell: 3000, shops: null }).check]), js(['order', true]), 'ゆっくり・店の数が取れていない → 注文後(店の数を確かめる印つき)');
+eq(adv({ level: 1, sell: 3000, shops: 4 }), 'order', 'ほとんど動かない・店4 → 注文後に仕入れる向き');
+eq(adv({ level: 1, sell: 3000, shops: null }), 'none', 'ほとんど動かない・店の数が取れていない → どちらも向かない');
+eq(adv({ level: null, sell: 3000, shops: 9 }), 'unk', '売れ行きが取れていない → 目安を出さない');
+eq(C.stockAdvice({ level: 4, sell: 20000, shops: 1, big: true }).why.length, 3, '速い・大型・高額: 理由は3つ(速さ・大型・金額)');
+eq(C.stockAdvice({ level: 3, sell: 3980, shops: 5 }, { speed: [100, 30, 10, 3], pricey: 3000, minShops: 3 }).kind, 'order', '基準の値(金額が大きい=3,000円以上)を渡すと判定が変わる');
+// 価格の推移: Keepaの時刻(分)= Unix分 − 21564000。1日1つ、値の無い日(−1)は null、前の値は次の変化まで続く
+const now0 = Date.UTC(2026, 10, 14, 3), kt = d => Math.floor((now0 - d * 86400000) / 60000) - 21564000;
+eq(js(C.keepaDaily([kt(100), 3000, kt(5.2), 3500, kt(3), -1, kt(1.5), 3980], now0, 7)), js([3500, 3500, 3500, null, 3980, 3980, 3980]), '7日ぶん: 3,500円→在庫なし→3,980円');
+eq(C.keepaDaily([kt(3), -1], now0, 7), null, '値が1つも無ければ null(図を出さない)');
+eq(C.keepaDaily(null, now0, 7), null, '履歴が無ければ null');
+eq(js(C.keepaDaily([kt(2.5), 1000, 55, kt(0.05), 1200, 0], now0, 3, 3)), js([1000, 1000, 1200]), 'カート価格の形(3つ1組)も読める');
+eq(js(C.seriesStats([3500, null, 3980, 3200, null])), js({ last: 3200, min: 3200, max: 3980, days: 3 }), '図の下の数字: 今・最安・最高');
+// 送料込みの店が無かった行: 送料が入るまで未入力
+eq(js([C.needShip({ needShip: true, price: 980 }), C.needShip({ needShip: true, price: 980, inShip: 120 }), C.needShip({ needShip: true, price: 980, inShip: 0, shipSet: true }), C.needShip({ price: 980, freeShip: false }), C.needShip({ needShip: true, price: 0 })]),
+  js([true, false, false, false, false]), '送料が未入力の判定: 印あり・送料0=未入力/送料を入れた・0円と入れた=計算する/印なし=今までどおり');
+
 console.log(`OK ${n}件`);

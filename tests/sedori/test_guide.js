@@ -121,4 +121,31 @@ eq(/最終確認日/.test(text(ks)), false, '古物商許可: ページのどこ
 // 文字の決まり(本文16px・行間1.75・1行40字まで)
 const css = read('guide/guide.css');
 eq([/font:16px\/1\.75 var\(--font\)/.test(css), /article\{min-width:0;max-width:640px\}/.test(css), /body\{font-size:15/.test(css)], [true, true, false], '手引きの文字の決まり');
+
+// 7. 2026-11-14: よくある質問のページ、手引きの言い方の直し、検品の行の印、AIに相談の前提
+const fq = read('guide/faq/index.html'), nd = read('guide/neduke/index.html');
+const allGuide = fs.readdirSync(path.join(root, SD, 'guide')).filter(d => fs.existsSync(path.join(root, SD, 'guide', d, 'index.html'))).map(d => read(`guide/${d}/index.html`)).concat([idx]);
+eq([idx.includes('<a href="faq/">'), /<title>よくある質問/.test(fq)], [true, true], 'よくある質問が一覧に載る');
+const qs = [...fq.matchAll(/<section><h3 id="q(\d+)">([^<]+)<\/h3>([\s\S]*?)<\/section>/g)];
+eq([qs.length >= 18 && qs.length <= 24, qs.every((m, i) => Number(m[1]) === i + 1), qs.every(m => /<p>/.test(m[3])), new RegExp(`${qs.length}個にまとめました`).test(fq)], [true, true, true, true], '質問は20個前後で、どれにも答えがあり、数が合う');
+const tocIds = [...fq.matchAll(/<li><a href="#([a-z]+)">[^<]+<span>(\d+)<\/span>/g)];
+eq([tocIds.every(m => fq.includes(`<h2 id="${m[1]}">`)), tocIds.reduce((t, m) => t + Number(m[2]), 0)], [true, qs.length], '目次の行き先があり、数の合計が質問の数');
+{
+  const dir = path.join(root, SD, 'guide/faq');
+  const hrefs = [...fq.matchAll(/(?:href|src)="([^"]+)"/g)].map(m => m[1]).filter(u => !/^(https?:|mailto:|#)/.test(u));
+  eq(hrefs.filter(u => { const p = path.resolve(dir, u.split(/[?#]/)[0]); return !(fs.existsSync(p) && (fs.statSync(p).isFile() || fs.existsSync(path.join(p, 'index.html')))); }), [], 'よくある質問: 行き先の無いリンクが0');
+}
+const fqT = text(fq.slice(fq.indexOf('<h1>'), fq.indexOf('class="box"')));
+eq(BAD.test(fqT), false, 'よくある質問: 断定・あおりの言葉が0件');
+eq(allGuide.map(h => /無在庫|利益が高い|稼げ|必ず|利益が残|利益を残せ|もうか|儲/.test(text(h))).filter(Boolean).length, 0, '手引きの全ページ: 使わない言葉が0件');
+eq([/ページを開いている間だけ/, /寝ている間/, /直接送ってもらう売り方[\s\S]*使えません/, /無料5、ライト30、総合100、業務300/, /無料20行、ライト100行、総合と業務は500行/, /売り切れとも扱いません/].map(r => r.test(fqT)), [true, true, true, true, true, true], 'よくある質問: 見張りで出来ること・出来ないことと、件数が書いてある');
+eq([/公式の案内で確かめてください/.test(fqT), /このページでは判断しません/.test(fqT), /商品を選ぶこと、売れる見込みを示すことはしていません/.test(fqT), /出典と照らして確認しています|最終確認日/.test(text(fq))], [true, true, true, false], 'よくある質問: 法律と各サービスの決まりは公式で確かめる・商品は選ばない・照合済みと書かない');
+const W7 = require(path.join(root, SD, 'assets/watch-check.js')), C7 = require(path.join(root, SD, 'assets/calc.js'));
+eq([['free', 'light', 'total', 'business'].map(W7.stockLimit), ['free', 'light', 'total', 'business'].map(C7.bulkLimit), W7.STOCK_SUBS, W7.CALL_GAP, W7.AUTO_GAP / 3600000, W7.AUTO_MAX, W7.FREE_PER_DAY], [[5, 30, 100, 300], [20, 100, 500, 500], 2, 2000, 6, 50, 20], 'よくある質問の数字が、部品の値と同じ');
+eq([/<h1>利益計算と値付けの考え方/.test(nd), /<title>利益計算と値付けの考え方/.test(nd), idx.includes('<b>利益計算と値付けの考え方'), fs.existsSync(path.join(root, SD, 'guide/neduke/index.html'))], [true, true, true, true], '値付けのページの題を替えた(住所はそのまま)');
+eq([/a\.qa|\.qa section\{/.test(css), /\.toc a\{[^}]*min-height:44px/.test(css)], [true, true], 'よくある質問の見た目(目次の押す所は44px)');
+const scanSrc = read('assets/scan.js');
+eq([/profit: o\.profit != null \? o\.profit : '', pnp: true,/.test(scanSrc), /pointRate: 0, usePoints: false/.test(scanSrc), /C\.points\(|usePoints: true|profitNoPoints/.test(scanSrc)], [true, true, false], '検品: 台帳の行にポイント抜きの印を入れる(検品はポイントを計算しない)');
+const aiSrc7 = read('assets/ai.js');
+eq([/商品ページ\(/.test(aiSrc7) && /売れ行きの目安/.test(aiSrc7) && /「在庫番」/.test(aiSrc7), /ページを開いている間だけ/.test(aiSrc7)], [true, true], 'AIに相談の前提に、商品ページ・売れ行きの目安・在庫番がある');
 console.log(`test_guide: ${n}件 すべて一致`);

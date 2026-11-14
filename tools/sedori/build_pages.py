@@ -43,16 +43,16 @@ S = ROOT / OUT
 NOINDEX = OUT != "sedori"
 ROBOTS = '<meta name="robots" content="noindex,nofollow">'
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261113b"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
+VER = "20261114b"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
 
 # ---- 差し込み口(制作係B・Cの部品)。ファイルが assets/ に置かれたら、次の書き出しから自動で読み込む。無い間は読み込まない ----
 # 使い方は本部の docs/sedori_app/build_slots_2026-11-13.md
-OPT_JS = {"bulk.js", "ledger-plus.js", "watch-check.js", "precheck.js"}
+OPT_JS = {"bulk.js", "ledger-plus.js", "watch-check.js", "precheck.js", "listed.js"}
 # 全ページ(計算の部品 calc.js を読むページ)で読む部品: ウォッチの取り直しは、どのページを開いていても動くため
-OPT_COMMON = ["watch-check.js"]
+OPT_COMMON = ["watch-check.js", "listed.js"]   # listed.js(在庫番)は watch-check.js の後。置き場 #listed の無いページでは、自動の確かめと送り込みの口だけ動く
 # ページごとの追加のCSS(sedori.css の後に読む)。tools.css は全ページ
 OPT_CSS_ALL = ["tools.css"]
-OPT_CSS = {"daicho/": ["ledger-plus.css"]}
+OPT_CSS = {"daicho/": ["ledger-plus.css"], "shohin/": ["item.css"]}
 
 
 def has_asset(name: str) -> bool:
@@ -127,7 +127,7 @@ YEAR_DEAL = f"{PAY_MONTHS}か月分の料金で1年({SAVE_MONTHS}か月分お得
 def mk(*keys: str) -> str:
     return "" if ready(*keys) else '<sup class="mk">※</sup>'
 
-# プランごとにできること(料金ページの「機能を詳しく比べる」)。列は 無料/ライト/総合/業務。9行まで(2026-11-13 まとめてチェックの行を足した)
+# プランごとにできること(料金ページの「機能を詳しく比べる」)。列は 無料/ライト/総合/業務。10行まで(2026-11-13 まとめてチェックの行、11-14 在庫番の行を足した)
 FEATURES = [
     ("計算ページ(5つ)", "回数制限なし", "回数制限なし", "回数制限なし", "回数制限なし"),
     ("古物台帳の保存", "この端末だけ", f"クラウド(月{LIGHT_LIMIT}件まで)", "クラウド(件数の制限なし)", "クラウド(件数の制限なし)"),
@@ -136,7 +136,8 @@ FEATURES = [
     ("楽天の検索・まとめてチェック(一覧を貼って計算)", "検索は1日20回・まとめては1回20行", "検索は制限なし・まとめては1回100行", "検索は制限なし・まとめては1回500行", "検索は制限なし・まとめては1回500行"),
     ("ウォッチの値段と在庫(ページを開いている間)", "手で確かめる・変化のお知らせ", "自動で取り直す・変化のお知らせ", "自動で取り直す・変化のお知らせ", "自動で取り直す・変化のお知らせ"),
     ("売上・経費・月ごとの利益", "台帳の期間合計", "台帳の期間合計", f"○{mk('books')}", f"○{mk('books')}"),
-    ("在庫", "状態ごとの件数", "状態ごとの件数", f"売れ残りアラート{mk('books')}", f"売れ残りアラート{mk('books')}・期末の棚卸{mk('stock')}"),
+    ("在庫番(取り寄せ販売の品の、仕入れ先の見張り。ページを開いている間)", "5品・手で確かめる", "30品・30分おきに自動", "100品・15分おきに自動", "300品・10分おきに自動"),
+    ("手持ちの在庫", "状態ごとの件数", "状態ごとの件数", f"売れ残りアラート{mk('books')}", f"売れ残りアラート{mk('books')}・期末の棚卸{mk('stock')}"),
     ("確定申告と複数人", "—", "—", "—", f"申告用の数字と書き出し・仕入税額控除の特例チェック{mk('tax')}・3人まで{mk('team')}・発送代行への指示{mk('threepl')}・警察提出用PDF{mk('policepdf')}"),
 ]
 ANY_LATER = not all(READY.values())
@@ -179,7 +180,7 @@ AMOUNT = {
 
 ROUTES = [
     ("rakuten-amazon", "楽天・Yahoo!→Amazon"),
-    ("muzaiko-amazon", "無在庫 Amazon中古"),
+    ("muzaiko-amazon", "取り寄せ販売 Amazon中古"),   # 住所(muzaiko-amazon)は変えない。画面の言葉は「取り寄せ販売」(2026-11-14 本部決定)
     ("mercari-calc", "メルカリ"),
     ("yahuoku-mercari", "ヤフオク→メルカリ"),
     ("auction-mercari", "業者オークション"),
@@ -204,7 +205,7 @@ def esc(s: str) -> str:
 def header(base: str, current: str, src: str) -> str:
     opts = "".join(f'<option value="{v}"{" selected" if v == src else ""}>{t}</option>' for v, t in SOURCES)
     # 帳簿(/sedori/books/)は別の班が作る。ページがまだ無い間は、押すと「準備中」と出す(ui.js が確かめる)
-    nav = [("", "トップ")] + ROUTES + [("daicho", "台帳"), ("books", "帳簿"), ("shikumi", "利益の仕組み"), ("chigai", "コンサルとの違い"), ("plans", "料金")]
+    nav = [("", "トップ")] + ROUTES + ([("zaiko-ban", "在庫番")] if has_asset("listed.js") else []) + [("daicho", "台帳"), ("books", "帳簿"), ("shikumi", "利益の仕組み"), ("chigai", "コンサルとの違い"), ("plans", "料金")]
     links = "".join(
         f'<a href="{base}{slug + "/" if slug else ""}"{" aria-current=\"page\"" if slug == current else ""}>{label}</a>'
         for slug, label in nav)
@@ -230,6 +231,7 @@ def header(base: str, current: str, src: str) -> str:
     <button type="button" class="hd-fix" id="hd-fix" aria-haspopup="dialog" aria-expanded="false">月の固定費<b id="hd-fix-v" hidden></b></button>
     <button type="button" class="hd-ai" data-ai-open>AIに相談</button>
     <a class="hd-watch" id="hd-watch" href="{base}rakuten-amazon/?tab=w" hidden></a>
+    <a class="hd-mz" id="hd-mz" href="{base}zaiko-ban/" hidden></a>
     <a class="hd-ledger" href="{base}daicho/">台帳<span class="cnt" id="hd-cnt"></span></a>
     <a class="hd-acct" id="hd-acct" href="{base}mypage/">ログイン</a>
   </div>
@@ -254,7 +256,7 @@ LEGAL = """<details class="legal" id="legal">
           <li>古物の取引は、年月日・品目と数量・特徴・相手方の住所氏名職業年齢・確認の方法などの記録が必要です。このアプリの台帳は記録の入れ物で、法令上の判断はしません。必要な項目は所轄の警察署で確認してください。台帳で売り手の確認が未入力の行には印が付きます。</li>
           <li>古物市場(業者オークション)への入会には古物商許可証が求められます。</li>
         </ul>
-        <h3>Amazonの方針(無在庫・ドロップシッピング)</h3>
+        <h3>Amazonの方針(取り寄せ販売。注文を受けてから仕入れる売り方)</h3>
         <ul>
           <li>記録上の販売者は自分であること、納品書・外箱・同梱物から仕入れ先の情報を除くこと、返品は自分で受けること。仕入れ先からお客様へ直接送ってもらう形はとれません。自分(または発送代行)で受け取って検品し、自分の名義で発送します。</li>
           <li>仕入れ先が売り切れたら、すぐAmazonの在庫を0にしてください。Amazonの出品者向けの案内で、出荷前キャンセル率の基準を確かめてください。</li>
@@ -272,17 +274,23 @@ LEGAL = """<details class="legal" id="legal">
     </details>"""
 
 
+def FAQ_LINK(base: str) -> str:
+    # よくある質問(手引きの中。制作係Cが作る)。ページがある時だけ出す
+    return f'<a href="{base}guide/faq/">よくある質問</a>' if (S / "guide/faq/index.html").exists() else ""
+
+
 def footer(base: str, scripts: list[str]) -> str:
     # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む。
     # 帳簿の同期(books-sync.js)は account.js より前、売り手の確認の判定(seller-check.js)は ui.js より前
     first = ["books-sync.js"] if "books-sync.js" in scripts else []
-    common = [x for x in OPT_COMMON if "calc.js" in scripts and x not in scripts]
+    # 帯の印「止める N」は全ページに出す。calc.js を読まないページでも listed.js(在庫番)だけは読む
+    common = [x for x in OPT_COMMON if "calc.js" in scripts and x not in scripts] or [x for x in ["listed.js"] if "ui.js" in scripts and x not in scripts]
     order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")] + common + ["ai.js"]
     order = [x for x in order if x not in OPT_JS or has_asset(x)]
     sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in order)
     return f"""<footer class="ft">
   <div class="ft-in">
-    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}shikumi/">利益の仕組み</a><a href="{base}chigai/">コンサル・スクールとの違い</a><a href="#" data-fix-open>月の固定費</a><a href="{base}#ai" data-ai-open>AIに相談</a><a href="{base}guide/">手引き</a><a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
+    <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}shikumi/">利益の仕組み</a><a href="{base}chigai/">コンサル・スクールとの違い</a><a href="#" data-fix-open>月の固定費</a><a href="{base}#ai" data-ai-open>AIに相談</a><a href="{base}guide/">手引き</a>{FAQ_LINK(base)}<a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     {LEGAL}
     <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
   </div>
@@ -529,7 +537,7 @@ RA_BODY = f"""<div class="lay3">
     <div id="slot-watch-top" hidden></div>
     <div class="tbar">
       <p class="tbar-t" id="res-title">検索結果<small>上の検索欄から探せます</small></p>
-      <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="b-watch" hidden>残った行をウォッチに入れる</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
+      <span class="tbar-r"><span id="quota" class="muted"></span><button type="button" class="btn sm ghost" id="kp-bulk" hidden>Keepaで売値をまとめて取得</button><button type="button" class="btn sm ghost" id="b-watch" hidden>残った行をウォッチに入れる</button><button type="button" class="btn sm ghost" id="b-zaiko" hidden>在庫番に登録</button><button type="button" class="btn sm ghost" id="w-csv" hidden>CSV</button></span>
     </div>
     <div id="res-msg"></div>
     <div class="gridwrap">
@@ -560,7 +568,7 @@ RA_BODY = f"""<div class="lay3">
       <div id="c-out" aria-live="polite"><p class="note">仕入れ値を入れると、目標の利益に届く売値の目安と、損益分岐が出ます。Amazonの実際の売値を入れると、利益の内訳が出ます。</p></div>
       <div id="precheck"></div>
       {DETAIL_ACTIONS}
-      <p class="det-links"><button type="button" class="lnk" id="c-watch">ウォッチに追加</button><a id="amz-link" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a><a id="kp-link" href="https://keepa.com/" target="_blank" rel="noopener">Keepaで見る</a></p>
+      <p class="det-links"><a id="it-link" href="../shohin/" hidden>商品ページ</a><button type="button" class="lnk" id="c-watch">ウォッチに追加</button><a id="amz-link" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで見る</a><a id="kp-link" href="https://keepa.com/" target="_blank" rel="noopener">Keepaで見る</a></p>
       <details class="dims"><summary>寸法と重さからFBAのサイズを出す</summary>
         <div class="dims-g">
           <label>長さcm<input id="d1" type="number" inputmode="decimal" step="0.1"></label><label>幅cm<input id="d2" type="number" inputmode="decimal" step="0.1"></label><label>高さcm<input id="d3" type="number" inputmode="decimal" step="0.1"></label><label>重さg<input id="dg" type="number" inputmode="numeric"></label>
@@ -573,10 +581,33 @@ RA_BODY = f"""<div class="lay3">
 
 route_page("rakuten-amazon", "楽天・Yahoo!→Amazon 利益チェック",
            "楽天市場・Yahoo!ショッピングの商品を、Amazon(FBA)で売った時の手数料・ポイント込みの利益を一覧で計算。目標の利益を満たす売値、損益分岐、仕入れ上限。仕入れると古物台帳に自動で記録。無料・登録不要。",
-           "rakuten", "ra", RA_BODY, ["calc.js", "ui.js", "ra.js", "bulk.js", "precheck.js"])
+           "rakuten", "ra", RA_BODY, ["calc.js", "ui.js", "api.js", "ra.js", "bulk.js", "precheck.js"])
 
 # ------------------------------------------------------------------
-# 無在庫 Amazon中古 × ヤフオク
+# 商品ページ(1商品を1画面に: 売値と仕入れ値、価格の推移、売れ行きの目安、在庫で持つかの目安、内訳、操作)
+# 中身は assets/item.js が描く。一覧(検索結果・まとめて・ウォッチ)と台帳の行から開く。検索よけ(利用者ごとの画面なので載せない)
+# ------------------------------------------------------------------
+ITEM_BODY = """<div class="it" id="it">
+  <p class="it-back"><a id="it-back" href="../rakuten-amazon/">一覧へ戻る</a></p>
+  <div id="it-body" aria-live="polite"><p class="it-wait">読み込んでいます</p></div>
+</div>"""
+out = head("商品ページ", "選んだ1商品の、Amazonの売値と仕入れ値、価格の推移、売れ行きの目安、利益の内訳を1画面で見るページ。",
+           "shohin/", "../", 'data-page="shohin"').replace("<head>", "<head>" + ROBOTS, 1)
+out += header("../", "shohin", "rakuten") + crumb("../", "商品ページ") + f'<main class="wrap">\n{NOJS}\n{ITEM_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "api.js", "item.js"])
+write("shohin", out)
+
+# ------------------------------------------------------------------
+# 在庫番(取り寄せ販売の品の在庫の見張り)。住所は zaiko-ban/。中身は assets/listed.js(制作係B)が描く。部品がある時だけ書き出す
+# 画面と題で「無在庫」「ドロップシッピング」は使わない
+# ------------------------------------------------------------------
+if has_asset("listed.js"):
+    out = head("在庫番(取り寄せ販売の品の在庫の見張り)", "取り寄せ販売(注文を受けてから仕入れる売り方)の品の、仕入れ先の在庫と価格を確かめ、止める品を一覧にするページ。",
+               "zaiko-ban/", "../", 'data-page="listed"').replace("<head>", "<head>" + ROBOTS, 1)
+    out += header("../", "zaiko-ban", "rakuten") + crumb("../", "在庫番") + '<main class="wrap"><div class="ls" id="listed"></div></main>\n' + footer("../", ["calc.js", "ui.js"])
+    write("zaiko-ban", out)
+
+# ------------------------------------------------------------------
+# 取り寄せ販売(住所は muzaiko-amazon のまま) Amazon中古 × ヤフオク
 # ------------------------------------------------------------------
 MZ_BODY = f"""<div class="lay3">
   <aside class="side" aria-label="条件">
@@ -628,8 +659,8 @@ MZ_BODY = f"""<div class="lay3">
   </aside>
 </div>"""
 
-route_page("muzaiko-amazon", "無在庫 Amazon中古×ヤフオク 価格差チェック",
-           "Amazonの新品価格(ご自身のKeepa APIキー)と、ご自身で確かめたヤフオクの価格から、Amazon中古の出品価格ごとの利益と、ヤフオクで払ってよい上限を一覧で計算。仕入れると古物台帳に自動で記録。",
+route_page("muzaiko-amazon", "取り寄せ販売 Amazon中古×ヤフオク 価格差チェック",
+           "取り寄せ販売(注文を受けてから仕入れる売り方)の計算。Amazonの新品価格(ご自身のKeepa APIキー)と、ご自身で確かめたヤフオクの価格から、Amazon中古の出品価格ごとの利益と、ヤフオクで払ってよい上限を一覧で計算。仕入れると古物台帳に自動で記録。",
            "amazon", "muzaiko", MZ_BODY, ["calc.js", "ui.js", "mz.js"])
 
 
@@ -792,7 +823,7 @@ def plan_card(c: dict) -> str:
 
 TOP_ROUTES = [
     ("rakuten-amazon", "楽天・Yahoo!→Amazon", "楽天市場・Yahoo!ショッピング", "Amazon(FBA)", "新品", "不要", "販売手数料・FBA・ポイント"),
-    ("muzaiko-amazon", "無在庫 Amazon中古", "ヤフオク(売れてから)", "Amazon(中古・自己発送)", "中古", "必要", "販売手数料・発送代行"),
+    ("muzaiko-amazon", "取り寄せ販売 Amazon中古", "ヤフオク(売れてから)", "Amazon(中古・自己発送)", "中古", "必要", "販売手数料・発送代行"),
     ("mercari-calc", "メルカリ", "不用品・少額の仕入れ", "メルカリ", "新品・中古", "不用品は不要", "10%・メルカリ便"),
     ("yahuoku-mercari", "ヤフオク→メルカリ", "Yahoo!オークション", "メルカリ・ヤフオク", "中古", "必要", "10%・送料・まとめ落札"),
     ("auction-mercari", "業者オークション", "古物市場(エコオク・大吉 等)", "メルカリ・ヤフオク", "中古・ブランド", "必要", "落札手数料・参加費"),
@@ -1103,7 +1134,7 @@ def doc_page(slug: str, title: str, desc: str, body: str) -> None:
 
 
 TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
-<p class="muted">制定日 2026年10月27日・改定日 2026年10月30日(先着の価格の定員を200名に。年払いを無料期間なし・30日以内の全額返金に。31日目からの解約は返金なし・次回の更新の停止として扱うことを明記。先着の価格の続く期間の書き方。サービスをやめる時の返金)</p>
+<p class="muted">制定日 2026年10月27日・改定日 2026年11月14日(在庫番の品数と、確かめの範囲・責任の範囲を追記。2026年10月30日の改定:先着の価格の定員を200名に。年払いを無料期間なし・30日以内の全額返金に。31日目からの解約は返金なし・次回の更新の停止として扱うことを明記。先着の価格の続く期間の書き方。サービスをやめる時の返金)</p>
 <p>この規約は、ZEROICHI WORKS(以下「当方」)が提供する「せどり 利益チェック」(以下「本サービス」)の利用条件です。本サービスを使う方(以下「利用者」)は、この規約に同意したうえで使ってください。有料プランは、ログインしてお申し込みいただいた時に、この規約に同意したものとします。</p>
 
 <h2>第1条(本サービスの内容)</h2>
@@ -1111,6 +1142,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <li>本サービスは、仕入れと販売の手数料・送料・ポイントを含めた利益の計算、古物台帳の項目に沿った記録(以下「台帳」)、その書き出しを行うウェブアプリです。</li>
 <li>無料プランでは、計算と台帳を、利用者の端末のブラウザの中に保存して使えます。登録は要りません。まとめてチェックは1回20行まで、ウォッチの値段と在庫は手で確かめる形で使え、変化のお知らせも入にできます(自動の取り直しはライト以上)。</li>
 <li>有料プラン(ライト・総合・業務)では、無料プランの機能に加えて、台帳をクラウドに保存し、複数の端末で同じ台帳を使えます。総合・業務では、売上・経費・利益・棚卸・確定申告の数字をまとめる帳簿も使えます。{TERMS_LATER}中身と料金は<a href="../plans/">料金ページ</a>と<a href="../../tokushoho.html">特定商取引法に基づく表記</a>のとおりです。</li>
+<li>在庫番(取り寄せ販売の品の、仕入れ先の在庫の見張り)に登録できる品数は、無料5・ライト30・総合100・業務300です。確かめるのは、このアプリのページを開いている間だけです(自動の確かめはライト以上。無料は手で確かめます)。Amazonの数量を変えるのは利用者で、当方はAmazonへ書き込みません。</li>
 </ol>
 
 <h2>第2条(アカウント)</h2>
@@ -1174,6 +1206,7 @@ TERMS = """<h1>利用規約(せどり 利益チェック)</h1>
 <h2>第11条(責任の範囲)</h2>
 <ol>
 <li>当方は、本サービスに不具合がないこと、特定の目的に合うことを保証しません。</li>
+<li>在庫番の確かめは、楽天市場の公式の検索の返事にもとづく目安で、ページを開いている間だけ動きます。確かめの間や、ページを閉じている間の売り切れ・値上がり、販売サイトの決まりによる損害について、当方は責任を負いません。</li>
 <li>当方の責任による損害は、当方に故意または重過失がある場合を除き、損害が生じた月に利用者が支払った有料プランの料金の額を上限とします。軽過失の場合に限り、この上限を適用します。</li>
 </ol>
 
@@ -1403,7 +1436,7 @@ SHIKUMI_BODY = f"""<header class="rd-h">
     <div><h3>値下がり</h3><p>同じ品物の出品が増えると相場は下がります。上の例では、1,000円下がるだけで利益は{EX['profit']:,}円から{EX['profit_low']:,}円になります。</p></div>
     <div><h3>売れ残り</h3><p>売れるまで、仕入れたお金は戻りません。置き場所も要ります。売れない時の値下げの下限(損益分岐)を、仕入れる前に決めておきます。</p></div>
     <div><h3>手数料・送料の見落とし</h3><p>箱のサイズ、仕入れの送料、振込の手数料。小さな費用の見落としが、薄い利益を消します。</p></div>
-    <div><h3>販売サイトの規約</h3><p>Amazonのカテゴリーごとの出品許可、無在庫の販売の方針、他人の写真や説明文を使わないこと。違反するとアカウントが止まることがあります。</p></div>
+    <div><h3>販売サイトの規約</h3><p>Amazonのカテゴリーごとの出品許可、取り寄せ販売(注文を受けてから仕入れる売り方)の方針、他人の写真や説明文を使わないこと。違反するとアカウントが止まることがあります。</p></div>
     <div><h3>古物営業法</h3><p>許可、1万円以上(品物によっては金額を問わず)の売り手の確認、取引の記録。<a href="../guide/honnin-kakunin/">売り手の確認の手引き</a>にまとめています。</p></div>
     <div><h3>状態の思い違い・偽物</h3><p>中古品は、写真で分からない傷や不具合があります。ブランド品は真贋の見極めが要ります。返品や悪い評価につながります。</p></div>
   </div>
@@ -1526,13 +1559,23 @@ for _hp in ("scan/index.html", "books/index.html"):
     if _f.exists():
         _t = _f.read_text(encoding="utf-8")
         _n = _re.sub(r'(\.(?:js|css))\?v=[0-9A-Za-z]+', lambda m: m.group(1) + "?v=" + VER, _t)
+        # 上の帯の呼び名と「在庫番」の入口も、書き出したページとそろえる(手書きのページの帯)
+        _n = _n.replace("注文後仕入れ Amazon中古", "取り寄せ販売 Amazon中古")
+        # 帯の印「止める N」(#hd-mz)と、それを描く listed.js(在庫番)。手書きのページにも入れる
+        if has_asset("listed.js"):
+            if 'id="hd-mz"' not in _n:
+                _n = _n.replace('<a class="hd-ledger"', '<a class="hd-mz" id="hd-mz" href="../zaiko-ban/" hidden></a>\n    <a class="hd-ledger"', 1)
+            if 'assets/listed.js' not in _n:
+                _n = _re.sub(r'(<script src="\.\./assets/ui\.js\?v=[0-9A-Za-z]+"></script>\n)', r'\1<script src="../assets/listed.js?v=' + VER + '"></script>\n', _n, count=1)
+        if has_asset("listed.js") and 'href="../zaiko-ban/"' not in _n:
+            _n = _n.replace('<a href="../daicho/">台帳</a>', '<a href="../zaiko-ban/">在庫番</a><a href="../daicho/">台帳</a>', 1)
         if _n != _t:
             _f.write_text(_n, encoding="utf-8")
 
 
 # ---- サイトマップ ----
 # 手書きのページ(紹介・読み取り・手引き)もサイトマップに載せる(このスクリプトでは書き出さない)
-HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tesuryo/", "0.7"), ("guide/kobutsu-daicho-excel/", "0.7"), ("guide/honnin-kakunin/", "0.7"), ("guide/neduke/", "0.7"), ("guide/hajimeru/", "0.7"), ("guide/kobutsu-shinsei/", "0.7")]
+HAND = [("lp/", "0.9"), ("scan/", "0.7"), ("guide/", "0.6"), ("guide/mercari-tesuryo/", "0.7"), ("guide/kobutsu-daicho-excel/", "0.7"), ("guide/honnin-kakunin/", "0.7"), ("guide/neduke/", "0.7"), ("guide/hajimeru/", "0.7"), ("guide/kobutsu-shinsei/", "0.7"), ("guide/faq/", "0.7")]
 urls = [("", "0.9")] + [(f"{slug}/", "0.8") for slug, _ in ROUTES] + [("daicho/", "0.5")] + [(u, p) for u, p in HAND if (S / u / "index.html").exists()] + [("shikumi/", "0.8"), ("chigai/", "0.6"), ("plans/", "0.6"), ("terms/", "0.2"), ("privacy/", "0.2")]
 sm = "\n".join(f"<url><loc>{BASE_URL}{u}</loc><lastmod>{FEES['checked']}</lastmod><priority>{p}</priority></url>" for u, p in urls)
 (S / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{sm}\n</urlset>\n', encoding="utf-8")
