@@ -125,3 +125,17 @@ h1,h2{text-wrap:balance}
 .ask{margin:0 0 16px;padding-left:1.6em}
 .ask li{padding:8px 0;border-bottom:1px solid var(--line)}
 td .opt{margin-left:4px}
+
+/* ---- 2026-11-14: よくある質問 ---- */
+.toc{margin:0 0 8px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.toc ul{list-style:none;margin:0;padding:0}
+.toc li+li{border-top:1px solid var(--line)}
+.toc a{display:flex;align-items:baseline;justify-content:space-between;gap:16px;min-height:44px;padding:9px 0;text-decoration:none;color:var(--ink);font-size:15px;line-height:1.6}
+.toc a:hover{color:var(--ac)}
+.toc span{flex:0 0 auto;font-size:13px;color:var(--mute)}
+.qa section{padding:20px 0;border-bottom:1px solid var(--line)}
+.qa section:first-child{padding-top:0}
+.qa section:last-child{border-bottom:0;padding-bottom:0}
+.qa h3{margin:0 0 8px;font-size:17px;line-height:1.6;scroll-margin-top:72px}
+.qa p{margin:0 0 8px}
+.qa p:last-child{margin-bottom:0}

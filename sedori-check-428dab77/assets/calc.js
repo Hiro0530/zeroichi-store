@@ -237,7 +237,7 @@
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
 
-  /* ---------- ヤフオクの終了日時(無在庫の見張り) ---------- */
+  /* ---------- ヤフオクの終了日時(取り寄せ販売の見張り) ---------- */
   function half(s) {
     return String(s || '').replace(/[！-～]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/　/g, ' ');
   }
@@ -423,7 +423,106 @@
     return r.profitNoPoints >= r.need ? 'ok' : 'ng';
   }
 
+  /* ---------- 商品ページ: 売れ行きの目安・在庫で持つかの目安・価格の推移 ---------- */
+  /** 目安の基準の初期値(config.js の ITEM_RULES で上書きできる)。
+      speed = 30日の販売の目安がこの個数以上なら 段階5・4・3・2(未満は1)。pricey = 売値がこの額以上は「金額が大きい」。
+      minShops = 仕入れ先で在庫のある店がこの数以上なら、取り寄せ販売にしても切れにくいと見る */
+  var ITEM_RULES = { speed: [100, 30, 10, 3], pricey: 10000, minShops: 3 };
+  var SPEED_LABEL = ['', 'ほとんど動かない', 'ゆっくり', 'ふつう', '速い', 'とても速い'];
+  function posInt(v) { var n = Math.round(Number(v)); return isFinite(n) && n > 0 ? n : 0; }
+  /**
+   * 売れ行きの目安。Keepaの値から推定する(実際の販売数ではない)。
+   *   k = { sold: 月間販売数(Amazonの「過去1か月で○点以上購入」。無ければ null), d30・d90: ランキングが上がった回数(30日・90日。取れていなければ null) }
+   *   30日の目安 n30 = max(月間販売数, 30日の回数)。月間販売数は「以上」の値、回数は1日に何個売れても1回としか数えないことがあるので、どちらも下の見積もり
+   *   90日の目安 n90 = max(90日の回数, n30)。90日は30日を含むので、30日の目安より小さくしない
+   *   1か月の目安 monthly = max(n30, n90 ÷ 3)。段階とペースは、どちらもこの1つの数から出す(食い違わせない)
+   *   何日に1個 per = 30 ÷ monthly(丸めない。画面に出す時は paceText で整数にする)
+   *   段階 level = monthly を rules.speed に当てる。5=とても速い … 1=ほとんど動かない
+   * 値が1つも取れていなければ null(出さない)
+   */
+  function sellThrough(k, rules) {
+    k = k || {}; rules = rules || ITEM_RULES;
+    var hasSold = k.sold != null && Number(k.sold) > 0, has30 = k.d30 != null && Number(k.d30) >= 0, has90 = k.d90 != null && Number(k.d90) >= 0;
+    if (!hasSold && !has30 && !has90) return null;
+    var sold = hasSold ? posInt(k.sold) : 0, d30 = has30 ? posInt(k.d30) : 0, d90 = has90 ? posInt(k.d90) : 0;
+    var n30 = hasSold || has30 ? Math.max(sold, d30) : null;
+    var n90 = has90 || n30 != null ? Math.max(d90, n30 || 0) : null;
+    var monthly = Math.max(n30 || 0, (n90 || 0) / 3);
+    var per = monthly > 0 ? 30 / monthly : null;
+    var sp = rules.speed || ITEM_RULES.speed, level = 1;
+    for (var i = 0; i < sp.length; i++) { if (monthly >= sp[i]) { level = 5 - i; break; } }
+    return { n30: n30, n90: n90, monthly: monthly, per: per, level: level, label: SPEED_LABEL[level],
+      src: hasSold && sold >= d30 ? 'sold' : 'drops', has30: n30 != null, has90: has90 };
+  }
+  /** ペースの文。1日に1個以上なら「1日に約N個」、未満なら「約N日に1個」(どちらも整数。目安なので小数は出さない) */
+  function paceText(s) {
+    if (!s || !(s.monthly > 0)) return '—';
+    var perDay = s.monthly / 30;
+    return perDay >= 1 ? '1日に約' + Math.max(1, Math.round(perDay)) + '個' : '約' + Math.max(1, Math.round(30 / s.monthly)) + '日に1個';
+  }
+  /**
+   * 在庫で持つか、取り寄せ販売にするかの目安(断定ではない)。
+   *   o = { level: 売れる速さの段階(1〜5。取れていなければ null), sell: 売値, shops: 仕入れ先で在庫のある店の数(取れていなければ null), big: 大型・特大型か }
+   *   速い(4以上)                         → 在庫で持つ向き
+   *   ふつう(3)で、金額が小さく大型でない → 在庫で持つ向き
+   *   ふつう(3)で、金額が大きいか大型      → 店が少ない(minShops未満)なら「どちらも向かない」、それ以外は取り寄せ販売の向き
+   *   ゆっくり(2)                          → 店が少ないなら「どちらも向かない」、それ以外は取り寄せ販売の向き
+   *   ほとんど動かない(1)                  → 店が minShops 以上と分かっている時だけ取り寄せ販売の向き、それ以外は「どちらも向かない」
+   * 返り値 { kind: 'stock'|'order'|'none'|'unk', why: [理由の文], check: 店の数を確かめる必要があるか }
+   */
+  function stockAdvice(o, rules) {
+    o = o || {}; rules = rules || ITEM_RULES;
+    var lv = o.level, why = [];
+    if (!(lv >= 1)) return { kind: 'unk', why: ['売れ行きが取れていないため、目安を出せません。'], check: false };
+    var sellKnown = Number(o.sell) > 0, pricey = sellKnown && Number(o.sell) >= rules.pricey, big = !!o.big, min = rules.minShops;
+    var known = o.shops != null && isFinite(Number(o.shops)), few = known && Number(o.shops) < min, enough = known && Number(o.shops) >= min;
+    var speed = '売れる速さは「' + SPEED_LABEL[lv] + '」';
+    var shopsText = known ? '仕入れ先で在庫のある店は' + Number(o.shops) + '店' : '仕入れ先で在庫のある店の数は取れていません';
+    var kind;
+    if (lv >= 4) {
+      kind = 'stock'; why.push(speed + '。在庫を持っても長く寝かせにくい速さです。');
+      if (big) why.push('大型のため、保管の費用がかさみます。少ない個数から。');
+      if (pricey) why.push('1個の金額が大きいので、少ない個数から。');
+    } else if (lv === 3 && !pricey && !big) {
+      kind = 'stock'; why.push(speed + (sellKnown ? '。金額が小さく、大型でもないので、少ない個数なら在庫で持てます。' : '。大型でもないので、少ない個数なら在庫で持てます(売値が入っていないため、金額の大きさは見ていません)。'));
+    } else if (lv === 3 || lv === 2) {
+      why.push(speed + (lv === 3 ? '。' + (pricey ? '1個の金額が大きい' : '') + (pricey && big ? '・' : '') + (big ? '大型で保管の費用がかさむ' : '') + 'ため、在庫で持つと資金が寝ます。' : '。在庫で持つと、売れるまで資金が寝ます。'));
+      kind = few ? 'none' : 'order'; why.push(shopsText + (few ? '。注文が入った時に仕入れられないおそれがあります。' : (enough ? '。注文が入ってから仕入れても、切れにくい数です。' : '。' + min + '店以上あるかを確かめてください。')));
+    } else {
+      why.push(speed + '。在庫で持つと長く寝ます。');
+      kind = enough ? 'order' : 'none'; why.push(shopsText + (enough ? '。注文が入ってから仕入れる形なら、在庫を抱えずに済みます。' : (few ? '。取り寄せ販売の形も切れるおそれがあります。' : '。')));
+    }
+    return { kind: kind, why: why, check: !known && kind !== 'stock' };
+  }
+  /**
+   * Keepaの価格の履歴([時刻, 値, 時刻, 値, …]。時刻は Keepa の分 = Unix分 − 21564000、値は円。−1は在庫なし)を、
+   * 1日1つの値(その日の終わりの値)に直す。now から days 日ぶん。値が無い日は null。step = 1件の幅(カート価格は3)
+   */
+  function keepaDaily(csv, nowMs, days, step) {
+    days = days || 90; step = step || 2;
+    if (!csv || !csv.length) return null;
+    var DAY = 86400000, end = Math.floor(nowMs / DAY) * DAY + DAY, start = end - days * DAY, out = [], j = 0, cur = null, any = false;
+    for (var d = 0; d < days; d++) {
+      var lim = start + (d + 1) * DAY;
+      while (j + 1 < csv.length && (Number(csv[j]) + 21564000) * 60000 < lim) { cur = Number(csv[j + 1]); j += step; }
+      var v = cur != null && cur > 0 ? cur : null; if (v != null) any = true;
+      out.push(v);
+    }
+    return any ? out : null;
+  }
+  /** 推移の図に出す数字: 今(最後の値)・最安・最高・値のある日数 */
+  function seriesStats(list) {
+    var v = (list || []).filter(function (x) { return x != null; });
+    if (!v.length) return null;
+    var last = null; for (var i = list.length - 1; i >= 0; i--) if (list[i] != null) { last = list[i]; break; }
+    return { last: last, min: Math.min.apply(null, v), max: Math.max.apply(null, v), days: v.length };
+  }
+  /** 送料込みの店が無く、送料別の一番安い店を入れた行(it.needShip。まとめてが付ける)で、送料がまだ入っていないか。
+      送料なしで利益を出さないための判定。it.shipSet = 利用者が送料の欄を触った印(0円と入れた時も計算する) */
+  function needShip(it) { return !!it && !!it.needShip && Number(it.price) > 0 && !(Number(it.inShip) > 0) && !it.shipSet; }
+
   return {
+    ITEM_RULES: ITEM_RULES, SPEED_LABEL: SPEED_LABEL, sellThrough: sellThrough, paceText: paceText, stockAdvice: stockAdvice, keepaDaily: keepaDaily, seriesStats: seriesStats, needShip: needShip,
     MAX_YEN: MAX_YEN, tooBig: tooBig, prepCost: prepCost, fixedTotal: fixedTotal, breakEvenUnits: breakEvenUnits, bulkLimit: bulkLimit, parseCodes: parseCodes, chunk: chunk, bulkJudge: bulkJudge, splitCols: splitCols,
     findCarrier: findCarrier, carrierCost: carrierCost, warehouseCost: warehouseCost, statusFlow: statusFlow,
     findCategory: findCategory, referralExTax: referralExTax, referralFee: referralFee,

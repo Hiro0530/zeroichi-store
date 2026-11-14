@@ -2,7 +2,9 @@
    1) また仕入れる候補: 同じ商品を1行にまとめる、今の値での出し直し(手入力)、月ごとの見直し、もう一度仕入れた
    2) 代行へ渡す納品リストの書き出し(業務)   3) 仕入れの証拠の控えの書き出し(書類の画像は預からない)
    前半は計算だけの部品(node の試験 tests/sedori/test_ledger_plus.js が読む)。後半が画面。
-   台帳の行に足す項目: repeat / calc / rpSeen / rpSkip / rpFrom / orderNo / trackNo / prepSent / docType / docName / docRef
+   4) 取り寄せ販売の品(「在庫番」で「注文が入った」を押して出来た行): 仕入れた・届いた・仕入れられなかった、発送の期限、月の実績
+   台帳の行に足す項目: repeat / calc / rpSeen / rpSkip / rpFrom / orderNo / trackNo / prepSent / docType / docName / docRef /
+     mz { itemId, sku, amzOrder, shipBy, orderedAt, boughtAt, arriveBy, arrivedAt, shippedAt, failed, failedAt }(古い行には無い。無い行は今までどおり)
    今の値(手入力・ほかの部品から受け取った値)は端末の rp-now にだけ置き、クラウドへ送らない */
 (function (root, factory) {
   var api = factory(root);
@@ -104,7 +106,7 @@
   /* ---------- 納品リスト(代行へ渡す) ---------- */
   var PREP_HEAD = ['仕入日', '仕入れ先', '注文番号', '追跡番号', '品名', 'JAN', 'ASIN', '数量', '新品/中古', '受取先・入庫ID', 'メモ'];
   var PREP_WIDTH = [11, 22, 18, 18, 38, 15, 13, 6, 9, 16, 24];
-  /** 対象: 発送のしかたが発送代行かFBAで、状態が「仕入れ済」。無在庫の「仕入れ前」は入れない */
+  /** 対象: 発送のしかたが発送代行かFBAで、状態が「仕入れ済」。取り寄せ販売の「仕入れ前」は入れない */
   function prepTarget(r) { return !!r && !r.wait && r.ship !== 'self' && (r.status || '仕入れ済') === '仕入れ済'; }
   function prepBody(rows) {
     return rows.filter(prepTarget).slice().sort(function (a, b) { return -byNew(a, b); }).map(function (r) {
@@ -138,7 +140,80 @@
     return { bought: b, sold: s, text: '仕入れた数 ' + b + '個/売った数 ' + s + '個' };
   }
 
-  var core = { codes: codes, keyOf: keyOf, monthOf: monthOf, groups: groups, review: review, calcInput: calcInput, nowProfit: nowProfit, JUDGE: JUDGE,
+  /* ---------- 取り寄せ販売の品(行の mz): 段・発送の期限・月の実績 ---------- */
+  var WD = ['日', '月', '火', '水', '木', '金', '土'];
+  function isDay(s) { return /^\d{4}-\d{2}-\d{2}$/.test(String(s || '')); }
+  function dayDiff(a, b) { return Math.round((Date.parse(a) - Date.parse(b)) / DAY); }
+  /** 行の段: buy(仕入れ前)/ arrive(仕入れた・まだ届いていない)/ ship(届いた・まだ送っていない)/ done(発送した)/ failed(仕入れられなかった)。mz の無い行は '' */
+  function mzStep(r) {
+    var m = r && r.mz; if (!m || typeof m !== 'object') return '';
+    if (m.failed) return 'failed';
+    if (r.status === '発送済' || m.shippedAt) return 'done';
+    if (r.wait) return 'buy';
+    return m.arrivedAt ? 'ship' : 'arrive';
+  }
+  function mzWaiting(r) { var s = mzStep(r); return s === 'buy' || s === 'arrive' || s === 'ship'; }
+  /** 発送の期限の見え方(発送待ちの行だけ)。level: none(期限が未入力)/ ok / eve(前日)/ due(当日)/ late(過ぎた)。色だけでなく文で出す。
+      arriveLate = 届く予定の日が期限より後 */
+  function shipState(r, today) {
+    if (!mzWaiting(r)) return null;
+    var by = r.mz.shipBy;
+    if (!isDay(by)) return { level: 'none', text: '発送の期限が未入力', days: null, arriveLate: false };
+    var d = dayDiff(by, today), dt = new Date(by + 'T00:00:00'), lab = (dt.getMonth() + 1) + '/' + dt.getDate() + '(' + WD[dt.getDay()] + ')まで';
+    return { level: d < 0 ? 'late' : (d === 0 ? 'due' : (d === 1 ? 'eve' : 'ok')), days: d,
+      text: d < 0 ? '期限を' + (-d) + '日過ぎています・' + lab : (d === 0 ? '今日が期限・' + lab : (d === 1 ? '明日が期限・' + lab : 'あと' + d + '日・' + lab)),
+      arriveLate: !r.mz.arrivedAt && isDay(r.mz.arriveBy) && r.mz.arriveBy > by };
+  }
+  /** 発送待ちの行を、期限の近い順に(期限が未入力の行は後ろ) */
+  function mzSort(rows) {
+    return (rows || []).filter(mzWaiting).slice().sort(function (a, b) {
+      var x = isDay(a.mz.shipBy) ? a.mz.shipBy : '9999', y = isDay(b.mz.shipBy) ? b.mz.shipBy : '9999';
+      return x < y ? -1 : (x > y ? 1 : byNew(b, a));
+    });
+  }
+  /** 急ぐ行の数(前日・当日・過ぎた・届くのが間に合わない) */
+  function mzUrgent(rows, today) { return (rows || []).filter(function (r) { var s = shipState(r, today); return s && (s.level === 'eve' || s.level === 'due' || s.level === 'late' || s.arriveLate); }).length; }
+  /** 月の実績。この台帳の記録から数える(Amazonの数字を取るのではない)。ym = 注文が入った月。
+      late = 期限より後に発送した行と、期限を過ぎてまだ発送していない行 */
+  function mzStats(rows, ym, today) {
+    var s = { orders: 0, cancels: 0, late: 0 };
+    (rows || []).forEach(function (r) {
+      var m = r && r.mz; if (!m || String(m.orderedAt || '').slice(0, 7) !== ym) return;
+      s.orders++;
+      if (m.failed) { s.cancels++; return; }
+      if (!isDay(m.shipBy)) return;
+      var sent = m.shippedAt || (r.status === '発送済' ? r.shipDate : '');
+      if (sent ? sent > m.shipBy : today > m.shipBy) s.late++;
+    });
+    s.cancelRate = s.orders ? s.cancels / s.orders : null;
+    return s;
+  }
+  function mzStatsText(s) {
+    return '注文 ' + s.orders + '件・仕入れられずキャンセル ' + s.cancels + '件' + (s.cancels && s.orders ? '(' + (Math.round(s.cancelRate * 1000) / 10) + '%)' : '') + '・発送の遅れ ' + s.late + '件';
+  }
+  /** 「仕入れた」で行に入れる値。o = { unit(実際に払った額・1個・送料込み), orderNo, arriveBy, today }。利益は、条件(calc)がある時だけ出し直す(ポイント抜き) */
+  function mzBought(C, fees, r, o) {
+    var p = { wait: false, date: o.today, unit: Math.round(num(o.unit)), mz: Object.assign({}, r.mz, { boughtAt: o.today, arriveBy: isDay(o.arriveBy) ? o.arriveBy : '' }) };
+    if (o.orderNo) p.orderNo = String(o.orderNo).trim();
+    var sell = num(r.salePrice) || num(r.sellPrice);
+    if (C && fees && r.calc && p.unit > 0 && sell > 0) {
+      try { p.profit = C.amazonProfit(fees, Object.assign({}, r.calc, { cost: p.unit, inShip: 0, sell: sell, usePoints: false })).profitNoPoints; p.pnp = true; } catch (e) { /* 条件が古くて計算できない時は、利益はそのまま */ }
+    }
+    return p;
+  }
+  /** 「仕入れられなかった」で行に入れる値。行は消さない(月の実績に数える)。売れた記録は外す */
+  function mzFailed(r, today) {
+    return { status: '出品停止', saleDate: '', salePrice: '', saleParty: '', profit: '', mz: Object.assign({}, r.mz, { failed: '仕入れられなかった', failedAt: today }) };
+  }
+  /** 基準の数字(config.js の MZ_LIMITS)。値・確認日・出典がそろった時だけ文を返す。そろわない間は数字を出さない */
+  function mzLimitText(L) {
+    if (!L || L.cancelRate == null || !L.checkedAt || !L.source) return '';
+    return 'キャンセルの基準 ' + L.cancelRate + '%未満' + (L.lateRate != null ? '・発送の遅れの基準 ' + L.lateRate + '%未満' : '') + '(' + L.source + '・確認日 ' + L.checkedAt + ')';
+  }
+  var MZ_NOTE = 'この台帳の記録から数えています。Amazonが見る基準(キャンセルや発送の遅れの割合と、数える期間)は、Amazonの出品者向けの案内で確かめてください。';
+
+  var core = { mzStep: mzStep, mzWaiting: mzWaiting, shipState: shipState, mzSort: mzSort, mzUrgent: mzUrgent, mzStats: mzStats, mzStatsText: mzStatsText, mzBought: mzBought, mzFailed: mzFailed, mzLimitText: mzLimitText, MZ_NOTE: MZ_NOTE,
+    codes: codes, keyOf: keyOf, monthOf: monthOf, groups: groups, review: review, calcInput: calcInput, nowProfit: nowProfit, JUDGE: JUDGE,
     rebuyRow: rebuyRow, boughtToday: boughtToday, PREP_HEAD: PREP_HEAD, prepTarget: prepTarget, prepBody: prepBody,
     DOC_TYPES: DOC_TYPES, PROOF_NOTE: PROOF_NOTE, PROOF_HEAD: PROOF_HEAD, proofNeeded: proofNeeded, proofBody: proofBody, proofTotals: proofTotals, monthSum: monthSum, stripPoints: stripPoints };
 
@@ -219,6 +294,7 @@
   /** 題の下の1行: 月の固定費まであといくらか(今月の売却日の行の 見込み利益×数量 の合計と比べる)。固定費が未入力の時は入口だけ */
   function fixedLine() {
     var el = $('#slot-lg-top'); if (!el || !U.fixedIsSet) return;
+    if (U.settingsPending && U.settingsPending()) { el.innerHTML = '<p class="lp-fix"><small>月の固定費を読み込み中です…</small></p>'; return; }
     if (!U.fixedIsSet()) { el.innerHTML = '<p class="lp-fix"><small><button type="button" class="lnk" data-fix-open>月の固定費を入れる</button>と、固定費まであといくらかが出ます。</small></p>'; return; }
     if (!fees) { el.innerHTML = ''; return; }
     var m = monthSum(L.all(), monthOf()), F = U.fixedTotal(fees), d = m - F;
@@ -230,7 +306,7 @@
     if (!box) return;
     if (tab !== 'repeat') { openKey = null; shown = 30; }
     wide = !U.narrow();
-    box.innerHTML = tab === 'repeat' ? listHTML() : (document.getElementById('lp-out') ? '' : '<div class="lp-bar"><button type="button" class="btn sm ghost" data-lp-out>書き出す</button></div>');
+    box.innerHTML = tab === 'repeat' ? listHTML() : (tab === 'mzship' ? mzHeadHTML() : '') + (document.getElementById('lp-out') ? '' : '<div class="lp-bar"><button type="button" class="btn sm ghost" data-lp-out>書き出す</button></div>');
     fixedLine();
   }
   function redraw() { P.render(); }
@@ -319,10 +395,10 @@
         else if (!l.length) U.toast('書き出す行がありません'); else if (k === 'csv') U.exportCSV(l); else U.exportXLSX(l);
       }).classList.add('lp-menu');
   }
-  function out(kind, name, title, head, body, widths, nums) {
+  function out(kind, name, title, head, body, widths, nums, sheet) {
     var rows = [[title], head].concat(body);
     if (kind === 'csv') U.download(name + '.csv', C.toCSV(rows[0], rows.slice(1)));
-    else U.download(name + '.xlsx', U.xlsx(rows, { widths: widths, nums: nums, headerRow: 1, titleRow: 0 }));
+    else U.download(name + '.xlsx', U.xlsx(rows, { widths: widths, nums: nums, headerRow: 1, titleRow: 0, sheet: sheet }));
   }
   function prepDialog() {
     var SA = root.SedoriAccount, tier = U.tier ? U.tier() : (SA && SA.tier ? SA.tier() : 'free');
@@ -340,7 +416,7 @@
       var ids = $$('input[data-id]', d).filter(function (c) { return c.checked; }).map(function (c) { return c.getAttribute('data-id'); });
       if (!ids.length) { U.toast('書き出す行に印を付けてください'); return false; }
       var pick = list.filter(function (r) { return ids.indexOf(r.id) >= 0; }), before = L.all(), today = U.today();
-      out(kind, 'nouhin-list_' + today, '納品リスト(' + today + ' 書き出し・' + pick.length + '件)', PREP_HEAD, prepBody(pick), PREP_WIDTH, { 7: 1 });
+      out(kind, 'nouhin-list_' + today, '納品リスト(' + today + ' 書き出し・' + pick.length + '件)', PREP_HEAD, prepBody(pick), PREP_WIDTH, { 7: 1 }, '納品リスト');
       var rows = L.all(); rows.forEach(function (r) { if (ids.indexOf(r.id) >= 0) r.prepSent = today; }); L.save(rows); redraw();
       U.toast(pick.length + '件を書き出し、「発送代行へ連絡済 ' + md(today) + '」と記録しました', '記録を戻す', function () { L.save(before); redraw(); });
     });
@@ -354,8 +430,37 @@
     dialog('仕入れの証拠の控え', body, GO, function (kind) {
       // 注意書きは題の行に入れる(末尾に置くと、Excelの絞り込みの範囲に入ってしまう)
       var today = U.today();
-      out(kind, 'shiire-shouko_' + today, '仕入れの証拠の控え(' + today + ' 書き出し・' + list.length + '件・' + sc + ')　' + t.text + '　※' + PROOF_NOTE, PROOF_HEAD, proofBody(list), PROOF_WIDTH, { 7: 1, 8: 1, 9: 1, 14: 1 });
+      out(kind, 'shiire-shouko_' + today, '仕入れの証拠の控え(' + today + ' 書き出し・' + list.length + '件・' + sc + ')　' + t.text + '　※' + PROOF_NOTE, PROOF_HEAD, proofBody(list), PROOF_WIDTH, { 7: 1, 8: 1, 9: 1, 14: 1 }, '仕入れの証拠');
     });
+  }
+
+  /* ---------- 取り寄せ販売の品: 発送待ちの上の1行(今月の実績)と、行のボタン ---------- */
+  function mzHeadHTML() {
+    var s = mzStats(L.all(), monthOf(), U.today()), lim = mzLimitText((root.ZW_CONFIG || {}).MZ_LIMITS);
+    return '<p class="lp-mz">今月の' + esc(mzStatsText(s)) + '<small>' + esc(MZ_NOTE) + (lim ? esc(lim) : '') + '</small></p>';
+  }
+  /** 行のボタン: buy(仕入れた)/ arrive(届いた)/ fail(仕入れられなかった) */
+  function mzAct(id, kind) {
+    var r = L.get(id); if (!r || !r.mz) return;
+    var before = JSON.parse(JSON.stringify(r)), undo = function () { L.update(id, before); redraw(); };
+    if (kind === 'arrive') {
+      L.update(id, { mz: Object.assign({}, r.mz, { arrivedAt: U.today() }) }); redraw();
+      U.toast('届いたと記録しました。仕入れ先の納品書・ちらしを抜いてから、自分の名前で発送してください', '元に戻す', undo);
+    } else if (kind === 'fail') {
+      L.update(id, mzFailed(r, U.today())); redraw();
+      U.toast('仕入れられなかったと記録しました。Amazonの注文のキャンセルは、ご自身でセラーセントラルから行ってください', '元に戻す', undo);
+    } else if (kind === 'buy') {
+      var body = '<p class="dlg-lead">' + esc(r.name || '(名前なし)') + '</p><div class="mz-f"><label>実際に払った額(1個・送料込み)<input type="number" inputmode="numeric" min="0" data-mz-in="unit" value="' + esc(r.unit || '') + '"></label>' +
+        '<label>届く予定の日<input type="date" data-mz-in="arriveBy"></label><label class="w2">仕入れの注文番号<input type="text" data-mz-in="orderNo" autocomplete="off" value="' + esc(r.orderNo || '') + '"></label></div>' +
+        '<p class="hint">届け先は、自分か発送代行の住所にしてください。小売店から購入者へ直接送らせる形には使えません。' + (isDay(r.mz.shipBy) ? '発送の期限は ' + esc(md(r.mz.shipBy)) + ' です。' : '') + '</p>';
+      dialog('仕入れた', body, '<button type="button" class="btn" data-out="ok">仕入れたと記録する</button>', function (k, d) {
+        var o = { today: U.today() }; $$('[data-mz-in]', d).forEach(function (el) { o[el.getAttribute('data-mz-in')] = el.value; });
+        if (!(num(o.unit) > 0)) { U.toast('実際に払った額を入れてください'); return false; }
+        L.update(id, mzBought(C, fees, r, o)); redraw();
+        var late = isDay(o.arriveBy) && isDay(r.mz.shipBy) && o.arriveBy > r.mz.shipBy;
+        U.toast(late ? '仕入れたと記録しました。届く予定の日が、発送の期限より後です' : '仕入れたと記録しました。届いたら「届いた」を押してください', '元に戻す', undo);
+      });
+    }
   }
 
   /** 台帳ページ(ledger.js)から呼ばれる。page: { render, rows, setTab, scope, title, tab } */
@@ -380,6 +485,6 @@
     redraw();
   }
 
-  return { core: core, mount: mount, paint: paint, toggle: toggle, marked: marked, reviewLabel: reviewLabel, setNow: setNow,
+  return { core: core, mount: mount, paint: paint, mzAct: mzAct, toggle: toggle, marked: marked, reviewLabel: reviewLabel, setNow: setNow,
     on: function () { return !!box; }, count: function () { return gs().length; }, repeatIds: function () { var o = {}; gs().forEach(function (g) { g.ids.forEach(function (id) { o[id] = 1; }); }); return o; } };
 });

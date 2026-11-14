@@ -1,4 +1,4 @@
-/* 無在庫 Amazon中古×ヤフオク: 新品価格 → 値下げ幅ごとの出品価格と利益・ヤフオク上限の一覧 → 行を選ぶ → この価格で出品 → 仕入れた(台帳+取引相手の情報)
+/* 取り寄せ販売 Amazon中古×ヤフオク(住所は muzaiko-amazon): 新品価格 → 値下げ幅ごとの出品価格と利益・ヤフオク上限の一覧 → 行を選ぶ → この価格で出品 → 仕入れた(台帳+取引相手の情報)
    ヤフオクには一切アクセスせず、検索ページを開くリンクを作るだけ */
 (function () {
   'use strict';
@@ -170,7 +170,7 @@
     var media = $('#mz-media').checked, code = $('#mz-code').value.trim();
     var row = U.ledger.add({ ship: U.shipMode(), cond: '中古', media: media, hinmoku: U.hinmokuFor($('#mz-cat').value), name: $('#mz-name').value || $('#mz-q').value || '(名前なし)',
       feature: code ? (/^B0/i.test(code) ? 'ASIN ' : 'JAN ') + code : '', qty: 1, unit: r.cost + r.inShip, party: 'Yahoo!オークション 出品者',
-      sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, pnp: true, route: '無在庫 Amazon中古',
+      sellTo: 'Amazon(中古)', sellPrice: r.sell, profit: r.profit, pnp: true, route: '取り寄せ販売 Amazon中古',
       yEnd: $('#mz-yend').value || '', status: watching() ? '出品中' : '仕入れ済', wait: watching() });
     if (!row) return;
     paintBuy(true);

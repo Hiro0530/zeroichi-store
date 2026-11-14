@@ -29,6 +29,7 @@
   }
   function rows() {
     if (tab === 'ending') return U.endingRows(L.all().filter(function (r) { return inPeriod(r) && match(r); })).map(function (x) { return x.r; });
+    if (tab === 'mzship') return LP() ? LP().core.mzSort(L.all().filter(match)) : [];   // 発送待ち: 期限の近い順(期間では絞らない)
     var rp = tab === 'repeat' && LP() ? LP().repeatIds() : {};
     return L.all().filter(function (r) {
       if (!inPeriod(r) || !match(r)) return false;
@@ -45,7 +46,8 @@
     var cnt = function (f) { return all.filter(f).length; };
     var need = cnt(function (r) { return U.checkState(r) === 'need'; });
     var ending = U.endingRows(all), soon = ending.filter(function (x) { return x.e.state !== 'far'; }).length;
-    var list = [['all', 'すべて', all.length]].concat(ST.map(function (s) { return [s, s, cnt(function (r) { return (r.status || '仕入れ済') === s; })]; }),
+    var mzw = LP() ? LP().core.mzSort(L.all().filter(match)) : [], mzAny = LP() && L.all().some(function (r) { return r && r.mz; });
+    var list = [['all', 'すべて', all.length]].concat(mzAny ? [['mzship', '発送待ち', mzw.length, LP().core.mzUrgent(mzw, U.today())]] : [], ST.map(function (s) { return [s, s, cnt(function (r) { return (r.status || '仕入れ済') === s; })]; }),
       LP() ? [['repeat', 'また仕入れる', LP().count()]] : [],
       [['ending', '終了が近い順', ending.length, soon], ['need', '売り手の確認が未入力', need]],
       LP() ? [['proof', '証拠が未入力', cnt(LP().core.proofNeeded)]] : []);
@@ -101,6 +103,10 @@
     var si = Math.max(0, ST.indexOf(r.status || '仕入れ済'));
     var nl = U.nextLabel(r);
     var nx = nl ? '<button type="button" class="adv' + (nl === '売れた' ? ' sold' : '') + '" data-adv="' + esc(r.id) + '">' + nl + '</button>' : '';
+    // 取り寄せ販売の品(mz のある行): 仕入れた → 届いた → 発送済へ の順に進める。発送の期限を、色だけでなく文で出す
+    var lp0 = LP(), mzS = lp0 && r.mz ? lp0.core.mzStep(r) : '', mzD = mzS ? lp0.core.shipState(r, U.today()) : null, mzDl = '';
+    if (mzS === 'buy' || mzS === 'arrive') nx = '<button type="button" class="adv sold" data-mz="' + mzS + '" data-id="' + esc(r.id) + '">' + (mzS === 'buy' ? '仕入れた' : '届いた') + '</button>';
+    if (mzD) mzDl = '<span class="mz-dl ' + mzD.level + '">' + (mzD.level === 'ok' ? '' : '▲ ') + esc(mzD.text) + '</span>' + (mzD.arriveLate ? '<span class="mz-dl late">▲ 届くのが期限に間に合いません</span>' : '');
     var st = U.checkState(r);
     var qn = Number(r.qty) || 1;
     var e = C.endState(r), endHTML = '', rowCls = openId === r.id ? 'open' : '';
@@ -114,12 +120,14 @@
     var pc = r.precheck && r.precheck.of ? '<span class="lp-pc">確かめ ' + esc(r.precheck.n) + '/' + esc(r.precheck.of) + '</span>' : '';
     var tags = (lp && !r.wait ? (on ? '<button type="button" class="rp-tag" data-rp="' + esc(r.id) + '" aria-pressed="true" title="押すと、また仕入れる印を外します">また仕入れる</button>'
       : '<button type="button" class="lnk" data-rp="' + esc(r.id) + '" aria-pressed="false">また仕入れる印を付ける</button>') : '') +
+      (mzS === 'buy' || mzS === 'arrive' || mzS === 'ship' ? '<button type="button" class="lnk" data-mz="fail" data-id="' + esc(r.id) + '">仕入れられなかった</button>' : '') +
+      (mzS === 'failed' ? '<span class="lp-pc">仕入れられなかった(注文はキャンセル)</span>' : '') +
       (lp && lp.core.proofNeeded(r) ? '<button type="button" class="lnk warnt lp-need" data-edit="' + esc(r.id) + '" data-sec="proof">▲ 証拠が未入力</button>' : '') + pc;
     var url = r.ref ? '<a href="' + esc(r.ref) + '" target="_blank" rel="noopener">取引ページ</a>' : '';
     return '<tr data-id="' + esc(r.id) + '"' + (rowCls.trim() ? ' class="' + rowCls.trim() + '"' : '') + '>' +
-      '<td data-k="状態"><div class="st"><span class="st1"><span class="stl s' + si + '">' + esc(r.status || '仕入れ済') + '</span>' + endHTML.replace(/<button[\s\S]*$/, '') + '</span><span class="st2">' + (endHTML.match(/<button[\s\S]*$/) || [''])[0] + nx + '</span><span class="meta">' + (r.wait ? '仕入れ前(無在庫)' : esc(U.SHIP_LABEL[r.ship] || '発送代行')) + '</span>' + (r.prepSent ? '<span class="meta">発送代行へ連絡済 ' + esc(String(r.prepSent).slice(5).replace('-', '/')) + '</span>' : '') + '</div></td>' +
+      '<td data-k="状態"><div class="st"><span class="st1"><span class="stl s' + si + '">' + esc(r.status || '仕入れ済') + '</span>' + endHTML.replace(/<button[\s\S]*$/, '') + mzDl + '</span><span class="st2">' + (endHTML.match(/<button[\s\S]*$/) || [''])[0] + nx + '</span><span class="meta">' + (r.wait ? (r.mz ? '仕入れ前(取り寄せ販売)' : '仕入れ前(取り寄せ)') : esc(U.SHIP_LABEL[r.ship] || '発送代行')) + '</span>' + (r.prepSent ? '<span class="meta">発送代行へ連絡済 ' + esc(String(r.prepSent).slice(5).replace('-', '/')) + '</span>' : '') + '</div></td>' +
       '<td data-k="仕入日" class="nw">' + esc(r.date || '') + '</td>' +
-      '<td class="nmc"><div class="nm">' + esc(r.name || '(名前なし)') + '</div><div class="meta">' + [esc(r.cond || ''), r.hinmoku ? esc(r.hinmoku) : '<span class="warnt">品目未選択</span>', esc(r.feature || ''), url].filter(Boolean).join('<span aria-hidden="true">　</span>') + '</div>' + (tags ? '<div class="lp-tags">' + tags + '</div>' : '') + '</td>' +
+      '<td class="nmc"><div class="nm">' + esc(r.name || '(名前なし)') + '</div><div class="meta">' + [esc(r.cond || ''), r.hinmoku ? esc(r.hinmoku) : '<span class="warnt">品目未選択</span>', esc(r.feature || ''), r.mz && r.mz.amzOrder ? 'Amazonの注文 ' + esc(r.mz.amzOrder) : '', url].filter(Boolean).join('<span aria-hidden="true">　</span>') + '</div>' + (tags ? '<div class="lp-tags">' + tags + '</div>' : '') + '</td>' +
       '<td class="r" data-k="数量">' + qn + '</td>' +
       '<td class="r" data-k="仕入れ値"><span class="yen">' + yen(r.unit) + '<i>円</i></span>' + (qn > 1 ? '<div class="meta">計 ' + yen((Number(r.unit) || 0) * qn) + '円</div>' : '') + '</td>' +
       '<td data-k="仕入れ先・相手">' + esc(r.party || '') + (r.pName ? '<div class="meta">' + esc(r.pName) + '</div>' : '') + '</td>' +
@@ -139,7 +147,7 @@
     ['media', 'ゲーム・CD・DVD・書籍・バイク・エアコン室外機・電線・金属製グレーチング等', 'check', 'w2'], ['recvId', '受取先・入庫ID', 'text'], ['trackNo', '追跡番号', 'text'], ['memo', 'メモ', 'text', 'w2'],
     ['sec', '仕入れの証拠', '書類の画像は預かりません。手元の保管場所を文字で残します'],
     ['orderNo', '注文番号', 'text'], ['docType', '書類の種類', ['', '領収書', '請求書', '納品書', '購入履歴の画面', 'なし']], ['docName', '宛名は出品者の名前と同じ', 'check'], ['docRef', '保管場所(ファイル名・フォルダ・メールの件名など)', 'text', 'w4'],
-    ['sec', '無在庫の見張り(ヤフオク)'], ['yEnd', 'ヤフオク終了日時', 'datetime-local'], ['yEndPaste', '終了日時の文字を貼り付け', 'paste', 'w2'], ['wait', 'まだ仕入れていない(売れてから仕入れる)', 'check'],
+    ['sec', '取り寄せ販売の在庫の見張り(ヤフオク)'], ['yEnd', 'ヤフオク終了日時', 'datetime-local'], ['yEndPaste', '終了日時の文字を貼り付け', 'paste', 'w2'], ['wait', 'まだ仕入れていない(売れてから仕入れる)', 'check'],
     ['sec', '売却'], ['sellTo', '売り先', 'text'], ['sellPrice', '予定売値(1個)', 'number'], ['saleDate', '売却日', 'date'], ['salePrice', '売値(1個)', 'number'], ['saleParty', '売却相手', 'text', 'w2'], ['profit', '見込み利益(1個)', 'number']
   ];
   function editHTML(r) {
@@ -155,6 +163,8 @@
       if (f[2] === 'check') return '<label class="ck ' + (f[3] || '') + '" style="flex-direction:row"><input type="checkbox" data-e="' + f[0] + '"' + ((f[0] === 'docName' ? v === 'はい' : v) ? ' checked' : '') + '>' + f[1] + '</label>';
       return '<label' + cls + '>' + f[1] + '<input data-e="' + f[0] + '" type="' + f[2] + '" value="' + esc(v) + '"' + (f[2] === 'number' ? ' inputmode="numeric"' : '') + '></label>';
     }).join('');
+    if (r.mz) left += '<div class="sec">取り寄せ販売の品</div>' + [['amzOrder', 'Amazonの注文番号', 'text'], ['shipBy', '発送の期限', 'date'], ['arriveBy', '届く予定の日', 'date']].map(function (f) {
+      return '<label>' + f[1] + '<input data-mz-e="' + f[0] + '" type="' + f[2] + '" value="' + esc(r.mz[f[0]] || '') + '"></label>'; }).join('');
     return '<div class="edwrap"><div class="edf">' + left +
       '<div class="row-btns"><button type="button" class="btn sm" data-close>閉じる</button><span class="hint">入力するとすぐ保存されます。ヤフオク終了日時を入れて「出品中」にすると、終了が近い順に並び、2時間前から色が付きます。</span></div></div><div id="ed-party"></div></div>';
   }
@@ -162,14 +172,14 @@
   function render() {
     // 追加の働きがまだ読まれていない間は「すべて」で描き、取り付いたら元のタブに戻す
     if (pend && LP()) { tab = pend; pend = null; }
-    if ((tab === 'repeat' || tab === 'proof') && !LP()) { pend = tab; tab = 'all'; }
+    if ((tab === 'repeat' || tab === 'proof' || tab === 'mzship') && !LP()) { pend = tab; tab = 'all'; }
     var list = rows();
     tabs(); summary(list); upsell();
     title(list);
     var gw = $('#lg-grid').parentNode; gw.hidden = tab === 'repeat';
     if (LP()) LP().paint(tab);
     if (tab === 'repeat') { $('#lg-rows').innerHTML = ''; return; }
-    var empty = L.all().length ? '条件に合う行がありません。' : 'まだ記録がありません。<br>計算ページで「仕入れた」を押すと、ここに自動で1行できます。手で入れる場合は「手で追加」。';
+    var empty = tab === 'mzship' ? '発送待ちの行はありません。<br>「在庫番」で「注文が入った」を押すと、ここに期限の近い順に並びます。' : L.all().length ? '条件に合う行がありません。' : 'まだ記録がありません。<br>計算ページで「仕入れた」を押すと、ここに自動で1行できます。手で入れる場合は「手で追加」。';
     var vk = tab + '|' + q + '|' + $('#lg-period').value; if (vk !== viewKey) { viewKey = vk; shown = PAGE; }
     var oi = openId ? list.findIndex(function (r) { return r.id === openId; }) : -1; if (oi >= shown) shown = oi + 1;   // 開いた行・キーで動いた行は必ず出す
     var rest = list.length - Math.min(shown, list.length);
@@ -179,7 +189,7 @@
     if (openId) bindEdit();
   }
   var pend = null, PAGE = 30, shown = PAGE, viewKey = '';
-  var LABEL = { all: 'すべて', need: '売り手の確認が未入力', ending: '終了が近い順(出品中でヤフオク終了日時がある行)', repeat: 'また仕入れる', proof: '証拠が未入力(新品でAmazonに売る行)' };
+  var LABEL = { all: 'すべて', need: '売り手の確認が未入力', ending: '終了が近い順(出品中でヤフオク終了日時がある行)', repeat: 'また仕入れる', mzship: '発送待ち(取り寄せ販売の品・期限の近い順)', proof: '証拠が未入力(新品でAmazonに売る行)' };
   function title(list) {
     list = list || rows();
     $('#lg-title').innerHTML = esc(LABEL[tab] || tab) + '<small>' + (tab === 'repeat' && LP() ? esc(LP().reviewLabel()) : list.length + '件') + (q ? '　「' + esc(q) + '」で絞り込み <button type="button" class="lnk" id="lg-clear">解除</button>' : '') + '</small>';
@@ -200,6 +210,9 @@
         if (k === 'ship') { var r1 = L.get(openId); var fl = U.flowOf(r1); if (fl.indexOf(r1.status) < 0) L.update(openId, { status: fl[1] }); if (!r1.recvId || /^(自宅|Amazon FBA)$/.test(r1.recvId)) L.update(openId, { recvId: v === 'self' ? '自宅' : (v === 'fba' ? 'Amazon FBA' : '') }); }
         if (k === 'status' || k === 'ship') render();
       });
+    });
+    $$('[data-mz-e]', tr).forEach(function (el) {
+      el.addEventListener('input', function () { var r0 = L.get(openId); if (!r0 || !r0.mz) return; var m = Object.assign({}, r0.mz); m[el.getAttribute('data-mz-e')] = el.value; L.update(openId, { mz: m }); refreshRow(); });
     });
     var ep = $('[data-endpaste]', tr);
     if (ep) {
@@ -228,13 +241,17 @@
     if (e.target.closest('[data-more]')) { shown += PAGE; render(); return; }
     var sp = e.target.closest('[data-stop]');
     if (sp) { U.stopListing(sp.getAttribute('data-stop')); render(); return; }
+    var mzb = e.target.closest('[data-mz]');
+    if (mzb && LP()) { LP().mzAct(mzb.getAttribute('data-id'), mzb.getAttribute('data-mz')); return; }
     var a = e.target.closest('[data-adv]'), ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), rpb = e.target.closest('[data-rp]');
     if (rpb && LP()) {
       var all0 = L.all(), on = LP().toggle(rpb.getAttribute('data-rp')); render();
       U.toast(on ? 'また仕入れる印を付けました。「また仕入れる」タブに並びます' : 'また仕入れる印を外しました', '元に戻す', function () { L.save(all0); render(); });
     } else if (a) {
       var id = a.getAttribute('data-adv'), before = JSON.parse(JSON.stringify(L.get(id)));
-      var r = L.advance(id); render();
+      var r = L.advance(id);
+      if (r && r.mz && r.status === '発送済' && !r.mz.shippedAt) r = L.update(id, { mz: Object.assign({}, r.mz, { shippedAt: U.today() }) });   // 取り寄せ販売の品: 発送した日を残す(月の実績で使う)
+      render();
       U.toast(r.status === '売約' ? '売れた: 売却日・売値・相手を記入しました' : '「' + r.status + '」にしました', '元に戻す', function () { L.update(id, before); render(); });
       if (r.status === '売約' && LP() && !LP().marked(r)) { // 売れた直後のお知らせに、印を付ける口を1つ足す(画面は増やさない)
         var tb = $('#toast'), b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'toast-act'; b2.textContent = 'また仕入れる'; b2.setAttribute('aria-label', 'また仕入れる印を付ける');

@@ -78,6 +78,12 @@ window.ZW_CONFIG = {
      受付が始まって WORKER_URL が入ると、事前登録の欄(data-bill="prep")は自動で隠れる。
      2026-10-29: 11月4日はテストの結果を見てオーナーが決め直すので、いったん日付を外した */
   PREREG: { open: null, notice: null },
+  /* 商品ページの目安の基準(画面では直せない。変える時はここだけ)。計算は assets/calc.js の sellThrough・stockAdvice
+     speed: 直近30日の販売の目安がこの個数以上なら、売れる速さの段階 5・4・3・2(未満は1)
+     pricey: 売値がこの額(円)以上は「1個の金額が大きい」と見る / minShops: 仕入れ先で在庫のある店がこの数以上なら、取り寄せ販売でも切れにくいと見る */
+  ITEM_RULES: { speed: [100, 30, 10, 3], pricey: 10000, minShops: 3 },
+  /* 在庫番(取り寄せ販売の品)の、Amazonの基準の数字。出品者向けの案内の原文で確かめるまで null(画面は数字を出さず「案内で確かめてください」と出す) */
+  MZ_LIMITS: { cancelRate: null, lateRate: null, handlingMaxDays: null, window: null, checkedAt: null, source: null },
   /* 先着200名の価格の受付終了日("2026-12-31" のように。決めていなければ null。人数で終わる) */
   FOUNDER_DEADLINE: null
 };

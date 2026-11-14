@@ -3,11 +3,9 @@
 (function () {
   'use strict';
   document.addEventListener('sedori:acct', function () { if (document.getElementById('quota')) showQuota(); });
-  var U = window.SedoriUI, C = window.SedoriCalc;
+  var U = window.SedoriUI, C = window.SedoriCalc, A = window.SedoriAPI;
   var $ = U.$, $$ = U.$$, esc = U.esc, yen = U.yen, val = U.val;
-  var FREE_SEARCHES_PER_DAY = 20;
-  var RAKUTEN_EP = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
-  var KEEPA_EP = 'https://api.keepa.com/product';
+  var FREE_SEARCHES_PER_DAY = A.FREE;
   var CREDIT = '<a href="https://developers.rakuten.com/" target="_blank" rel="noopener">Supported by Rakuten Developers</a>';
   var fees = null, tab = 's', sel = -1, query = '';
   var lists = { s: [], b: [], w: [] };
@@ -18,7 +16,7 @@
 
   /* ---------- キー ---------- */
   var KEY_IDS = { rkApp: 'k-rk-app', rkKey: 'k-rk-key', keepa: 'k-kp' };
-  function keys() { return U.store.get('keys', {}); }
+  var keys = A.keys;
   function loadKeys() { var k = keys(); Object.keys(KEY_IDS).forEach(function (n) { $('#' + KEY_IDS[n]).value = k[n] || ''; }); }
   $('#k-save').addEventListener('click', function () {
     var k = keys(); Object.keys(KEY_IDS).forEach(function (n) { k[n] = $('#' + KEY_IDS[n]).value.trim(); });
@@ -32,10 +30,9 @@
   function openKeys() { var d = $('#keys'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(function () { $('#k-rk-app').focus({ preventScroll: true }); }, 300); }
 
   /* ---------- 無料版の回数 ---------- */
-  function quota() { var q = U.store.get('quota', {}); if (q.d !== U.today()) q = { d: U.today(), n: 0 }; return q; }
-  function paidPlan() { return !!(window.SedoriAccount && window.SedoriAccount.paid()); }
-  function showQuota() { $('#quota').textContent = paidPlan() ? '楽天の検索 制限なし(有料プラン)' : '楽天の検索 今日あと' + Math.max(0, FREE_SEARCHES_PER_DAY - quota().n) + '回'; }
-  function useQuota() { if (paidPlan()) return true; var q = quota(); if (q.n >= FREE_SEARCHES_PER_DAY) return false; q.n++; U.store.set('quota', q); showQuota(); return true; }
+  var paidPlan = A.paid;
+  function showQuota() { $('#quota').textContent = paidPlan() ? '楽天の検索 制限なし(有料プラン)' : '楽天の検索 今日あと' + A.quotaLeft() + '回'; }
+  function useQuota() { var ok = A.useQuota(); showQuota(); return ok; }
 
   /* ---------- 条件(左)と計算 ---------- */
   var COND_IDS = ['sort', 'c-cat', 'c-tier', 'c-inbound', 'c-other', 'c-pt-mine', 'c-carrier', 'c-selfship', 'f-sold', 'f-cnt'];
@@ -86,6 +83,7 @@
   /** 1行の判定: 'ok'(目標に届く)/'ng'(届かない)/'unk'(売値か仕入れ値が無く、確かめられない)。ポイント抜きの利益で見る */
   function judge(it) {
     var has = Number(it.price) > 0;
+    if (C.needShip(it)) return 'unk';   // 送料別の店なのに送料が未入力: 送料なしの利益で「届く」と数えない
     return C.bulkJudge(has ? compute(it) : null, has, has ? undefined : maxCostOf(it));
   }
 
@@ -103,7 +101,7 @@
         if (pto && tab !== 's' && !(o.it.shopPt >= 2)) return false;
       }
       // 目標に届くかは、ポイント抜きの利益で見る(行の色と同じ)。売値が未入力の行は残す
-      if (po && o.r && !o.r.est && o.r.profitNoPoints < o.r.need) return false;
+      if (po && o.r && !o.r.est && o.r.profitNoPoints < o.r.need && !C.needShip(o.it)) return false;
       if (po && !(p > 0) && o.it.sell > 0 && maxCostOf(o.it) == null) return false;
       // Amazonの売れ方(Keepaの値)。値が無い行は外さず「未取得」と出す
       var k = o.it.kp;
@@ -121,7 +119,7 @@
     var hasCost = Number(it.price) > 0, k = it.kp;
     var kpWanted = tab === 'b' || $('#f-noamz').checked || val('f-sold') || val('f-cnt');
     var meta = [esc(it.shop || (it.src === 'yahoo' ? 'Yahoo!ショッピング' : '')), it.jan ? 'JAN ' + esc(it.jan) : (it.asin ? 'ASIN ' + esc(it.asin) : '<span title="JANが見つからない商品">JANなし</span>'),
-      hasCost ? (it.freeShip ? '<b>送料無料</b>' : (it.src === 'bulk' && !it.shop ? '' : '送料別')) : '',
+      hasCost ? (it.freeShip ? '<b>送料無料</b>' : (C.needShip(it) ? '<b class="warnt">送料別・送料が未入力</b>' : (it.src === 'bulk' && !it.shop ? '' : '送料別'))) : '',
       k ? (k.sold != null ? '月の販売 ' + k.sold + '個〜' : (kpWanted && k.cnt == null ? '売れ方は取れていません' : '')) : (kpWanted ? '<span title="Keepaの値がまだ無い行です。絞り込みでは外しません">売れ方は取れていません</span>' : ''),
       k && k.cnt != null ? '出品者 ' + k.cnt + '人' : '', k && k.amz ? '<b class="amz">Amazon本体が販売中</b>' : '',
       R.rowBadge ? (R.rowBadge(it, tab) || '') : '']
@@ -134,6 +132,10 @@
         '<span class="yen est" title="この売値で、ポイント抜きで目標の利益に届く仕入れ値の上限"><small class="estk">上限</small>' + yen(mc) + '<i>円</i></span>');
       sellCell = it.sell > 0 ? '<span class="yen">' + yen(it.sell) + '<i>円</i></span>' : '<span class="muted">未入力</span>';
       pfCell = '<span class="muted" title="仕入れ値を入れると計算します">—</span>';
+    } else if (r && r.sell && !r.est && C.needShip(it)) {
+      // 送料別の店で送料が未入力: 送料なしの利益は出さない
+      sellCell = '<span class="yen">' + yen(r.sell) + '<i>円</i></span>';
+      pfCell = '<span class="muted" title="仕入れの送料を入れると計算します">未入力</span>';
     } else if (r && r.sell && r.est) {
       // 実際の売値が未入力: 目標の売値は逆算の目安として薄く出し、利益は出さない
       sellCell = '<span class="yen est" title="Amazonの実際の売値が未入力です。目標の利益から逆算した目安の売値を表示しています"><small class="estk">目標から逆算</small>' + yen(r.sell) + '<i>円</i></span>';
@@ -148,7 +150,8 @@
     else sellCell = r && r.est ? '<span class="yen est">届かない</span>' : '—';
     return '<tr data-i="' + o.i + '"' + (o.i === sel ? ' class="on" aria-selected="true"' : '') + '>' +
       '<td class="c-img">' + img + '</td>' +
-      '<td>' + (it.name ? '<div class="nm" title="' + esc(it.name) + '">' + esc(it.name) + '</div>' : '<div class="nm ph">名前を取れていません</div>') + '<div class="meta' + (k || (R.rowBadge && tab === 'w') ? ' kp' : '') + '">' + meta + '</div></td>' +
+      '<td>' + (it.name ? '<div class="nm" title="' + esc(it.name) + '">' + esc(it.name) + '</div>' : '<div class="nm ph">名前を取れていません</div>') + '<div class="meta' + (k || (R.rowBadge && tab === 'w') ? ' kp' : '') + '">' + meta + '</div>' +
+      '<a class="it-go" href="' + U.base() + 'shohin/?f=' + tab + '&amp;i=' + o.i + '" aria-label="' + esc(it.name || it.jan || it.asin || '') + ' の商品ページ">商品ページ</a></td>' +
       '<td class="r" data-k="仕入れ値">' + costCell + '</td>' +
       '<td class="r c-pt">' + (it.shopPt > 1 ? '<span class="pt">' + (it.src === 'yahoo' ? it.shopPt + '%' : it.shopPt + '倍') + '</span>' : '<span class="muted">1倍</span>') + '</td>' +
       '<td class="r" data-k="Amazon売値">' + sellCell + '</td><td class="r c-fee fee">' + feeCell + '</td><td class="r" data-k="利益">' + pfCell + '</td><td class="r c-rt">' + rtCell + '</td></tr>';
@@ -165,7 +168,7 @@
       w: 'ウォッチ<small>' + lists.w.length + '件</small>' }[tab];
     $('#res-title').innerHTML = title;
     $('#w-csv').hidden = !(tab !== 's' && cur().length);
-    $('#bulk-box').hidden = tab !== 'b'; $('#bulk-bad').hidden = tab !== 'b'; $('#b-watch').hidden = !(tab === 'b' && v.length);
+    $('#bulk-box').hidden = tab !== 'b'; $('#bulk-bad').hidden = tab !== 'b'; $('#b-watch').hidden = !(tab === 'b' && v.length); $('#b-zaiko').hidden = !(tab === 'b' && v.length);
     $('#slot-watch-top').hidden = tab !== 'w';
     $('#grid').classList.toggle('noimg', !v.some(function (o) { return !!o.it.img; }));   // 写真が1枚も無い一覧は、写真の列ごと消す
     paintIdle();
@@ -197,6 +200,8 @@
   }
 
   $('#rows').addEventListener('click', function (e) {
+    var go = e.target.closest('a.it-go');
+    if (go) { itemSnap(Number(go.closest('tr').getAttribute('data-i')), tab); return; }   // 商品ページへ(計算の条件ごと渡す)
     if (e.target.closest('a')) return;
     var tr = e.target.closest('tr[data-i]'); if (!tr) return;
     select(Number(tr.getAttribute('data-i')), true);
@@ -204,6 +209,12 @@
   $$('.tabs [data-tab]').forEach(function (b) {
     b.addEventListener('click', function () { tab = b.getAttribute('data-tab'); sel = -1; U.store.set('ra-tab', tab); render(); fillDetail(); });
   });
+
+  /* ---------- 商品ページへ渡す(今の計算の条件ごと、この端末に置く。商品ページは assets/item.js) ---------- */
+  function itemSnap(i, t) {
+    var it = i < 0 ? manual : (lists[t] || [])[i]; if (!it) return false;
+    return U.store.set('item-cur', { from: t, i: i, it: it, x: fees ? input(it) : null, at: Date.now() });
+  }
 
   /* ---------- 選んだ商品(右) ---------- */
   function selected() { return sel >= 0 && cur()[sel] ? cur()[sel] : manual; }
@@ -236,6 +247,7 @@
   function fromDetail() {
     var it = selected();
     it.price = val('c-cost'); it.inShip = val('c-inship'); it.shopPt = val('c-pt-shop');
+    if (document.activeElement === $('#c-inship')) it.shipSet = true;   // 送料の欄を触った(0円でも、入れたものとして計算する)
     var code = $('#c-code').value.trim(); if (/^B0/i.test(code)) it.asin = code; else it.jan = code;
     it.sell = val('c-sell') || null; it.qty = Math.max(1, val('c-qty') || 1);
     if (it.manual) U.store.set('ra-manual', it);
@@ -258,6 +270,11 @@
       var x1 = input(it), be1 = C.amazonBreakEvenSell(fees, Object.assign({}, x1, { usePoints: false }));
       U.result(out, '<div class="pfbox">' + U.askActualHTML({ where: 'Amazon', target: r.sug, be: be1, tgLabel: U.targetLabel(tg),
         how: '「Amazonで見る」' + (keys().keepa ? 'かKeepa' : '') + 'で今の価格を確かめて、上の「Amazonの実際の売値」に入れてください。' }) + '</div>', null, '');
+      return;
+    }
+    if (C.needShip(it)) {
+      U.result(out, '<div class="needship" role="status"><p><b>仕入れの送料が未入力です</b>送料込みの店が無かったため、送料別の一番安い店の値段を入れています。送料を入れると、利益を計算します。</p><button type="button" class="btn ghost" id="go-inship">送料を入れる</button></div>', null, '');
+      $('#go-inship').addEventListener('click', function () { var el = $('#c-inship'); el.scrollIntoView({ block: 'center' }); el.focus(); el.select(); });
       return;
     }
     var x = r.x, x0 = Object.assign({}, x, { usePoints: false });
@@ -296,6 +313,7 @@
   function buy(force) {
     if (force !== true && $('[data-act="buy"]').classList.contains('done')) { U.toast('この内容は台帳に記録済みです', 'もう1件記録する', function () { buy(true); }); return; }
     var it = selected(), r = compute(it);
+    if (C.needShip(it)) { U.toast('仕入れの送料が未入力です。送料を入れてから記録してください'); $('#c-inship').focus(); return; }
     if (r && r.over) { U.toast('金額を確かめてください。1,000万円以上の値は計算しません'); $('#c-cost').focus(); return; }
     if (!r || !r.sell) { U.toast('仕入れ値を入れてください'); $('#c-cost').focus(); return; }
     var noActual = r.est; // 実際の売値が未入力なら、台帳の売値は目標の売値(目安)で入れて、そう知らせる
@@ -322,26 +340,7 @@
   function msg(html, err) { $('#res-msg').innerHTML = html ? '<div class="msg' + (err ? ' err' : '') + '">' + html + '</div>' : ''; }
   /** 楽天の商品検索(公式API・利用者のキー)を1回呼ぶ。params は API の指定(keyword・sort・hits など)。返り値は一覧の行の形。
       失敗した時の Error には status(403・429 など)が付く。code は楽天の商品コード(あとで同じ商品を確かめ直す時に使う) */
-  function rakutenCall(params) {
-    var k = keys();
-    var p = new URLSearchParams(Object.assign({ applicationId: k.rkApp, accessKey: k.rkKey, formatVersion: '2', imageFlag: '1' }, params));
-    return fetch(RAKUTEN_EP + '?' + p.toString(), { referrerPolicy: 'strict-origin-when-cross-origin' }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok) {
-          var e = new Error(r.status === 403 ? '楽天が403を返しました。アプリ設定の「許可するWebサイト」に ' + location.origin + ' が入っているか確認してください。' :
-            (r.status === 429 ? '楽天の回数制限です。少し待ってから試してください。' : '楽天の検索に失敗しました(' + r.status + (j.error_description ? ': ' + esc(j.error_description) : '') + ')'));
-          e.status = r.status; throw e;
-        }
-        return (j.Items || []).map(function (it) {
-          it = it.Item || it;
-          var img = (it.mediumImageUrls || [])[0]; img = typeof img === 'string' ? img : (img && img.imageUrl) || '';
-          return { src: 'rakuten', name: it.itemName, price: Number(it.itemPrice) || 0, url: it.itemUrl, shop: it.shopName, img: img, code: it.itemCode || '',
-            shopPt: Number(it.pointRate) || 1, freeShip: Number(it.postageFlag) === 0,
-            jan: C.extractJan((it.itemName || '') + ' ' + (it.itemCaption || '')), until: it.pointRateEndTime || '' };
-        });
-      });
-    });
-  }
+  var rakutenCall = A.rakuten;
   function searchRakuten(q) {
     var sort = { price: '+itemPrice', standard: 'standard', review: '-reviewCount' }[$('#sort').value];
     var p = { keyword: q, hits: '30', availability: '1', sort: sort };
@@ -401,7 +400,8 @@
     if (pr.packageLength > 0 && pr.packageWeight > 0) {
       var t = C.guessFbaTier(fees, [pr.packageLength / 10, pr.packageWidth / 10, pr.packageHeight / 10], pr.packageWeight); if (t) it.tier = t.id;
     }
-    it.kp = { bb: bb, nw: nw, avg: kpPrice(avg[1]), sold: pr.monthlySold > 0 ? pr.monthlySold : null, rank: c[3] > 0 ? c[3] : null, cnt: c[11] > 0 ? c[11] : null, amz: c[0] > 0, cat: catName, asin: pr.asin };
+    it.kp = Object.assign({ bb: bb, nw: nw, avg: kpPrice(avg[1]), sold: pr.monthlySold > 0 ? pr.monthlySold : null, rank: c[3] > 0 ? c[3] : null, cnt: c[11] > 0 ? c[11] : null, amz: c[0] > 0, cat: catName, asin: pr.asin }, A.kpExtra(pr));
+    A.saveHist(pr);   // 価格の履歴は、この端末の中にだけ置く(商品ページの図に使う)
   }
   function kpHTML(k) {
     return '<table class="kpx"><tr><td>カート価格</td><td>' + (k.bb ? yen(k.bb) + '円' : '—') + '</td><td>新品最安</td><td>' + (k.nw ? yen(k.nw) + '円' : '—') + '</td></tr>' +
@@ -411,15 +411,7 @@
       (k.amz ? '<p class="warn-line">Amazon本体が販売中。カートを取りにくいことがあります</p>' : '');
   }
   function kpErr(t) { if (/Failed to fetch|NetworkError|Load failed/i.test(t)) t = 'Keepaに接続できませんでした。'; return '<p class="warn-line">' + esc(t) + '</p>'; }
-  function kpCall(params) {
-    var p = new URLSearchParams(Object.assign({ key: keys().keepa, domain: '5', stats: '90' }, params));
-    return fetch(KEEPA_EP + '?' + p.toString()).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok) { var e = new Error(r.status === 429 ? 'Keepaのトークンが足りません。少し待ってから試してください。' : 'Keepaから売値を取れませんでした。キーが正しいかを見て、もう一度お試しください(番号 ' + r.status + ')。'); e.status = r.status; e.refillIn = j.refillIn; throw e; }
-        return j;
-      });
-    });
-  }
+  var kpCall = A.keepa;
   function kpFetch(it) {
     var code = String(it.asin || it.jan || '').replace(/\s/g, ''), out = $('#kp-out');
     if (!keys().keepa) { out.innerHTML = '<p class="note">Keepa APIキーが未設定です。<button type="button" class="lnk" id="kp-key">キーを入れる</button>か、「Amazonで見る」で売値を確かめて入れてください。</p>'; $('#kp-key').addEventListener('click', openKeys); return; }
@@ -454,6 +446,7 @@
     var code = $('#c-code').value.trim();
     $('#amz-link').href = code ? U.extUrl('amazon', code) : 'https://www.amazon.co.jp/';
     $('#kp-link').href = code ? 'https://keepa.com/#!search/5-' + encodeURIComponent(code) : 'https://keepa.com/';
+    var ig = $('#it-link'); if (ig) { ig.hidden = sel < 0; ig.href = U.base() + 'shohin/?f=' + tab + '&i=' + sel; }
   }
 
   /* 寸法 → 区分の目安(左の条件に入れる) */
@@ -482,6 +475,8 @@
     $('#n-w').textContent = lists.w.length;
     return U.store.set('watch2', lists.w);
   }
+  if ($('#it-link')) $('#it-link').addEventListener('click', function () { fromDetail(); itemSnap(sel, tab); });
+  if (location.hash === '#keys') setTimeout(openKeys, 300);   // 商品ページの「キーを入れる」から来た時
   $('#c-watch').addEventListener('click', function () {
     var it = selected(); if (!(Number(it.price) > 0)) { U.toast('仕入れ値を入れてください'); return; }
     U.toast(addWatch([it]) ? 'ウォッチに追加しました' : 'この端末では保存できませんでした', 'ウォッチを見る', function () { tab = 'w'; sel = 0; render(); fillDetail(); });
@@ -525,8 +520,8 @@
     render: function () { rowsHTML = null; render(); }, fillDetail: fillDetail, selected: selected, visible: visible,
     compute: compute, input: input, judge: judge, maxCostOf: maxCostOf,
     persist: function (t) { if (t === 'w') U.store.set('watch2', lists.w); else if (t === 'b') saveBulk(); else U.store.set('ra-last', { q: query, items: lists.s }); },
-    addWatch: addWatch, msg: msg,
-    rakuten: rakutenCall, useQuota: useQuota, paid: paidPlan, quotaLeft: function () { return paidPlan() ? Infinity : Math.max(0, FREE_SEARCHES_PER_DAY - quota().n); },
+    addWatch: addWatch, msg: msg, itemSnap: itemSnap,
+    rakuten: rakutenCall, useQuota: useQuota, paid: paidPlan, quotaLeft: A.quotaLeft,
     kpCall: kpCall, applyKeepa: applyKeepa
   });
 

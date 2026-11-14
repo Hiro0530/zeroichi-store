@@ -149,7 +149,7 @@
   function paintData(s) {
     var all = U.ledger.all(), wait = all.filter(function (r) { return r.wait; }).length;
     var syncLabel = { local: 'この端末だけに保存', synced: 'クラウドと同期済み', pending: '同期待ち ' + s.pending + '件', syncing: '同期中', error: '同期できていません(通信を確かめてください)', paused: '同期を止めています' }[s.sync] || '';
-    var t = [['この端末の台帳', all.length + '件' + (wait ? '<span class="meta">うち仕入れ前(無在庫で出品中)' + wait + '件</span>' : '')], ['保存先', s.user && s.plan.paid ? 'この端末とクラウド(Google Cloud 東京リージョン)' : 'この端末のブラウザの中だけ']];
+    var t = [['この端末の台帳', all.length + '件' + (wait ? '<span class="meta">うち仕入れ前(取り寄せ販売の品・出品中)' + wait + '件</span>' : '')], ['保存先', s.user && s.plan.paid ? 'この端末とクラウド(Google Cloud 東京リージョン)' : 'この端末のブラウザの中だけ']];
     if (s.user) t.push(['同期', esc(syncLabel) + (s.lastSync ? '<span class="meta">最後に確認 ' + jdt(s.lastSync) + '</span>' : '')]);
     $('#mp-data-t').innerHTML = t.map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('');
     $('#mp-sync').hidden = !(s.user && s.plan.paid);

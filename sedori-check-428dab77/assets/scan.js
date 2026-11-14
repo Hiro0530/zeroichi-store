@@ -205,7 +205,7 @@
       ship: r.to === 'amazon' ? 'fba' : U.shipMode(), cond: '新品', hinmoku: r.to === 'amazon' ? U.hinmokuFor(r.cat) : '道具類',
       name: r.name || '(品名未入力) JAN ' + r.jan, feature: 'JAN ' + r.jan, qty: 1, unit: Number(r.cost) || 0,
       party: '店舗', sellTo: r.to === 'mercari' ? 'メルカリ' : 'Amazon', sellPrice: Number(r.sell) || o.sug || '',
-      profit: o.profit != null ? o.profit : '', route: '店舗(バーコード読み取り)',
+      profit: o.profit != null ? o.profit : '', pnp: true, route: '店舗(バーコード読み取り)',   // 検品はポイントを計算しない(pointRate 0)。台帳が後からポイントを引かないよう、ポイント抜きの印を入れる
       precheck: PC && r.to !== 'mercari' ? PC.resultFor(r.jan) : undefined   // 仕入れる前の確かめの結果(Amazonに売る時だけ)
     }, true);
     if (row && row.precheck && PC) PC.afterBuy(row.precheck);

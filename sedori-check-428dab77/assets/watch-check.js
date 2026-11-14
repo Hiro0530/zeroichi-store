@@ -8,6 +8,8 @@
    - 保存: ウォッチの行(端末の 'watch2')に code(楽天の商品コード)・base(保存した時の価格)・chk(確かめた時刻・価格・在庫・ポイント)・
      chg(変化の種類)・lim と limT(計算ページで出した、目標に届く仕入れ値の上限と、その時の目標)。お知らせの入・切は 'notify-watch'。どれもクラウドへは送らない
    - 「変化」に数えるのは、売り切れになった・在庫が戻った・目標に届く/届かないが替わった時だけ(1円の上下では数えない)
+   - 「在庫番」(listed.js)からも使える口: SedoriWatchCheck.stock(品の配列)。1つの品の主の店と控えの店(主を含めて3店まで)の在庫と値段を取り直して返すだけで、
+     保存はしない。件数の上限はプランごと(無料5・ライト30・総合100・業務300)。使い方は build_slots_2026-11-13.md の「C2の口」
    計算だけの部品(Core)は node の試験から読める */
 (function (root) {
   'use strict';
@@ -165,6 +167,113 @@
   }
   Core.runCheck = runCheck;
 
+  /* ================= 在庫番の取り直し(主の店と控えの店) =================
+     1つの品 = { id, jan, sources: [{ code(楽天の商品コード), shop, url }, …], prev(前に返した結果。無くてもよい) }。sources の1つ目が主の店、あとは控え(主を含めて3店まで = 主1+控え2)。
+     呼び方: JANがあれば、JANで1回探す(在庫のある品だけ・安い順・30件)。返事に載っていた店は「在庫あり」。載っていない店だけ、商品コードで1回ずつ確かめる
+     (売り切れなのか、30件に入らなかっただけなのかを分ける)。どの呼び出しの前にも2秒あける。
+     確かめられなかった店は unknown のまま返す(売り切れと決めつけない)。403・429・通信の失敗は、その場で全部を止める */
+  var STOCK_LIMIT = { free: 5, light: 30, total: 100, business: 300 };   // 1回に確かめる品の数の上限
+  var STOCK_SUBS = 2;                                                     // 控えの店の数の上限(主を含めて3店まで。仕様8)
+  function stockLimit(tier) { return STOCK_LIMIT[tier] || STOCK_LIMIT.free; }
+  /** 品の店の並び(主が先頭)。商品コードの無いもの・重なり・4店目からは外す */
+  function stockShops(item) {
+    var seen = {}, out = [];
+    ((item && item.sources) || []).forEach(function (x) {
+      var code = x && x.code ? String(x.code) : '';
+      if (!code || seen[code] || out.length > STOCK_SUBS) return;
+      seen[code] = 1; out.push({ code: code, role: out.length ? 'sub' : 'main', shop: x.shop || '', url: x.url || '' });
+    });
+    return out;
+  }
+  function shopOf(it) { return { price: num(it.itemPrice), pt: num(it.pointRate) || 1, freeShip: Number(it.postageFlag) === 0, shop: it.shopName || '', url: it.itemUrl || '', name: it.itemName || '' }; }
+  /** JANで探した返事を、商品コードごとに引ける形にする。在庫のある店の数と一番安い値段(返事の30件までの目安)、登録していない店の上位5件も返す */
+  function stockIndex(json, known) {
+    var by = {}, shops = {}, min = null, top = [];
+    ((json && json.Items) || []).forEach(function (it) {
+      it = it.Item || it;
+      if (!it.itemCode || Number(it.availability) === 0 || !(num(it.itemPrice) > 0)) return;
+      var o = shopOf(it); o.code = it.itemCode;
+      if (!by[o.code]) by[o.code] = o;
+      shops[String(it.shopCode || o.code.split(':')[0])] = 1;
+      if (min == null || o.price < min) min = o.price;
+      if (!known[o.code] && top.length < 5) top.push({ code: o.code, shop: o.shop, price: o.price, url: o.url, freeShip: o.freeShip });
+    });
+    return { by: by, market: { n: Object.keys(shops).length, min: min, top: top } };
+  }
+  /** 1つの品を確かめる。gate() は呼ぶ前の関所(間隔・止める印・枠)。call(params) は楽天の返事(JSON)を返す。
+      返す: Promise<{ result, halt }>。halt = ''(終わった)/'user'/'quota'/{ status }(失敗) */
+  function stockOne(item, gate, call, now) {
+    var shops = stockShops(item), st = {}, calls = 0, market = null, halt = '';
+    var prev = {}; ((item.prev && item.prev.shops) || []).forEach(function (x) { prev[x.code] = x; });
+    function ask(params) { return gate().then(function () { calls++; return call(params); }); }
+    function byJan() {
+      if (!item.jan || !shops.length) return Promise.resolve();
+      var known = {}; shops.forEach(function (x) { known[x.code] = 1; });
+      return ask({ keyword: String(item.jan), hits: '30', availability: '1', sort: '+itemPrice' }).then(function (j) {
+        var ix = stockIndex(j, known); market = ix.market;
+        shops.forEach(function (x) { if (ix.by[x.code]) st[x.code] = Object.assign({ state: 'in' }, ix.by[x.code]); });
+      });
+    }
+    function byCode(i) {
+      if (i >= shops.length) return Promise.resolve();
+      var x = shops[i];
+      if (st[x.code]) return byCode(i + 1);
+      return ask({ itemCode: x.code, hits: '1', availability: '0' }).then(function (j) {
+        var r = parseItem(j, x.code), hit = null;
+        ((j && j.Items) || []).forEach(function (it) { it = it.Item || it; if (!hit && it.itemCode === x.code) hit = it; });
+        if (!r.ok) st[x.code] = { state: 'unknown' };
+        else if (r.stock) st[x.code] = Object.assign({ state: 'in' }, shopOf(hit));
+        else st[x.code] = Object.assign({ state: 'out', missing: !!r.missing }, hit ? { shop: hit.shopName || '', url: hit.itemUrl || '', name: hit.itemName || '' } : {});
+        return byCode(i + 1);
+      });
+    }
+    return byJan().then(function () { return byCode(0); }).then(null, function (err) {
+      halt = err && err.halt ? err.halt : { status: err && err.status || 0 };
+    }).then(function () {
+      var t = now(), inStock = 0, unknown = 0, min = null, minCode = '';
+      var list = shops.map(function (x) {
+        var s = st[x.code] || { state: 'unknown' }, p = prev[x.code] || {}, ok = s.state !== 'unknown';
+        var o = { code: x.code, role: x.role, state: s.state, price: s.state === 'in' ? s.price : null, pt: s.state === 'in' ? s.pt : null, freeShip: s.state === 'in' ? s.freeShip : null,
+          shop: s.shop || x.shop, url: s.url || x.url, name: s.name || '', missing: !!s.missing, fail: ok ? 0 : num(p.fail) + 1, okAt: ok ? t : (p.okAt || null) };
+        if (o.state === 'in') { inStock++; if (min == null || o.price < min) { min = o.price; minCode = o.code; } }
+        if (o.state === 'unknown') unknown++;
+        return o;
+      });
+      var main = list[0] || null, pv = item.prev || {};
+      return { halt: halt, result: { id: item.id, jan: item.jan || '', shops: list, inStock: inStock, unknown: unknown, min: min, minCode: minCode, market: market,
+        at: t, failed: main ? main.fail : num(pv.failed) + 1, okAt: main ? main.okAt : (pv.okAt || null), calls: calls } };
+    });
+  }
+  /** 品を順に確かめる。env = { call(params) → Promise<JSON>(失敗は { status } を投げる), useQuota(), wait(ms), now(), stopped(), limit(品の数の上限), origin, onProgress(済み, 全部, 結果) }
+      返す: { results: [結果…], done, over(上限を超えて確かめなかった品の数), stopped: ''/'user'/'quota'/'error', error }
+      途中で止めた・枠が切れた品は results に入れない(次に確かめ直す)。失敗で止まった品だけは、届かなかった店を unknown にして入れる(確かめられなかった回数が1つ増える) */
+  function runStock(items, env) {
+    items = items || [];
+    var lim = env.limit == null ? items.length : Math.max(0, env.limit), todo = items.slice(0, lim);
+    var out = { results: [], done: 0, over: items.length - todo.length, stopped: '', error: '' }, i = 0, first = true;
+    function gate() {
+      var w = first ? Promise.resolve() : env.wait(CALL_GAP);
+      return w.then(function () {
+        if (env.stopped && env.stopped()) throw { halt: 'user' };
+        if (!env.useQuota()) throw { halt: 'quota' };
+        first = false;
+      });
+    }
+    function step() {
+      if (i >= todo.length) return Promise.resolve(out);
+      return stockOne(todo[i], gate, env.call, env.now).then(function (r) {
+        if (r.halt === 'user' || r.halt === 'quota') { out.stopped = r.halt; return out; }
+        out.results.push(r.result); i++;
+        if (r.halt) { out.stopped = 'error'; out.error = errText(r.halt.status, env.origin); return out; }
+        out.done++;
+        if (env.onProgress) env.onProgress(i, todo.length, r.result);
+        return step();
+      });
+    }
+    return step();
+  }
+  Core.STOCK_LIMIT = STOCK_LIMIT; Core.STOCK_SUBS = STOCK_SUBS; Core.stockLimit = stockLimit; Core.stockShops = stockShops; Core.stockIndex = stockIndex; Core.runStock = runStock;
+
   if (typeof module !== 'undefined' && module.exports) module.exports = Core;
   root.SedoriWatchCore = Core;
   if (typeof document === 'undefined' || !root.SedoriUI) return;
@@ -216,6 +325,8 @@
       return r.json();
     }, function () { var e = new Error('network'); e.status = 0; throw e; });
   }
+  /** 「在庫番」(listed.js)が自分で確かめている最中か(印 mzw-lock。形は watch-chk-lock と同じ { t, id })。その間は、こちらの確かめを始めない */
+  function listedBusy() { var l = U.store.get('mzw-lock', null); return !!(l && Date.now() - num(l.t) <= LOCK_MS); }
   function fetchItem(row) { return call({ itemCode: row.code, hits: '1', availability: '0' }).then(function (j) { return parseItem(j, row.code); }); }
 
   /** 確かめた行(done)を、今の一覧へ戻して保存し、開いている表を描き直す */
@@ -254,13 +365,14 @@
   }
   function checkAll() {
     if (!hasKeys()) { U.toast('楽天のアプリIDとアクセスキーを入れると確かめられます'); var ra = RA(); if (ra && ra.openKeys) ra.openKeys(); return Promise.resolve(null); }
+    if (listedBusy()) { U.toast('「在庫番」の確かめが動いています。終わってから、もう一度確かめてください'); return Promise.resolve(null); }
     var rows = JSON.parse(JSON.stringify(list())).filter(function (r) { return !!r.code; });
     if (!rows.length) { U.toast('商品コードのある行がありません。JANのある行は「楽天で探し直す」を押してください'); return Promise.resolve(null); }
     return check(rows, false);
   }
   /** 自動: 有料・キーあり・前回から6時間以上・別のタブが動いていない時だけ */
   function tryAuto() {
-    if (running) return;
+    if (running || listedBusy()) return;
     if (!canAuto({ paid: paid(), hasKeys: hasKeys(), last: U.store.get('watch-chk-last', 0), now: Date.now(), lock: U.store.get('watch-chk-lock', null), me: ME })) return;
     var rows = pickAuto(JSON.parse(JSON.stringify(list())));
     if (rows.length) check(rows, true);
@@ -301,6 +413,40 @@
     }, function (err) { U.toast(String(err && err.message || 'Keepaから取れませんでした')); }).then(function () { b.disabled = false; paint(); });
   }
 
+  /* ---------- 在庫番の取り直し(listed.js から呼ぶ口。保存はしない) ----------
+     items = [{ id, jan, sources: [{ code, shop, url }…], prev }]。opt = { onProgress(済み, 全部, 結果), stopped() }
+     ウォッチの確かめと同時には走らない(同じ印 watch-chk-lock を使う。合わせても2秒に1回を超えない) */
+  function stockLimitNow() { return stockLimit(U.tier ? U.tier() : (paid() ? 'light' : 'free')); }
+  function stock(items, opt) {
+    opt = opt || {}; items = Array.isArray(items) ? items : [];
+    function none(why, text) { return Promise.resolve({ results: [], done: 0, over: 0, stopped: why, error: text }); }
+    if (!hasKeys()) return none('nokeys', '楽天のアプリIDとアクセスキーを入れると確かめられます。');
+    if (running || listedBusy() || !lockFree(U.store.get('watch-chk-lock', null), Date.now(), ME)) return none('busy', 'ほかの確かめが動いています。終わってから、もう一度確かめてください。');
+    if (!items.length) return none('', '');
+    running = true; stopFlag = false; prog = [0, Math.min(items.length, stockLimitNow())];
+    U.store.set('watch-chk-lock', { t: Date.now(), id: ME });
+    paint();
+    function end(out) { running = false; prog = null; U.store.del('watch-chk-lock'); paint(); return out; }
+    return runStock(items, {
+      call: function (params) { U.store.set('watch-chk-lock', { t: Date.now(), id: ME }); return call(params); },
+      useQuota: useQuota, now: Date.now, origin: location.origin, limit: stockLimitNow(),
+      wait: function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); },
+      stopped: function () { return stopFlag || !!(opt.stopped && opt.stopped()); },
+      onProgress: function (n, all, res) { prog = [n, all]; paint(); if (opt.onProgress) { try { opt.onProgress(n, all, res); } catch (e) { /* 呼んだ側の誤りで止めない */ } } }
+    }).then(function (out) {
+      if (out.stopped === 'quota') out.error = 'きょうの無料の回数(' + FREE_PER_DAY + '回)を使い切りました。あすまた確かめられます(ライト以上は制限なし)。';
+      return end(out);
+    }, function (e) { end(null); throw e; });
+  }
+
+  /** 楽天を1回呼ぶだけの口(B2の依頼)。間隔(CALL_GAP)と、失敗でその場で止めることは、呼ぶ側が守る。失敗は { status } の付いた Error */
+  var source = {
+    hasKeys: hasKeys, useQuota: useQuota,
+    searchJan: function (jan) { return call({ keyword: String(jan), hits: '30', availability: '1', sort: '+itemPrice' }); },
+    item: function (code) { return call({ itemCode: String(code), hits: '1', availability: '0' }).then(function (j) { return parseItem(j, String(code)); }); },
+    errText: function (status) { return errText(status, location.origin); }
+  };
+
   /* ---------- お知らせ(ブラウザの通知・ページを開いている間) ---------- */
   function notifyOn() { return !!U.store.get('notify-watch', false) && 'Notification' in root && root.Notification.permission === 'granted'; }
   function enableNotify(on) {
@@ -313,9 +459,11 @@
       return ok;
     }, function () { return false; });
   }
-  function notify(n) {
-    var title = 'ウォッチの' + n + '件で値段か在庫が変わりました', url = U.base() + 'rakuten-amazon/?tab=w';
-    var opt = { body: '仕入れる前に、ウォッチで確かめてください', tag: 'zw-watch', icon: U.base() + 'icon-192.png', data: { url: url } };
+  function notify(n) { push('ウォッチの' + n + '件で値段か在庫が変わりました', '仕入れる前に、ウォッチで確かめてください', U.base() + 'rakuten-amazon/?tab=w', 'zw-watch'); }
+  /** 通知を1通出す(sw.js 経由。押すと url を開く)。入・切は呼ぶ側が notifyOn() で見る。許可が無い端末では何もしない */
+  function push(title, body, url, tag) {
+    if (!('Notification' in root) || root.Notification.permission !== 'granted') return;
+    var opt = { body: body || '', tag: tag || 'zw-watch', icon: U.base() + 'icon-192.png', data: { url: url } };
     function plain() { try { var x = new root.Notification(title, { body: opt.body, tag: opt.tag, icon: opt.icon }); x.onclick = function () { root.focus(); location.href = url; x.close(); }; } catch (e) { /* 通知を出せない端末では何もしない */ } }
     try {
       var sw = 'serviceWorker' in navigator && navigator.serviceWorker.controller ? navigator.serviceWorker.ready : null;
@@ -395,6 +543,7 @@
     setTimeout(tryAuto, 3000);
     document.addEventListener('sedori:acct', function () { setTimeout(tryAuto, 3000); paint(); });
   }
-  root.SedoriWatchCheck = { checkAll: checkAll, tryAuto: tryAuto, unseen: unseenNow, enableNotify: enableNotify, notifyOn: notifyOn, relink: relink, paint: paint };
+  root.SedoriWatchCheck = { checkAll: checkAll, tryAuto: tryAuto, unseen: unseenNow, enableNotify: enableNotify, notifyOn: notifyOn, relink: relink, paint: paint,
+    source: source, notify: push, stock: stock, stockLimit: stockLimitNow, stockStop: function () { stopFlag = true; }, stockBusy: function () { return running; } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })(typeof window !== 'undefined' ? window : this);

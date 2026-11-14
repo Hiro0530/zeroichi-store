@@ -1,0 +1,131 @@
+/* 商品ページ(shohin/)。本文16px基準。文字は 12(図の目盛り)/14(副)/16(本文)/20(題・値)と、主役の数字40。余白は 4/8/12/16/24/32/48。
+   区切りは余白と見出しで分け、線の箱は使わない。塗りのボタンは1つ(.it-btn.fill) */
+body[data-page="shohin"] .crumb{display:none}
+.it{max-width:1080px;margin:0 auto;padding-top:8px;font-size:16px;line-height:1.6;color:var(--ink)}
+.it i{font-style:normal}
+.it h1,.it h2,.it p,.it dl,.it dd,.it ul{margin:0}
+.it-back a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--sub);text-decoration:none}
+.it-back a::before{content:"";width:8px;height:8px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:0 8px 0 4px}
+.it-back a:hover{color:var(--ink)}
+.it-wait{color:var(--mute)}
+.it-h{display:flex;gap:16px;align-items:flex-start;margin:8px 0 32px}
+.it-img{width:72px;height:72px;object-fit:contain;border-radius:4px;flex:0 0 auto}
+.it-h h1{font-size:20px;line-height:1.4;font-weight:700;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.it-meta,.it-pre{margin-top:4px;font-size:14px;line-height:1.5;color:var(--mute);overflow-wrap:anywhere}
+.it-meta span{margin:0 4px}
+.it-g{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:48px;align-items:start}
+.it-c1,.it-c2{min-width:0}
+.it-c2{position:sticky;top:16px}
+.it-c2>:first-child{margin-top:0}
+
+/* 主役: 見込み利益 */
+.it-k{font-size:14px;color:var(--mute)}
+.it-pf{display:flex;align-items:baseline;flex-wrap:wrap;line-height:1.2;margin-top:4px}
+.it-pf b{font-size:40px;font-weight:700;letter-spacing:0}
+.it-pf i{font-size:16px;font-weight:700;margin-left:4px}
+.it-pf span{font-size:16px;color:var(--sub);margin-left:16px}
+.it-pf.good b,.it-pf.good i{color:var(--good)}
+.it-pf.bad b,.it-pf.bad i{color:var(--bad)}
+.it-pf.none b{font-size:20px;line-height:2;color:var(--mute)}
+.it-v{margin-top:8px;max-width:36em}
+.it-v b{margin-right:8px}
+.it-v.ok b{color:var(--good)}
+.it-v.wait b{display:block;margin:0}
+.it-pt{margin-top:12px;font-size:14px;color:var(--mute);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.it-pt b{font-size:16px;color:var(--ink)}
+.it-pr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:24px!important}
+.it-kv dt{font-size:14px;color:var(--mute);line-height:1.5}
+.it-kv dt span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it-kv dd{font-size:20px;font-weight:700;line-height:1.4}
+.it-kv dd i{font-size:14px;font-weight:400;margin-left:2px}
+.it-kv dd small{display:block;font-size:14px;font-weight:400;color:var(--mute);line-height:1.5}
+.it-none{color:var(--mute);font-weight:400}
+
+/* 区切り */
+.it-sec{margin-top:48px}
+.it-sec h2,.it-edit>summary{font-size:16px;font-weight:700;line-height:1.5}
+.it-sec h2{margin-bottom:16px}
+.it-sec h2 small{font-size:14px;font-weight:400;color:var(--mute);margin-left:8px}
+.it-note{margin-top:16px!important;font-size:14px;line-height:1.6;color:var(--mute);max-width:44em}
+.it-emp{color:var(--sub);max-width:36em}
+.it-row{margin-top:16px!important}
+.it-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px!important}
+.it-st.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+/* 価格の推移(数値から描く図) */
+.it-chw{width:100%;overflow:hidden}
+.it-ch{display:block}
+.it-ch text{font-size:12px;fill:var(--mute);font-family:var(--font)}
+.it-ch .ty{text-anchor:end}
+.it-ch .g{stroke:var(--line);stroke-width:1}
+.it-ch .p{fill:none;stroke:var(--ac);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.it-ch .c{stroke:var(--sub);stroke-width:1.5;stroke-dasharray:4 4}
+.it-ch .dot{fill:var(--ac);stroke:#fff;stroke-width:2}
+.it-lg{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:8px!important;font-size:14px;color:var(--sub)}
+.it-lg span::before{content:"";display:inline-block;width:20px;margin-right:8px;vertical-align:middle;border-top:2px solid var(--ac)}
+.it-lg .l2::before{border-top:2px dashed var(--sub)}
+
+/* 売れ行き・目安 */
+.it-sp{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+.it-sp b{font-size:20px;line-height:1.4}
+.it-sp>span:last-child{font-size:14px;color:var(--mute)}
+.it-bar{display:inline-flex;gap:4px}
+.it-bar i{width:16px;height:16px;border-radius:2px;background:var(--line)}
+.it-bar i.on{background:var(--hd)}
+.it-ad b{font-size:20px;line-height:1.4}
+.it-ad.none b,.it-ad.unk b{color:var(--sub)}
+.it-why{margin-top:8px!important;padding-left:20px;max-width:40em}
+.it-why li+li{margin-top:4px}
+
+/* 内訳 */
+.it .brk{font-size:16px;margin-top:0}
+.it .brk td{padding:8px 0;border-bottom:1px solid var(--line)}
+.it .brk td:first-child{color:var(--sub)}
+.it .brk tr.t td{color:var(--ink);border-bottom-color:var(--line2)}
+
+/* 数字を直す */
+.it-edit>summary{display:flex;align-items:center;min-height:48px;cursor:pointer;color:var(--link);list-style:none}
+.it-edit>summary::-webkit-details-marker{display:none}
+.it-edit>summary::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-left:12px;margin-top:-4px}
+.it-edit[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+.it-edit{margin-top:24px}
+.it-fg{display:grid;gap:16px;padding-top:8px}
+.it-f>span:first-child{display:block;font-size:14px;color:var(--sub);margin-bottom:8px}
+.it-f small{font-size:14px;color:var(--mute);margin-left:8px}
+.it-in{display:flex;align-items:center;gap:8px}
+.it-in input{flex:1 1 auto;min-width:0;height:48px;padding:0 12px;font-size:16px;text-align:right;border:1px solid #8a94a0;border-radius:4px;background:#fff}
+.it-in i{font-size:14px;color:var(--sub)}
+
+/* 操作 */
+.it-acts{margin-top:24px}
+.it-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:8px 16px;border:1px solid #8a94a0;border-radius:4px;background:#fff;color:var(--ink);font-size:16px;font-weight:700;line-height:1.3;text-align:center;text-decoration:none;cursor:pointer}
+.it-btn:hover{background:var(--hover);color:var(--ink)}
+.it-btn:disabled{color:var(--mute);cursor:default}
+.it-btn.fill{background:var(--ac);border-color:var(--ac);color:#fff}
+.it-btn.fill:hover{background:var(--ac-d);border-color:var(--ac-d);color:#fff}
+.it-main .it-btn,.it-sub .it-btn{width:100%}
+.it-sub{display:grid;gap:8px;margin-top:8px}
+.it-lk{display:flex;flex-wrap:wrap;gap:0 24px;margin-top:0}
+.it-ln{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:none;color:var(--link);font-size:14px;font-weight:400;line-height:1.3;cursor:pointer;text-decoration:none}
+.it-ln:hover{color:var(--ac-d);text-decoration:underline}
+/* パソコン幅: 右の欄は「ボタン → 利益の内訳 → 数字を直す」の順(塗りのボタンを最初の画面に) */
+@media(min-width:861px){.it-c2{display:flex;flex-direction:column}.it-c2>.it-acts{order:-1;margin-top:0}.it-c2>.it-sec:first-child{margin-top:0}.it-c2>#it-brk{margin-top:32px}}
+.it-msg{margin-top:16px!important;padding:12px 16px;border-radius:4px;background:var(--rail);font-size:14px}
+.it-links{display:flex;gap:24px;margin-top:8px!important}
+.it-links a{display:inline-flex;align-items:center;min-height:44px;font-size:14px}
+.it-none-box{max-width:36em;padding:32px 0}
+.it-none-box h1{font-size:20px;margin-bottom:8px}
+
+@media(max-width:860px){
+  /* スマホ幅: 上の帯は名前の段だけ(検索・発送のしかた・目標・固定費は計算ページで決める) */
+  body[data-page="shohin"] .sbar,body[data-page="shohin"] #shipm,body[data-page="shohin"] #tgt,body[data-page="shohin"] #hd-fix,body[data-page="shohin"] .gnav{display:none}
+  .it{padding-bottom:88px}
+  .it-h{margin-bottom:24px}
+  .it-img{width:56px;height:56px}
+  .it-g{display:block}
+  .it-c2{position:static;margin-top:48px}
+  .it-pr{gap:16px}
+  /* 一番大事な操作は、いつも親指の届く下に置く */
+  .it-main{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:8px 16px calc(8px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}
+  .it-sub{margin-top:0}
+}

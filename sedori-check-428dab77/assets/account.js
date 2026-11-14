@@ -185,7 +185,7 @@
     stopSync();
     st.user = user ? { uid: user.uid, email: user.email || '' } : null;
     st.phase = 'ready';
-    if (!user) { store.del('acct-hint'); st.sub = null; st.plan = S.planState(null); st.sync = 'local'; emit(); return; }
+    if (!user) { store.del('acct-hint'); U.settingsSettled && U.settingsSettled(); st.sub = null; st.plan = S.planState(null); st.sync = 'local'; emit(); return; }
     store.set('acct-hint', 1);
     var F = fb.F, ref = F.doc(fb.db, 'users', user.uid);
     F.setDoc(ref, { email: user.email || '', lastLoginAt: F.serverTimestamp() }, { merge: true }).catch(function () { /* オフライン等 */ });
@@ -196,9 +196,10 @@
       st.sub = d.subscription || null;
       st.plan = S.planState(st.sub);
       if (d.settings && Number(d.settingsAt) > Number(store.get('settings-at', 0))) applySettings(d.settings, d.settingsAt);
+      U.settingsSettled && U.settingsSettled();   // クラウドの設定を反映し終えた(または無かった): 月の固定費などの値を出し始める
       if (st.plan.paid) { startSync(user.uid); if (!pausedFor) startBooks(user.uid); } else { stopSync(); st.sync = 'local'; }
       emit();
-    }, function () { st.error = '契約の状態を読めませんでした'; emit(); });
+    }, function () { st.error = '契約の状態を読めませんでした'; U.settingsSettled && U.settingsSettled(); emit(); });
     emit();
   }
 

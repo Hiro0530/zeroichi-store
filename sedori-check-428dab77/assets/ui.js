@@ -8,6 +8,16 @@
 
   /** 端末をまたいで揃える設定(ログイン中・有料のみクラウドへ) */
   var SYNC_KEYS = ['target', 'ship', 'wh', 'prep', 'fixed'];
+  /* ログイン済みの端末(acct-hint)では、クラウドの設定が届くまでの数秒、月の固定費などが古い値で出てしまう。届くまでは値を出さず「読み込み中」にする。
+     account.js が設定を受け取った(または無いと分かった)時に settingsSettled() を呼ぶ。通信が届かない時のために、6秒で打ち切る */
+  var settingsWait = false;
+  try { settingsWait = !!JSON.parse(localStorage.getItem(PREFIX + 'acct-hint') || '0'); } catch (e) { settingsWait = false; }
+  function settingsPending() { return settingsWait; }
+  function settingsSettled() {
+    if (!settingsWait) return; settingsWait = false;
+    try { paintFixed(); fireTarget(); emit('sedori:fixed', {}); } catch (e) { /* 何もしない */ }
+  }
+  if (settingsWait) setTimeout(settingsSettled, 6000);
   function emit(name, detail) { try { document.dispatchEvent(new CustomEvent(name, { detail: detail })); } catch (e) { /* 何もしない */ } }
   var store = {
     get: function (k, d) {
@@ -211,6 +221,7 @@
   }
   function paintFixed() {
     var v = $('#hd-fix-v'); if (!v) return;
+    if (settingsWait) { v.textContent = '読み込み中'; v.hidden = false; return; }
     var t = fixedTotal();
     v.textContent = t > 0 ? yen(t) + '円' : ''; v.hidden = !(t > 0);
   }
@@ -276,6 +287,7 @@
   /** 内訳の下の1行。unit = 1個の利益(ポイント抜き)。売値が未入力(unit が無い)の時は出さない */
   function fixLineHTML(unit) {
     if (unit == null || !isFinite(Number(unit))) return '';
+    if (settingsWait) return '<p class="fixl">月の固定費を読み込んでいます。</p>';
     if (!fixedIsSet()) return '<p class="fixl"><button type="button" class="lnk" data-fix-open>月の固定費を入れる</button>と、月に何個で固定費に届くかの目安が出ます。</p>';
     var F = fixedTotal(); if (!(F > 0)) return '';
     var n = window.SedoriCalc.breakEvenUnits(F, unit);
@@ -486,7 +498,7 @@
         if (i < 0) i = Math.max(0, STATUS.indexOf(r.status) - 1);
         if (i >= fl.length - 1) return;
         r.status = fl[i + 1];
-        if (r.status === '売約' && r.wait) { r.wait = false; r.date = today(); } // 無在庫: 売れてから仕入れる
+        if (r.status === '売約' && r.wait) { r.wait = false; r.date = today(); } // 取り寄せ販売: 売れてから仕入れる
         if (r.status === '売約') {
           if (!r.saleDate) r.saleDate = today();
           if (!r.salePrice && r.sellPrice) r.salePrice = r.sellPrice;
@@ -523,7 +535,7 @@
     var a = $('.hd-ledger'); if (a) a.href = base() + 'daicho/' + (soon ? '?tab=ending' : '');
   }
 
-  /* ---------- 無在庫の見張り: ヤフオクの終了が近い出品中の行 ---------- */
+  /* ---------- 取り寄せ販売の見張り: ヤフオクの終了が近い出品中の行 ---------- */
   /** 出品中で終了日時がある行(終了が近い順)。e は SedoriCalc.endState */
   function endingRows(rows, now) {
     var C = window.SedoriCalc; if (!C || !C.endState) return [];
@@ -807,8 +819,8 @@
      利益はまず「ポイント抜き(売値−仕入れ−手数料−送料)」で黒字かを見せ、ポイントはその下に上乗せとして足す */
   function gateHTML(o) {
     var v = Math.round(Number(o.noPt) || 0), ok = v > 0;
-    var verdict = v > 0 ? '<b>黒字</b>価格差だけで利益が残ります' :
-      (v === 0 ? '<b>±0円</b>手数料と送料を引くと、利益が残りません' :
+    var verdict = v > 0 ? '<b>黒字</b>価格差だけで黒字です' :
+      (v === 0 ? '<b>±0円</b>手数料と送料を引くと、ちょうど0円です' :
         (o.plain ? '<b>赤字</b>この売値では損が出ます' : '<b>赤字</b>ポイント抜きでは損が出ます。価格差のない商品は、ポイントを足して黒字に見えても、仕入れの候補から外すのが基本です'));
     var h = '<div class="gate ' + (ok ? 'ok' : 'ng') + '"><div class="hl"><span>' + esc(o.title || 'ポイント抜きの利益') + '<small>' + esc(o.sub || '売値−仕入れ−手数料−送料') + '</small></span>' +
       '<b class="' + (ok ? 'good' : 'bad') + '">' + yen(v) + '<i>円</i></b></div><p class="gate-v">' + verdict + '</p>';
@@ -864,8 +876,23 @@
     if (location.hash === '#legal') { var l = $('#legal'); if (l) { l.open = true; setTimeout(function () { l.scrollIntoView(); }, 50); } }
   }
 
+  /* 台帳の行から商品ページへ(1タップ)。計算の条件が残っている行(楽天・Yahoo!→Amazon)だけ。
+     台帳の部品(ledger.js)が自分でリンクを出すようになったら、ここは何もしない(行に shohin/ へのリンクがあれば足さない) */
+  function mountItemLinks() {
+    var body = $('#lg-rows'); if (!body || !window.MutationObserver) return;
+    function add() {
+      $$('tr[data-id]', body).forEach(function (tr) {
+        if (tr.querySelector('a[href*="shohin/"]')) return;
+        var r = ledger.get(tr.getAttribute('data-id')), box = tr.querySelector('.nmc .meta'); if (!r || !r.calc || !box) return;
+        var a = document.createElement('a'); a.className = 'it-go'; a.href = base() + 'shohin/?l=' + encodeURIComponent(r.id); a.textContent = '商品ページ';
+        a.addEventListener('click', function (e) { e.stopPropagation(); });
+        box.appendChild(a);
+      });
+    }
+    new MutationObserver(add).observe(body, { childList: true }); add();
+  }
   function init() {
-    mountTarget(); mountShip(); mountFixed(); mountSearch(); mountKeys(); wireMail(); mountSide(); mountStart(); updateCount(); registerSW(); mountEndWatch();
+    mountTarget(); mountShip(); mountFixed(); mountSearch(); mountKeys(); wireMail(); mountSide(); mountStart(); updateCount(); registerSW(); mountEndWatch(); mountItemLinks();
     loadFees().then(showFeeDate).catch(function () {
       $$('[data-feedate]').forEach(function (el) { el.textContent = '手数料データを読み込めませんでした。再読み込みしてください'; });
     });
@@ -879,7 +906,7 @@
     ledger: ledger, partyPanel: partyPanel, parseParty: parseParty, partyFromUrl: partyFromUrl, badgeHTML: badgeHTML,
     exportCSV: exportCSV, exportXLSX: exportXLSX, xlsx: xlsx, kobutsuRows: kobutsuRows, K_HEAD: K_HEAD,
     brkRows: brkRows, profitHead: profitHead, result: result, gateHTML: gateHTML, compareHTML: compareHTML, askActualHTML: askActualHTML,
-    shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS,
+    shipMode: shipMode, endingRows: endingRows, enableNotify: enableNotify, notifyOn: notifyOn, stopListing: stopListing, emit: emit, settingsPending: settingsPending, settingsSettled: settingsSettled, SYNC_KEYS: SYNC_KEYS, base: base, whCosts: whCosts, whTotal: whTotal, mountWh: mountWh, carrierOptions: carrierOptions, flowOf: flowOf, nextLabel: nextLabel, SHIP_LABEL: SHIP_LABEL, profitClass: profitClass, updateCount: updateCount, PREREG: PREREG, NEWS: NEWS,
     preregHTML: preregHTML, setPreregPlan: setPreregPlan,
     hook: hook, fire: fire, tier: tier, isTyping: isTyping,
     prepCosts: prepCosts, prepUnit: prepUnit, prepLabel: prepLabel,

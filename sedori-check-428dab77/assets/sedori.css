@@ -512,7 +512,7 @@ input.got{background:#f2f9f3;border-color:#94c9a2}
 .btn.danger.ghost{background:#fff;color:var(--bad);border-color:#e3a19c}
 .btn.tg[aria-pressed="true"]{background:var(--ac-soft);border-color:var(--ac);color:var(--ac-d)}
 
-/* ---------- 無在庫の見張り(台帳) ---------- */
+/* ---------- 取り寄せ販売の見張り(台帳) ---------- */
 .endc{font-size:11.5px;font-weight:700;white-space:nowrap;color:var(--sub);font-variant-numeric:tabular-nums}
 .endc.soon{color:var(--warn-ink)}
 .endc.due{color:var(--bad)}
@@ -965,6 +965,16 @@ p.pc-sub[data-c="year"]{color:var(--good);font-weight:700}
 .hd-fix b{color:#fff;font-size:14px;font-weight:700}
 .hd-fix[aria-expanded="true"]{background:#fff;color:var(--hd)}
 .hd-fix[aria-expanded="true"] b{color:var(--hd)}
+.hd-mz{flex:0 0 auto;font-size:12px;font-weight:700;line-height:24px;padding:0 8px;border-radius:2px;background:var(--bad);color:#fff;text-decoration:none;white-space:nowrap}
+.hd-mz:hover{color:#fff;text-decoration:underline}
+.hd-mz[hidden]{display:none}
+@media(max-width:860px){.hd-mz{order:2;display:inline-flex;align-items:center;min-height:36px;padding:0 10px}.hd-mz[hidden]{display:none}.hd-mz+.hd-ledger{margin-left:0}
+  /* 印が出ている間は、上の1段目に収める(帯の段を増やさない): 名前の下の小さな字を隠し、すき間と余白を少し詰める */
+  .hd-in:has(.hd-mz:not([hidden])){column-gap:8px}
+  .hd-in:has(.hd-mz:not([hidden])) .logo span{display:none}
+  .hd-in:has(.hd-mz:not([hidden])) .hd-mz{padding:0 6px}
+  .hd-in:has(.hd-mz:not([hidden])) .hd-ai{padding:6px 8px}
+  .hd-in:has(.hd-mz:not([hidden])) .hd-acct{padding:4px 6px}}
 .hd-watch{flex:0 0 auto;font-size:12px;font-weight:700;line-height:24px;padding:0 8px;border-radius:2px;background:var(--warn-bg);color:var(--warn-ink);text-decoration:none;white-space:nowrap}
 @media(max-width:1360px){.shipm .tgt-k{display:none}.hd-fix{padding:0 8px}}
 /* ---------- 月の固定費の小窓 ---------- */
@@ -1218,6 +1228,128 @@ body[data-bulk-idle] .acts .btn.pri{background:#fff;color:var(--ac);border-color
   .lp-go .btn{flex:1 1 100%;font-size:16px}
 }
 /* ==== 制作係B(台帳) ここまで ==== */
+/* ==== 制作係B2(在庫番・発送待ち) ここから ==== */
+/* 在庫番(assets/listed.js)と、台帳の「発送待ち」(assets/ledger.js・ledger-plus.js)。
+   文字は 12(項目名)/14(副の行)/16(主の行・値・入力)/18(区切り)/22(題)/32(止める品の数)。行は線1本で分け、箱で囲まない。塗りは1画面に1つ */
+.ls{max-width:880px;margin:0 auto;font-size:14px;line-height:1.5}
+.ls-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.ls-head h1{margin:0;font-size:22px;line-height:1.3}
+.ls-head .btn{height:36px;font-size:14px}
+.ls-lead{margin:4px 0 12px;font-size:14px;color:var(--sub)}
+.ls-note{list-style:none;margin:0 0 16px;padding:8px 12px;background:var(--rail);border-radius:4px;font-size:14px;color:var(--ink)}
+.ls-note li{margin:0;padding-left:1.2em;text-indent:-1.2em;line-height:1.7}
+.ls-note li::before{content:"・"}
+.ls-np,.ls-out{display:block;margin-top:2px;font-size:12px;color:var(--warn-ink)}
+.ls-nums{margin:0 0 12px;font-size:16px;font-weight:700;line-height:1.3}
+.ls-nums b{font-size:32px;margin:0 4px;font-variant-numeric:tabular-nums}
+.ls-nums.on{color:var(--bad)}
+.ls-nums small{display:block;margin-top:4px;font-size:14px;font-weight:400;color:var(--sub)}
+.ls-run{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+.ls-run p{margin:0;font-size:14px;color:var(--sub)}
+.ls-run .btn{flex:0 0 auto;height:36px;font-size:14px}
+.ls-alert{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--bad)}
+.ls-alert a{font-weight:400}
+.ls-nt{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:24px 0 0;font-size:14px;color:var(--warn-ink)}
+.ls-nt .btn{flex:0 0 auto;height:36px;font-size:14px}
+.ls-sec{margin-top:32px}
+.ls-sec h2{margin:0 0 8px;font-size:18px;line-height:1.4}
+.ls-sec h2 b{margin-left:8px;font-size:14px;font-weight:400;color:var(--mute)}
+.ls-sec.stop h2{color:var(--bad)}
+.ls-do{margin:0 0 12px;font-size:14px;color:var(--sub)}
+.ls-acts{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 4px}
+.ls-acts .btn{height:auto;min-height:44px;font-size:14px;padding:8px 16px;line-height:1.3}
+.ls-acts .btn small{display:block;font-size:12px;font-weight:400;margin:0;color:var(--mute)}
+.ls-how,.ls-set{font-size:14px;color:var(--sub)}
+.ls-how summary,.ls-set summary{cursor:pointer;padding:8px 0;color:var(--link)}
+.ls-how ol,.ls-set ul{margin:0 0 8px;padding-left:24px}
+.ls-how li,.ls-set li{margin:4px 0;line-height:1.6}
+.ls-how p{margin:0 0 12px;font-size:12px;color:var(--mute)}
+.ls-set{margin-top:32px}
+.ls-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.ls-list>li{border-bottom:1px solid var(--line)}
+.ls-list>li.open{background:#fafbfc}
+.ls-row{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;width:100%;border:0;background:none;padding:12px 4px;text-align:left;cursor:pointer;color:inherit}
+.ls-row:hover{background:var(--hover)}
+.ls-m{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:4px}
+.ls-nm{font-size:16px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.ls-sub,.ls-st{font-size:14px;color:var(--sub);overflow-wrap:anywhere}
+.ls-st time{margin-left:8px;font-size:12px;color:var(--mute);white-space:nowrap}
+.ls-why{color:var(--bad);font-weight:700}
+.ls-ok{color:var(--good);font-weight:700}
+.ls-v{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.ls-v small{font-size:12px;color:var(--mute);font-weight:400}
+.ls-v b{font-size:16px;font-weight:700;white-space:nowrap}
+.ls-v i{font-style:normal;font-size:12px;font-weight:400;margin-left:1px}
+.ls-ra{display:flex;gap:8px;padding:0 4px 12px}
+.ls-ra .btn,.ls-pa .btn{height:36px;font-size:14px}
+.ls-pn{padding:4px 4px 16px}
+.ls-src{margin:0 0 8px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.ls-src b{font-size:16px}
+.ls-src span{flex:1 1 100%;color:var(--sub)}
+.ls-pa{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
+.ls-pa .lnk{font-size:14px;min-height:36px}
+.ls-del{margin-left:auto}
+.ls-f,.ls-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 16px;margin:12px 0}
+.ls-f label,.ls-map label,.ls-file,.ls-paste{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub)}
+.ls-f input,.ls-f select,.ls-map select{width:100%;height:40px;font-size:16px;color:var(--ink)}
+.ls-f input[type=number]{text-align:right;font-weight:700}
+.ls-f input::placeholder{font-size:14px;font-weight:400;color:var(--mute)}
+.ls-f label.w2{grid-column:span 2}
+.ls-f label.ck{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--ink);min-height:40px}
+.ls-f label.ck input{flex:0 0 auto;width:18px;height:18px}
+.ls-hint{margin:0 0 8px;font-size:14px;color:var(--sub);line-height:1.6}
+.ls-pick{border:0;margin:0 0 12px;padding:0;min-width:0}
+.ls-pick legend{padding:0;font-size:14px;font-weight:700}
+.ls-pick label{display:flex;gap:12px;align-items:center;min-height:56px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.ls-pick input{flex:0 0 auto;width:20px;height:20px;margin:0}
+.ls-pick label>span:nth-child(2){flex:1 1 auto;min-width:0}
+.ls-pick label>span:nth-child(2) b{display:block;font-size:16px;overflow-wrap:anywhere}
+.ls-pick small{display:block;font-size:12px;color:var(--mute);overflow-wrap:anywhere}
+.ls-pick .ls-hint{margin-top:12px}
+.ls-empty{padding:48px 16px;text-align:center}
+.ls-empty p{margin:0 0 16px;font-size:16px;line-height:1.7;color:var(--sub)}
+.ls-empty .btn{height:48px;padding:0 24px;font-size:16px}
+.ls-empty .lnk{display:block;margin:12px auto 0;min-height:44px;font-size:14px}
+.ls-dlg .ls-f,.ls-dlg .ls-map{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:0}
+.ls-dlg .ls-f input,.ls-dlg .ls-map select{height:44px}
+.ls-dlg .dlg-lead b{color:var(--ink);font-size:16px}
+.ls-file,.ls-paste{margin:0 0 12px}
+.ls-file input{height:44px;padding:8px 0;font-size:14px;color:var(--ink)}
+.ls-paste textarea{width:100%;font-size:16px}
+.ls-prev{margin:0 0 8px;font-size:14px;line-height:1.6;color:var(--sub);overflow-wrap:anywhere}
+.ls-prev b{color:var(--ink)}
+.ls-err{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--bad)}
+.ls-err::before{content:"▲ "}
+/* 台帳の「発送待ち」: 期限は色だけでなく文字でも分かるようにする */
+.mz-dl{font-size:12px;font-weight:700;white-space:nowrap;color:var(--sub)}
+.mz-dl.eve{color:var(--warn-ink)}
+.mz-dl.due,.mz-dl.late{color:var(--bad)}
+.lp-mz{margin:0 0 12px;font-size:16px;font-weight:700;line-height:1.5}
+.lp-mz b{font-variant-numeric:tabular-nums}
+.lp-mz small{display:block;font-size:12px;font-weight:400;line-height:1.6;color:var(--mute)}
+.mz-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin:0 0 12px}
+.mz-f label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub)}
+.mz-f input{width:100%;height:44px;font-size:16px}
+.mz-f label.w2{grid-column:1/-1}
+@media(max-width:860px){
+  .ls-head .btn{min-height:44px}
+  body[data-page="listed"] .crumb{display:none}
+  .ls-nums b{font-size:28px}
+  .ls-sec{margin-top:24px}
+  body[data-page="listed"] .sbar,body[data-page="listed"] #shipm,body[data-page="listed"] #tgt,body[data-page="listed"] #hd-fix,body[data-page="listed"] .gnav{display:none}   /* 在庫番は、上の帯を名前の段だけに(止める品を最初の画面に出す) */
+  .ls-run{flex-wrap:wrap}
+  .ls-run .btn{height:44px}
+  .ls-acts .btn{flex:1 1 100%;min-height:48px;font-size:16px}
+  .ls-ra .btn{flex:1 1 0;height:44px;padding:0 8px}
+  .ls-pa .btn{height:44px}
+  .ls-pa .lnk,.ls-how summary,.ls-set summary{min-height:44px;display:flex;align-items:center}
+  .ls-how summary,.ls-set summary{display:list-item;padding:12px 0}
+  .ls-f{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ls-f input,.ls-f select{height:48px}
+  .ls-f label.ck{min-height:44px}
+  .ls-dlg .ls-f input,.ls-dlg .ls-map select{height:48px}
+}
+/* ==== 制作係B2(在庫番・発送待ち) ここまで ==== */
 /* ==== 制作係C(お知らせ・確かめ・手引き) ここから ==== */
 /* ==== 制作係C(お知らせ・確かめ・手引き) ここまで ==== */
 
@@ -1248,3 +1380,17 @@ body[data-bulk-idle] .acts .btn.pri{background:#fff;color:var(--ac);border-color
 .fix-dlg .dlg-x{min-width:44px;min-height:44px}
 .fix-dlg .fixamt input{width:128px}
 @media(max-width:860px){.fix-dlg .fixnm,.fix-dlg .fixamt input{height:44px}}
+
+/* 2026-11-14(制作係A2): 一覧の行から商品ページへ(1タップ)。行の3行目・左端に置く(行の真ん中を押した時に誤って開かない)。送料が未入力の行の案内 */
+.it-go{position:relative;display:inline-flex;align-items:center;font-size:12px;line-height:20px;color:var(--link);text-decoration:none;white-space:nowrap}
+.it-go::after{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg);margin-left:4px}
+.it-go:hover{text-decoration:underline}
+.grid.ledger .it-go{margin-left:8px}
+.needship{margin-top:8px;padding:12px;border-radius:4px;background:var(--warn-bg);color:var(--warn-ink)}
+.needship p{margin:0 0 8px;font-size:13px}
+.needship b{display:block;font-size:14px}
+.needship .btn{height:44px}
+@media(max-width:860px){
+  .it-go{min-height:32px;margin-top:4px;font-size:14px}
+  .it-go::before{content:"";position:absolute;inset:-6px -8px}
+}

@@ -101,6 +101,8 @@
         var hit = pickCheapest(list);
         if (hit) {
           it.price = hit.price; it.shop = hit.shop; it.url = hit.url; it.img = hit.img; it.shopPt = hit.shopPt; it.freeShip = hit.freeShip; it.code = hit.code;
+          it.needShip = !hit.freeShip;   // 送料込みの店が無かった: 送料が入るまで利益を出さない(未入力)
+          it.rkShops = (list || []).length;   // 在庫のある店の数(1回の検索で取れた分。30が上限)
           if (!it.name || it.name === it.jan || it.name === it.asin) it.name = hit.name;
         }
         it.rkTry = true; done++; rkDone++;
@@ -150,7 +152,9 @@
           '<span class="bs-rest">' + (meta.pasted || rows.length) + '行のうち' + (rest ? ' ' + rest : '') + '</span></p>';
         // 次にすること(1つだけ): 止まった > 行数の上限 > キーが無い
         var overText = TIER_NAME[U.tier()] + 'は1回' + lim + '行までです。' + (lim + 1) + '行目から先の' + meta.over + '行は計算していません。ライトは100行、総合と業務は500行まで計算できます。';
-        var unkText = '未入力の行は、Amazonの売値か仕入れ値がまだ無い行です。行を押して右の欄に入れると計算します。';
+        var shipN = rows.filter(C.needShip).length;
+        var unkText = '未入力の行は、Amazonの売値か仕入れ値がまだ無い行です。行を押して右の欄に入れると計算します。' +
+          (shipN ? '送料込みの店が無かった' + shipN + '行は、送料別の一番安い店を入れています。行を押して「仕入れの送料」を入れると計算します。' : '');
         var keyText = 'APIキーを入れると、' + (!k.keepa ? 'Keepaの売値' : '') + (!k.keepa && !(k.rkApp && k.rkKey) ? 'と' : '') + (!(k.rkApp && k.rkKey) ? '楽天の一番安い仕入れ値' : '') + 'を取れます。';
         var step = '';
         if (!running && (meta.state === 'paused' || meta.state === 'stopped')) {
@@ -227,6 +231,18 @@
       if (!items.length) { U.toast('仕入れ値の入った行がありません'); return; }
       var room = 300 - R.lists.w.length;
       U.toast(R.addWatch(items) ? items.length + '件をウォッチに入れました' + (items.length > room ? '(ウォッチは300件までで、古い行から外れます)' : '') : 'この端末では保存できませんでした', 'ウォッチを見る', function () { R.setTab('w'); });
+    });
+    /* 「在庫番に登録」: 残った行(JANかASINのある行)を、取り寄せ販売の見張りに送る */
+    $('#b-zaiko').addEventListener('click', function () {
+      var rows = R.visible().map(function (o) { return o.it; }).filter(function (it) { return Number(it.price) > 0 && (it.jan || it.asin); }).map(function (it) {
+        var c = null; try { var r = R.compute(it); c = r && r.x ? JSON.parse(JSON.stringify(r.x)) : null; } catch (e) { c = null; }
+        return { name: it.name || '', jan: it.jan || '', asin: it.asin || '', price: Number(it.sell) || 0, qty: 1, code: it.code || '', shop: it.shop || '', url: it.url || '', cost: Number(it.price) || 0, freeShip: it.freeShip, pt: it.shopPt || 0, calc: c };
+      });
+      if (!rows.length) { U.toast('仕入れ値とJAN(またはASIN)の入った行がありません'); return; }
+      var L = win.SedoriListed;
+      if (L && L.add) { L.add(rows, 'bulk'); return; }
+      var inb = U.store.get('mz-inbox', []); if (!Array.isArray(inb)) inb = [];
+      U.store.set('mz-inbox', inb.concat(rows).slice(-300)); U.toast(rows.length + '品を在庫番に登録しました', '在庫番を見る', function () { win.location.href = U.base() + 'zaiko-ban/'; });
     });
     U.hook('ra-render', function (p) { if (p.tab === 'b') paint(); });
     document.addEventListener('sedori:acct', paintLimit);
