@@ -62,6 +62,8 @@
   function tier() {
     var SA = window.SedoriAccount, cfg = window.ZW_CONFIG || {};
     var pv = params.get('plan');
+    // 利用の鍵の形: 見本(?demo=1・保存しない)だけが全部を試せる。それ以外は鍵の段のまま(URL の ?plan= やログインなしで業務を開かない。2026-11-17)
+    if (cfg.KEY_MODE && SA && SA.keyMode) { if (DEMO) return 'trial'; var kt = SA.paid() ? SA.tier() : 'free'; return kt === 'business' ? 'biz' : kt; }
     if (!SA || !cfg.FIREBASE_CONFIG) return pv && /^(free|light|total|biz)$/.test(pv) ? pv : 'trial';
     var s = SA.state();
     if (!s.user) return 'trial';

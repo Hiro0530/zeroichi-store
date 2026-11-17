@@ -146,6 +146,17 @@
   function payBox() {
     if (!SA || !SA.billingReady) return;
     var s = SA.state(), login = $('#pl-login'), buy = $('#pl-buy'), has = $('#pl-has');
+    if (SA.keyMode) {
+      // 利用の鍵の形: ログインは要らない。払い済みの鍵が入っている端末は、マイページへ案内する
+      login.hidden = true; has.hidden = true; buy.hidden = true;
+      if (s.plan.paid) {
+        has.hidden = false;
+        $('#pl-has-t').textContent = 'この端末には「' + s.plan.label + '」の利用の鍵が入っています。プランの変更・カードの変更・解約は、マイページの「契約の管理」からできます。';
+        return;
+      }
+      buy.hidden = false;
+      $('#pl-who').textContent = 'ログインは要りません。お支払いが済むと、この端末に「利用の鍵」が入り、すぐ使えます。';
+    } else {
     login.hidden = !!s.user || s.phase === 'loading'; buy.hidden = true; has.hidden = true;
     if (!s.user) { drawn = null; return; }
     var pk = s.plan.key;
@@ -156,6 +167,7 @@
     }
     buy.hidden = false;
     $('#pl-who').innerHTML = 'お申し込みのアカウント: <b>' + esc(s.user.email) + '</b>';
+    }
     var k = key(), again = returning(), sig = k + (again ? ':again' : '');
     if (drawn === sig) return;
     drawn = sig;

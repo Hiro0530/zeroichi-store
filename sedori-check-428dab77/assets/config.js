@@ -37,6 +37,13 @@ window.ZW_CONFIG = {
   FOUNDER_LIMIT: 200,
   /* 先着200名の価格の続く期間の言い方(「一生」とは書かない。2026-10-30) */
   FOUNDER_KEEP: "解約しない限りずっと(サービス提供中)",
+  /* 利用の鍵(2026-11-17 オーナー指示「お客の管理はしない。月額の利用料だけ取る」)。true の間は、ログインとクラウド保存を使わず、
+     お支払いが済むとこの端末に「利用の鍵」が入り、有料の機能が開く(assets/license.js)。データはこの端末の中だけ(書き出す/取り込む)。
+     KEY_PUBLIC_JWK: Worker の署名の鍵の公開の部分(公開してよい値。Worker の /key/pub と同じもの。秘密の部分 d は入れない)。
+     KEY_ALLOW_TEST: 署名の鍵が入る前の「試験用(署名なし)」の証明を受けるか。試験版の写しだけ true。公開の設定では必ず false(誰でも有料の機能を開けてしまうため) */
+  KEY_MODE: true,
+  KEY_PUBLIC_JWK: null,
+  KEY_ALLOW_TEST: true,
   /* Cloudflare Worker の URL(カードの申し込み・契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
   WORKER_URL: "https://zw-sedori-billing.zeroichi-works-jp.workers.dev",
   /* 料金(税込・円)。ここだけ直せば、料金ページ・トップの料金表・お申し込みの確認の金額が変わる

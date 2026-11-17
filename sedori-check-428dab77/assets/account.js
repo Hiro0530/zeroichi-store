@@ -13,6 +13,8 @@
   if (!U || !S) return;
   var $ = U.$, $$ = U.$$, esc = U.esc, store = U.store;
   var cfg = window.ZW_CONFIG || {};
+  // 利用の鍵の形(config の KEY_MODE)では、ログインもクラウド保存も使わない。SedoriAccount は license.js が作る(2026-11-17)
+  if (cfg.KEY_MODE && window.SedoriAccount && window.SedoriAccount.keyMode) return;
   var FB_VER = '10.12.2';
   var ready = !!(cfg.FIREBASE_CONFIG && cfg.FIREBASE_CONFIG.apiKey);
   var plans = cfg.PAYPAL_PLANS || {};
