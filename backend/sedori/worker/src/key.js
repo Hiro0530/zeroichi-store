@@ -6,21 +6,26 @@
  *  - 客が持つのは「利用の鍵」(16文字。例 ABCD-EFGH-JKLM-NPQR)。申し込み直後に自動で端末に入り、Stripe の請求書・領収書にも載る。
  *    鍵は Stripe の契約のメタデータ(zw_key)に置くので、こちらの名簿は要らない。
  *  - 端末が持つのは「利用の証明」(署名つき。中身=段・プラン・期限・契約番号・客番号のハッシュ・端末番号)。
- *    ページは署名を確かめ、期限までは通信なしで有料の機能を開く。1日1回 Worker に出して、契約が生きていれば期限の延びた証明に替える。
+ *    期限は1日(KEY_PASS_HOURS。2026-11-17 21:50 オーナー決定「抜け道はなくす」で7日→1日)。有料の機能の芯は Worker の /core が
+ *    証明を確かめてから答える(src/core.js)ので、通信できない間は有料の機能は使えない。
+ *  - 無料のお試し(trial)は無い(同じ決定)。有料は初日から課金。
  *  - 端末の数(既定3台)は契約のメタデータ(zw_dev)に数える。35日使っていない端末は自動で外れる。客が自分で外せる。
  *  - 解約・未払いで契約が止まれば証明は延びず、期限の日に有料の機能が止まる(書き出しはいつでもできる)。
  *
  * 秘密の値(wrangler secret。README)
  *  - KEY_SIGNING_JWK … 証明の署名の鍵(ECDSA P-256 の秘密鍵 JWK)。無い間は「試験用(署名なし)」の証明を出す(ページは設定 KEY_ALLOW_TEST が true の写しだけ受ける)
  *  - KEY_CODE_SECRET … 利用の鍵の文字を作る合言葉。無い間は STRIPE_WEBHOOK_SECRET を使う(どちらも無い時だけ試験用の固定の文字)
- * 変数(wrangler.toml): KEY_DEVICES(端末の数。既定3)
+ *  - PAID_JS_KEY    … 有料の画面のプログラムの包みを開く鍵(RSA-OAEP の秘密の JWK。tools/sedori/make_key_pair.mjs --paid で作る)。無い間は /key/app は 503
+ * 変数(wrangler.toml): KEY_DEVICES(端末の数。既定3)・KEY_PASS_HOURS(証明の期限の時間。既定24)
  */
 
 const DAY = 864e5;
 const enc = new TextEncoder();
 export const GRACE_DAYS = 3;          // 次の請求日から何日まで証明を延ばすか(請求の行き違い・端末の時計のずれの分)
-export const PAST_DUE_DAYS = 2;
-export const PASS_DAYS = 7;           // 証明は長くても7日(外した端末・作り直した鍵・解約が、7日以内に必ず効く。通信なしで使えるのも7日まで)       // 支払いの失敗中(Stripe が再請求中)は、確かめた日から何日ずつ延ばすか
+/* 証明の期限(時間)。2026-11-17 21:50 の決定で 7日 → 1日。外した端末・作り直した鍵・解約・未払いが、翌日までに必ず効く。
+   通信できない時の上乗せの猶予は付けない(有料の機能の芯は /core が答えるので、通信できない間はどのみち使えない。猶予を足すと止まるのが遅れるだけ) */
+export const PASS_HOURS = 24;
+export function passMs(env) { const h = Number((env || {}).KEY_PASS_HOURS || PASS_HOURS); return (h >= 1 && h <= 168 ? h : PASS_HOURS) * 36e5; }
 export const STALE_DEVICE_DAYS = 35;  // これだけ使っていない端末は数えない(自動で外れる)
 export const TOUCH_DAYS = 7;          // 最後に使った日の書き直しは、7日に1回まで(Stripe への書き込みを減らす)
 export const CLAIM_DAYS = 2;          // 申し込み直後の自動の受け取りができる期間
@@ -59,6 +64,11 @@ export async function codeFor(env, subId, gen = 0) {
   let bits = 0, val = 0, out = '';
   for (const x of b) { val = (val << 8) | x; bits += 8; while (bits >= 5 && out.length < 16) { out += ALPHA[(val >> (bits - 5)) & 31]; bits -= 5; } if (out.length >= 16) break; }
   return out.match(/.{4}/g).join('-');
+}
+/** 合言葉つきの短いハッシュ(メールアドレスなどを、そのまま Stripe のメタデータに置かないため) */
+export async function secretHash(env, label, text) {
+  const b = await hmac(codeSecret(env), label + ':' + text);
+  return Array.from(b.slice(0, 12), x => x.toString(16).padStart(2, '0')).join('');
 }
 export async function hashId(id) {
   const d = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode('zw-cus:' + id)));
@@ -103,9 +113,8 @@ export async function verifyPass(env, pass, now = Date.now()) {
 }
 
 /* ------------------------------------------------------------------ 契約 → 証明の中身 */
-/** できることの段。無料期間中は業務のすべて(今までと同じ決まり) */
-export function tierOfKey(planKey, status) {
-  if (status === 'trialing') return 'business';
+/** できることの段(プランだけで決まる。無料のお試しは 11/17 21:50 の決定で無くした) */
+export function tierOfKey(planKey) {
   const k = String(planKey || '');
   if (/^business/.test(k)) return 'business';
   if (/^light/.test(k)) return 'light';
@@ -116,7 +125,7 @@ const secMs = v => (v ? Number(v) * 1000 : null);
  * Stripe の契約から、証明の期限を決める。
  *  live: 証明を出すか / exp: 証明の期限 / end: 解約が決まっていれば、使える最後の時刻 / status: 画面に出す状態
  */
-export function passTerms(s, now = Date.now()) {
+export function passTerms(s, now = Date.now(), life = PASS_HOURS * 36e5) {
   const item = ((s.items || {}).data || [])[0] || {};
   const periodEnd = secMs(item.current_period_end || s.current_period_end) || 0;
   const trialEnd = secMs(s.trial_end) || 0;
@@ -128,11 +137,11 @@ export function passTerms(s, now = Date.now()) {
   }
   if (ending) {
     const end = secMs(s.cancel_at) || periodEnd || (s.status === 'trialing' ? trialEnd : 0) || now;
-    return { live: end > now, exp: Math.min(end, now + PASS_DAYS * DAY), end, status: 'ending' };
+    return { live: end > now, exp: Math.min(end, now + life), end, status: 'ending' };
   }
-  if (s.status === 'past_due') return { live: true, exp: now + PAST_DUE_DAYS * DAY, end: null, status: 'past_due' };
+  if (s.status === 'past_due') return { live: true, exp: now + life, end: null, status: 'past_due' };
   const base = s.status === 'trialing' ? (trialEnd || periodEnd) : periodEnd;
-  return { live: true, exp: Math.min(Math.max(base, now) + GRACE_DAYS * DAY, now + PASS_DAYS * DAY), end: null, status: s.status, next: base || null };
+  return { live: true, exp: Math.min(Math.max(base, now) + GRACE_DAYS * DAY, now + life), end: null, status: s.status, next: base || null };
 }
 
 /* ------------------------------------------------------------------ 端末の数え(契約のメタデータ zw_dev) */
@@ -196,11 +205,11 @@ export async function findByCode(deps, env, code, sid) {
 
 /** 証明と画面に出す中身 */
 async function answer(deps, env, s, code, dev, now) {
-  const t = passTerms(s, now);
+  const t = passTerms(s, now, passMs(env));
   const item = ((s.items || {}).data || [])[0] || {};
   const planKey = deps.keyOfPrice(env, (item.price || {}).id || '') || (s.metadata || {}).planKey || '';
   const plan = deps.planByKey(env, planKey) || {};
-  const tier = tierOfKey(planKey, s.status);
+  const tier = tierOfKey(planKey);
   const list = parseDevices(s);
   const out = {
     code, sid: s.id, status: t.status, planKey, planName: plan.name || '', amount: plan.amount || '', tier: t.live ? tier : 'free',
@@ -215,7 +224,7 @@ async function answer(deps, env, s, code, dev, now) {
 /* ------------------------------------------------------------------ 受け口 */
 /**
  * /key/… の頼み。ログインは使わない(利用の鍵が本人の印)。
- * deps: { stripe, stripePrices, keyOfPrice, planByKey, founderOpen(env)→Promise<bool>, isYearKey, YEAR_REFUND_DAYS, appFor, trialDays }
+ * deps: { stripe, stripePrices, keyOfPrice, planByKey, founderOpen(env)→Promise<bool>, isYearKey, YEAR_REFUND_DAYS, appFor, keyNote }
  */
 export async function handleKey(path, body, env, deps, now = Date.now()) {
   body = body || {};
@@ -223,20 +232,20 @@ export async function handleKey(path, body, env, deps, now = Date.now()) {
     const key = String(body.planKey || ''), price = deps.stripePrices(env)[key];
     if (!price) throw err('このプランは、いまカードで申し込めません', 400, 'no-price');
     if (/^founder_/.test(key) && !(await deps.founderOpen(env))) throw err('先着の価格の受付は終わりました', 409, 'founder-closed');
-    const app = deps.appFor(env, body), year = deps.isYearKey(key), trial = !year;
+    const app = deps.appFor(env, body), year = deps.isYearKey(key);
     const meta = { mode: 'key', planKey: key };
     const subMeta = year ? { ...meta, refundDays: String(deps.YEAR_REFUND_DAYS) } : meta;
-    const days = deps.trialDays(env);
+    // 無料のお試しは付けない(11/17 21:50 の決定)。月払いも年払いも、申し込みの日に1回目を請求する
     const s = await deps.stripe(env, 'POST', '/checkout/sessions', {
       mode: 'subscription', locale: 'ja',
       line_items: [{ price, quantity: 1 }],
       success_url: app + 'mypage/?session_id={CHECKOUT_SESSION_ID}#mp-key',
       cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
       metadata: meta,
-      subscription_data: trial ? { metadata: subMeta, trial_period_days: days } : { metadata: subMeta },
-      custom_text: { submit: { message: deps.keyNote(key, trial, env, now) } }
+      subscription_data: { metadata: subMeta },
+      custom_text: { submit: { message: deps.keyNote(key, false, env, now) } }
     });
-    return { url: s.url, trial };
+    return { url: s.url };
   }
   const dev = cleanDevice(body.device);
   if (path === '/key/claim') {
@@ -299,16 +308,41 @@ export async function onKeySubscription(deps, env, s) {
   return { key: true, status: s.status };
 }
 
-/* ------------------------------------------------------------------ 有料の画面のプログラムを、証明を確かめてから渡す(置き場を Cloudflare に移した後に使う) */
-/** PAID_JS(KV)に置いた部品を、証明の段が足りる時だけ返す。PAID_TIERS(JSON {名前: 段})で部品ごとの段を決める(既定 light) */
-export async function servePaid(name, pass, env, now = Date.now()) {
+/* ------------------------------------------------------------------ 有料の画面のプログラムを、証明を確かめてから渡す
+   置き場は2つのどちらか:
+   (1) 包み(src/paid_bundle.js)… 有料の部品の元は非公開の arbitrage-scout に置き、tools/sedori/pack_paid.mjs で「公開の鍵」で暗号にして
+       ここへ入れる。公開のリポジトリには暗号の文字しか残らない。開く鍵(PAID_JS_KEY。RSA-OAEP の秘密の JWK)は Cloudflare の秘密の値だけ。
+       Worker は eval しない(文字として開いて返すだけ)。main に push すれば今の自動の反映でそのまま載る。
+   (2) KV の PAID_JS(結んだ時だけ。今は使っていない)
+   部品ごとの段は包みの中の t か PAID_TIERS(JSON {名前: 段})。既定 light */
+function b64bytes(s) { return b64urlDecode(String(s || '')); }
+async function openItem(env, it) {
+  const raw = String(env.PAID_JS_KEY || '').trim(); if (!raw) return null;
+  let jwk; try { jwk = JSON.parse(raw); } catch { return null; }
+  const priv = await crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+  const aesRaw = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, priv, b64bytes(it.k));
+  const aes = await crypto.subtle.importKey('raw', aesRaw, { name: 'AES-GCM' }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64bytes(it.iv) }, aes, b64bytes(it.d));
+  return new TextDecoder().decode(plain);
+}
+/** 包み・KV から部品を読む。返り値 { js, tier } / null(無い)/ 'off'(置き場が無い・開く鍵が無い) */
+export async function paidSource(name, env, bundle) {
+  const items = (bundle && bundle.items) || {};
+  if (items[name]) {
+    if (!env.PAID_JS_KEY) return 'off';
+    try { const js = await openItem(env, items[name]); return js == null ? 'off' : { js, tier: items[name].t || '' }; } catch { return 'off'; }
+  }
+  if (env.PAID_JS && typeof env.PAID_JS.get === 'function') { const js = await env.PAID_JS.get(name); return js == null ? null : { js, tier: '' }; }
+  return Object.keys(items).length ? null : 'off';
+}
+export async function servePaid(name, pass, env, now = Date.now(), bundle = null) {
   if (!/^[a-z0-9-]{1,40}\.js$/.test(name)) return { status: 404, body: 'not found' };
-  if (!env.PAID_JS || typeof env.PAID_JS.get !== 'function') return { status: 503, body: '準備中' };
   const p = await verifyPass(env, pass, now);
   if (!p) return { status: 401, body: '利用の鍵の期限が切れたか、確かめられませんでした' };
-  let need = 'light'; try { need = (JSON.parse(env.PAID_TIERS || '{}')[name]) || 'light'; } catch { /* 既定 */ }
+  const src = await paidSource(name, env, bundle);
+  if (src === 'off') return { status: 503, body: '準備中' };
+  if (!src) return { status: 404, body: 'not found' };
+  let need = src.tier || 'light'; try { need = (JSON.parse(env.PAID_TIERS || '{}')[name]) || need; } catch { /* 既定 */ }
   if ((RANK[p.t] || 0) < (RANK[need] || 1)) return { status: 403, body: 'このプランでは使えません' };
-  const js = await env.PAID_JS.get(name);
-  if (js == null) return { status: 404, body: 'not found' };
-  return { status: 200, body: js };
+  return { status: 200, body: src.js };
 }

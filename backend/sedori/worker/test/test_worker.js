@@ -433,7 +433,7 @@ const scall = async (uid, path, body) => W.fetch(new Request('https://w.example'
 
 /* ---------- 11b. 年払い: 無料期間なし・その場で決済、1回目のお支払いから30日以内の解約は全額返金(2026-10-30) ---------- */
 {
-  eq([YEAR_REFUND_DAYS, /無料期間なし/.test(YEAR_TEXT), /30日以内に解約すれば、全額を返金します/.test(YEAR_TEXT)], [30, true, true], '年払いの決まりの文');
+  eq([YEAR_REFUND_DAYS, /無料期間/.test(YEAR_TEXT), /30日以内に解約すれば、全額を返金します/.test(YEAR_TEXT), /同じカード・同じメールアドレスでは1回まで/.test(YEAR_TEXT)], [30, false, true, true], '年払いの決まりの文(お試しの言葉なし・返金は1回まで)');
   // 初めてのお申し込みでも、年払いには無料期間を付けない
   const cs = Object.keys(stripeSessions).length;
   let r = await scall('u30', '/stripe/checkout', { planKey: 'total_year' });

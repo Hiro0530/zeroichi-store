@@ -22,6 +22,8 @@ const subtle = globalThis.crypto.subtle;
     const sig = await subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(body));
     return body + '.' + b64u(sig);
   }
+  const priv1 = JSON.stringify(await subtle.exportKey('jwk', K1.privateKey));
+  const { handleCore } = await import(path.join(__dirname, '../../backend/sedori/worker/src/core.js'));
   const cfg = { KEY_PUBLIC_JWK: { kty: pub1.kty, crv: pub1.crv, x: pub1.x, y: pub1.y }, KEY_ALLOW_TEST: false };
   const now = Date.now();
 
@@ -79,7 +81,7 @@ const subtle = globalThis.crypto.subtle;
     const st = world.status, end = st === 'ending' ? now + 10 * DAY : (st === 'ended' ? now - DAY : null);
     return { code: CODE, sid: 'sub_T', status: st, planKey: 'total_month', planName: '総合(月払い)', amount: '月4,980円', tier: live ? 'total' : 'free', next: now + 20 * DAY, end,
       devices: [{ id: dev, name: 'Mac', lastDay: now, me: true }, ...world.devices], limit: 3,
-      pass: live ? await sign({ v: 1, t: 'total', k: 'total_month', sid: 'sub_T', d: dev, st, iat: now, exp: now + 7 * DAY, end }) : null, ...extra };
+      pass: live ? await sign({ v: 1, t: world.tier || 'total', k: 'total_month', sid: 'sub_T', d: dev, st, iat: Date.now(), exp: Date.now() + DAY, end }) : null, ...extra };
   }
   async function open(url, ls = {}, width = 375) {
     const ctx = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block', acceptDownloads: true });
@@ -101,6 +103,11 @@ const subtle = globalThis.crypto.subtle;
       }
       if (u.pathname === '/key/devices/remove') { world.full = false; world.removedTarget = body.target; return ok({ devices: [], limit: 3 }); }
       if (u.pathname === '/key/portal') return ok({ url: B + 'privacy/?fake-portal=1' });
+      if (u.pathname === '/core') {
+        world.core = (world.core || 0) + 1; (world.coreBodies = world.coreBodies || []).push(body);
+        if (world.coreOffline) return route.abort('internetdisconnected');
+        try { return ok(await handleCore(body, { KEY_SIGNING_JWK: priv1 })); } catch (e) { return ng(e.status || 500, { error: e.message, code: e.code }); }
+      }
       return ng(404, { error: 'nf' });
     });
     await pg.goto(B + 'terms/');
@@ -111,6 +118,7 @@ const subtle = globalThis.crypto.subtle;
   const txt = (pg, sel) => pg.$eval(sel, el => el.innerText);
   const over = pg => pg.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   const booksMode = async (pg) => (await txt(pg, '#bk-mode')).trim();
+  let pg2;
   try {
     // ---- 鍵なし: 無料の範囲。URL の ?plan=biz でも業務は開かない(P08 の3点目) ----
     let pg = await open('books/?plan=biz');
@@ -205,6 +213,57 @@ const subtle = globalThis.crypto.subtle;
     fs.unlinkSync(tmp);
     eq(await over(pg), 0, 'マイページ(書き出しの後)は375pxで横にはみ出さない');
     await pg.close();
+
+    // ---- 2026-11-17 21:50: 有料の機能の芯はサーバー側。端末の書き換えで上限が増えない ----
+    const codes = n0 => Array.from({ length: n0 }, (_, i) => { const b = '4902370' + String(50000 + i).slice(0, 5), d = b.split('').map(Number); return b + String((10 - d.reduce((t, x, k) => t + x * (k % 2 ? 3 : 1), 0) % 10) % 10); }).join('\n');
+    const items = n0 => Array.from({ length: n0 }, (_, i) => ({ name: '品' + i, jan: '49023705' + String(10000 + i).slice(1), price: 3980, cost: 2400, qty: 1 }));
+    // (1) 鍵なしで、段の判定・設定・偽の証明を書き換える → まとめては20行・在庫番は5品のまま
+    pg = await open('rakuten-amazon/', { 'lic-pass': forged, 'lic-dev': dev });
+    await pg.evaluate(() => { SedoriAccount.tier = () => 'business'; SedoriAccount.paid = () => true; SedoriUI.tier = () => 'business'; ZW_CONFIG.LISTED_LIMIT = { free: 300, business: 300 }; });
+    await pg.click('[data-tab="b"]'); await pg.fill('#bulk-text', codes(30)); await pg.click('#bulk-run'); await pg.waitForTimeout(1500);
+    const bm = await pg.evaluate(() => JSON.parse(localStorage.getItem('zw-sedori:ra-bulk')) || {});
+    eq([bm.lim, bm.over, (bm.items || []).length], [20, 10, 20], '書き換え(段・設定・偽の証明): まとめては無料の20行のまま(行数は Worker が決める)');
+    eq(world.coreBodies.slice(-1)[0].pass, undefined, '偽の証明は Worker に送らない(端末で署名を確かめて捨てる)');
+    await pg.evaluate(its => SedoriListed.add(its, 'bulk'), items(12)); await pg.waitForTimeout(800);
+    eq(await pg.evaluate(() => JSON.parse(localStorage.getItem('zw-sedori:mz-items')).length), 5, '書き換え: 在庫番は無料の5品のまま');
+    await pg.close();
+    // (2) 試験用(署名なし)の証明を端末に置いても、署名の鍵が入った Worker は断る
+    const unsigned = Buffer.from(JSON.stringify({ v: 1, t: 'business', d: dev, st: 'active', iat: now, exp: now + DAY, m: 'test' })).toString('base64url') + '.test';
+    eq((await handleCore({ pass: unsigned, device: dev, ops: [{ op: 'limits' }] }, { KEY_SIGNING_JWK: priv1 }).catch(e => e.code)), 'pass-invalid', '署名なしの証明は、本番の Worker が断る');
+    // (3) 正しい証明(総合): 在庫番100品・まとめて500行。納品リスト(業務)は、画面の段を書き換えてもサーバーが断る
+    world.status = 'active'; world.tier = 'total';
+    pg = await open('daicho/', { 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-dev': dev });
+    await pg.evaluate(() => SedoriLicense.renew(true)); await pg.waitForTimeout(400);
+    const lim = await pg.evaluate(() => SedoriAccount.limits(true));
+    eq([lim.tier, lim.listed, lim.bulk, lim.auto], ['total', 100, 500, 15], '正しい証明(総合): 上限は Worker の答え');
+    const before = world.coreBodies.length;
+    await pg.evaluate(() => { localStorage.setItem('zw-sedori:ledger', JSON.stringify([{ id: 'r1', date: '2026-11-10', name: '納品の品', ship: 'fba', status: '仕入れ済', qty: 1, sellerName: '相手の名前' }])); SedoriAccount.tier = () => 'business'; });
+    const res = await pg.evaluate(() => SedoriAccount.core([{ op: 'prep', rows: [{ id: 'r1', date: '2026-11-10', name: '納品の品', ship: 'fba', status: '仕入れ済' }], today: '2026-11-17' }]));
+    eq([res.results[0].error, res.results[0].body], ['need-plan', undefined], '納品リスト: 画面の段を業務に書き換えても、総合の証明ではサーバーが作らない');
+    eq(world.coreBodies.length > before, true, '納品リストは Worker に問い合わせる');
+    world.tier = 'business'; await pg.evaluate(() => SedoriLicense.renew(true)); await pg.waitForTimeout(300);
+    const res2 = await pg.evaluate(() => SedoriAccount.core([{ op: 'prep', rows: [{ id: 'r1', date: '2026-11-10', name: '納品の品', ship: 'fba', status: '仕入れ済' }], today: '2026-11-17' }]));
+    eq([res2.results[0].title, res2.results[0].body.length], ['納品リスト(2026-11-17 書き出し・1件)', 1], '業務の証明: 納品リストを作る');
+    // (4) 有料の部品(/key/app)は、証明が無ければ取りに行かない
+    await pg.evaluate(() => { localStorage.removeItem('zw-sedori:lic-pass'); });
+    pg2 = await open('daicho/', {});
+    eq(await pg2.evaluate(() => SedoriAccount.loadPaid('books.js').then(() => 'loaded', e => e.code)), 'need-pass', '有料の部品: 証明が無ければ受け取らない');
+    eq(world.seen.includes('/key/app/books.js'), false, '有料の部品: 鍵なしでは Worker にも頼まない');
+    await pg2.close(); await pg.close();
+    // (5) 期限切れの証明: 更新できない(契約が終わった)なら、芯は無料の答えだけ
+    world.status = 'ended'; world.tier = 'business';
+    const expired = await sign({ v: 1, t: 'business', d: dev, st: 'active', iat: now - 2 * DAY, exp: now - 60e3 });
+    pg = await open('zaiko-ban/', { 'lic-pass': expired, 'lic-dev': dev, 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-try': 0 });
+    const l2 = await pg.evaluate(() => SedoriAccount.limits(true));
+    eq([l2.tier, l2.listed], ['free', 5], '期限切れ(1日を過ぎた・契約が終わった): 在庫番は無料の5品');
+    await pg.close();
+    // (6) 通信できない: まとめては使えない(1行ずつの計算は使える)。無料の数に戻して数えることもしない
+    world.status = 'active'; world.tier = 'business'; world.coreOffline = true;
+    pg = await open('rakuten-amazon/', { 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-dev': dev });
+    await pg.click('[data-tab="b"]'); await pg.fill('#bulk-text', codes(3)); await pg.click('#bulk-run'); await pg.waitForTimeout(1200);
+    eq(/通信できないため、まとめてチェックを使えません/.test(await txt(pg, '#bulk-st')), true, '通信できない: まとめては使えないと出す');
+    eq(await over(pg), 0, '通信できない時の案内も375pxで横にはみ出さない');
+    await pg.close(); world.coreOffline = false;
     eq(errs, [], '画面の誤り(pageerror)なし');
     console.log(`OK 利用の鍵 ${n}件`);
   } catch (e) { console.error(e); process.exitCode = 1; }

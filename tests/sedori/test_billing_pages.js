@@ -25,8 +25,17 @@ const tokuPay = text(toku.slice(toku.indexOf('<th>お支払い方法</th>'), tok
 eq([/せどり 利益チェック[^。]*クレジットカード\(Stripe/.test(tokuPay), /PayPal/.test(tokuPay)], [true, true], '特商法: 支払方法にカード(Stripe)と PayPal');
 eq(/ご請求があれば遅滞なく開示します/.test(toku), true, '特商法: 氏名・住所は請求で開示の方針のまま');
 const privacy = text(read('sedori/privacy/index.html')), terms = text(read('sedori/terms/index.html'));
-eq([/決済代行会社への提供/.test(privacy), /Stripe, Inc\./.test(privacy), /Stripe Payments Japan/.test(privacy), /PayPal Pte\. Ltd\./.test(privacy), /外国にある第三者/.test(privacy)], [true, true, true, true, true], 'プライバシーポリシー: 決済代行への提供と外国の事業者');
-eq([/Stripe/.test(terms), /PayPal/.test(terms), /1回目のお支払いが済んだ方が200名/.test(terms)], [true, true, true], '利用規約: 支払いの方法と先着の数え方');
+// 利用の鍵の形(KEY_MODE)はカード(Stripe)だけ。PayPal は使わないので、規約とプライバシーポリシーに PayPal を書かない(2026-11-17)
+const KEYM = /^\s*KEY_MODE:\s*true/m.test(read('sedori/assets/config.js'));
+eq([/決済代行会社への提供/.test(privacy), /Stripe, Inc\./.test(privacy), /Stripe Payments Japan/.test(privacy), /PayPal Pte\. Ltd\./.test(privacy), /外国にある第三者/.test(privacy)], [true, true, true, !KEYM, true], 'プライバシーポリシー: 決済代行への提供と外国の事業者');
+eq([/Stripe/.test(terms), /PayPal/.test(terms), /1回目のお支払いが済んだ方が200名/.test(terms)], [true, !KEYM, true], '利用規約: 支払いの方法と先着の数え方');
+if (KEYM) {
+  // 2026-11-17 21:50 の決定: 無料のお試しなし・解約後は有料の機能が止まる・書き出しは期限なし・データは端末の中・通信できないと有料の機能は使えない・規約は案(専門家の確認前)
+  const tt = text(terms), pt = text(privacy), pl = text(plans);
+  eq([/無料のお試しの期間はありません/.test(tt), /有料の機能は止まり、無料プランの範囲に戻ります/.test(tt), /期限なし/.test(tt), /端末のブラウザの中だけに保存します/.test(tt), /通信できない間は、有料の機能は使えません/.test(tt), /案・専門家の確認前/.test(tt), /クラウド/.test(tt)], [true, true, true, true, true, true, false], '利用規約(案): お試しなし・解約後・書き出し・データの置き場・通信・クラウドと書かない');
+  eq([/保存も記録もしません/.test(pt), /Firebase|Cloud Firestore|クラウドに保存/.test(pt), /案・専門家の確認前/.test(pt), /同じカード|カードの指紋/.test(pt)], [true, false, true, true], 'プライバシーポリシー(案): 問い合わせの中身は保存しない・クラウドに置かない・返金の印');
+  eq([/14日|無料期間/.test(pl), /無料のお試し\s*ありません/.test(pl), /通信できない間は、有料の機能は使えません/.test(pl), /解約の後もいつでも書き出せます.期限はありません./.test(pl), /同じカード・同じメールアドレスでは1回まで/.test(pl)], [false, true, true, true, true], '料金ページ: お試しなし・通信・解約後の書き出し・返金は1回まで');
+}
 
 // Stripe で扱うページ(せどりの全ページと特商法・規約)に、賭け事の言葉を出さない
 const BET = /競艇|ボートレース|舟券|競馬|競輪|オートレース|パチンコ|パチスロ|賭け|ギャンブル|kyotei/i;
@@ -55,7 +64,8 @@ eq(/〒\s?\d{3}-?\d{4}/.test(toku + privacy + terms), false, '郵便番号つき
   eq([/id="cf-refund"/.test(plans), /id="cf-limit"/.test(plans), /cfg\.YEAR_TEXT/.test(read('sedori/assets/plans.js')), /1回目のお支払いから30日以内の解約は全額返金/.test(text(plans))], [true, true, true, true], '料金ページの最終確認: 返金と解約の期限を年払いで書き換える');
   eq(/cfg\.PAYPAL_YEAR === true/.test(read('sedori/assets/plans.js')) && /PAYPAL_YEAR:\s*false/.test(cfgSrc), true, '年払いは PayPal(無料期間つきのプラン)を出さない');
   eq(/年払いは当面クレジットカードのみ/.test(text(toku)), true, '特商法: 年払いの支払い方法');
-  eq([/月払いは14日無料/.test(text(top)), /どれも14日無料/.test(text(top) + text(plans) + text(lp))], [true, false], '「どれも14日無料」と書かない(年払いは無料期間なし)');
+  // 2026-11-17 21:50 の決定で無料のお試しは無くなった(利用の鍵の形)。ログインの形の写しだけ、今までの文を確かめる
+  eq([/月払いは14日無料/.test(text(top)), /どれも14日無料/.test(text(top) + text(plans) + text(lp))], [!KEYM, false], '「どれも14日無料」と書かない(利用の鍵の形はお試し自体が無い)');
   const all = pages.map(p => text(read(p))).join('') + text(toku);
   eq([/一生/.test(all), /続けている間ずっと/.test(all)], [false, false], '「一生」「続けている間ずっと」を使わない');
   eq([text(plans).includes(keep), text(terms).includes(keep), text(lp).includes(keep), text(toku).includes(keep)], [true, true, true, true], '先着200名の続く期間は同じ言い方');
@@ -64,4 +74,15 @@ eq(/〒\s?\d{3}-?\d{4}/.test(toku + privacy + terms), false, '郵便番号つき
   eq([/refundUntil/.test(my), /全額を返金しました/.test(my), /30日以内の全額返金の対象外/.test(my)], [true, true, true], 'マイページ: 返金の期限・解約の確認・年払いへの変更の注意');
 }
 
+if (KEYM) {
+  const allSedori = pages.map(p => text(read(p))).join('');
+  eq((allSedori.match(/14日無料|14日間の無料|無料期間中|日間は無料/g) || []).length, 0, '試験版のどのページにも「14日無料」「無料期間中」が無い');
+  // オフラインの控え(Service Worker)に、有料の部品(/key/app)と芯の答え(/core)を入れない。古い控えに紛れていたら消す
+  const sw = read('sedori/sw.js'), PAIDRE = (sw.match(/var PAID = (\/.*\/);/) || [])[1];
+  const PR = PAIDRE ? eval(PAIDRE) : null;
+  eq([!!PR && PR.test('/x/key/app/books.js') && PR.test('/core') && !PR.test('/sedori/assets/listed.js'), /PAID\.test\(u\.pathname\)\) return;/.test(sw), /PAID\.test\(r\.url\)[\s\S]*c\.delete\(r\)/.test(sw)],
+    [true, true, true], '控え: 有料の部品と芯の答えは入れず、紛れていたら消す');
+  const lic = read('sedori/assets/license.js');
+  eq([/RENEW_AFTER = 6 \* 36e5/.test(lic), /cache: 'no-store'/.test(lic), /localStorage[^;]*memo|set\('lic-limits/.test(lic)], [true, true, false], '画面: 証明は6時間で替える・芯の答えは保存しない(メモリだけ)');
+}
 console.log('OK ' + n + '件');

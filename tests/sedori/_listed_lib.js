@@ -1,5 +1,6 @@
 // 在庫番の画面の試験と撮影で使う: 試験コピーをそのまま配る小さなサーバーと、にせの楽天(公式APIの返事の形)
 const path = require('path'), fs = require('fs'), http = require('http');
+const fakeCore = require('./_core_fake');
 let chromium; try { ({ chromium } = require('playwright')); } catch (e) { ({ chromium } = require('/opt/npm-tools/node_modules/playwright')); }
 const root = path.resolve(process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp')), SD = require('./_dir')(root), S = path.resolve(root, '..');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
@@ -32,8 +33,10 @@ async function open(browser, url, w, seed, opt) {
   const p = await ctx.newPage(); p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(([d]) => { if (!sessionStorage.getItem('seeded')) { localStorage.clear(); Object.keys(d).forEach(k => localStorage.setItem('zw-sedori:' + k, JSON.stringify(d[k]))); sessionStorage.setItem('seeded', '1'); } }, [seed || {}]);
   if (opt.market) await fakeRakuten(p, opt.market);
+  // 2026-11-17: 品数・行数の上限は Worker の /core が決める。試験の段(opt.tier)を、にせの /core にも伝える
+  p.core = opt.core || { tier: opt.tier }; await fakeCore(p, p.core);
   await p.goto(url); await p.waitForTimeout(500);
   if (opt.tier) { await p.evaluate(t => { SedoriAccount.paid = () => t !== 'free'; SedoriAccount.tier = () => t; document.dispatchEvent(new CustomEvent('sedori:acct')); }, opt.tier); await p.waitForTimeout(150); }
   return p;
 }
-module.exports = { chromium, serve, fakeRakuten, open, S, root, SD };
+module.exports = { chromium, serve, fakeRakuten, fakeCore, open, S, root, SD };

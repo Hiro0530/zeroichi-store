@@ -87,15 +87,20 @@ eq([m.rows[0].repeat, m.rows[0].orderNo], [false, 'N-1'], 'あとに書いた端
 const m2 = Sync.merge(sp.rows, sp.del, [Sync.toDoc('a1', pc.rows, pc.del)], false);
 eq([m2.rows[0].repeat, m2.push], [false, ['a1']], '古い方を受け取っても新しい方が残り、送り直す');
 
-// ---- 仕様4: 納品リスト ----
-eq(K.PREP_HEAD, ['仕入日', '仕入れ先', '注文番号', '追跡番号', '品名', 'JAN', 'ASIN', '数量', '新品/中古', '受取先・入庫ID', 'メモ'], '納品リストの列');
-const pb = K.prepBody(rows);
+(async () => {
+const Core = await import(path.join(__dirname, '../../backend/sedori/worker/src/core.js'));
+// ---- 仕様4: 納品リスト(2026-11-17 21:50: 表の形は Worker の /core が作る。画面の部品には形を置かない) ----
+eq([K.PREP_HEAD, K.prepBody], [undefined, undefined], '画面の部品(公開の置き場)に納品リストの形が無い');
+const sent = K.prepSend(rows);
+eq([sent.every(r => Object.keys(r).every(k => K.PREP_SEND.indexOf(k) >= 0)), JSON.stringify(sent).includes('sellerName') || JSON.stringify(sent).includes('keepa')], [true, false], 'Worker へ送るのは要る欄だけ(取引相手・キーは送らない)');
+const T = Core.prepTable(sent, '2026-11-17'), pb = T.body;
+eq(T.head, ['仕入日', '仕入れ先', '注文番号', '追跡番号', '品名', 'JAN', 'ASIN', '数量', '新品/中古', '受取先・入庫ID', 'メモ'], '納品リストの列(Worker が作る)');
 eq(pb.map(r => r[4]), ['ケーブル', 'ハンドクリーム 50g', '印なしの品'], '対象は発送代行かFBAで「仕入れ済」の行だけ(古い順)。自分で発送・売約・無在庫の仕入れ前は出ない');
 eq([pb[1][5], pb[1][6], pb[1][7]], ['4901234567894', '', 2], 'JAN・数量');
 eq(K.prepTarget({ status: '仕入れ済' }), true, '発送のしかたが空の古い行は発送代行として扱う(今の台帳と同じ)');
 eq(K.prepTarget({ ship: 'fba', status: '入庫' }), false, '入庫に進んだ行は出ない');
-ok(C.toCSV(K.PREP_HEAD, pb).indexOf("'=1+1") > 0, '式で始まる文字はCSVで無害になる');
-eq(pb.every(r => r.length === K.PREP_HEAD.length), true, '列の数がそろう');
+ok(C.toCSV(T.head, pb).indexOf("'=1+1") > 0, '式で始まる文字はCSVで無害になる');
+eq(pb.every(r => r.length === T.head.length), true, '列の数がそろう');
 
 // ---- 仕様6: 仕入れの証拠 ----
 // 1. 4項目は行の項目として保存され、同期の文書にそのまま入る
@@ -145,4 +150,6 @@ const both = src + fs.readFileSync(A('assets/ledger.js'), 'utf8');
 ok(!/確かめられない|未取得|記録なし|[^発]送代行へ連絡済|'代行へ/.test(both.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '')), '言葉のゆれが無い(値が無い言葉・「発送代行」)');
 ok(/業務プランを見る/.test(src) && !/'業務を見る'/.test(src), '案内のボタンは「業務プランを見る」');
 
+ok(/SA\.core\(\[\{ op: 'prep'/.test(src) && /通信できないため、納品リストを作れません/.test(src), '納品リストは Worker に問い合わせて作る・通信できない時の案内');
 console.log(`OK 台帳の追加の働き ${n}件`);
+})().catch(e => { console.error(e); process.exit(1); });

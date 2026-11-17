@@ -25,7 +25,10 @@
  *     POST /key/claim { sessionId, device }  申し込み直後に、その端末へ利用の鍵と証明を渡す
  *     POST /key/renew { code, device, known }  証明の更新(1日1回)。新しい端末で鍵を入れた時もこれ
  *     POST /key/portal | /key/rotate | /key/devices/remove  契約の管理(Stripe のカスタマーポータル)・鍵の作り直し・端末を外す
- *     GET  /key/app/<名前>.js  有料の画面のプログラムを、証明を確かめてから渡す(置き場を移した後に使う。PAID_JS が無い間は 503)
+ *     GET  /key/app/<名前>.js  有料の画面のプログラムを、証明を確かめてから渡す(包み src/paid_bundle.js と開く鍵 PAID_JS_KEY が揃うまで 503)
+ *  6. 有料の機能の芯(2026-11-17 21:50。src/core.js)
+ *     POST /core { pass, device, ops }  証明が有効な時だけ有料の答えを返す。無料の範囲の上限もここが決める。送られた中身は保存も記録もしない
+ *  無料のお試し(14日)は 2026-11-17 21:50 のオーナー決定で無くした(利用の鍵の申し込みには付けない。古いログインの申し込みも TRIAL_DAYS の既定を 0 に)
  *  4. 毎日1回(cron): 無料期間の終了3日前のメール、一時停止の自動再開、解約から3年たった台帳の削除
  *
  * 先着200名(総合 3,980円。2026-10-28 オーナー決定で 100名 → 200名。数は FOUNDER_LIMIT)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。解約しない限りずっと(サービス提供中)その価格。
@@ -33,7 +36,9 @@
  * 秘密の値は wrangler secret で入れる(README)。ここには書かない。Stripe の SDK は使わず、REST を fetch で呼ぶ。
  */
 
-import { handleKey, onKeySubscription, servePaid, publicJwk } from './key.js';
+import { handleKey, onKeySubscription, servePaid, publicJwk, secretHash } from './key.js';
+import { handleCore, MAX_BODY } from './core.js';
+import PAID_BUNDLE from './paid_bundle.js';
 
 const DAY = 864e5;
 /** 先着の定員の既定(wrangler.toml の FOUNDER_LIMIT が無い時。sedori/assets/config.js の FOUNDER_LIMIT と同じ数) */
@@ -229,7 +234,7 @@ export async function verifyWebhook(req, bodyText, env) {
 export function normalize(s, prev, env, now = Date.now()) {
   prev = prev || {};
   const plan = plansOf(env)[s.plan_id] || {};
-  const trialDays = Number(env.TRIAL_DAYS || 14);
+  const trialDays = trialDaysOf(env);
   const start = toMs(s.start_time) || toMs(s.create_time) || now;
   const trialEnd = start + trialDays * DAY;
   const bi = s.billing_info || {};
@@ -312,7 +317,9 @@ export async function countFounder(env, provider, subId) {
 const STRIPE_API = 'https://api.stripe.com/v1';
 /** 年払いの決まり(料金ページの確認の欄・利用規約・特商法・Stripe の画面と同じ文。変える時は全部そろえる) */
 export const YEAR_REFUND_DAYS = 30;
-export const YEAR_TEXT = '年払いは無料期間なしで、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します。';
+export const YEAR_TEXT = '年払いは、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します(同じカード・同じメールアドレスでは1回まで)。';
+/** 無料期間の日数。11/17 21:50 の決定で既定 0(無し)。古いログインの申し込みだけが読む */
+const trialDaysOf = env => Math.max(0, Number(env.TRIAL_DAYS || 0) || 0);
 const isYearKey = k => /_year$/.test(String(k || ''));
 /** 料金ページ・Firestore で使うプランのキー。Stripe の価格ID は wrangler.toml の STRIPE_PRICE_<キーの大文字> に入れる */
 export const PLAN_KEYS = ['light_month', 'light_year', 'total_month', 'total_year', 'founder_month', 'founder_year', 'business_month', 'business_year'];
@@ -536,17 +543,61 @@ export async function handleStripeEvent(env, ev) {
   return { ok: true, status: r.sub ? r.sub.status : r.skipped };
 }
 
-/** 利用の鍵の契約で、年払いの30日以内の解約(期間の終わりで終える指定)が来たら、全額を返金してすぐ終える。対象でなければ null */
+/**
+ * 年払いの全額返金を、同じカード・同じメールアドレスでは1回までにする(11/17 21:50 の決定)。
+ * 名簿は持たないので、Stripe の記録で見る: 返金した支払い(charge)のメタデータに
+ *   zw_rf_fp = カードの指紋(Stripe の card.fingerprint。同じカード番号なら同じ値)
+ *   zw_rf_em = メールアドレスの短いハッシュ(合言葉つき。メールそのものは置かない)
+ * を残し、次の返金の前に Stripe の検索(charges/search)で同じ値があるかを見る。
+ * すり抜けられる所(正直に): 別のカード「かつ」別のメールなら見分けられない/Stripe の検索は反映まで1分ほどかかるので、
+ * 1分以内に2つの契約を続けて返金させると2回目も通りうる/カード以外の払い方で指紋が無い時はメールだけで見る。
+ * 返り値 { fp, em, chargeId, seen }
+ */
+export async function refundHistory(env, pay, s) {
+  let ch = null;
+  try {
+    if (pay.ref.charge) ch = await stripe(env, 'GET', '/charges/' + encodeURIComponent(pay.ref.charge));
+    else if (pay.ref.payment_intent) { const pi = await stripe(env, 'GET', '/payment_intents/' + encodeURIComponent(pay.ref.payment_intent), { expand: ['latest_charge'] }); ch = pi && typeof pi.latest_charge === 'object' ? pi.latest_charge : null; }
+  } catch { ch = null; }
+  const fp = String((((ch || {}).payment_method_details || {}).card || {}).fingerprint || '').replace(/[^\w]/g, '');
+  let email = String(((ch || {}).billing_details || {}).email || (ch || {}).receipt_email || '');
+  if (!email) {
+    const cus = typeof s.customer === 'string' ? s.customer : (s.customer || {}).id;
+    if (cus) { try { email = String((await stripe(env, 'GET', '/customers/' + encodeURIComponent(cus))).email || ''); } catch { /* 無しで見る */ } }
+  }
+  const em = email ? await secretHash(env, 'zw-em', email.trim().toLowerCase()) : '';
+  const chargeId = (ch && ch.id) || '';
+  const q = [fp ? `metadata['zw_rf_fp']:'${fp}'` : '', em ? `metadata['zw_rf_em']:'${em}'` : ''].filter(Boolean).join(' OR ');
+  let seen = false;
+  if (q) {
+    const r = await stripe(env, 'GET', '/charges/search', { query: q, limit: 5 });
+    seen = ((r && r.data) || []).some(c => c && c.id !== chargeId);
+  }
+  return { fp, em, chargeId, seen };
+}
+
+/** 利用の鍵の契約で、年払いの30日以内の解約(期間の終わりで終える指定)が来たら、全額を返金してすぐ終える。対象でなければ null。
+ *  同じカード・同じメールで前に返金していたら、返金せず(期間の終わりまで使える解約のまま)に { refused: 'repeat' } */
 export async function keyYearRefund(env, s, now = Date.now()) {
   const md = s.metadata || {};
   const key = keyOfPrice(env, ((((s.items || {}).data || [])[0] || {}).price || {}).id || '') || md.planKey || '';
-  if (md.mode !== 'key' || md.refunded === '1' || s.status !== 'active' || !(s.cancel_at_period_end || s.cancel_at) || !isYearKey(key)) return null;
+  if (md.mode !== 'key' || md.refunded === '1' || md.refund_denied || s.status !== 'active' || !(s.cancel_at_period_end || s.cancel_at) || !isYearKey(key)) return null;
   const until = refundDeadline(s, key);
   if (!until || now > until) return null;
   const pay = await yearPayment(env, s.id);
   if (!pay) return null; // 見つからない時は返金も早めの終了もしない(期間の終わりで終わる。メールの窓口で受ける)
   const id = encodeURIComponent(s.id);
+  const h = await refundHistory(env, pay, s);
+  if (h.seen) {
+    // 2回目: 自動では返金しない。解約は期間の終わりで終える指定のまま(払った1年の終わりまで使える)
+    await stripe(env, 'POST', '/subscriptions/' + id, { metadata: { refund_denied: 'repeat' } });
+    return { refused: 'repeat' };
+  }
   const rf = await stripe(env, 'POST', '/refunds', { ...pay.ref, reason: 'requested_by_customer', metadata: { subscription: s.id, rule: 'year-30days' } }, { 'Idempotency-Key': 'zw-year-refund-' + s.id });
+  if (h.chargeId && (h.fp || h.em)) {
+    const m = {}; if (h.fp) m.zw_rf_fp = h.fp; if (h.em) m.zw_rf_em = h.em;
+    try { await stripe(env, 'POST', '/charges/' + encodeURIComponent(h.chargeId), { metadata: m }); } catch { /* 印が付かなくても返金は済んでいる(次の1回を見分けられないだけ) */ }
+  }
   await stripe(env, 'POST', '/subscriptions/' + id, { metadata: { refunded: '1', refund_id: rf.id || '' } });
   await stripe(env, 'DELETE', '/subscriptions/' + id);
   return { amount: Number(rf.amount || pay.invoice.amount_paid || 0) };
@@ -556,7 +607,7 @@ export async function keyYearRefund(env, s, now = Date.now()) {
 function keyNote(key, trial, env, now = Date.now()) {
   const plan = planByKey(env, key) || {};
   const head = checkoutNote(plan, key, trial, env, now).replace(/解約はマイページの「契約内容」から.*$/, '');
-  return head + 'お申し込みが済むと、この端末に利用の鍵が入ります。解約・カードの変更・領収書は、アプリのマイページの「契約の管理」からいつでもご自身でできます。';
+  return head + 'お申し込みが済むと、この端末に利用の鍵が入ります。解約・カードの変更・領収書は、アプリのマイページの「契約の管理」からいつでもご自身でできます。解約しても、払った期間の終わりまで使えます。';
 }
 /** 先着の価格の受付中か(Firebase がある間は public/founders、無い間は受付中として扱う) */
 async function founderOpen(env) {
@@ -567,7 +618,7 @@ async function founderOpen(env) {
 const keyDeps = {
   stripe: (...a) => stripe(...a), stripePrices: e => stripePrices(e), keyOfPrice: (e, id) => keyOfPrice(e, id), planByKey: (e, k) => planByKey(e, k),
   founderOpen: e => founderOpen(e), isYearKey: k => isYearKey(k), YEAR_REFUND_DAYS, appFor: (e, b) => appFor(e, b),
-  trialDays: e => Number(e.TRIAL_DAYS || 14), keyNote: (k, t, e, n) => keyNote(k, t, e, n)
+  keyNote: (k, t, e, n) => keyNote(k, t, e, n)
 };
 export { keyDeps };
 
@@ -576,7 +627,7 @@ function checkoutNote(plan, key, trial, env, now = Date.now()) {
   const price = String(plan.amount || '').replace(/^(月|年)/, '');
   const cyc = /_year$/.test(key) ? '毎年' : '毎月';
   const head = trial
-    ? `${Number(env.TRIAL_DAYS || 14)}日間は無料です。${jd(now + Number(env.TRIAL_DAYS || 14) * DAY)}に1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`
+    ? `${trialDaysOf(env)}日間は無料です。${jd(now + trialDaysOf(env) * DAY)}に1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`
     : isYearKey(key)
       ? `${YEAR_TEXT}今日${price}(税込)を請求し、以後は毎年同じ日に自動で請求します。`
       : `今日、1回目の${price}(税込)を請求し、以後は${cyc}同じ日に自動で請求します。`;
@@ -599,7 +650,7 @@ export async function handleStripeUser(path, body, who, env) {
       if (f.open === false || Number(f.taken || 0) >= founderLimit(env)) throw err('先着' + founderLimit(env) + '名の価格の受付は終わりました', 409, 'founder-closed');
     }
     const year = isYearKey(key);
-    const trial = !cur && !year; // 無料期間は、初めてのお申し込みの月払いだけ。年払いは無料期間なしでその場で決済(30日以内は全額返金)
+    const trial = !cur && !year && trialDaysOf(env) > 0; // 無料期間は既定で無し(11/17 21:50)。TRIAL_DAYS を入れた時だけ、初めての月払いに付く
     const plan = planByKey(env, key) || {};
     const meta = { uid, planKey: key };
     const subMeta = year ? { ...meta, refundDays: String(YEAR_REFUND_DAYS) } : meta;
@@ -609,7 +660,7 @@ export async function handleStripeUser(path, body, who, env) {
       success_url: app + 'mypage/?subscribed=1&session_id={CHECKOUT_SESSION_ID}',
       cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
       metadata: meta,
-      subscription_data: trial ? { metadata: subMeta, trial_period_days: Number(env.TRIAL_DAYS || 14) } : { metadata: subMeta },
+      subscription_data: trial ? { metadata: subMeta, trial_period_days: trialDaysOf(env) } : { metadata: subMeta },
       custom_text: { submit: { message: checkoutNote(plan, key, trial, env) } }
     };
     if (cur && cur.provider === 'stripe' && cur.customerId) params.customer = cur.customerId;
@@ -896,7 +947,7 @@ export default {
     // カードで申し込めるプラン(価格IDが入っているもの)。料金ページはこれが空なら「準備中」と出す
     if (url.pathname === '/stripe/plans' && req.method === 'GET') {
       const ready = env.STRIPE_SECRET_KEY ? Object.keys(stripePrices(env)) : [];
-      return json({ ready, trialDays: Number(env.TRIAL_DAYS || 14) }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
+      return json({ ready, trialDays: 0 }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
     }
     // 診断(11/8): 鍵がテストか本番か、各価格IDが Stripe で見つかるかだけを返す。秘密の値は返さない
     if (url.pathname === '/stripe/diag' && req.method === 'GET') {
@@ -919,14 +970,14 @@ export default {
           catch (e) { checkout[key] = { ok: false, ms: Date.now() - t0, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 300) }; }
         }
       }
-      const keyInfo = { signing: publicJwk(env) ? 'set' : 'test', code: env.KEY_CODE_SECRET ? 'set' : (env.STRIPE_WEBHOOK_SECRET ? 'webhook' : 'test'), devices: Number(env.KEY_DEVICES || 3), paidJs: !!env.PAID_JS };
+      const keyInfo = { signing: publicJwk(env) ? 'set' : 'test', code: env.KEY_CODE_SECRET ? 'set' : (env.STRIPE_WEBHOOK_SECRET ? 'webhook' : 'test'), devices: Number(env.KEY_DEVICES || 3), passHours: Number(env.KEY_PASS_HOURS || 24), paidJs: { open: !!env.PAID_JS_KEY, items: Object.keys((PAID_BUNDLE && PAID_BUNDLE.items) || {}).length, kv: !!env.PAID_JS } };
       return json({ mode, key: keyInfo, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices, dispatch: { token: !!env.GH_DISPATCH_TOKEN, targets: parseTargets(env.GH_DISPATCH_TARGETS).map(t => `${t.repo}:${t.file}:${t.ref}@${t.minutes.join(',')}`) } }, 200, c);
     }
     // 有料の画面のプログラム(証明を確かめてから渡す)。証明は Authorization: Bearer で受ける
     const ma = url.pathname.match(/^\/key\/app\/([^/]+)$/);
     if (ma && req.method === 'GET') {
       const m2 = (req.headers.get('Authorization') || '').match(/^Bearer (.+)$/);
-      const r = await servePaid(ma[1], m2 && m2[1], env).catch(() => ({ status: 500, body: 'error' }));
+      const r = await servePaid(ma[1], m2 && m2[1], env, Date.now(), PAID_BUNDLE).catch(() => ({ status: 500, body: 'error' }));
       return new Response(r.body, { status: r.status, headers: { ...c, 'Content-Type': r.status === 200 ? 'text/javascript; charset=utf-8' : 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/key/pub' && req.method === 'GET') {
@@ -934,6 +985,17 @@ export default {
       return json({ mode: pub ? 'live' : 'test', jwk: pub }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
+    // 有料の機能の芯。送られた中身は答えを作るためだけに使い、保存も記録もしない(失敗の答えにも中身を入れない)
+    if (url.pathname === '/core') {
+      const nc = { ...c, 'Cache-Control': 'no-store' };
+      try {
+        if (Number(req.headers.get('Content-Length') || 0) > MAX_BODY) return json({ error: '大きすぎます', code: 'too-big' }, 413, nc);
+        const text = await req.text();
+        if (text.length > MAX_BODY) return json({ error: '大きすぎます', code: 'too-big' }, 413, nc);
+        let body; try { body = JSON.parse(text); } catch { return json({ error: '形が違います', code: 'bad-json' }, 400, nc); }
+        return json(await handleCore(body, env), 200, nc);
+      } catch (e) { return json({ error: e.status ? String(e.message) : 'error', code: e.code || undefined }, e.status || 500, nc); }
+    }
     if (url.pathname.startsWith('/key/')) {
       try {
         const body = await req.json().catch(() => ({}));

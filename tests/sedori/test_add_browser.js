@@ -2,6 +2,7 @@
 // 実行: node tests/sedori/test_add_browser.js [公開フォルダ]。Keepa・楽天は、にせの返事に差し替える(外へは出ない)。
 const path = require('path'), fs = require('fs'), http = require('http'), assert = require('assert');
 const { chromium } = require('playwright');
+const fakeCore = require('./_core_fake');
 const root = path.resolve(process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp'));
 const SD = require('./_dir')(root);
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
@@ -30,6 +31,7 @@ const server = http.createServer((req, res) => {
     const ctx = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
     const p = await ctx.newPage();
     p.on('pageerror', e => errs.push(url + ' ' + e.message));
+    p.core = {}; await fakeCore(p, p.core);   // まとめての行数は Worker の /core が決める(段は渡さない=無料)
     await p.route('**/api.keepa.com/**', async route => {
       kpCalls++; await new Promise(r => setTimeout(r, 400));
       const q = new URL(route.request().url()).searchParams, codes = (q.get('code') || q.get('asin')).split(',');

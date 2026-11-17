@@ -22,11 +22,15 @@
 | `POST /key/portal` | 契約の管理(Stripe のカスタマーポータル。解約・カード・プラン変更・領収書) |
 | `POST /key/rotate` / `POST /key/devices/remove` | 鍵の作り直し / 端末を外す |
 | `GET /key/pub` | 証明の公開の鍵(config.js の `KEY_PUBLIC_JWK` と同じか確かめる) |
-| `GET /key/app/<名前>.js` | 有料の画面のプログラムを、証明を確かめてから渡す(KV `PAID_JS` を結ぶまで 503) |
+| `GET /key/app/<名前>.js` | 有料の画面のプログラムを、証明を確かめてから渡す(包み `src/paid_bundle.js` と開く鍵 `PAID_JS_KEY` が揃うまで 503) |
+| `POST /core` | 有料の機能の芯(2026-11-17 21:50)。証明が有効な時だけ有料の答え(納品リストの表など)を返す。無料の範囲の上限(まとめて20行・在庫番5品)もここが決める。送られた中身は保存も記録もしない(`src/core.js`) |
 
 - 置くもの(すべて Stripe の契約のメタデータ): `zw_key`(利用の鍵)・`zw_gen`(作り直しの回数)・`zw_dev`(端末の番号・呼び名・最後に使った日)。Worker は何も覚えない
 - 利用の鍵は、客の請求書・領収書(Stripe の `invoice_settings.custom_fields`)にも載せる(再発行の窓口を持たないため)
-- 証明: ECDSA P-256 の署名つき。期限は長くても7日(次の請求日+3日・支払いの失敗中は2日ずつ・解約済みは使える最後の日まで)
+- 証明: ECDSA P-256 の署名つき。期限は1日(`KEY_PASS_HOURS`。2026-11-17 21:50 の決定で7日→1日。解約済みは使える最後の日まで)。通信できない時の上乗せの猶予は無し
+- 無料のお試しは無し(同じ決定)。利用の鍵の申し込みは、月払いも年払いも申し込みの日に1回目を請求する
+- 年払いの30日以内の全額返金は、同じカード(Stripe のカードの指紋)・同じメールアドレス(合言葉つきのハッシュ)では1回まで。返金した charge のメタデータ `zw_rf_fp`・`zw_rf_em` を Stripe の検索で見る
+- 有料の画面のプログラムの包み: 元は非公開の arbitrage-scout(`sedori_paid/`)。`node tools/sedori/pack_paid.mjs <元のフォルダ>` で `paid_pub.json`(公開の鍵)を使って暗号にし、`src/paid_bundle.js` に書く。開く鍵 `PAID_JS_KEY` は Cloudflare の秘密の値だけ(`node tools/sedori/make_key_pair.mjs --paid <ファイル>` で作る)
 - 年払いを1回目のお支払いから30日以内に「契約の管理」で解約すると、Webhook が自動で全額を返金し、その日で終える
 - 秘密の値: `KEY_SIGNING_JWK`(`node tools/sedori/make_key_pair.mjs <ファイル>` で作り、`wrangler secret put KEY_SIGNING_JWK < <ファイル>`)、`KEY_CODE_SECRET`(長い乱数)。
   無い間は、証明は試験用(署名なし。画面は `KEY_ALLOW_TEST: true` の写しだけ受ける)、鍵の文字は `STRIPE_WEBHOOK_SECRET` で作る。`/stripe/diag` の `key` で今の状態が分かる
@@ -64,7 +68,7 @@ status: `trialing`(無料期間)/`active`/`past_due`(支払いの失敗)/`paused
 
 ## 検算
 ```
-cd worker && node test/test_worker.js     # 131件+利用の鍵 69件(Stripe・PayPal・Firestore・Google は偽物)
+cd worker && node test/test_worker.js     # 131件+利用の鍵 90件+有料の機能の芯 31件(Stripe・PayPal・Firestore・Google は偽物)
 ```
 Stripe の署名(正しい・別の鍵・本文の書き換え・5分より古い/先・v1 が複数)、5つの出来事、同じ通知の2回目、同時に届いた通知で先着を2回数えないこと、
 解約・一時停止・プラン変更・カードの変更、毎日の仕事を確かめる。
