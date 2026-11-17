@@ -1,8 +1,12 @@
 /* せどり 利益チェック — 利用の鍵(ログインなし・こちらの名簿なし。2026-11-17)。window.SedoriLicense
    - config.js の KEY_MODE が true の時だけ働く(false の間は今までのログイン=account.js のまま)。
    - お客が持つのは「利用の鍵」(16文字)。申し込み直後に自動でこの端末に入り、Stripe の請求書・領収書にも載る。
-   - この端末が持つのは「利用の証明」(Worker の署名つき。段・期限・契約番号・端末番号)。署名をここで確かめ、期限までは通信なしで有料の機能を開く。
-     1日1回 Worker に出して、契約が生きていれば期限の延びた証明に替える。証明は長くても7日。解約・未払いなら延びず、期限で無料の範囲に戻る。
+   - この端末が持つのは「利用の証明」(Worker の署名つき。段・期限・契約番号・端末番号)。期限は1日(2026-11-17 21:50 の決定で7日→1日)。
+     6時間たったら(または残りが12時間を切ったら)Worker に出して替える。解約・未払い・外された端末なら延びず、1日以内に無料の範囲に戻る。
+   - 有料の機能の芯(まとめてチェックと在庫番の上限・納品リストなど)は、使うたびに Worker の /core に問い合わせる(core・limits)。
+     Worker は証明が有効な時だけ有料の答えを返す。端末の設定や段の判定を書き換えても、上限は増えない。答えはこの画面のメモリにだけ置き(最長10分)、保存しない。
+     通信できない間は、有料の機能は使えない(無料の計算と台帳は使える)。
+   - 有料の画面のプログラムは loadPaid で Worker(/key/app)から受け取る。控え(Service Worker)にも localStorage にも置かない。
    - データ(台帳・在庫番・ウォッチ・帳簿・設定・Keepaのキー)は、この端末のブラウザの中だけ。機種変更は「書き出す/取り込む」(ファイル)。
    - 署名を確かめられない証明・期限切れの証明・端末の時計を戻した時は、有料の機能を開かない。
    計算だけの部分(decode・verify・stateOf・exportData・importData・deviceLabel)は Node でも読める(tests/sedori/test_license.js)。 */
@@ -13,7 +17,8 @@
   'use strict';
   var DAY = 864e5;
   var PREFIX = 'zw-sedori:';
-  var RENEW_AFTER = 20 * 36e5;   // 証明を受け取ってから20時間たったら、次に開いた時に替える(1日1回)
+  var RENEW_AFTER = 6 * 36e5;    // 証明(期限1日)を受け取ってから6時間たったら、次に開いた時に替える
+  var RENEW_LEFT = 12 * 36e5;    // 残りが12時間を切っていたら、6時間たっていなくても替える
   var RETRY_AFTER = 36e5;        // 通信に失敗したら、1時間は試さない
   var LIC_KEYS = ['lic-code', 'lic-pass', 'lic-sid', 'lic-dev', 'lic-seen', 'lic-info', 'lic-try'];
   var TIER_NAME = { free: '無料', light: 'ライト', total: '総合', business: '業務' };
@@ -52,16 +57,16 @@
    * 証明(確かめ済みの中身)と最後に聞いた契約の様子から、画面に出す状態を決める。
    * now は「端末の時計」と「今までに見た一番新しい時刻」の大きい方(時計を戻しても期限は延びない)。
    * 返り値 { key, paid, tier, label, until, end, next }
-   *   key: none(鍵なし)/ active / trial / past_due / ending(解約済み・期限まで使える)/ ended(期限が過ぎた)/ removed(この端末は外された)
+   *   key: none(鍵なし)/ active / past_due / ending(解約済み・期限まで使える)/ ended(期限が過ぎた)/ removed(この端末は外された)。無料のお試しは無い
    */
   function stateOf(p, info, now) {
     info = info || {};
     if (info.removed) return { key: 'removed', paid: false, tier: 'free', label: 'この端末は外されました', until: null, end: null, next: null };
     var name = info.planName || (p ? TIER_NAME[p.t] || '' : '');
     if (p && Number(p.exp) > now && Number(p.iat || 0) <= now + DAY) {
-      var st = p.st === 'trialing' ? 'trial' : (p.st === 'past_due' ? 'past_due' : (p.st === 'ending' ? 'ending' : 'active'));
+      var st = p.st === 'past_due' ? 'past_due' : (p.st === 'ending' ? 'ending' : 'active');
       var end = p.end || info.end || null;
-      var label = name + (st === 'trial' ? '(無料期間中)' : st === 'past_due' ? '(お支払いの確認待ち)' : st === 'ending' ? '(解約済み・期限まで使えます)' : '');
+      var label = name + (st === 'past_due' ? '(お支払いの確認待ち)' : st === 'ending' ? '(解約済み・期限まで使えます)' : '');
       return { key: st, paid: true, tier: p.t || 'total', label: label, until: st === 'ending' ? end : null, end: end, next: info.next || null };
     }
     if (p || info.status) return { key: 'ended', paid: false, tier: 'free', label: '有料の機能は止まっています', until: null, end: info.end || (p ? p.end || p.exp : null), next: null };
@@ -139,9 +144,9 @@
     if (j.code) set('lic-code', j.code);
     if (j.sid) set('lic-sid', j.sid);
     set('lic-try', now());
-    if (!j.pass) { del('lic-pass'); cur.p = null; cur.checked = true; emit(); return Promise.resolve(state()); }
+    if (!j.pass) { del('lic-pass'); cur.p = null; dropMemo(); cur.checked = true; emit(); return Promise.resolve(state()); }
     return verify(j.pass, cfg).then(function (p) {
-      if (p && p.d === device()) { set('lic-pass', j.pass); cur.p = p; cur.error = ''; }
+      if (p && p.d === device()) { set('lic-pass', j.pass); if (!cur.p || cur.p.t !== p.t) dropMemo(); cur.p = p; cur.error = ''; }
       else { cur.error = '証明を確かめられませんでした'; }
       cur.checked = true; emit(); return state();
     });
@@ -163,10 +168,67 @@
   function renew(force) {
     var code = get('lic-code', ''); if (!code) return Promise.resolve(state());
     var t = now(), last = Number(get('lic-try', 0)) || 0;
-    if (!force && (cur.p && t - Number(cur.p.iat || 0) < RENEW_AFTER || t - last < RETRY_AFTER)) return Promise.resolve(state());
+    var fresh = cur.p && t - Number(cur.p.iat || 0) < RENEW_AFTER && Number(cur.p.exp || 0) - t > RENEW_LEFT;
+    if (!force && (fresh || t - last < RETRY_AFTER)) return Promise.resolve(state());
     set('lic-try', t);
     return run(call('/key/renew', { code: code, known: true }).then(take));
   }
+  /* ---------- 有料の機能の芯(Worker の /core。使うたびに問い合わせる) ---------- */
+  var memo = { limits: null, until: 0 };   // 答えはメモリにだけ(保存しない)
+  function dropMemo() { memo.limits = null; memo.until = 0; }
+  function postCore(ops, withPass) {
+    if (!cfg.WORKER_URL) return Promise.reject(new Error('準備中です'));
+    var b = { device: device(), ops: ops };
+    if (withPass && cur.p) b.pass = get('lic-pass', '');
+    return fetch(cfg.WORKER_URL.replace(/\/$/, '') + '/core', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b), cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e = new Error(j.error || ('通信 ' + r.status)); e.status = r.status; e.code = j.code || ''; throw e; } return j; }); });
+  }
+  /** 芯に問い合わせる。証明の期限切れ・署名違いと言われたら、1回だけ証明を替えて聞き直す。それでもだめなら証明を外す(無料の範囲になる) */
+  function core(ops) {
+    var p = cur.p && Number(cur.p.exp) > now() ? cur.p : null;
+    if (!p && cur.p) { cur.p = null; dropMemo(); emit(); }
+    return postCore(ops, !!p).catch(function (e) {
+      if (!p || (e.code !== 'pass-invalid' && e.code !== 'device-mismatch')) throw e;
+      return renew(true).catch(function () { return null; }).then(function () {
+        if (!cur.p) return postCore(ops, false);
+        return postCore(ops, true).catch(function (e2) {
+          if (e2.code !== 'pass-invalid' && e2.code !== 'device-mismatch') throw e2;
+          del('lic-pass'); cur.p = null; dropMemo(); emit(); return postCore(ops, false);
+        });
+      });
+    }).then(function (j) {
+      (j.results || []).forEach(function (x) { if (x.op === 'limits' && !x.error) { memo.limits = x; memo.until = Date.now() + Math.max(0, Number(j.ttl) || 0) * 1000; } });
+      return j;
+    });
+  }
+  /** 上限(まとめてチェックの行数・在庫番の品数・自動の確かめの間隔)。サーバーが決める。答えは最長10分(証明の期限まで)メモリに置く */
+  function limits(force) {
+    if (!force && memo.limits && Date.now() < memo.until && (!cur.p || Number(cur.p.exp) > now())) return Promise.resolve(Object.assign({}, memo.limits));
+    return core([{ op: 'limits' }]).then(function () {
+      if (!memo.limits) throw new Error('上限を受け取れませんでした');
+      try { document.dispatchEvent(new CustomEvent('sedori:limits', { detail: Object.assign({}, memo.limits) })); } catch (x) { /* 何もしない */ }
+      return Object.assign({}, memo.limits);
+    });
+  }
+  /** いま手元にある上限(無ければ null)。表示のためだけに使う(数えるのは limits() の答え) */
+  function limitsNow() { return memo.limits && Date.now() < memo.until ? Object.assign({}, memo.limits) : null; }
+  /** 有料の画面のプログラムを Worker から受け取って動かす(控えにも保存にも置かない。Blob の URL は読んだら消す) */
+  function loadPaid(name) {
+    if (!cfg.WORKER_URL) return Promise.reject(new Error('準備中です'));
+    if (!cur.p || Number(cur.p.exp) <= now()) return Promise.reject(Object.assign(new Error('有料の機能は、利用の鍵が有効な間だけ使えます'), { code: 'need-pass' }));
+    return fetch(cfg.WORKER_URL.replace(/\/$/, '') + '/key/app/' + encodeURIComponent(name), { headers: { Authorization: 'Bearer ' + get('lic-pass', '') }, cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw Object.assign(new Error(r.status === 503 ? '準備中です' : '有料の機能を開けませんでした'), { status: r.status }); return r.text(); })
+      .then(function (js) {
+        return new Promise(function (ok, ng) {
+          var url = URL.createObjectURL(new Blob([js], { type: 'text/javascript' })), sc = document.createElement('script');
+          sc.src = url; sc.onload = function () { URL.revokeObjectURL(url); sc.remove(); ok(true); }; sc.onerror = function () { URL.revokeObjectURL(url); sc.remove(); ng(new Error('有料の機能を開けませんでした')); };
+          document.head.appendChild(sc);
+        });
+      });
+  }
+  // 証明の期限が来たら、手元の答えを捨てて画面を無料の範囲に戻す(開いたままの画面でも)
+  setInterval(function () { if (cur.p && Number(cur.p.exp) <= now()) { cur.p = null; dropMemo(); emit(); } }, 60000);
+
   function portal() { return call('/key/portal', { code: get('lic-code', '') }).then(function (j) { if (j.url) location.href = j.url; return j; }, fail); }
   function rotate() { return run(call('/key/rotate', { code: get('lic-code', '') }).then(take)); }
   function removeDevice(target, code) {
@@ -238,7 +300,8 @@
     open: function () { location.href = (document.body.getAttribute('data-base') || './') + 'mypage/#mp-key'; }, signOut: function () { return Promise.resolve(); },
     stripePlans: stripePlans, checkout: checkout, paypalReady: function () { return false; }, provider: function () { return 'stripe'; }, portal: portal,
     renderPayButton: no, pause: no, resume: no, revise: no, cancel: no, linkStripe: no, worker: function (path, body) { return call(path, body); },
-    lightCap: function () { return null; }, deleteCloud: no, cloudRows: no, deleteAccount: no, syncNow: function () {}, cfg: cfg, ready: false, billingReady: !!cfg.WORKER_URL
+    lightCap: function () { return null; }, deleteCloud: no, cloudRows: no, deleteAccount: no, syncNow: function () {}, cfg: cfg, ready: false, billingReady: !!cfg.WORKER_URL,
+    core: core, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid
   };
 
   function init() {
@@ -256,5 +319,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  return Object.assign({}, pure, { state: state, claim: claim, use: use, renew: renew, portal: portal, rotate: rotate, removeDevice: removeDevice, forget: forget, checkout: checkout, exportFile: exportFile, importText: importText, device: device, now: now });
+  return Object.assign({}, pure, { state: state, claim: claim, use: use, renew: renew, portal: portal, rotate: rotate, removeDevice: removeDevice, forget: forget, checkout: checkout, exportFile: exportFile, importText: importText, device: device, now: now, core: core, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid });
 });

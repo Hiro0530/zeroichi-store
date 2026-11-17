@@ -36,7 +36,7 @@
   var hooks = {};
   function hook(name, fn) { (hooks[name] = hooks[name] || []).push(fn); }
   function fire(name, payload) { (hooks[name] || []).forEach(function (fn) { try { fn(payload); } catch (e) { /* ほかの部品の誤りで元の動きを止めない */ } }); return payload; }
-  /** できることの段: 'free' / 'light' / 'total' / 'business'(14日無料の間は business) */
+  /** できることの段: 'free' / 'light' / 'total' / 'business'(無料のお試しは無い。利用の鍵の形では、数の上限は Worker の /core が決める) */
   function tier() { var A = window.SedoriAccount; return A && A.paid() ? A.tier() : 'free'; }
 
   function base() { return document.body.getAttribute('data-base') || './'; }
@@ -391,7 +391,7 @@
       (plan ? '気になっているプラン: ' + plan + '\n' : '') +
       '(任意)いま一番手間に感じている作業:\n\n' +
       '有料版: ライト 月' + catPrice('light_month', '2,980') + '円/総合 月' + catPrice('total_month', '4,980') + '円(先着' + (Number((window.ZW_CONFIG || {}).FOUNDER_LIMIT) || 200) + '名は月' + catPrice('founder_month', '3,980') + '円)/業務 月' + catPrice('business_month', '7,980') + '円(税込)。' +
-      '月払いは14日無料、年払いは10か月分の料金で1年(30日以内の解約は全額返金)。\n' +
+      '無料のお試しは無く、月払いはいつでも解約でき払った期間の終わりまで使える。年払いは10か月分の料金で1年(30日以内の解約は全額返金・同じカードとメールでは1回まで)。\n' +
       '登録の取り消しは、このメールに「取り消し」と返信するだけでできます。';
   }
   function gmailCompose(subject, body) { return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(MAIL) + '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); }

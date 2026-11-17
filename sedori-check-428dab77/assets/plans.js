@@ -1,16 +1,15 @@
 /* 料金: 1) 月払い/年払いと3枚のカードからプランを選ぶ 2) 同じ画面の「お申し込み内容の確認」(特商法の最終確認の表示事項)を、選んだプランに合わせて書き換え、
    申し込みのボタンを出す。主は「カードで申し込む」(Stripe の申し込み画面へ1回で移る)、その下に小さく「PayPalで払う」。
    受付前は事前登録、カードの価格IDが Worker に無いプランは「準備中」。料金は config.js の PLAN_CATALOG だけで決める。
-   無料期間は初めてのお申し込みの月払いだけ(解約後の申し込み直しはカードのみ・無料期間なしで、確認の欄もそう書き換える)。
-   年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(cfg.YEAR_TEXT。2026-10-30)。
+   無料のお試しは無い(2026-11-17 21:50 の決定)。月払いも年払いも、お申し込みの日に1回目を請求する。月払いはいつでも解約でき、払った期間の終わりまで使える。
+   年払いは1回目のお支払いから30日以内の解約で全額返金(同じカード・同じメールでは1回まで。cfg.YEAR_TEXT)。
    総合を選ぶと、先着(cfg.FOUNDER_LIMIT 名)の受付中は先着の価格(founder_*)で申し込む(カードと確認の両方にそう書く)。 */
 (function () {
   'use strict';
   var U = window.SedoriUI, $ = U.$, $$ = U.$$, esc = U.esc;
   var cfg = window.ZW_CONFIG || {}, SA = window.SedoriAccount;
   var CAT = cfg.PLAN_CATALOG || {};
-  var DAYS = Number(cfg.TRIAL_DAYS) || 14;
-  var YEAR_TEXT = cfg.YEAR_TEXT || '年払いは無料期間なしで、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します。';
+  var YEAR_TEXT = cfg.YEAR_TEXT || '年払いは、お申し込みの日に1年分をお支払いいただきます。1回目のお支払いから30日以内に解約すれば、全額を返金します(同じカード・同じメールアドレスでは1回まで)。';
   var RDAYS = Number(cfg.YEAR_REFUND_DAYS) || 30;
   var FN = Number(cfg.FOUNDER_LIMIT) || 200;  // 先着の定員(2026-10-28 決定 200名)
   var KEEP = cfg.FOUNDER_KEEP || '解約しない限りずっと(サービス提供中)';
@@ -44,7 +43,7 @@
 
   function paint() {
     var k = key(), c = CAT[k], isF = !!c.founder, per = st.cyc === 'year' ? '年' : '月', again = returning();
-    var now = new Date(), end = new Date(now.getTime() + DAYS * 864e5);
+    var now = new Date();
     var name = CAT[st.base + '_month'].name, cycl = st.cyc === 'year' ? '年払い' : '月払い';
     // 1) 切り替えとカード
     $$('#pl-cyc input').forEach(function (i) { i.checked = i.value === st.cyc; i.parentNode.classList.toggle('on', i.checked); });
@@ -53,7 +52,7 @@
       var on = st.chosen && card.getAttribute('data-base') === st.base;
       card.classList.toggle('on', on);
       var b = $('.pc-go', card);
-      if (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.href = '?plan=' + card.getAttribute('data-base') + '_' + st.cyc + '#pl-step2'; b.textContent = st.cyc === 'year' ? 'このプランを年払いで申し込む' : 'このプランで14日無料'; }
+      if (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.href = '?plan=' + card.getAttribute('data-base') + '_' + st.cyc + '#pl-step2'; b.textContent = st.cyc === 'year' ? 'このプランを年払いで申し込む' : 'このプランを選ぶ'; }
     });
     var fl = $('#pc-founder'); if (fl) fl.hidden = !founder.open;
     // 2) 最終確認
@@ -67,33 +66,26 @@
     var every = st.cyc === 'month' ? '毎月' : '毎年';
     var year = st.cyc === 'year';
     $('#cf-refund').textContent = year
-      ? '1回目のお支払いから' + RDAYS + '日以内に解約すれば、全額を返金します(その日で使えなくなります。台帳は書き出せます)。' + (RDAYS + 1) + '日目からの解約は月割り・日割りの返金はなく、次回の自動更新を止める扱いとなり、支払い済みの期間(1年)の終わりまで使えます。当方の不具合で使えなかった期間は返金します'
+      ? '1回目のお支払いから' + RDAYS + '日以内に解約すれば、全額を返金します(同じカード・同じメールアドレスでは1回まで。その日で有料の機能は止まり、データは書き出せます)。' + (RDAYS + 1) + '日目からの解約は月割り・日割りの返金はなく、次回の自動更新を止める扱いとなり、支払い済みの期間(1年)の終わりまで使えます。当方の不具合で使えなかった期間は返金します'
       : '途中で解約しても日割りの返金はなく、支払い済みの期間の終わりまで使えます。当方の不具合で使えなかった期間は返金します';
     $('#cf-limit').textContent = year
       ? '次の請求日の前日まで。1回目のお支払いから' + RDAYS + '日以内の解約は全額を返金します'
-      : '次の請求日の前日まで。無料期間中に解約すれば0円です';
+      : '次の請求日の前日まで。解約しても、払った期間の終わりまで使えます';
     if (year) {
-      $('#cf-t1').textContent = '無料期間なし・' + RDAYS + '日以内の解約は全額返金';
+      $('#cf-t1').textContent = RDAYS + '日以内の解約は全額返金(1回まで)';
       $('#cf-trial').textContent = 'ありません。' + YEAR_TEXT;
-      $('#cf-trial2').hidden = true;
       var cpy = $('#cf-pay-pp'); if (cpy) cpy.hidden = !(cfg.PAYPAL_YEAR === true && !again); // 年払いは PayPal の年払い(無料期間なし)を用意した時だけ
       $('#cf-when').textContent = 'お申し込みの日に1回目の' + yen(c.price) + 'を請求し、以後は毎年同じ日に自動で請求します(前払い)';
-    } else if (again) {
-      $('#cf-t1').textContent = '無料期間なし(2回目のお申し込み)';
-      $('#cf-trial').textContent = 'ありません。無料期間は初めてのお申し込みの時だけです';
-      $('#cf-trial2').hidden = true;
-      var cpp = $('#cf-pay-pp'); if (cpp) cpp.hidden = true; // 申し込み直しはカードだけ
-      $('#cf-when').textContent = 'お申し込みの日に1回目の' + yen(c.price) + 'を請求し、以後は' + every + '同じ日に自動で請求します(前払い)';
     } else {
-      $('#cf-t1').textContent = '14日無料: ' + jdate(now, false) + '〜' + jdate(end, false);
-      $('#cf-trial').textContent = jdate(now) + '〜' + jdate(end) + 'の' + DAYS + '日間';
-      $('#cf-trial2').hidden = false;
-      var cpp2 = $('#cf-pay-pp'); if (cpp2) cpp2.hidden = false;
-      $('#cf-when').textContent = jdate(end) + 'に1回目の' + yen(c.price) + 'を自動で請求し、以後は' + every + '同じ日に請求します(前払い)。終了3日前にメールでお知らせします';
+      // 無料のお試しは無い: 月払いもお申し込みの日に1回目を請求する
+      $('#cf-t1').textContent = 'いつでも解約できます(払った期間の終わりまで使えます)';
+      $('#cf-trial').textContent = 'ありません。お申し込みの日から使えます';
+      var cpp = $('#cf-pay-pp'); if (cpp) cpp.hidden = !!(again || SA && SA.keyMode);
+      $('#cf-when').textContent = 'お申し込みの日(' + jdate(now) + ')に1回目の' + yen(c.price) + 'を請求し、以後は' + every + '同じ日に自動で請求します(前払い)';
     }
     $('#cf-term').textContent = (st.cyc === 'month' ? '1か月' : '1年') + 'ごとに自動で更新し、解約するまで続きます';
     $('#cf-period').textContent = isF
-      ? '1回目のお支払いが済んだ方が' + FN + '名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、無料期間中でもこの価格のまま。' + KEEP + 'この価格です'
+      ? '1回目のお支払いが済んだ方が' + FN + '名に達するまで' + (cfg.FOUNDER_DEADLINE ? '(遅くとも' + jdate(new Date(cfg.FOUNDER_DEADLINE + 'T00:00:00')) + 'まで)' : '') + '。受付中にお申し込みの方は、この価格のまま。' + KEEP + 'この価格です'
       : '期限はありません';
     // 事前登録のメールに、選んだプランを書き添える
     if (U.setPreregPlan) U.setPreregPlan(name + '(' + cycl + ')');

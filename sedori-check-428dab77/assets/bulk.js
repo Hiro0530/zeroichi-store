@@ -4,7 +4,8 @@
      Amazon・楽天のページそのものは読まない。どちらのキーも無ければ、貼った数字だけで計算する
    - 計算と判定は ra.js と同じもの(SedoriRA.compute / judge)。判定はポイント抜きの利益が目標以上
    - 結果は端末の ra-bulk に最後の1回分(500件まで)。クラウドには送らない
-   - プランごとの1回の行数: 無料20・ライト100・総合と業務500(SedoriCalc.bulkLimit)
+   - プランごとの1回の行数: 無料20・ライト100・総合と業務500。利用の鍵の形(KEY_MODE)では、行数は Worker の /core が利用の証明を見て決める
+     (端末の段の判定や設定を書き換えても増えない。通信できない間は、まとめてチェックは使えない)。ログインの形は今までどおり SedoriCalc.bulkLimit
    進め方の部品(core)は画面に依存しないので、node の試験から読める */
 (function (root, factory) {
   var core = factory();
@@ -127,11 +128,15 @@
     var meta = U.store.get('ra-bulk', null) || {};   // { pasted, bad, dup, over, lim, state, why, tokens } と items(ra.js が入れる)
     var ta = $('#bulk-text'), st = $('#bulk-st');
 
-    function limit() { return C.bulkLimit(U.tier()); }
+    var SA = function () { return win.SedoriAccount || {}; };
+    var keyMode = function () { return !!SA().keyMode && typeof SA().limits === 'function'; };
+    /** 表示のための行数(数えるのは start の中でサーバーに聞いた数) */
+    function limit() { if (keyMode()) { var l = SA().limitsNow(); return l ? l.bulk : C.bulkLimit('free'); } return C.bulkLimit(U.tier()); }
+    function tierName() { if (keyMode()) { var l = SA().limitsNow(); return TIER_NAME[(l && l.tier) || 'free']; } return TIER_NAME[U.tier()]; }
     function save() { var s = U.store.get('ra-bulk', null) || {}; ['pasted', 'bad', 'dup', 'over', 'lim', 'state', 'why', 'err', 'code', 'tokens'].forEach(function (k) { s[k] = meta[k]; }); s.items = R.lists.b.slice(0, 500); U.store.set('ra-bulk', s); }
     function paintLimit() {
       var p = ta.value.trim() ? C.parseCodes(ta.value) : null, lim = limit();
-      $('#bulk-lim').textContent = TIER_NAME[U.tier()] + 'は1回' + lim + '行まで計算します。' +
+      $('#bulk-lim').textContent = tierName() + 'は1回' + lim + '行まで計算します。' +
         (p ? 'いま読める行は' + p.items.length + '行' + (p.bad.length ? '、読めない行は' + p.bad.length + '行' : '') + 'です。' : '');
     }
 
@@ -151,7 +156,7 @@
         h += '<p class="bulk-sum"><span class="bs-k">目標に届く</span><b>' + n.ok + '</b><span class="bs-u">件</span>' +
           '<span class="bs-rest">' + (meta.pasted || rows.length) + '行のうち' + (rest ? ' ' + rest : '') + '</span></p>';
         // 次にすること(1つだけ): 止まった > 行数の上限 > キーが無い
-        var overText = TIER_NAME[U.tier()] + 'は1回' + lim + '行までです。' + (lim + 1) + '行目から先の' + meta.over + '行は計算していません。ライトは100行、総合と業務は500行まで計算できます。';
+        var overText = tierName() + 'は1回' + lim + '行までです。' + (lim + 1) + '行目から先の' + meta.over + '行は計算していません。ライトは100行、総合と業務は500行まで計算できます。';
         var shipN = rows.filter(C.needShip).length;
         var unkText = '未入力の行は、Amazonの売値か仕入れ値がまだ無い行です。行を押して右の欄に入れると計算します。' +
           (shipN ? '送料込みの店が無かった' + shipN + '行は、送料別の一番安い店を入れています。行を押して「仕入れの送料」を入れると計算します。' : '');
@@ -181,10 +186,20 @@
         '</ol>' + (b.length > 100 ? '<p class="bulk-note">残りの' + (b.length - 100) + '件は省いています。</p>' : '') + '</details>' : '');
     }
 
-    function start(resume) {
+    function start(resume, lim0) {
       if (running) { U.toast('いま計算しています。終わるまでお待ちください'); return; }
+      if (!resume && keyMode() && lim0 == null && C.parseCodes(ta.value).items.length) {
+        // 行数はサーバーが決める(利用の証明が無い・切れていれば無料の20行)
+        $('#bulk-run').textContent = '確かめています';
+        SA().limits().then(function (l) { $('#bulk-run').textContent = 'まとめて計算する'; paintLimit(); start(false, l.bulk); }, function () {
+          $('#bulk-run').textContent = 'まとめて計算する';
+          meta = { msg: '通信できないため、まとめてチェックを使えません。つながってから、もう一度押してください(1行ずつの計算は、このまま使えます)。' };
+          R.lists.b = []; paint(); R.render();
+        });
+        return;
+      }
       if (!resume) {
-        var p = C.parseCodes(ta.value), lim = limit();
+        var p = C.parseCodes(ta.value), lim = lim0 != null ? lim0 : limit();
         if (!p.items.length) {
           meta = { msg: ta.value.trim() ? 'JANかASINを読める行がありませんでした。1行に1商品、1列目にJAN(13桁・8桁)かASIN(B0で始まる10桁)を入れてください。' : 'JAN・ASINの一覧を貼ってから押してください。' };
           R.lists.b = []; paint(); R.render(); ta.focus(); return;
@@ -246,6 +261,8 @@
     });
     U.hook('ra-render', function (p) { if (p.tab === 'b') paint(); });
     document.addEventListener('sedori:acct', paintLimit);
+    document.addEventListener('sedori:limits', paintLimit);
+    if (keyMode()) SA().limits().catch(function () { /* 表示は無料の数のまま */ });
 
     /* 上の検索欄に複数行を貼った時は、行を保ったまま「まとめて」へ送る(検索欄は改行を捨てるため) */
     function open(text, run) {

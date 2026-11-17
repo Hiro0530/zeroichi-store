@@ -1,7 +1,11 @@
 /* せどり 利益チェック: オフラインでも計算できるように画面と手数料データを保存する。
    HTML・JSON・config.js は通信を優先(新しい手数料・設定を使う)、それ以外は保存済みを優先。外部(楽天・Yahoo!・Keepa・Firebase・Stripe・PayPal)は扱わない。
+   有料の画面のプログラム(Worker の /key/app)と有料の機能の芯の答え(/core)は、控えに入れない(2026-11-17 21:50 の決定)。
+   どちらも Worker(別の置き場)から来るので下の fetch では扱わず、念のため、名前に /key/app/・/core を含むものは保存も返しもしない。
+   古い控えに紛れていたら、入れ替えの時(activate)に消す。
    ヤフオクの終了の通知で「出品停止にした」を押すと、開いているページに知らせる(無ければ台帳を開く)。 */
-var CACHE = 'zw-sedori-v20';
+var CACHE = 'zw-sedori-v21';
+var PAID = /\/key\/app\/|\/core(\?|$)/;
 var CORE = ['./', 'rakuten-amazon/', 'muzaiko-amazon/', 'mercari-calc/', 'yahuoku-mercari/', 'auction-mercari/', 'daicho/', 'scan/', 'books/', 'plans/', 'mypage/', 'terms/', 'privacy/', 'shikumi/', 'chigai/',
   'assets/sedori.css', 'assets/calc.js', 'assets/ui.js', 'assets/sync.js', 'assets/books-sync.js', 'assets/seller-check.js', 'assets/account.js', 'assets/ra.js', 'assets/market.js', 'assets/mz.js', 'assets/ledger.js', 'assets/top.js', 'assets/shindan.js',
   'assets/plans.js', 'assets/mypage.js', 'assets/ai.js', 'assets/scan.css', 'assets/scan.js', 'assets/scan-decoder.js', 'assets/scan-sync.js', 'books/books.css', 'books/assets/books-core.js', 'books/assets/books.js', 'assets/vendor/qrcode-generator.js', 'assets/vendor/zxing-library-0.21.3.min.js',
@@ -17,11 +21,13 @@ self.addEventListener('install', function (e) {
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
     return Promise.all(ks.filter(function (k) { return k.indexOf('zw-sedori-') === 0 && k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+  }).then(function () {
+    return caches.open(CACHE).then(function (c) { return c.keys().then(function (rs) { return Promise.all(rs.filter(function (r) { return PAID.test(r.url); }).map(function (r) { return c.delete(r); })); }); });
   }).then(function () { return self.clients.claim(); }));
 });
 self.addEventListener('fetch', function (e) {
   var u = new URL(e.request.url);
-  if (e.request.method !== 'GET' || u.origin !== location.origin) return;
+  if (e.request.method !== 'GET' || u.origin !== location.origin || PAID.test(u.pathname)) return;
   var fresh = e.request.mode === 'navigate' || /\.json$/.test(u.pathname) || /config\.js$/.test(u.pathname);
   if (fresh) {
     e.respondWith(fetch(e.request).then(function (r) {

@@ -387,9 +387,17 @@
   var box = null, fees = null, running = false, stopFlag = false, prog = null, openId = null, pick = null, lastErr = '', gapNote = '', more = {}, dlgState = null;
 
   function SRC() { var w = root.SedoriWatchCheck; return w && w.source ? w.source : null; }   // 仕入れ先を探す時に、楽天を1回呼ぶ口
-  function tier() { return U.tier ? U.tier() : 'free'; }
-  function limit() { var c = (root.ZW_CONFIG || {}).LISTED_LIMIT || {}; return c[tier()] != null ? c[tier()] : LIMIT[tier()]; }
-  function autoMin() { return AUTO_MIN[tier()] || 0; }
+  /* 利用の鍵の形(KEY_MODE)では、品数と自動の確かめの間隔は Worker の /core が利用の証明を見て決める(2026-11-17 21:50 の決定)。
+     端末の段の判定や設定(LISTED_LIMIT)を書き換えても増えない。答えが無い間(通信できない・まだ聞いていない)は無料の数(5品・自動なし)で数える */
+  function SA() { return root.SedoriAccount || {}; }
+  function keyMode() { return !!SA().keyMode && typeof SA().limits === 'function'; }
+  function srv() { return keyMode() ? SA().limitsNow() : null; }
+  function tier() { if (keyMode()) { var l = srv(); return (l && l.tier) || 'free'; } return U.tier ? U.tier() : 'free'; }
+  function limit() {
+    if (keyMode()) { var l = srv(); return l ? l.listed : LIMIT.free; }
+    var c = (root.ZW_CONFIG || {}).LISTED_LIMIT || {}; return c[tier()] != null ? c[tier()] : LIMIT[tier()];
+  }
+  function autoMin() { if (keyMode()) { var l = srv(); return l ? l.auto : 0; } return AUTO_MIN[tier()] || 0; }
   function load() { return normAll(U.store.get('mz-items', []), Date.now()); }
   function save(items) { var ok = U.store.set('mz-items', items); if (!ok) U.toast('この端末では保存できませんでした(プライベートブラウズ等)'); return ok; }
   function setOf() { var s = U.store.get('mz-set', {}); return s && typeof s === 'object' ? s : {}; }
@@ -402,6 +410,18 @@
 
   /* ---------- 送り込み(ほかのページから) ---------- */
   function send(rows, from) {
+    if (keyMode() && !srv()) {
+      // 品数をサーバーに聞いてから入れる。通信できない時は、受け箱に置いて次に開いた時に入れる
+      return SA().limits().then(function () { return sendNow(rows, from); }, function () {
+        var inb = U.store.get('mz-inbox', []); if (!Array.isArray(inb)) inb = [];
+        U.store.set('mz-inbox', inb.concat(rows).slice(-300));
+        U.toast('通信できないため、在庫番の品数を確かめられませんでした。つながってから在庫番を開くと入ります');
+        return { added: 0, updated: 0, over: 0, later: rows.length };
+      });
+    }
+    return sendNow(rows, from);
+  }
+  function sendNow(rows, from) {
     var r = addIncoming(load(), rows, from || 'bulk', limit(), Date.now());
     if (r.added || r.updated) save(r.items);
     var t = (r.added ? r.added + '品を「在庫番」に入れました。' : '') + (r.updated ? r.updated + '品は、もう入っています。' : '') +
@@ -419,6 +439,16 @@
   /* ---------- 確かめる(楽天への取り直しは watch-check.js の SedoriWatchCheck.stock。2秒おき・失敗でその場で止める、は向こうが守る) ---------- */
   function W() { var w = root.SedoriWatchCheck; return w && w.stock && w.source ? w : null; }
   function check(auto) {
+    if (running) return Promise.resolve(null);
+    if (keyMode()) {
+      // 確かめる品の数は、その都度サーバーに聞く(証明が切れていれば無料の5品)
+      return SA().limits().then(function () { return checkNow(auto); }, function () {
+        lastErr = '通信できないため、確かめられません(在庫番の確かめは通信が要ります)'; if (!auto) U.toast(lastErr); paint(); return null;
+      });
+    }
+    return checkNow(auto);
+  }
+  function checkNow(auto) {
     if (running) return Promise.resolve(null);
     var w = W(), items = load(), list = pickRound(items, limit());
     if (!list.length) { if (!auto) U.toast(items.length ? '仕入れ先を入れた品がありません。品を開いて、仕入れ先を入れてください' : 'まだ品がありません'); return Promise.resolve(null); }
@@ -802,6 +832,9 @@
     setTimeout(tryAuto, 4000); setInterval(tryAuto, 30000);
     setInterval(function () { if (box && !running && !openId && !document.getElementById('ls-dlg')) paint(); }, 60000);   // 時間がたって「確かめられない」になった品を出す
     document.addEventListener('sedori:acct', function () { paint(); setTimeout(tryAuto, 3000); });
+    document.addEventListener('sedori:limits', function () { if (!openId && !document.getElementById('ls-dlg')) paint(); });
+    // 呼び出しを減らす: 上限を聞くのは、在庫番のページか、仕入れ先の入った品がある時だけ(ほかのページを開くたびには聞かない)
+    if (keyMode() && (box || load().some(function (it) { return it.src.length; }))) SA().limits().catch(function () { /* 答えが無い間は無料の数で数える */ });
     document.addEventListener('sedori:target', function () { if (box && !openId) paint(); });
     root.addEventListener('storage', function (e) { if (e.key && /mz-items|mz-run$/.test(e.key) && box && !running && !openId) paint(); });
   }

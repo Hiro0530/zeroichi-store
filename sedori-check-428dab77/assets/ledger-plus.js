@@ -1,6 +1,6 @@
 /* 古物台帳の追加の働き(台帳ページだけで読む):
    1) また仕入れる候補: 同じ商品を1行にまとめる、今の値での出し直し(手入力)、月ごとの見直し、もう一度仕入れた
-   2) 代行へ渡す納品リストの書き出し(業務)   3) 仕入れの証拠の控えの書き出し(書類の画像は預からない)
+   2) 代行へ渡す納品リストの書き出し(業務。表の形は Worker の /core が利用の証明を確かめてから作る。2026-11-17 21:50 の決定で、形の部品は画面から外した)   3) 仕入れの証拠の控えの書き出し(書類の画像は預からない)
    前半は計算だけの部品(node の試験 tests/sedori/test_ledger_plus.js が読む)。後半が画面。
    4) 取り寄せ販売の品(「在庫番」で「注文が入った」を押して出来た行): 仕入れた・届いた・仕入れられなかった、発送の期限、月の実績
    台帳の行に足す項目: repeat / calc / rpSeen / rpSkip / rpFrom / orderNo / trackNo / prepSent / docType / docName / docRef /
@@ -104,16 +104,11 @@
   function boughtToday(rows, g, today) { return (rows || []).filter(function (r) { return r.rpFrom && r.date === today && g.ids.indexOf(r.id) >= 0; })[0] || null; }
 
   /* ---------- 納品リスト(代行へ渡す) ---------- */
-  var PREP_HEAD = ['仕入日', '仕入れ先', '注文番号', '追跡番号', '品名', 'JAN', 'ASIN', '数量', '新品/中古', '受取先・入庫ID', 'メモ'];
-  var PREP_WIDTH = [11, 22, 18, 18, 38, 15, 13, 6, 9, 16, 24];
-  /** 対象: 発送のしかたが発送代行かFBAで、状態が「仕入れ済」。取り寄せ販売の「仕入れ前」は入れない */
+  /** 対象(選ぶ画面に出す行): 発送のしかたが発送代行かFBAで、状態が「仕入れ済」。取り寄せ販売の「仕入れ前」は入れない。表の形は Worker が作る */
   function prepTarget(r) { return !!r && !r.wait && r.ship !== 'self' && (r.status || '仕入れ済') === '仕入れ済'; }
-  function prepBody(rows) {
-    return rows.filter(prepTarget).slice().sort(function (a, b) { return -byNew(a, b); }).map(function (r) {
-      var c = codes(r);
-      return [r.date || '', r.party || '', r.orderNo || '', r.trackNo || '', r.name || '', c.jan, c.asin, qtyOf(r), r.cond || '', r.recvId || '', r.memo || ''];
-    });
-  }
+  /** Worker へ送る欄だけ(ほかの欄・キー・取引相手の情報は送らない) */
+  var PREP_SEND = ['id', 'date', 'party', 'orderNo', 'trackNo', 'name', 'feature', 'jan', 'asin', 'qty', 'cond', 'recvId', 'memo', 'ship', 'status', 'wait'];
+  function prepSend(rows) { return rows.map(function (r) { var o = {}; PREP_SEND.forEach(function (k) { if (r[k] != null && r[k] !== '') o[k] = r[k]; }); return o; }); }
 
   /* ---------- 仕入れの証拠 ---------- */
   var DOC_TYPES = ['領収書', '請求書', '納品書', '購入履歴の画面', 'なし'];
@@ -214,7 +209,7 @@
 
   var core = { mzStep: mzStep, mzWaiting: mzWaiting, shipState: shipState, mzSort: mzSort, mzUrgent: mzUrgent, mzStats: mzStats, mzStatsText: mzStatsText, mzBought: mzBought, mzFailed: mzFailed, mzLimitText: mzLimitText, MZ_NOTE: MZ_NOTE,
     codes: codes, keyOf: keyOf, monthOf: monthOf, groups: groups, review: review, calcInput: calcInput, nowProfit: nowProfit, JUDGE: JUDGE,
-    rebuyRow: rebuyRow, boughtToday: boughtToday, PREP_HEAD: PREP_HEAD, prepTarget: prepTarget, prepBody: prepBody,
+    rebuyRow: rebuyRow, boughtToday: boughtToday, prepTarget: prepTarget, prepSend: prepSend, PREP_SEND: PREP_SEND,
     DOC_TYPES: DOC_TYPES, PROOF_NOTE: PROOF_NOTE, PROOF_HEAD: PROOF_HEAD, proofNeeded: proofNeeded, proofBody: proofBody, proofTotals: proofTotals, monthSum: monthSum, stripPoints: stripPoints };
 
   /* ====================== ここから画面 ====================== */
@@ -402,7 +397,9 @@
   }
   function prepDialog() {
     var SA = root.SedoriAccount, tier = U.tier ? U.tier() : (SA && SA.tier ? SA.tier() : 'free');
-    if (tier !== 'business') { U.toast('納品リストの書き出しは業務プランで使えます(14日間の無料期間中も使えます)', '業務プランを見る', function () { location.href = U.base() + 'plans/?plan=business_month&from=prep'; }); return; }
+    var goPlan = function () { location.href = U.base() + 'plans/?plan=business_month&from=prep'; };
+    if (tier !== 'business') { U.toast('納品リストの書き出しは業務プランで使えます', '業務プランを見る', goPlan); return; }
+    if (!SA || typeof SA.core !== 'function') { U.toast('納品リストは、利用の鍵の形で使えます'); return; }
     var list = P.rows().filter(prepTarget).slice().sort(function (a, b) { return -byNew(a, b); });
     if (!list.length) { U.toast('納品リストに入る行がありません(発送代行かFBAで、状態が「仕入れ済」の行が対象です)'); return; }
     var li = function (r) {
@@ -416,9 +413,15 @@
       var ids = $$('input[data-id]', d).filter(function (c) { return c.checked; }).map(function (c) { return c.getAttribute('data-id'); });
       if (!ids.length) { U.toast('書き出す行に印を付けてください'); return false; }
       var pick = list.filter(function (r) { return ids.indexOf(r.id) >= 0; }), before = L.all(), today = U.today();
-      out(kind, 'nouhin-list_' + today, '納品リスト(' + today + ' 書き出し・' + pick.length + '件)', PREP_HEAD, prepBody(pick), PREP_WIDTH, { 7: 1 }, '納品リスト');
-      var rows = L.all(); rows.forEach(function (r) { if (ids.indexOf(r.id) >= 0) r.prepSent = today; }); L.save(rows); redraw();
-      U.toast(pick.length + '件を書き出し、「発送代行へ連絡済 ' + md(today) + '」と記録しました', '記録を戻す', function () { L.save(before); redraw(); });
+      // 表は Worker が利用の証明を確かめてから作る(送った行は答えを作るためだけに使われ、保存も記録もされない)
+      SA.core([{ op: 'prep', rows: prepSend(pick), today: today }]).then(function (j) {
+        var t = (j.results || [])[0] || {};
+        if (t.error === 'need-pass' || t.error === 'need-plan') { U.toast('納品リストの書き出しは業務プランで使えます(利用の鍵の期限が切れている時は、マイページで確かめてください)', '業務プランを見る', goPlan); return; }
+        if (t.error || !t.body) { U.toast('納品リストを作れませんでした。もう一度お試しください'); return; }
+        out(kind, t.name, t.title, t.head, t.body, t.widths, t.nums, t.sheet);
+        var rows = L.all(); rows.forEach(function (r) { if (ids.indexOf(r.id) >= 0) r.prepSent = today; }); L.save(rows); redraw();
+        U.toast(pick.length + '件を書き出し、「発送代行へ連絡済 ' + md(today) + '」と記録しました', '記録を戻す', function () { L.save(before); redraw(); });
+      }, function () { U.toast('通信できないため、納品リストを作れません(有料の機能は通信が要ります)。つながってから、もう一度お試しください'); });
     });
   }
   function proofDialog() {

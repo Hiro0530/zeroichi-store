@@ -25,7 +25,7 @@
     if (q.get('session_id') && s.busy) { box.innerHTML = '<p class="msg">お申し込みを確かめています。数秒お待ちください…</p>'; return; }
     if (s.key === 'none') {
       box.innerHTML = '<p>この端末には、利用の鍵が入っていません。いまは無料の範囲で使えます。</p>' +
-        '<div class="row-btns"><a class="btn" href="../plans/">プランを選ぶ(月払いは14日無料)</a></div>' +
+        '<div class="row-btns"><a class="btn" href="../plans/">プランを選ぶ</a></div>' +
         '<p class="hint">ほかの端末で申し込んだ方は、下に利用の鍵を入れてください。ログインは要りません。</p>';
       return;
     }
@@ -36,7 +36,6 @@
     if (q.get('subscribed')) lead = '<p class="msg">お申し込みが済み、この端末に利用の鍵が入りました。鍵は Stripe から届く請求書・領収書にも載っています。ほかの端末(3台まで)では、この鍵を入れてください。</p>';
     if (q.get('back')) lead = '<p class="msg">契約の管理から戻りました。変えた内容は、下の「今すぐ確かめる」で反映します(1日1回は自動で確かめます)。</p>';
     rows.push(['プラン', esc(s.label)]);
-    if (s.key === 'trial') rows.push(['無料期間', jd(s.next) + 'まで(業務のすべてを使えます)。この日に1回目の請求があります']);
     if (s.key === 'active') rows.push(['次回の請求日', jd(s.next)]);
     if (s.key === 'past_due') rows.push(['お支払い', '<span class="warnt">前回の請求がカードで通っていません。「契約の管理」でカードを変えてください。Stripe が数日おきに請求し直す間は使えます</span>']);
     if (s.key === 'ending') rows.push(['使える期限', '<b>' + jd(s.until) + '</b>まで。以後は請求しません']);
@@ -76,8 +75,7 @@
 
   function paintCancel(s) {
     var el = $('#mk-cancel'), t;
-    if (s.key === 'trial') t = '<p class="mk-when">いま解約すると: 無料期間の終わり(<b>' + jd(s.next) + '</b>)まで使え、料金はかかりません。</p>';
-    else if (s.key === 'active' || s.key === 'past_due') t = '<p class="mk-when">いま解約すると: 支払い済みの期間の終わり(<b>' + jd(s.next) + '</b>)まで使えます。次回からは請求しません。</p>';
+    if (s.key === 'active' || s.key === 'past_due') t = '<p class="mk-when">いま解約すると: 支払い済みの期間の終わり(<b>' + jd(s.next) + '</b>)まで使えます。次回からは請求しません。</p>';
     else if (s.key === 'ending') t = '<p class="mk-when">解約済みです。<b>' + jd(s.until) + '</b>まで使えます。</p>';
     else if (s.key === 'ended') t = '<p class="mk-when">契約は終わっています' + (s.end ? '(' + jd(s.end) + ')' : '') + '。</p>';
     else t = '<p class="muted">この端末には、解約する契約がありません。</p>';
