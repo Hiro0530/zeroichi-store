@@ -20,12 +20,20 @@
  *     POST /stripe/portal   { flow }     カードの変更・請求の履歴(Stripe のカスタマーポータル)
  *     POST /paypal/link | pause | resume | revise | cancel  PayPal の契約の同じ操作
  *     GET  /stripe/plans    カードで申し込めるプラン(料金ページが「準備中」かどうかを決める。ログイン不要)
+ *  5. 利用の鍵(2026-11-17。ログインなし・名簿なし。src/key.js)
+ *     POST /key/checkout { planKey }  申し込み画面(ログイン不要)
+ *     POST /key/claim { sessionId, device }  申し込み直後に、その端末へ利用の鍵と証明を渡す
+ *     POST /key/renew { code, device, known }  証明の更新(1日1回)。新しい端末で鍵を入れた時もこれ
+ *     POST /key/portal | /key/rotate | /key/devices/remove  契約の管理(Stripe のカスタマーポータル)・鍵の作り直し・端末を外す
+ *     GET  /key/app/<名前>.js  有料の画面のプログラムを、証明を確かめてから渡す(置き場を移した後に使う。PAID_JS が無い間は 503)
  *  4. 毎日1回(cron): 無料期間の終了3日前のメール、一時停止の自動再開、解約から3年たった台帳の削除
  *
  * 先着200名(総合 3,980円。2026-10-28 オーナー決定で 100名 → 200名。数は FOUNDER_LIMIT)は「1回目のお支払いが済んだ順」に数える(public/founders.taken)。解約しない限りずっと(サービス提供中)その価格。
  * 年払いは無料期間なしでその場で決済し、1回目のお支払いから30日以内の解約は全額返金(YEAR_TEXT。料金ページ・規約・特商法と同じ文)。
  * 秘密の値は wrangler secret で入れる(README)。ここには書かない。Stripe の SDK は使わず、REST を fetch で呼ぶ。
  */
+
+import { handleKey, onKeySubscription, servePaid, publicJwk } from './key.js';
 
 const DAY = 864e5;
 /** 先着の定員の既定(wrangler.toml の FOUNDER_LIMIT が無い時。sedori/assets/config.js の FOUNDER_LIMIT と同じ数) */
@@ -487,7 +495,8 @@ export async function handleStripeEvent(env, ev) {
   if (!ev || !STRIPE_EVENTS.includes(ev.type)) return { ignored: ev && ev.type };
   const evId = String(ev.id || '');
   if (!/^[\w-]{1,200}$/.test(evId)) return { ignored: 'no-id' };
-  const seen = await getDoc(env, 'stripeEvents/' + evId);
+  const useFs = !!env.FIREBASE_SA_KEY;
+  const seen = useFs ? await getDoc(env, 'stripeEvents/' + evId) : null;
   if (seen && seen.done) return { duplicate: true };
   const o = (ev.data || {}).object || {};
   let subId = null; const hint = {};
@@ -505,10 +514,62 @@ export async function handleStripeEvent(env, ev) {
     hint.paid = ev.type === 'invoice.paid' && Number(o.amount_paid || 0) > 0;
   }
   if (!subId) return { ignored: 'no-subscription' };
+  if (!hint.uid) {
+    // ログインなしの申し込み(利用の鍵)。名簿には書かず、Stripe の契約に鍵を付けるだけ。先着の数は Firebase がある間だけ数える
+    const s = await stripe(env, 'GET', '/subscriptions/' + encodeURIComponent(subId));
+    const k = await onKeySubscription(keyDeps, env, s);
+    if (k) {
+      // 年払いを1回目のお支払いから30日以内に「契約の管理」(Stripe の画面)で解約した → 自動で全額を返金して、その日で終える
+      const r = await keyYearRefund(env, s);
+      if (r) k.refunded = r;
+      const pk = keyOfPrice(env, ((((s.items || {}).data || [])[0] || {}).price || {}).id || '') || (s.metadata || {}).planKey || '';
+      if (useFs && /^founder_/.test(pk) && (hint.paid || s.status === 'active')) {
+        const link = await getDoc(env, 'stripeSubs/' + subId);
+        if (!(link && link.counted)) await countFounder(env, 'stripe', subId);
+      }
+      if (useFs) await patchDoc(env, 'stripeEvents/' + evId, { type: ev.type, subId, done: true, at: new Date() });
+      return { ok: true, ...k };
+    }
+  }
   const r = await syncStripe(env, subId, hint);
   await patchDoc(env, 'stripeEvents/' + evId, { type: ev.type, subId, done: true, at: new Date() });
   return { ok: true, status: r.sub ? r.sub.status : r.skipped };
 }
+
+/** 利用の鍵の契約で、年払いの30日以内の解約(期間の終わりで終える指定)が来たら、全額を返金してすぐ終える。対象でなければ null */
+export async function keyYearRefund(env, s, now = Date.now()) {
+  const md = s.metadata || {};
+  const key = keyOfPrice(env, ((((s.items || {}).data || [])[0] || {}).price || {}).id || '') || md.planKey || '';
+  if (md.mode !== 'key' || md.refunded === '1' || s.status !== 'active' || !(s.cancel_at_period_end || s.cancel_at) || !isYearKey(key)) return null;
+  const until = refundDeadline(s, key);
+  if (!until || now > until) return null;
+  const pay = await yearPayment(env, s.id);
+  if (!pay) return null; // 見つからない時は返金も早めの終了もしない(期間の終わりで終わる。メールの窓口で受ける)
+  const id = encodeURIComponent(s.id);
+  const rf = await stripe(env, 'POST', '/refunds', { ...pay.ref, reason: 'requested_by_customer', metadata: { subscription: s.id, rule: 'year-30days' } }, { 'Idempotency-Key': 'zw-year-refund-' + s.id });
+  await stripe(env, 'POST', '/subscriptions/' + id, { metadata: { refunded: '1', refund_id: rf.id || '' } });
+  await stripe(env, 'DELETE', '/subscriptions/' + id);
+  return { amount: Number(rf.amount || pay.invoice.amount_paid || 0) };
+}
+
+/** 利用の鍵の申し込み画面のボタンの下の文 */
+function keyNote(key, trial, env, now = Date.now()) {
+  const plan = planByKey(env, key) || {};
+  const head = checkoutNote(plan, key, trial, env, now).replace(/解約はマイページの「契約内容」から.*$/, '');
+  return head + 'お申し込みが済むと、この端末に利用の鍵が入ります。解約・カードの変更・領収書は、アプリのマイページの「契約の管理」からいつでもご自身でできます。';
+}
+/** 先着の価格の受付中か(Firebase がある間は public/founders、無い間は受付中として扱う) */
+async function founderOpen(env) {
+  if (!env.FIREBASE_SA_KEY) return true;
+  const f = (await getDoc(env, 'public/founders')) || {};
+  return !(f.open === false || Number(f.taken || 0) >= founderLimit(env));
+}
+const keyDeps = {
+  stripe: (...a) => stripe(...a), stripePrices: e => stripePrices(e), keyOfPrice: (e, id) => keyOfPrice(e, id), planByKey: (e, k) => planByKey(e, k),
+  founderOpen: e => founderOpen(e), isYearKey: k => isYearKey(k), YEAR_REFUND_DAYS, appFor: (e, b) => appFor(e, b),
+  trialDays: e => Number(e.TRIAL_DAYS || 14), keyNote: (k, t, e, n) => keyNote(k, t, e, n)
+};
+export { keyDeps };
 
 /** 料金ページの「お申し込み内容の確認」と同じことを、Stripe の画面のボタンの下にも書く */
 function checkoutNote(plan, key, trial, env, now = Date.now()) {
@@ -858,9 +919,27 @@ export default {
           catch (e) { checkout[key] = { ok: false, ms: Date.now() - t0, why: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***').slice(0, 300) }; }
         }
       }
-      return json({ mode, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices, dispatch: { token: !!env.GH_DISPATCH_TOKEN, targets: parseTargets(env.GH_DISPATCH_TARGETS).map(t => `${t.repo}:${t.file}:${t.ref}@${t.minutes.join(',')}`) } }, 200, c);
+      const keyInfo = { signing: publicJwk(env) ? 'set' : 'test', code: env.KEY_CODE_SECRET ? 'set' : (env.STRIPE_WEBHOOK_SECRET ? 'webhook' : 'test'), devices: Number(env.KEY_DEVICES || 3), paidJs: !!env.PAID_JS };
+      return json({ mode, key: keyInfo, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices, dispatch: { token: !!env.GH_DISPATCH_TOKEN, targets: parseTargets(env.GH_DISPATCH_TARGETS).map(t => `${t.repo}:${t.file}:${t.ref}@${t.minutes.join(',')}`) } }, 200, c);
+    }
+    // 有料の画面のプログラム(証明を確かめてから渡す)。証明は Authorization: Bearer で受ける
+    const ma = url.pathname.match(/^\/key\/app\/([^/]+)$/);
+    if (ma && req.method === 'GET') {
+      const m2 = (req.headers.get('Authorization') || '').match(/^Bearer (.+)$/);
+      const r = await servePaid(ma[1], m2 && m2[1], env).catch(() => ({ status: 500, body: 'error' }));
+      return new Response(r.body, { status: r.status, headers: { ...c, 'Content-Type': r.status === 200 ? 'text/javascript; charset=utf-8' : 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+    }
+    if (url.pathname === '/key/pub' && req.method === 'GET') {
+      const pub = publicJwk(env);
+      return json({ mode: pub ? 'live' : 'test', jwk: pub }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, c);
+    if (url.pathname.startsWith('/key/')) {
+      try {
+        const body = await req.json().catch(() => ({}));
+        return json(await handleKey(url.pathname, body, env, keyDeps), 200, c);
+      } catch (e) { return json({ error: String(e.message || e).replace(/sk_[A-Za-z0-9_]+/g, '***'), code: e.code || undefined, ...(e.extra || {}) }, e.status || 500, c); }
+    }
     if (url.pathname === '/stripe/webhook') {
       const text = await req.text();
       const ok = await verifyStripeSignature(text, req.headers.get('Stripe-Signature'), env.STRIPE_WEBHOOK_SECRET).catch(() => false);

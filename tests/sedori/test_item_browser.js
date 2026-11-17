@@ -4,6 +4,7 @@ const path = require('path'), fs = require('fs'), http = require('http'), assert
 let chromium; try { ({ chromium } = require('playwright')); } catch (e) { ({ chromium } = require('/opt/npm-tools/node_modules/playwright')); }
 const root = path.resolve(process.argv[2] || path.join(__dirname, '../../../kt-zs-sedori-ghp'));
 const SD = require('./_dir')(root);
+const KEY_MODE = /^\s*KEY_MODE:\s*true/m.test(fs.readFileSync(path.join(root, SD, 'assets/config.js'), 'utf8'));
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
@@ -127,9 +128,14 @@ const ITEM = { src: 'rakuten', name: 'テスト商品 ABC', price: 2400, shop: '
     // ---- 月の固定費: クラウドの設定を待つ間は値を出さない ----
     p = await open('rakuten-amazon/', { 'acct-hint': 1, fixed: [{ id: 'amz', name: 'Amazon 大口出品', on: true, v: 99999 }] });
     const early = await p.$eval('#hd-fix-v', el => [el.hidden, el.textContent]);
-    eq(early, [false, '読み込み中'], 'ログイン済みの端末では、設定が届くまで月の固定費は「読み込み中」');
-    await p.waitForTimeout(6500);
-    eq(await p.$eval('#hd-fix-v', el => el.textContent), '99,999円', '打ち切り後(通信が届かない時)は端末の値を出す');
+    if (KEY_MODE) {
+      // 利用の鍵の形(2026-11-17): クラウドの設定は無いので、前にログインした印が残っていても待たずに端末の値を出す
+      eq(early, [false, '99,999円'], '利用の鍵の形: クラウドの設定を待たず、すぐ端末の値を出す');
+    } else {
+      eq(early, [false, '読み込み中'], 'ログイン済みの端末では、設定が届くまで月の固定費は「読み込み中」');
+      await p.waitForTimeout(6500);
+      eq(await p.$eval('#hd-fix-v', el => el.textContent), '99,999円', '打ち切り後(通信が届かない時)は端末の値を出す');
+    }
     await p.close();
     p = await open('rakuten-amazon/', { fixed: [{ id: 'amz', name: 'Amazon 大口出品', on: true, v: 5000 }] });
     eq(await p.$eval('#hd-fix-v', el => el.textContent), '5,000円', 'ログインしていない端末は、すぐ値を出す');

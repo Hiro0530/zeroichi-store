@@ -43,7 +43,7 @@ S = ROOT / OUT
 NOINDEX = OUT != "sedori"
 ROBOTS = '<meta name="robots" content="noindex,nofollow">'
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261114b"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
+VER = "20261117k"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
 
 # ---- 差し込み口(制作係B・Cの部品)。ファイルが assets/ に置かれたら、次の書き出しから自動で読み込む。無い間は読み込まない ----
 # 使い方は本部の docs/sedori_app/build_slots_2026-11-13.md
@@ -68,6 +68,8 @@ CAT = json.loads(_re.search(r"/\*PLANS\*/(.*?)/\*/PLANS\*/", _CONFIG, _re.S).gro
 YEAR_TEXT = _re.search(r'YEAR_TEXT:\s*"([^"]+)"', _CONFIG).group(1)
 YEAR_DAYS = int(_re.search(r'YEAR_REFUND_DAYS:\s*(\d+)', _CONFIG).group(1))
 FOUNDER_KEEP = _re.search(r'FOUNDER_KEEP:\s*"([^"]+)"', _CONFIG).group(1)
+# 利用の鍵の形(ログインなし・データは端末の中だけ。2026-11-17)。config.js の KEY_MODE: true の時だけ、料金・マイページ・足の文をこの形で書き出す
+KEY_MODE = bool(_re.search(r"^\s*KEY_MODE:\s*true", _CONFIG, _re.M))
 # 先着の定員(人数)も config.js の FOUNDER_LIMIT だけで決める(2026-10-28 オーナー決定で 200名)
 FOUNDER_N = int(_re.search(r"FOUNDER_LIMIT:\s*(\d+)", _CONFIG).group(1))
 FOUNDER = f"先着{FOUNDER_N}名"
@@ -279,20 +281,24 @@ def FAQ_LINK(base: str) -> str:
     return f'<a href="{base}guide/faq/">よくある質問</a>' if (S / "guide/faq/index.html").exists() else ""
 
 
+FOOT_STORE = "(当方のサーバーには送りません)" if KEY_MODE else "(有料プランでログイン中は、クラウドにも保存します)"
+
+
 def footer(base: str, scripts: list[str]) -> str:
     # 設定(config.js)と同期の計算(sync.js)は最初に、ログイン(account.js)は ui.js の後に、全ページで読む。
     # 帳簿の同期(books-sync.js)は account.js より前、売り手の確認の判定(seller-check.js)は ui.js より前
     first = ["books-sync.js"] if "books-sync.js" in scripts else []
     # 帯の印「止める N」は全ページに出す。calc.js を読まないページでも listed.js(在庫番)だけは読む
     common = [x for x in OPT_COMMON if "calc.js" in scripts and x not in scripts] or [x for x in ["listed.js"] if "ui.js" in scripts and x not in scripts]
-    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js", "account.js"] + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")] + common + ["ai.js"]
+    acct = (["license.js"] if has_asset("license.js") else []) + ["account.js"]   # 利用の鍵(license.js)は account.js の前
+    order = ["config.js", "sync.js"] + first + [x for x in scripts if x == "calc.js"] + ["seller-check.js", "ui.js"] + acct + [x for x in scripts if x not in ("calc.js", "ui.js", "books-sync.js", "seller-check.js")] + common + ["ai.js"]
     order = [x for x in order if x not in OPT_JS or has_asset(x)]
     sc = "\n".join(f'<script src="{base}assets/{s}?v={VER}"></script>' for s in order)
     return f"""<footer class="ft">
   <div class="ft-in">
     <nav><a href="{base}">トップ</a><a href="{base}daicho/">台帳</a><a href="{base}#fees">手数料の出典</a><a href="{base}plans/">料金</a><a href="{base}mypage/">マイページ</a><a href="{base}terms/">利用規約</a><a href="{base}privacy/">プライバシーポリシー</a><a href="{base}../tokushoho.html">特定商取引法に基づく表記</a><a href="{base}lp/">はじめての方へ</a><a href="{base}shikumi/">利益の仕組み</a><a href="{base}chigai/">コンサル・スクールとの違い</a><a href="#" data-fix-open>月の固定費</a><a href="{base}#ai" data-ai-open>AIに相談</a><a href="{base}guide/">手引き</a>{FAQ_LINK(base)}<a href="mailto:zeroichi.works.jp@gmail.com">お問い合わせ</a></nav>
     {LEGAL}
-    <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます(有料プランでログイン中は、クラウドにも保存します)。</p>
+    <p>ZEROICHI WORKS(個人事業)。計算は公開されている料金表にもとづく目安で、利益や販売を保証するものではありません。画面と計算はAI(Claude)を使って作り、手計算の例で検算しています。入力した内容と台帳は、この端末のブラウザに保存されます{FOOT_STORE}。</p>
   </div>
 </footer>
 {sc}
@@ -1037,10 +1043,11 @@ PLANS_BODY = f"""<div class="pl">
         </div>
       </div>
     </div>
-    <p class="hint pl-legal">ログインはメールのリンクかGoogleで。台帳は Google Cloud(東京)に保存し、ログインした本人だけが読み書きできます(<a href="../privacy/">プライバシーポリシー</a>)。<a href="../../tokushoho.html">特定商取引法に基づく表記</a></p>
+    <p class="hint pl-legal">{{PL_LEGAL}}(<a href="../privacy/">プライバシーポリシー</a>)。<a href="../../tokushoho.html">特定商取引法に基づく表記</a></p>
   </section>
 </div>"""
 
+PLANS_BODY = PLANS_BODY.replace("{PL_LEGAL}", "ログインは使いません。お支払いが済むと、この端末に「利用の鍵」が入ります。台帳などのデータは、この端末のブラウザの中だけに保存します(当方のサーバーには置きません)。機種変更の時は、マイページの「書き出す」「取り込む」で移せます" if KEY_MODE else "ログインはメールのリンクかGoogleで。台帳は Google Cloud(東京)に保存し、ログインした本人だけが読み書きできます")
 out = head("料金", f"せどり 利益チェックの料金。ライト 月{yen(P_LM)}/総合 月{yen(P_TM)}({FOUNDER}は月{yen(P_FM)})/業務 月{yen(P_BM)}(税込)。月払いは14日無料。年払いは2か月分お得で、30日以内の解約は全額返金。",
            "plans/", "../", 'data-page="plans"')
 out += header("../", "plans", "rakuten") + crumb("../", "料金") + f'<main class="wrap">\n{PLANS_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "plans.js"])
@@ -1120,7 +1127,55 @@ MYPAGE_BODY = """<div class="mp">
 
 out = head("マイページ", "ログイン、契約内容、台帳のクラウド保存と書き出し、通知の設定。", "mypage/", "../", 'data-page="mypage"')
 out = out.replace('<meta name="description"', '<meta name="robots" content="noindex">\n<meta name="description"', 1)
-out += header("../", "mypage", "ledger") + crumb("../", "マイページ") + f'<main class="wrap">\n{MYPAGE_BODY}\n</main>\n' + footer("../", ["calc.js", "books-sync.js", "ui.js", "mypage.js"])
+MYPAGE_KEY_BODY = """<div class="mp">
+  <h1 class="pg-h">マイページ</h1>
+  <div class="mp-grid">
+    <nav class="mp-nav" aria-label="マイページの項目">
+      <a href="#mp-key">利用の鍵と契約</a><a href="#cancel" class="sub">解約について</a><a href="#mp-data">データ</a><a href="#mp-notify">通知</a>
+    </nav>
+    <div class="mp-main">
+      <section id="mp-key" class="mp-sec">
+        <h2 class="sec-h">利用の鍵と契約</h2>
+        <div id="mk-box"><p class="muted">確かめています…</p></div>
+        <form id="mk-form" class="mk-form" hidden>
+          <label for="mk-code">利用の鍵(16文字)</label>
+          <div class="row-btns"><input id="mk-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH-JKLM-NPQR"><button type="submit" class="btn">鍵を入れる</button></div>
+          <p class="hint">鍵は、申し込んだ端末のこのページと、Stripe から届く請求書・領収書に載っています。1つの鍵で3台まで使えます。ログインは要りません。</p>
+        </form>
+        <p class="msg err" id="mk-err" role="alert" hidden></p>
+        <details class="mp-cancel" id="mk-dev-box" hidden><summary>この鍵で使っている端末</summary><div class="mp-cancel-b" id="mk-dev"></div></details>
+        <details class="mp-cancel" id="mk-more" hidden><summary>鍵を作り直す・この端末から外す</summary><div class="mp-cancel-b">
+          <p>鍵をほかの人に知られた時は、作り直してください。古い鍵は使えなくなり、ほかの端末には新しい鍵を入れ直します。</p>
+          <div class="row-btns"><button type="button" class="btn sm ghost" id="mk-rotate">鍵を作り直す</button><button type="button" class="btn sm ghost" id="mk-forget">この端末から鍵を外す</button></div>
+        </div></details>
+      </section>
+
+      <section id="cancel" class="mp-sec">
+        <h2 class="sec-h">解約について</h2>
+        <div id="mk-cancel"></div>
+        <ul class="steps">
+          <li>解約・プランの変更・カードの変更・請求書と領収書は、上の「契約の管理」(決済代行の Stripe の画面)から、いつでもご自身でできます。</li>
+          <li>解約しても、支払い済みの期間の終わりまで使えます。日割りの返金はありません。無料期間中の解約は0円です。</li>
+          <li>年払いは、1回目のお支払いから30日以内に「契約の管理」で解約すれば、自動で全額を返金し、その日で終わります。</li>
+          <li>画面が開けない時は、<a href="mailto:zeroichi.works.jp@gmail.com?subject=%E3%81%9B%E3%81%A9%E3%82%8A%E3%82%A2%E3%83%97%E3%83%AA%E8%A7%A3%E7%B4%84">zeroichi.works.jp@gmail.com</a> へ、利用の鍵を添えて「解約」とお送りください。</li>
+        </ul>
+      </section>
+
+      <section id="mp-data" class="mp-sec">
+        <h2 class="sec-h">データ(この端末の中)</h2>
+        <table class="kv wide" id="mp-data-t"></table>
+        <p>台帳・在庫番・ウォッチ・帳簿・設定は、この端末のブラウザの中だけに保存しています。当方のサーバーには送りません。機種変更やほかの端末で使う時は、ここで書き出したファイルを、新しい端末のこのページで取り込んでください。</p>
+        <label class="ck"><input type="checkbox" id="mk-withkeys">Keepa・楽天のキーもファイルに入れる</label>
+        <div class="row-btns"><button type="button" class="btn sm" id="mk-export">すべて書き出す(ファイル)</button><button type="button" class="btn sm ghost" id="mk-import-btn">取り込む</button><input type="file" id="mk-import" accept="application/json,.json" hidden></div>
+        <p class="hint">取り込むと、この端末のいまのデータはファイルの中身に置き換わります(利用の鍵はそのまま)。ブラウザの「閲覧データの削除」をすると、この端末のデータも消えます。ときどき書き出しておくと安心です。古物台帳は最後の記入から3年間の保存が必要です。</p>
+        <h3>台帳だけを表で書き出す</h3>
+        <div class="row-btns"><button type="button" class="btn sm ghost" data-exp="xlsx">Excelで書き出す</button><button type="button" class="btn sm ghost" data-exp="csv">CSVで書き出す</button></div>
+      </section>
+""" + MYPAGE_BODY[MYPAGE_BODY.index('      <section id="mp-notify"'):]
+if KEY_MODE:
+    out += header("../", "mypage", "ledger") + crumb("../", "マイページ") + f'<main class="wrap">\n{MYPAGE_KEY_BODY}\n</main>\n' + footer("../", ["calc.js", "ui.js", "mypage-key.js"])
+else:
+    out += header("../", "mypage", "ledger") + crumb("../", "マイページ") + f'<main class="wrap">\n{MYPAGE_BODY}\n</main>\n' + footer("../", ["calc.js", "books-sync.js", "ui.js", "mypage.js"])
 write("mypage", out)
 
 
@@ -1567,6 +1622,9 @@ for _hp in ("scan/index.html", "books/index.html"):
                 _n = _n.replace('<a class="hd-ledger"', '<a class="hd-mz" id="hd-mz" href="../zaiko-ban/" hidden></a>\n    <a class="hd-ledger"', 1)
             if 'assets/listed.js' not in _n:
                 _n = _re.sub(r'(<script src="\.\./assets/ui\.js\?v=[0-9A-Za-z]+"></script>\n)', r'\1<script src="../assets/listed.js?v=' + VER + '"></script>\n', _n, count=1)
+        # 利用の鍵(license.js)を account.js の前に
+        if has_asset("license.js") and 'assets/license.js' not in _n:
+            _n = _re.sub(r'(<script src="\.\./assets/account\.js\?v=[0-9A-Za-z]+"></script>)', '<script src="../assets/license.js?v=' + VER + '"></script>\n' + r'\1', _n, count=1)
         if has_asset("listed.js") and 'href="../zaiko-ban/"' not in _n:
             _n = _n.replace('<a href="../daicho/">台帳</a>', '<a href="../zaiko-ban/">在庫番</a><a href="../daicho/">台帳</a>', 1)
         if _n != _t:

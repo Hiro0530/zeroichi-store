@@ -33,6 +33,10 @@ PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amoun
 #   wrangler secret put PAYPAL_WEBHOOK_ID   … PayPal の Webhook ID
 #   wrangler secret put MAIL_HOOK_URL       … メール送信(Apps Script)の URL
 #   wrangler secret put MAIL_HOOK_SECRET    … メール送信の合言葉(Apps Script と同じ)
+#   wrangler secret put KEY_SIGNING_JWK     … 利用の鍵: 証明の署名の鍵(ECDSA P-256 の秘密の JWK。tools/sedori/make_key_pair.mjs で作る)。無い間は試験用(署名なし)の証明
+#   wrangler secret put KEY_CODE_SECRET     … 利用の鍵: 鍵の文字を作る合言葉(長い乱数)。無い間は STRIPE_WEBHOOK_SECRET を使う
+# 利用の鍵の変数(任意): KEY_DEVICES(1つの鍵で使える端末の数。既定3)、PAID_TIERS(有料の部品ごとの段の JSON)。
+# 有料の画面のプログラムを Worker から渡す時だけ、KV の PAID_JS を結ぶ([[kv_namespaces]] binding = "PAID_JS")。結ぶまで /key/app/… は 503
 
 # Stripe の価格ID(公開して問題ない値。申し込み画面にも出る)。2026-11-07 テストモードのIDを入れる。
 # 管理画面で入れた値が消えて料金ページが「準備中」になっていたため、ここに書いて固定する。

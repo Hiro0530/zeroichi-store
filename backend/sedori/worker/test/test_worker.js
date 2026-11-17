@@ -599,3 +599,6 @@ console.log('OK ' + n + '件');
   eq(parseTargets('a/b:c.yml@5,35').map(t => t.minutes), [[5, 35]], '分の解析');
   console.log('dispatch ok');
 }
+
+// 2026-11-17: 利用の鍵(ログインなし・名簿なし)の検算
+await import('./test_key.js');

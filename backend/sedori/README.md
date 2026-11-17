@@ -11,6 +11,27 @@
 | `worker/` | Cloudflare Worker。カードの申し込み画面(Stripe Checkout)を作る、Stripe・PayPal の Webhook → Firestore、マイページからの一時停止・再開・プラン変更・解約・カードの変更、毎日の仕事(無料期間の終了3日前のメール・一時停止の自動再開・解約から3年たった台帳の削除) |
 | `mailer/Code.gs` | お知らせメールの送り口(Google Apps Script・事業用の Gmail から送る) |
 
+## 利用の鍵(ログインなし・名簿なし。2026-11-17〜。設計は本部の docs/sedori_app/self_serve_billing_2026-11-17.md)
+画面の設定 `config.js` の `KEY_MODE: true` の写しは、ログインとクラウド保存を使わず、Stripe の契約だけで有料の機能を開く(いまは試験版の写しだけ)。
+
+| 受け口 | 何をするか |
+|---|---|
+| `POST /key/checkout` | 申し込み画面(Stripe Checkout)。ログイン不要。契約のメタデータ `mode=key` |
+| `POST /key/claim` | 申し込み直後(2日以内)に、その端末へ利用の鍵と証明を渡す |
+| `POST /key/renew` | 証明の更新(1日1回)。新しい端末で鍵を入れた時もこれ(端末は既定3台) |
+| `POST /key/portal` | 契約の管理(Stripe のカスタマーポータル。解約・カード・プラン変更・領収書) |
+| `POST /key/rotate` / `POST /key/devices/remove` | 鍵の作り直し / 端末を外す |
+| `GET /key/pub` | 証明の公開の鍵(config.js の `KEY_PUBLIC_JWK` と同じか確かめる) |
+| `GET /key/app/<名前>.js` | 有料の画面のプログラムを、証明を確かめてから渡す(KV `PAID_JS` を結ぶまで 503) |
+
+- 置くもの(すべて Stripe の契約のメタデータ): `zw_key`(利用の鍵)・`zw_gen`(作り直しの回数)・`zw_dev`(端末の番号・呼び名・最後に使った日)。Worker は何も覚えない
+- 利用の鍵は、客の請求書・領収書(Stripe の `invoice_settings.custom_fields`)にも載せる(再発行の窓口を持たないため)
+- 証明: ECDSA P-256 の署名つき。期限は長くても7日(次の請求日+3日・支払いの失敗中は2日ずつ・解約済みは使える最後の日まで)
+- 年払いを1回目のお支払いから30日以内に「契約の管理」で解約すると、Webhook が自動で全額を返金し、その日で終える
+- 秘密の値: `KEY_SIGNING_JWK`(`node tools/sedori/make_key_pair.mjs <ファイル>` で作り、`wrangler secret put KEY_SIGNING_JWK < <ファイル>`)、`KEY_CODE_SECRET`(長い乱数)。
+  無い間は、証明は試験用(署名なし。画面は `KEY_ALLOW_TEST: true` の写しだけ受ける)、鍵の文字は `STRIPE_WEBHOOK_SECRET` で作る。`/stripe/diag` の `key` で今の状態が分かる
+- 検算: `node test/test_worker.js`(最後に `test/test_key.js` も流す)
+
 ## データの形(Firestore・asia-northeast1)
 ```
 users/{uid}
@@ -43,7 +64,7 @@ status: `trialing`(無料期間)/`active`/`past_due`(支払いの失敗)/`paused
 
 ## 検算
 ```
-cd worker && node test/test_worker.js     # 107件(Stripe・PayPal・Firestore・Google は偽物)
+cd worker && node test/test_worker.js     # 131件+利用の鍵 69件(Stripe・PayPal・Firestore・Google は偽物)
 ```
 Stripe の署名(正しい・別の鍵・本文の書き換え・5分より古い/先・v1 が複数)、5つの出来事、同じ通知の2回目、同時に届いた通知で先着を2回数えないこと、
 解約・一時停止・プラン変更・カードの変更、毎日の仕事を確かめる。
