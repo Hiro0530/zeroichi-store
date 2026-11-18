@@ -3,6 +3,7 @@
    - 取り直すのは楽天市場の公式の商品検索APIだけ。利用者自身のアプリIDとアクセスキーで、利用者のブラウザから呼ぶ
    - 動くのは、このアプリのページを開いている間だけ(キーを当方のサーバーに預かって見張ることはしない)
    - 手で確かめる: 全プラン(無料は楽天の検索と同じ1日の枠を使う)。自動(前回から6時間以上・古い順に50件まで)とお知らせ: 有料プラン
+     (利用の鍵の形では、自動にしてよいかと件数は Worker の /core の limits.watch が決める。2026-11-18)
    - 呼ぶ間隔は控えめに1件ごとに2秒あける。楽天の回数の決まりは公式の説明で未確認(【要確認】商品コードで1件を取る書き方 itemCode、
      売り切れの品も返す指定 availability=0 も同じ)。返事が403・429・通信の失敗なら、その場で止めて行は変えない
    - 保存: ウォッチの行(端末の 'watch2')に code(楽天の商品コード)・base(保存した時の価格)・chk(確かめた時刻・価格・在庫・ポイント)・
@@ -370,12 +371,31 @@
     if (!rows.length) { U.toast('商品コードのある行がありません。JANのある行は「楽天で探し直す」を押してください'); return Promise.resolve(null); }
     return check(rows, false);
   }
-  /** 自動: 有料・キーあり・前回から6時間以上・別のタブが動いていない時だけ */
+  /** 自動: 有料・キーあり・前回から6時間以上・別のタブが動いていない時だけ。
+      利用の鍵の形(KEY_MODE)では、自動にしてよいか・1回の件数を Worker の /core が利用の証明を見て決める(2026-11-18。端末の段の判定を書き換えても自動にならない)。
+      問い合わせは、キーがあり・商品コードのある行があり・前回から6時間たった時だけ(ページを開くたびには聞かない) */
+  function SA() { return root.SedoriAccount || {}; }
+  function keyMode() { return !!SA().keyMode && typeof SA().limits === 'function'; }
   function tryAuto() {
     if (running || listedBusy()) return;
-    if (!canAuto({ paid: paid(), hasKeys: hasKeys(), last: U.store.get('watch-chk-last', 0), now: Date.now(), lock: U.store.get('watch-chk-lock', null), me: ME })) return;
-    var rows = pickAuto(JSON.parse(JSON.stringify(list())));
-    if (rows.length) check(rows, true);
+    var st = { paid: true, hasKeys: hasKeys(), last: U.store.get('watch-chk-last', 0), now: Date.now(), lock: U.store.get('watch-chk-lock', null), me: ME };
+    if (!keyMode()) {
+      st.paid = paid();
+      if (!canAuto(st)) return;
+      var rows0 = pickAuto(JSON.parse(JSON.stringify(list())));
+      if (rows0.length) check(rows0, true);
+      return;
+    }
+    if (!canAuto(st) || !list().some(function (r) { return !!r.code; })) return;
+    if (!paid()) return;   // 証明が無い端末は、聞くまでもなく自動なし(聞いても Worker は 0 と答える)
+    SA().limits().then(function (l) {
+      var max = Math.max(0, Number(l && l.watch) || 0);
+      if (!max || running || listedBusy()) return;
+      st.now = Date.now(); st.lock = U.store.get('watch-chk-lock', null);
+      if (!canAuto(st)) return;
+      var rows = pickAuto(JSON.parse(JSON.stringify(list())), max);
+      if (rows.length) check(rows, true);
+    }, function () { /* 通信できない間は自動で確かめない(手で確かめるのは使える) */ });
   }
   /** 商品コードの無い行を、JANで探し直す(在庫のある一番安い店を当て直す。元に戻せる) */
   function relink(i) {

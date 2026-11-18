@@ -6,6 +6,8 @@
    - 結果は端末の ra-bulk に最後の1回分(500件まで)。クラウドには送らない
    - プランごとの1回の行数: 無料20・ライト100・総合と業務500。利用の鍵の形(KEY_MODE)では、行数は Worker の /core が利用の証明を見て決める
      (端末の段の判定や設定を書き換えても増えない。通信できない間は、まとめてチェックは使えない)。ログインの形は今までどおり SedoriCalc.bulkLimit
+   - 結果の要約(ライト以上。2026-11-18): 計算が終わったら、行ごとの数字だけ(利益・目標・月の販売・出品者の数・Amazon本体)を Worker の /core(bulkSum)へ送り、
+     「見込みの月の利益」の大きい順の上位10品と理由、一覧の並び順を受け取る。品名・JAN・ASIN・キーは送らない。答えはメモリにだけ置き、保存しない
    進め方の部品(core)は画面に依存しないので、node の試験から読める */
 (function (root, factory) {
   var core = factory();
@@ -127,6 +129,7 @@
     var running = false, stopAsked = false, prog = null;
     var meta = U.store.get('ra-bulk', null) || {};   // { pasted, bad, dup, over, lim, state, why, tokens } と items(ra.js が入れる)
     var ta = $('#bulk-text'), st = $('#bulk-st');
+    var sum = { key: '', ans: null, busy: false, err: '' };   // 結果の要約(Worker の答え。メモリだけ)
 
     var SA = function () { return win.SedoriAccount || {}; };
     var keyMode = function () { return !!SA().keyMode && typeof SA().limits === 'function'; };
@@ -138,6 +141,60 @@
       var p = ta.value.trim() ? C.parseCodes(ta.value) : null, lim = limit();
       $('#bulk-lim').textContent = tierName() + 'は1回' + lim + '行まで計算します。' +
         (p ? 'いま読める行は' + p.items.length + '行' + (p.bad.length ? '、読めない行は' + p.bad.length + '行' : '') + 'です。' : '');
+    }
+
+    /* ---------- 結果の要約(ライト以上。Worker が作る) ---------- */
+    function sumRows() {
+      return R.lists.b.map(function (it, i) {
+        var r = null, j = R.judge(it), k = it.kp || {};
+        try { r = R.compute(it); } catch (e) { r = null; }
+        var has = j !== 'unk' && r && !r.est && r.sell > 0;
+        return { i: i, p: has ? Math.round(r.profitNoPoints) : null, need: r && r.need != null ? Math.round(r.need) : null, est: !has, sold: k.sold || null, cnt: k.cnt || null, amz: !!k.amz };
+      });
+    }
+    function wantSum() { return keyMode() && !running && meta.state === 'done' && R.lists.b.length > 0; }
+    function askSum() {
+      if (!wantSum()) return;
+      var rows = sumRows(), key = JSON.stringify(rows);
+      if (sum.key === key && (sum.ans || sum.busy || sum.err)) return;
+      sum = { key: key, ans: null, busy: false, err: '' };
+      if (!SA().paid || !SA().paid()) { sum.err = 'need-pass'; return; }   // 証明の無い端末は聞かない(聞いても Worker は作らない)
+      sum.busy = true;
+      SA().core([{ op: 'bulkSum', rows: rows }]).then(function (j) {
+        if (sum.key !== key) return;
+        var r = (j && j.results || [])[0] || {};
+        sum.busy = false;
+        if (r.error) sum.err = r.error; else sum.ans = r;
+        paint();
+      }, function () { if (sum.key !== key) return; sum.busy = false; sum.err = 'net'; paint(); });
+    }
+    function sumHTML() {
+      if (!wantSum()) return '';
+      if (sum.busy) return '<p class="bulk-note" role="status">見込みの月の利益の順に並べています。</p>';
+      if (sum.err) return '';   // 案内は一覧の下(sumNote)。一覧の上は「次にすること1つだけ」のまま
+      var a = sum.ans; if (!a) return '';
+      if (!a.top.length) return '<p class="bulk-note">目標に届く行が無いため、見込みの月の利益の上位はありません。</p>';
+      return '<div class="bulk-top"><p class="bulk-top-h">見込みの月の利益が大きい順<small>上位' + a.top.length + '品・合わせて月' + U.yen(a.topMonth) + '円の見込み</small></p><ol>' +
+        a.top.map(function (x) {
+          var it = R.lists.b[x.i] || {};
+          return '<li><b>' + esc(it.name || it.jan || it.asin || (x.i + 1) + '行目') + '</b><span>1個 ' + U.yen(x.p) + '円 × 約' + (x.take || 1) + '個 = 月' + U.yen(x.month) + '円</span><small>' + esc(x.why.join('。')) + '</small></li>';
+        }).join('') + '</ol><p class="bulk-top-f"><button type="button" class="btn sm ghost" id="bulk-order">一覧をこの順に並べる</button><small>' + esc(a.rule) + '。目安で、売れることを約束するものではありません。</small></p></div>';
+    }
+    /** 一覧の下に出す案内(要約を出せない時だけ) */
+    function sumNote() {
+      if (!wantSum() || !sum.err) return '';
+      if (sum.err === 'net' || sum.err === 'failed') return '通信できないため、見込みの月の利益の順の要約を出せません。つながってから、ページを開き直してください。';
+      return 'ライト以上では、目標に届く行を「見込みの月の利益」(1個の利益 × 月に取れそうな個数)の大きい順に並べ、上位10品とその理由を出します。';
+    }
+    function applyOrder() {
+      var a = sum.ans; if (!a || !a.order) return;
+      var old = R.lists.b, pos = {}, next = a.order.map(function (i, k) { pos[i] = k; return old[i]; }).filter(Boolean);
+      old.forEach(function (it, i) { if (pos[i] == null) next.push(it); });
+      R.lists.b = next;
+      a.top = a.top.map(function (x) { return Object.assign({}, x, { i: pos[x.i] }); }); a.order = a.order.map(function (i) { return pos[i]; });
+      sum.key = JSON.stringify(sumRows());
+      save(); R.render(); paint();
+      U.toast('見込みの月の利益の順に並べました');
     }
 
     /* 一覧の上: 進み具合、件数の1行、次にすること1つだけ。残りの注記と読めなかった行は一覧の下 */
@@ -155,6 +212,7 @@
         var rest = [n.ng ? '届かない' + n.ng : '', n.unk ? '未入力' + n.unk : '', bad ? '読めなかった' + bad : ''].filter(Boolean).join('・');
         h += '<p class="bulk-sum"><span class="bs-k">目標に届く</span><b>' + n.ok + '</b><span class="bs-u">件</span>' +
           '<span class="bs-rest">' + (meta.pasted || rows.length) + '行のうち' + (rest ? ' ' + rest : '') + '</span></p>';
+        askSum(); h += sumHTML(); if (sumNote()) below.push(sumNote());
         // 次にすること(1つだけ): 止まった > 行数の上限 > キーが無い
         var overText = tierName() + 'は1回' + lim + '行までです。' + (lim + 1) + '行目から先の' + meta.over + '行は計算していません。ライトは100行、総合と業務は500行まで計算できます。';
         var shipN = rows.filter(C.needShip).length;
@@ -237,6 +295,7 @@
       if (e.target.id === 'bulk-stop') { stopAsked = true; paint(); }
       if (e.target.id === 'bulk-resume') start(true);
       if (e.target.id === 'bulk-keys') R.openKeys();
+      if (e.target.id === 'bulk-order') applyOrder();
     });
     $('#bulk-bad').addEventListener('click', function (e) { if (e.target.id === 'bulk-keys') R.openKeys(); });
     var t = null;
@@ -262,6 +321,7 @@
     U.hook('ra-render', function (p) { if (p.tab === 'b') paint(); });
     document.addEventListener('sedori:acct', paintLimit);
     document.addEventListener('sedori:limits', paintLimit);
+    document.addEventListener('sedori:acct', function () { if (!(SA().paid && SA().paid()) || sum.err) { sum = { key: '', ans: null, busy: false, err: '' }; paint(); } });   // 証明が切れた・入った時は要約を捨てて聞き直す
     if (keyMode()) SA().limits().catch(function () { /* 表示は無料の数のまま */ });
 
     /* 上の検索欄に複数行を貼った時は、行を保ったまま「まとめて」へ送る(検索欄は改行を捨てるため) */

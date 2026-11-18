@@ -1048,6 +1048,18 @@ body[data-bulk-idle] .acts .btn.pri{background:#fff;color:var(--ac);border-color
 .bulk-ic{display:inline-block;width:16px;height:16px;margin-right:8px;border-radius:50%;background:var(--bad);color:#fff;font-size:12px;font-weight:700;line-height:16px;text-align:center;vertical-align:1px}
 .bulk-note{margin:8px 0 0;font-size:12.5px;line-height:1.7;color:var(--sub)}
 .bulk-note .lnk,.bulk-note a{font-size:12.5px}
+/* まとめての結果の要約(ライト以上。Worker の /core が作る。2026-11-18) */
+.bulk-top{margin:8px 0 0;padding:8px 0 0;border-top:1px solid var(--line)}
+.bulk-top-h{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--ink)}
+.bulk-top-h small{display:block;font-size:12px;font-weight:400;color:var(--sub)}
+.bulk-top ol{margin:0;padding:0 0 0 20px;font-size:13px;line-height:1.6}
+.bulk-top li{padding:4px 0;border-bottom:1px dotted var(--line)}
+.bulk-top li b{display:block;font-weight:700;overflow-wrap:anywhere}
+.bulk-top li span{color:var(--good);font-weight:700}
+.bulk-top li small{display:block;font-size:11.5px;color:var(--mute)}
+.bulk-top-f{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:8px 0 0}
+.bulk-top-f .btn{height:44px}
+.bulk-top-f small{flex:1 1 220px;font-size:11.5px;line-height:1.6;color:var(--mute)}
 .bulk-bad{margin:8px 0 0;font-size:12.5px}
 .bulk-bad summary{cursor:pointer;color:var(--sub);font-weight:700;padding:4px 0}
 .bulk-bad ol{margin:4px 0 0;padding:0;list-style:none}

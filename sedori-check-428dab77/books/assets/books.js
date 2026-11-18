@@ -72,6 +72,40 @@
     return B.tierOf(k, (c.name || '') + ' ' + (c.tier || ''));
   }
   function can(f) { var t = tier(); return t === 'trial' || B.allowed(f, t); }
+
+  /* 利用の鍵の形(見本でない時): 年の売上・利益、月ごとの利益、ルート・仕入れ先・売り先ごとの集計は、Worker の /core(books。総合以上)が作る(2026-11-18)。
+     送るのは集計に要る欄だけ。品名・取引相手の名前・住所は送らない(仕入れ先は「楽天市場」などの先頭の語に丸めて送る)。答えはこの画面のメモリにだけ置く */
+  var SRV = { key: '', ans: null, busy: false, err: '' };
+  function srvOn() { var SA = window.SedoriAccount, cfg = window.ZW_CONFIG || {}; return !!(cfg.KEY_MODE && SA && SA.keyMode && !DEMO && typeof SA.core === 'function'); }
+  function slim(D) {
+    var used = {}; (D.sales || []).forEach(function (x) { if (x.ledgerId) used[x.ledgerId] = 1; });   // 売れた行と、取り込んだ売上に結び付いた行だけ送る
+    var L = (D.ledger || []).filter(function (r) { return r.saleDate || used[r.id]; }).map(function (r) {
+      return { id: r.id, qty: r.qty, unit: r.unit, saleDate: r.saleDate, salePrice: r.salePrice, sellPrice: r.sellPrice, profit: r.profit, wait: !!r.wait, route: r.route, pg: r.party ? B.partyGroup(r.party) : '', ch: B.chOf(r.sellTo) };
+    });
+    var S = (D.sales || []).map(function (x) { return { id: x.id, date: x.date, kind: x.kind, ledgerId: x.ledgerId, ch: x.ch, gross: x.gross, disc: x.disc, fee: x.fee, ship: x.ship, other: x.other, withheld: x.withheld, qty: x.qty }; });
+    var E = (D.expenses || []).map(function (x) { return { date: x.date, amount: x.amount, biz: x.biz }; });
+    return { ledger: L, sales: S, expenses: E };
+  }
+  /** 年の集計(Worker の答え)。まだ無ければ問い合わせて null を返し、答えが来たら見出しと「月ごとの利益」を描き直す */
+  function yearSrv() {
+    var body = slim(data()), key = year + '|' + JSON.stringify(body);
+    if (SRV.key === key && (SRV.ans || SRV.busy || SRV.err)) return SRV.ans;
+    SRV = { key: key, ans: null, busy: true, err: '' };
+    window.SedoriAccount.core([{ op: 'books', year: year, ledger: body.ledger, sales: body.sales, expenses: body.expenses }]).then(function (j) {
+      if (SRV.key !== key) return;
+      var r = (j && j.results || [])[0] || {};
+      SRV.busy = false;
+      if (r.error) SRV.err = r.error === 'need-pass' || r.error === 'need-plan' ? '利用の鍵を確かめられなかったため、集計を出せません。マイページで鍵の状態を確かめてください。' : '集計できませんでした。ページを開き直してください。';
+      else SRV.ans = r;
+      repaintSrv();
+    }, function () {
+      if (SRV.key !== key) return;
+      SRV.busy = false; SRV.err = '通信できないため、集計を出せません。つながってから、ページを開き直してください(記録の入力と取り込みは、このまま使えます)。';
+      repaintSrv();
+    });
+    return null;
+  }
+  function repaintSrv() { renderHead(); if (tab === 'monthly' && can('monthly')) renderMonthly($('#bk-pane')); }
   var TIER_NAME = { trial: 'お試し(この端末だけ)', free: '無料プラン', light: 'ライト', total: '総合', biz: '業務' };
 
   /* ==================================================================
@@ -103,7 +137,7 @@
 
   /* ---------- 見出し ---------- */
   function renderHead() {
-    var t = tier(), M = B.monthly(data(), year).total, st = B.stocktake(ledger(), TODAY < year + '-12-31' ? TODAY : year + '-12-31', 'each', {});
+    var t = tier(), srv = srvOn(), A = srv && can('monthly') ? yearSrv() : null, M = srv ? (A ? A.total : null) : B.monthly(data(), year).total, st = B.stocktake(ledger(), TODAY < year + '-12-31' ? TODAY : year + '-12-31', 'each', {});
     var old = B.stale(ledger(), get(K.stale, {}), TODAY).filter(function (x) { return x.over; }).length;
     $('#bk-year').innerHTML = years().map(function (y) { return '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '年</option>'; }).join('');
     var mode = $('#bk-mode');
@@ -111,8 +145,8 @@
     mode.className = 'bk-mode' + (t === 'trial' ? '' : ' paid');
     mode.title = t === 'trial' ? 'ログインする前は、すべての機能をこの端末の中だけで試せます。データはこのブラウザに保存されます(見本の時は保存しません)。' : 'ご契約のプラン';
     $('#bk-sum').innerHTML = sumHTML([
-      [year + '年の売上', money(M.sales) + '<small>円</small>'],
-      ['利益', money(M.profit) + '<small>円</small>', M.profit < 0 ? 'bad' : ''],
+      [year + '年の売上', M ? money(M.sales) + '<small>円</small>' : '—<small>' + (can('monthly') ? (SRV.err ? '出せません' : '集計中') : '総合で') + '</small>'],
+      ['利益', M ? money(M.profit) + '<small>円</small>' : '—', M && M.profit < 0 ? 'bad' : ''],
       ['いまの在庫(仕入れ値)', money(st.book) + '<small>円・' + st.total + '件</small>'],
       ['売れ残り', old + '<small>件</small>']
     ]);
@@ -151,10 +185,11 @@
     else if (f === 'tax') { var T = B.taxReport(D, year, taxSet(year)); pairs = [['売上(収入)金額', yen(T.A.sales + T.A.misc) + '円'], ['売上原価', yen(T.A.cogs) + '円'], ['経費', yen(T.A.expTotal) + '円'], ['所得の目安', yen(T.A.income) + '円']]; desc = '青色申告決算書・収支内訳書の欄ごとに、記録から計算した数字を並べます。どの数字も元の記録まで開けます。'; }
     else if (f === 'journal') { var J = B.journal(D, year, taxSet(year)); pairs = [['仕訳', J.length + '行']]; desc = '台帳・売上・経費から複式の仕訳帳を作り、freee会計・マネーフォワード クラウド確定申告・やよいの青色申告に取り込める形で書き出します。'; }
     else if (f === 'kobutsu') { var k = B.kobutsuCheck(D.ledger, year); pairs = [['記載がそろった仕入れ', k.ok + '件'], ['記載が足りない仕入れ', k.missing + '件']]; desc = '課税事業者の方向け。個人から仕入れた中古品のうち、帳簿の記載がそろっている行と足りない行を分けます。'; }
+    else if (srvOn()) { desc = '売上の取り込み・経費・月ごとの利益・売れ残りのお知らせは、総合で使えます。月ごとの利益とルート・仕入れ先・売り先ごとの集計は、当方のサーバーで利用の鍵を確かめてから作ります。'; }
     else { var M = B.monthly(D, year).total; pairs = [[year + '年の売上', yen(M.sales) + '円'], ['利益', yen(M.profit) + '円']]; desc = '売上の取り込み・経費・月ごとの利益・売れ残りのお知らせは、総合で使えます。'; }
     var name = (TABS.filter(function (t) { return t[0] === f; })[0] || [0, ''])[1];
-    return '<div class="lock"><div class="h">' + esc(name) + '<span class="tag ac">' + need + 'プラン</span></div><div class="b"><p>' + esc(desc) + '</p><dl class="sum">' + sumHTML(pairs.map(function (p) { return [p[0], esc(p[1])]; })) + '</dl>' +
-      '<a class="btn" href="../plans/">' + need + 'で使えます</a> <span class="muted">いまの記録から計算した数字です。プランを変えると、そのまま続きから使えます。</span></div></div>';
+    return '<div class="lock"><div class="h">' + esc(name) + '<span class="tag ac">' + need + 'プラン</span></div><div class="b"><p>' + esc(desc) + '</p>' + (pairs.length ? '<dl class="sum">' + sumHTML(pairs.map(function (p) { return [p[0], esc(p[1])]; })) + '</dl>' : '') +
+      '<a class="btn" href="../plans/">' + need + 'で使えます</a> <span class="muted">' + (pairs.length ? 'いまの記録から計算した数字です。' : '') + 'プランを変えると、そのまま続きから使えます。</span></div></div>';
   }
 
   /* ==================================================================
@@ -482,7 +517,11 @@
      ================================================================== */
   var moView = 'month', moOpen = null;
   function renderMonthly(pane) {
-    var D = data(), M = B.monthly(D, year);
+    var D = data(), M;
+    if (srvOn()) {
+      M = yearSrv();
+      if (!M) { pane.innerHTML = '<div class="bk-pane"><p class="bk-note" role="status">' + esc(SRV.err || year + '年の利益を集計しています。') + '</p></div>'; return; }
+    } else M = B.monthly(D, year);
     var views = [['month', '月ごと'], ['route', 'ルート別'], ['party', '仕入れ先別'], ['ch', '売り先別']];
     var html = '<div class="bk-pane"><div class="tbar" style="padding-top:0"><p class="tbar-t">' + year + '年の利益<small>売上 − 売上原価 − 手数料 − 送料 − 経費(事業の分)</small></p><span class="tbar-r">' + seg2('mo', views, moView) + '</span></div>';
     if (moView === 'month') {
@@ -497,7 +536,7 @@
         }).join('') + '</tbody><tfoot><tr><td>計</td><td class="r">' + money(M.total.sales) + '</td><td class="r mh">' + money(M.total.cogs) + '</td><td class="r mh">' + money(M.total.fee) + '</td><td class="r mh">' + money(M.total.ship) + '</td><td class="r mh">' + money(M.total.other) + '</td><td class="r mh">' + money(M.total.exp) + '</td><td class="r">' + money(M.total.profit) + '</td><td class="r">' + pctTxt(M.total.rate) + '</td><td class="r mh">' + M.total.n + '</td></tr></tfoot></table></div>';
       html += '<p class="bk-note">月の行を押すと、その月の内訳と元の記録が開きます。' + (M.total.est ? '※は台帳の「売れた」から数えた売上を含む月です(手数料は見込み利益から推定。Amazonのレポートやメルカリの取引画面を取り込むと実際の金額になります)。' : '') + '売上原価は「その月に売れた品の仕入れ値」です(確定申告の売上原価は、期首+仕入−期末で計算します)。' + (M.total.nocost ? ' 台帳と結び付いていない売上が' + M.total.nocost + '件あり、その分の原価は入っていません(<button type="button" class="lnk" data-go="import">取り込み</button>で結び付けられます)。' : '') + '</p>';
     } else {
-      var key = moView, G = B.groupBy(D, year, key);
+      var key = moView, G = srvOn() ? (M.groups && M.groups[key]) || [] : B.groupBy(D, year, key);
       html += '<div class="gridwrap sc"><table class="grid mo"><thead><tr><th>' + { route: 'ルート', party: '仕入れ先', ch: '売り先' }[key] + '</th><th class="r">売上</th><th class="r">売上原価</th><th class="r">手数料</th><th class="r">送料</th><th class="r">粗利</th><th class="r">粗利率</th><th class="r">件数</th></tr></thead><tbody>' +
         (G.length ? G.map(function (g) { return '<tr><td>' + esc(g.key) + '</td><td class="r">' + money(g.sales) + '</td><td class="r">' + money(g.cogs) + '</td><td class="r">' + money(g.fee) + '</td><td class="r">' + money(g.ship) + '</td><td class="r pf">' + money(g.gross) + '</td><td class="r">' + pctTxt(g.grate) + '</td><td class="r">' + g.n + '</td></tr>'; }).join('') : '<tr><td colspan="8" class="empty">この年の売上がありません。</td></tr>') +
         '</tbody></table></div><p class="bk-note">経費はルートや仕入れ先に分けられないため、粗利(売上 − 売上原価 − 手数料 − 送料)で比べます。</p>';
