@@ -44,6 +44,9 @@ window.ZW_CONFIG = {
   KEY_MODE: true,
   KEY_PUBLIC_JWK: null,
   KEY_ALLOW_TEST: true,
+  /* 有料の段どうしの「まとめての行数・在庫番の品数」をそろえる(2026-11-18。plan_regroup の勧め・オーナーの最終の返事待ち)。
+     前の形(ライト100行・30品/総合500行・100品/業務500行・300品)に戻す時は null にする。Worker の core.js の PAID_UNIFORM も null にし、ページを書き出し直す */
+  PAID_UNIFORM: { bulk: 500, listed: 300 },
   /* Cloudflare Worker の URL(カードの申し込み・契約の反映・一時停止・プラン変更・解約)。https://....workers.dev */
   WORKER_URL: "https://zw-sedori-billing.zeroichi-works-jp.workers.dev",
   /* 料金(税込・円)。ここだけ直せば、料金ページ・トップの料金表・お申し込みの確認の金額が変わる

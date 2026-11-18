@@ -508,135 +508,24 @@
     return s || 'その他';
   };
   /** 仕入れ先を集計向けに丸める(「楽天市場 ○○ショップ」→「楽天市場」) */
+  var PG_KNOWN = /^(楽天市場|Yahoo!ショッピング|Yahoo!オークション|メルカリ|ラクマ|PayPayフリマ|Amazon|店舗|ブックオフ|セカンドストリート|ハードオフ)/;
+  /** 決まった店の名前で始まる時だけ、その店の名前(個人の名前などは '' = サーバーへは文字を送らず番号にする) */
+  function partyGroupKnown(p) { var m = String(p || '').trim().match(PG_KNOWN); return m ? m[1] : ''; }
   function partyGroup(p) {
     p = String(p || '').trim();
     if (!p) return '(仕入れ先なし)';
-    var m = p.match(/^(楽天市場|Yahoo!ショッピング|Yahoo!オークション|メルカリ|ラクマ|PayPayフリマ|Amazon|店舗|ブックオフ|セカンドストリート|ハードオフ)/);
+    var m = p.match(PG_KNOWN);
     return m ? m[1] : p.split(/\s+/)[0];
   }
-  /**
-   * 1件ずつの「売れた」記録にまとめる(月・ルート・仕入れ先の集計と申告の元)。
-   * - 取り込んだ売上(台帳と照合済みなら原価つき)
-   * - 台帳で売れた行のうち、取り込んだ売上と結び付いていない行(売値と見込み利益から手数料・送料を推定)
-   * 返り値 [{ id, date, src:'import'|'ledger', saleId, ledgerId, kind, ch, route, party, name, qty, sales, cogs, fee, ship, other, est }]
-   */
-  function events(data) {
-    var L = data.ledger || [], S = data.sales || [], byId = {}, linked = {};
-    L.forEach(function (r) { byId[r.id] = r; });
-    S.forEach(function (s) { if (s.ledgerId) linked[s.ledgerId] = 1; });
-    var out = [];
-    S.forEach(function (s) {
-      if (s.kind === 'transfer') return;
-      var lr = s.ledgerId ? byId[s.ledgerId] : null;
-      var cogs = lr && (s.kind === 'order' || s.kind === 'sale') ? round((Number(lr.unit) || 0) * (Number(lr.qty) || 1)) : 0;
-      out.push({ id: 's:' + s.id, date: s.date, src: 'import', saleId: s.id, ledgerId: lr ? lr.id : '', kind: s.kind, ch: s.ch || 'その他',
-        route: lr ? (lr.route || '(ルートなし)') : (s.ch || 'その他') + '(台帳と未照合)', party: lr ? partyGroup(lr.party) : '(台帳と未照合)', name: s.name || (lr && lr.name) || '',
-        qty: s.qty || 0, sales: round((Number(s.gross) || 0) + (Number(s.disc) || 0)), cogs: cogs, fee: round(s.fee), ship: round(s.ship), other: round(s.other) + round(s.withheld), est: false, nocost: !lr && (s.kind === 'order' || s.kind === 'sale') });
-    });
-    L.forEach(function (r) {
-      if (r.wait || !r.saleDate || linked[r.id]) return;
-      var q = Number(r.qty) || 1, sale = round((Number(r.salePrice) || 0) * q), cost = round((Number(r.unit) || 0) * q);
-      var pf = r.profit === '' || r.profit == null ? null : Number(r.profit) * q;
-      // 見込み利益の計算のときの売値と、実際の売値の差は利益にそのまま足す(手数料は予定の売値での額のまま)
-      var plan = round((Number(r.sellPrice) || Number(r.salePrice) || 0) * q);
-      var costs = pf == null ? 0 : Math.max(0, plan - cost - round(pf));
-      out.push({ id: 'l:' + r.id, date: r.saleDate, src: 'ledger', saleId: '', ledgerId: r.id, kind: 'sale', ch: CH_OF_SELL(r.sellTo), route: r.route || '(ルートなし)', party: partyGroup(r.party), name: r.name || '',
-        qty: q, sales: sale, cogs: cost, fee: costs, ship: 0, other: 0, est: true, nocost: false });
-    });
-    return out.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
-  }
-  function emptyAgg() { return { sales: 0, cogs: 0, fee: 0, ship: 0, other: 0, exp: 0, profit: 0, n: 0, est: 0, nocost: 0 }; }
-  function addEv(a, e) { a.sales += e.sales; a.cogs += e.cogs; a.fee += e.fee; a.ship += e.ship; a.other += e.other; a.n++; if (e.est) a.est++; if (e.nocost) a.nocost++; }
-  function finish(a) { a.gross = a.sales + a.other - a.cogs - a.fee - a.ship; a.profit = a.gross - a.exp; a.rate = a.sales ? a.profit / a.sales : 0; a.grate = a.sales ? a.gross / a.sales : 0; return a; }
-  /**
-   * 月ごとの利益。year: 2026。返り値 { months:[{ym, ...agg}], total }
-   * 利益 = 売上 + 調整 − 売上原価 − 手数料 − 送料 − 経費(事業の分)
-   * 売上原価はその月に売れた品の仕入れ値(月次の目安。申告の売上原価は期首+仕入−期末で別に計算)
-   */
-  function monthly(data, year) {
-    var ev = events(data), months = {}, y = String(year);
-    for (var m = 1; m <= 12; m++) months[y + '-' + pad(m)] = emptyAgg();
-    ev.forEach(function (e) { var k = String(e.date).slice(0, 7); if (months[k]) addEv(months[k], e); });
-    (data.expenses || []).forEach(function (x) { var k = String(x.date).slice(0, 7); if (months[k]) months[k].exp += bizAmount(x); });
-    var total = emptyAgg(), list = Object.keys(months).sort().map(function (k) {
-      var a = finish(months[k]); a.ym = k;
-      ['sales', 'cogs', 'fee', 'ship', 'other', 'exp', 'n', 'est', 'nocost'].forEach(function (f) { total[f] += a[f]; });
-      return a;
-    });
-    return { months: list, total: finish(total) };
-  }
-  /** ルート別・仕入れ先別・売り先別(経費は分けられないので粗利まで) */
-  function groupBy(data, year, key) {
-    var g = {}, y = String(year);
-    events(data).forEach(function (e) {
-      if (String(e.date).slice(0, 4) !== y) return;
-      var k = e[key] || '(なし)'; if (!g[k]) g[k] = emptyAgg(); addEv(g[k], e);
-    });
-    return Object.keys(g).map(function (k) { var a = finish(g[k]); a.key = k; return a; }).sort(function (a, b) { return b.sales - a.sales; });
-  }
+  /* events・monthly・groupBy(月ごと・ルート別・仕入れ先別の集計と申告の元)は、2026-11-18 に端末から消した。計算は Worker の /core(books_calc.js)だけにある */
 
-  /* ==================================================================
-     売れ残り
-     ================================================================== */
-  /** 売り先ごとの手数料率の目安(売値に比例する分)。Amazonは販売手数料10%前後+税 */
-  var CH_RATE = { Amazon: 0.11, メルカリ: 0.10, ヤフオク: 0.10, ラクマ: 0.10, その他: 0.10 };
-  /**
-   * 損益ゼロになる売値の目安。見込み利益の計算に使った売値・利益から、売値に比例しない費用(送料・FBA手数料など)を逆算する。
-   */
-  function breakEven(r) {
-    var unit = Number(r.unit) || 0, rate = CH_RATE[CH_OF_SELL(r.sellTo)] || 0.1;
-    var sell = Number(r.sellPrice) || 0, pf = r.profit === '' || r.profit == null ? null : Number(r.profit);
-    var fixed = 0;
-    if (sell > 0 && pf != null) fixed = Math.max(0, sell - unit - pf - sell * rate);
-    return Math.ceil((unit + fixed) / (1 - rate) / 10) * 10;
-  }
-  /**
-   * 売れ残りの一覧。cfg: { days: 全体の日数, cats: {品目: 日数}, items: {id: 日数} }
-   * 返り値 [{ r, days, limit, over, be(損益ゼロの売値), suggest(値下げ候補), room(今の予定売値から下げられる幅) }](古い順)
-   */
-  function stale(ledger, cfg, today) {
-    cfg = cfg || {};
-    var g = Number(cfg.days) || 60;
-    return (ledger || []).filter(function (r) { return !r.wait && !r.saleDate && r.date; }).map(function (r) {
-      var limit = Number((cfg.items || {})[r.id]) || Number((cfg.cats || {})[r.hinmoku]) || g;
-      var days = daysBetween(r.date, today), be = breakEven(r), plan = Number(r.sellPrice) || 0;
-      var suggest = plan ? Math.max(be, Math.floor(plan * 0.9 / 10) * 10) : be;
-      return { r: r, days: days, limit: limit, over: days >= limit, be: be, plan: plan, suggest: suggest, room: plan ? plan - be : 0, cost: round((Number(r.unit) || 0) * (Number(r.qty) || 1)) };
-    }).sort(function (a, b) { return b.days - a.days; });
-  }
+  /* 売れ残りの判定(breakEven・stale)も Worker の /core(stale)へ移した */
 
   /* ==================================================================
      棚卸
      ================================================================== */
-  /** その日の終わりに手元にある在庫(仕入れ済みで、まだ売れていない) */
-  function stockAt(ledger, cutoff) {
-    return (ledger || []).filter(function (r) { return !r.wait && r.date && r.date <= cutoff && (!r.saleDate || r.saleDate > cutoff); });
-  }
+  /** 同じ品をまとめる印(JAN・ASIN・なければ品名)。サーバーへは、この印を 1,2,3… の番号に置き換えて送る(文字は送らない) */
   function itemKey(r) { var c = ledgerCodes(r); return c.jan ? 'J' + c.jan : (c.asin ? 'A' + c.asin : 'N' + norm(r.name)); }
-  /**
-   * 期末の棚卸。method: 'last'(最終仕入原価法・届出をしていない時の方法)/ 'each'(個別法: 1品ずつの仕入れ値)
-   * counts: {台帳id: 実地の数量}(数えた行だけ)
-   * 返り値 { rows:[{r, qty(帳簿), count(実地|null), price(評価単価), book(帳簿の金額), real(実地の金額), diff}], book, real, counted, total }
-   */
-  function stocktake(ledger, cutoff, method, counts) {
-    counts = counts || {};
-    var list = stockAt(ledger, cutoff), last = {};
-    if (method === 'last') {
-      (ledger || []).forEach(function (r) {
-        if (r.wait || !r.date || r.date > cutoff) return;
-        var k = itemKey(r); if (!last[k] || r.date >= last[k].date) last[k] = { date: r.date, unit: Number(r.unit) || 0 };
-      });
-    }
-    var book = 0, real = 0, counted = 0;
-    var rows = list.map(function (r) {
-      var qty = Number(r.qty) || 1, price = method === 'last' ? last[itemKey(r)].unit : (Number(r.unit) || 0);
-      var c = counts[r.id] == null || counts[r.id] === '' ? null : Number(counts[r.id]);
-      var b = round(price * qty), rl = round(price * (c == null ? qty : c));
-      book += b; real += rl; if (c != null) counted++;
-      return { r: r, qty: qty, count: c, price: price, book: b, real: rl, diff: c == null ? 0 : c - qty };
-    }).sort(function (a, b) { return String(a.r.date).localeCompare(String(b.r.date)); });
-    return { rows: rows, book: book, real: real, counted: counted, total: rows.length };
-  }
   /** JANで実地の数を1つ足す(同じJANの行のうち、まだ数え切っていない古い行へ) */
   function countScan(rows, counts, code) {
     var hits = rows.filter(function (x) { var c = ledgerCodes(x.r); return c.jan === code || c.asin === code || String(x.r.sku || '') === code; });
@@ -649,190 +538,8 @@
     return { id: h.r.id, count: counts[h.r.id], of: h.qty, row: h.r, over: true };
   }
 
-  /* ==================================================================
-     確定申告用の数字(青色申告決算書・収支内訳書の一般用)
-     ================================================================== */
-  /** 経費の科目 → 決算書の欄(青色: 番号, 白色: 番号または内訳) */
-  var AO_EXP = [['租税公課', '⑧'], ['荷造運賃', '⑨'], ['水道光熱費', '⑩'], ['旅費交通費', '⑪'], ['通信費', '⑫'], ['広告宣伝費', '⑬'], ['接待交際費', '⑭'], ['損害保険料', '⑮'], ['修繕費', '⑯'], ['消耗品費', '⑰'],
-    ['外注工賃', '㉑'], ['地代家賃', '㉓'], ['支払手数料', '㉕'], ['新聞図書費', '㉖'], ['雑費', '㉛']];
-  var SHIRO_EXP = [['外注工賃', '⑫'], ['地代家賃', '⑮'], ['租税公課', ''], ['荷造運賃', ''], ['水道光熱費', ''], ['旅費交通費', ''], ['通信費', ''], ['広告宣伝費', ''], ['接待交際費', ''], ['損害保険料', ''], ['修繕費', ''], ['消耗品費', ''], ['支払手数料', ''], ['新聞図書費', ''], ['雑費', '']];
-  function inYear(d, y) { return String(d || '').slice(0, 4) === String(y); }
-  /** 税抜きにする(課税事業者で税抜経理を選んだ時だけ)。10%で割り戻す参考の値 */
-  function exTax(n, set, taxable) { return set && set.tax === 'taxable' && set.incl === false && taxable !== false ? round(n * 100 / 110) : round(n); }
-  /**
-   * 申告用の数字。set: { tax:'exempt'|'taxable', incl:true(税込経理), points:'discount'|'misc', pointYen:数字, opening:数字|null, closing:数字|null, method:'last'|'each' }
-   * 返り値 { year, lines:{key: {label, amount, src:[{type,id}]}}, ao:[...], shiro:[...], warn:[] }
-   */
-  function taxReport(data, year, set) {
-    set = set || {};
-    var y = String(year), L = data.ledger || [], warn = [];
-    var src = {}; function S(k, type, id) { (src[k] = src[k] || []).push({ type: type, id: id }); }
-    var ev = events(data).filter(function (e) { return inYear(e.date, y); });
-    var sales = 0, misc = 0, fee = 0, ship = 0, nocost = 0, est = 0;
-    ev.forEach(function (e) {
-      sales += e.sales; if (e.sales) S('sales', e.src, e.src === 'import' ? e.saleId : e.ledgerId);
-      if (e.other > 0) { misc += e.other; S('misc', e.src, e.saleId); }
-      else if (e.other < 0) { fee += -e.other; S('支払手数料', e.src, e.saleId); }
-      if (e.fee) { fee += e.fee; S('支払手数料', e.src, e.src === 'import' ? e.saleId : e.ledgerId); }
-      if (e.ship) { ship += e.ship; S('荷造運賃', e.src, e.saleId); }
-      if (e.nocost) nocost++; if (e.est) est++;
-    });
-    // Amazon の手数料だけの行(在庫保管料・月額など)は events に入っている(kind:'fee')
-    var pt = round(set.pointYen || 0);
-    if (pt && set.points === 'misc') misc += pt;
-    // 仕入
-    var buy = 0;
-    L.forEach(function (r) { if (!r.wait && inYear(r.date, y)) { buy += round((Number(r.unit) || 0) * (Number(r.qty) || 1)); S('buy', 'ledger', r.id); } });
-    if (pt && set.points !== 'misc') buy -= pt;
-    // 棚卸
-    var method = set.method || 'last';
-    var openAuto = stocktake(L, (Number(y) - 1) + '-12-31', method, {}).book;
-    var closeT = stocktake(L, y + '-12-31', method, set.counts || {});
-    var opening = set.opening == null || set.opening === '' ? openAuto : round(set.opening);
-    var closing = set.closing == null || set.closing === '' ? closeT.real : round(set.closing);
-    stockAt(L, (Number(y) - 1) + '-12-31').forEach(function (r) { S('opening', 'ledger', r.id); });
-    closeT.rows.forEach(function (x) { S('closing', 'ledger', x.r.id); });
-    // 経費
-    var exp = {};
-    ACCTS.forEach(function (a) { exp[a] = 0; });
-    (data.expenses || []).forEach(function (x) { if (!inYear(x.date, y)) return; var a = ACCTS.indexOf(x.acct) >= 0 ? x.acct : '雑費'; exp[a] += bizAmount(x); S(a, 'expense', x.id); });
-    exp['支払手数料'] += fee; exp['荷造運賃'] += ship;
-    var tx = function (n, taxable) { return exTax(n, set, taxable); };
-    var A = {
-      sales: tx(sales), misc: tx(misc, false), opening: opening, buy: tx(buy), closing: closing
-    };
-    Object.keys(exp).forEach(function (k) { A[k] = tx(exp[k], k !== '租税公課'); });
-    A.cogs = A.opening + A.buy - A.closing;
-    A.expTotal = ACCTS.reduce(function (s, k) { return s + A[k]; }, 0);
-    A.income = A.sales + A.misc - A.cogs - A.expTotal;
-    if (nocost) warn.push({ k: 'nocost', msg: '台帳と結び付いていない売上が ' + nocost + ' 件あります。申告の売上原価は「期首+仕入−期末」なので影響しませんが、仕入れが台帳に無い場合は仕入金額が少なくなります。' });
-    if (est) warn.push({ k: 'est', msg: '台帳の「売れた」から数えた売上が ' + est + ' 件あります(手数料は見込み利益からの推定)。Amazonのレポートやメルカリの取引画面を取り込むと、実際の金額に置き換わります。' });
-    if (set.opening == null || set.opening === '') warn.push({ k: 'opening', msg: '期首商品棚卸高は、台帳から ' + (Number(y) - 1) + '年12月31日 時点の在庫を計算した値です。前の年の決算書の期末商品棚卸高と同じ額にしてください(違う時は申告用の数字の設定で直せます)。' });
-    var ao = [
-      ['①', '売上(収入)金額(雑収入を含む)', A.sales + A.misc, ['sales', 'misc']],
-      ['②', '期首商品棚卸高', A.opening, ['opening']], ['③', '仕入金額', A.buy, ['buy']], ['④', '小計(②+③)', A.opening + A.buy, null],
-      ['⑤', '期末商品棚卸高', A.closing, ['closing']], ['⑥', '差引原価(④−⑤)', A.cogs, null], ['⑦', '差引金額(①−⑥)', A.sales + A.misc - A.cogs, null]
-    ].concat(AO_EXP.map(function (p) { return [p[1], p[0], A[p[0]], [p[0]]]; }).filter(function (l) { return l[2] || ['荷造運賃', '消耗品費', '通信費', '支払手数料'].indexOf(l[1]) >= 0; }))
-      .concat([['㉜', '経費の計', A.expTotal, null], ['㉝', '差引金額(⑦−㉜)', A.income, null]]);
-    var shiroOther = SHIRO_EXP.filter(function (p) { return !p[1]; });
-    var shiro = [
-      ['①', '売上(収入)金額', A.sales, ['sales']], ['②', '家事消費', 0, null], ['③', 'その他の収入', A.misc, ['misc']], ['④', '計(①+②+③)', A.sales + A.misc, null],
-      ['⑤', '期首商品棚卸高', A.opening, ['opening']], ['⑥', '仕入金額', A.buy, ['buy']], ['⑦', '小計(⑤+⑥)', A.opening + A.buy, null],
-      ['⑧', '期末商品棚卸高', A.closing, ['closing']], ['⑨', '差引原価(⑦−⑧)', A.cogs, null], ['⑩', '差引金額(④−⑨)', A.sales + A.misc - A.cogs, null]
-    ].concat(SHIRO_EXP.filter(function (p) { return p[1]; }).map(function (p) { return [p[1], p[0], A[p[0]], [p[0]]]; }))
-      .concat([['⑰', 'その他の経費(下の内訳の計)', shiroOther.reduce(function (s, p) { return s + A[p[0]]; }, 0), null]])
-      .concat(shiroOther.map(function (p) { return ['', '　' + p[0], A[p[0]], [p[0]], 'sub']; }).filter(function (l) { return l[2] || ['荷造運賃', '消耗品費', '通信費', '支払手数料'].indexOf(l[1].trim()) >= 0; }))
-      .concat([['⑱', '経費の計', A.expTotal, null], ['⑲', '専従者控除前の所得金額(⑩−⑱)', A.income, null]]);
-    function lines(list) { return list.map(function (l) { var s = []; (l[3] || []).forEach(function (k) { s = s.concat(src[k] || []); }); return { no: l[0], label: l[1], amount: l[2], keys: l[3], src: s, sub: l[4] === 'sub' }; }); }
-    return { year: Number(y), A: A, ao: lines(ao), shiro: lines(shiro), warn: warn, closeT: closeT, openAuto: openAuto };
-  }
-
-  /* ==================================================================
-     仕訳帳(複式)
-     ================================================================== */
-  /**
-   * 台帳・売上・経費から仕訳を作る。set.pay: 仕入れ・経費の支払いの科目(既定 事業主借)
-   * 返り値 [{ no, date, dr, cr, amt, memo, src:{type,id}, taxDr, taxCr }](1行=借方1・貸方1)
-   * 税区分のキー: 'sale'(課税売上)/ 'buy'(課税仕入)/ 'out'(対象外)/ 'kobutsu'(古物商特例の仕入)
-   */
-  function journal(data, year, set) {
-    set = set || {};
-    var y = String(year), pay = set.pay || '事業主借', out = [], no = 0, L = data.ledger || [], byId = {};
-    L.forEach(function (r) { byId[r.id] = r; });
-    var kob = set.tax === 'taxable' ? kobutsuCheck(L, y) : null, kobOk = {}, keika = {};
-    if (kob) kob.rows.forEach(function (x) { if (x.state === 'ok') kobOk[x.r.id] = 1; });
-    // 経過措置の仕入れは、摘要に「経過措置80%控除対象」のように入れる(帳簿に経過措置の適用を受ける旨を書くため)
-    if (set.tax === 'taxable') transitionCredit(data, y, set).rows.forEach(function (x) { if (x.rate > 0 && x.rate < 1) keika[x.type + ':' + x.id] = ' 経過措置' + Math.round(x.rate * 100) + '%控除対象'; });
-    function J(date, lines, memo, src) { no++; lines.forEach(function (l) { if (!l[2]) return; out.push({ no: no, date: date, dr: l[0], cr: l[1], amt: round(l[2]), memo: (l[3] || memo || '').slice(0, 60), src: src, taxDr: l[4] || 'out', taxCr: l[5] || 'out' }); }); }
-    // 期首の棚卸(年の初め)
-    var T = taxReport(data, y, set);
-    if (T.A.opening) J(y + '-01-01', [['期首商品棚卸高', '商品', T.A.opening, '期首商品棚卸高の振替', 'out', 'out']], '', { type: 'stock', id: 'opening' });
-    // 仕入
-    L.filter(function (r) { return !r.wait && inYear(r.date, y); }).sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (r) {
-      var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1));
-      var m = ('仕入 ' + (r.name || '') + (kobOk[r.id] ? ' 古物商特例' : (keika['ledger:' + r.id] || ''))).trim();
-      J(r.date, [['仕入高', pay, amt, m, kobOk[r.id] ? 'kobutsu' : 'buy', 'out']], '', { type: 'ledger', id: r.id });
-    });
-    // 売上(取り込み)
-    (data.sales || []).filter(function (s) { return inYear(s.date, y); }).sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (s) {
-      var ar = s.src === 'amazon' ? '売掛金' : '売掛金', nm = (s.ch || '') + ' ' + (s.name || s.typeLabel || '') + (s.order ? ' ' + s.order : '');
-      var src = { type: 'sale', id: s.id };
-      if (s.kind === 'transfer') { if (s.net) J(s.date, s.net < 0 ? [['普通預金', ar, -s.net, (s.ch || '') + ' 入金', 'out', 'out']] : [[ar, '普通預金', s.net, (s.ch || '') + ' 振込の戻り', 'out', 'out']], '', src); return; }
-      var sales = round((Number(s.gross) || 0) + (Number(s.disc) || 0)), lines = [];
-      if (sales > 0) lines.push([ar, '売上高', sales, '売上 ' + nm, 'out', 'sale']);
-      if (sales < 0) lines.push(['売上高', ar, -sales, '返金 ' + nm, 'sale', 'out']);
-      if (s.fee > 0) lines.push(['支払手数料', ar, s.fee, '手数料 ' + nm, 'buy', 'out']);
-      if (s.fee < 0) lines.push([ar, '支払手数料', -s.fee, '手数料の戻り ' + nm, 'out', 'buy']);
-      if (s.ship > 0) lines.push(['荷造運賃', ar, s.ship, '送料 ' + nm, 'buy', 'out']);
-      var oth = round((Number(s.other) || 0) + (Number(s.withheld) || 0));
-      if (oth > 0) lines.push([ar, '雑収入', oth, '調整 ' + nm, 'out', 'out']);
-      if (oth < 0) lines.push(['支払手数料', ar, -oth, '調整 ' + nm, 'buy', 'out']);
-      J(s.date, lines, '', src);
-    });
-    // 台帳だけの売上(見込み)
-    var linked = {}; (data.sales || []).forEach(function (s) { if (s.ledgerId) linked[s.ledgerId] = 1; });
-    events(data).filter(function (e) { return e.src === 'ledger' && inYear(e.date, y); }).forEach(function (e) {
-      var nm = e.ch + ' ' + e.name;
-      J(e.date, [['売掛金', '売上高', e.sales, '売上 ' + nm, 'out', 'sale'], ['支払手数料', '売掛金', e.fee, '手数料(見込み) ' + nm, 'buy', 'out']], '', { type: 'ledger', id: e.ledgerId });
-    });
-    // 経費
-    (data.expenses || []).filter(function (x) { return inYear(x.date, y); }).sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (x) {
-      var a = bizAmount(x); if (!a) return;
-      var m = (x.payee || '') + (x.memo ? ' ' + x.memo : '') + (Number(x.biz) < 100 ? ' (事業' + x.biz + '%)' : '') + (keika['expense:' + x.id] || '');
-      J(x.date, [[x.acct || '雑費', pay, a, m.trim() || x.acct, x.acct === '租税公課' ? 'out' : 'buy', 'out']], '', { type: 'expense', id: x.id });
-    });
-    // ポイント
-    var pt = round(set.pointYen || 0);
-    if (pt) J(y + '-12-31', [[pay, set.points === 'misc' ? '雑収入' : '仕入高', pt, set.points === 'misc' ? '仕入れで付いたポイント(雑収入)' : '仕入れで付いたポイント(仕入値引き)', 'out', set.points === 'misc' ? 'out' : 'buy']], '', { type: 'points', id: 'points' });
-    // 期末の棚卸(年の終わり)
-    if (T.A.closing) J(y + '-12-31', [['商品', '期末商品棚卸高', T.A.closing, '期末商品棚卸高の振替', 'out', 'out']], '', { type: 'stock', id: 'closing' });
-    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.no - b.no; });
-    // 日付順に番号を振り直す(1つの取引の行は同じ番号)
-    var re = {}, seq = 0;
-    out.forEach(function (e) { if (re[e.no] == null) re[e.no] = ++seq; e.no = re[e.no]; });
-    return out;
-  }
-
-  /* ---------- 会計ソフト向けの書き出し ---------- */
-  var SOFT = {
-    freee: { label: 'freee会計', acct: { '期首商品棚卸高': '期首商品棚卸', '期末商品棚卸高': '期末商品棚卸', '仕入高': '仕入高' } },
-    mf: { label: 'マネーフォワード クラウド確定申告', acct: {} },
-    yayoi: { label: 'やよいの青色申告', acct: { '仕入高': '仕入高' } }
-  };
-  function taxName(soft, k, set) {
-    if (!set || set.tax !== 'taxable') return '対象外';
-    var T = {
-      freee: { sale: '課税売上10%', buy: '課対仕入10%', kobutsu: '課対仕入10%', out: '対象外' },
-      mf: { sale: '課税売上 10%', buy: '課税仕入 10%', kobutsu: '課税仕入 10%', out: '対象外' },
-      yayoi: { sale: '課税売上込10%', buy: '課対仕入込10%', kobutsu: '課対仕入込10%', out: '対象外' }
-    };
-    return (T[soft] || T.mf)[k] || '対象外';
-  }
-  function slash(d) { return String(d).replace(/-/g, '/'); }
-  /**
-   * 仕訳をCSVの行に。soft: 'freee' | 'mf' | 'yayoi' | 'plain'
-   * 返り値 { header: [..] | null, rows: [[..]], name: 'ファイル名の一部' }
-   */
-  function exportRows(entries, soft, set) {
-    var map = (SOFT[soft] || {}).acct || {}, A = function (a) { return map[a] || a; };
-    var taxOf = function (k, amt) { return set && set.tax === 'taxable' && set.incl === false && (k === 'sale' || k === 'buy' || k === 'kobutsu') ? round(amt * 10 / 110) : ''; };
-    if (soft === 'yayoi') {
-      // 弥生インポート形式(25項目・見出しなし)。1行の仕訳は 2000
-      return { header: null, rows: entries.map(function (e) {
-        return ['2000', '', '', slash(e.date), A(e.dr), '', '', taxName('yayoi', e.taxDr, set), e.amt, taxOf(e.taxDr, e.amt), A(e.cr), '', '', taxName('yayoi', e.taxCr, set), e.amt, taxOf(e.taxCr, e.amt),
-          e.memo.slice(0, 32), '', '', '0', '', '', '0', '0', 'no'];
-      }) };
-    }
-    if (soft === 'mf') {
-      return { header: ['取引No', '取引日', '借方勘定科目', '借方補助科目', '借方部門', '借方取引先', '借方税区分', '借方インボイス', '借方金額(円)', '借方税額', '貸方勘定科目', '貸方補助科目', '貸方部門', '貸方取引先', '貸方税区分', '貸方インボイス', '貸方金額(円)', '貸方税額', '摘要', '仕訳メモ', 'タグ', 'MF仕訳タイプ', '決算整理仕訳'],
-        rows: entries.map(function (e, i) { return [i + 1, slash(e.date), A(e.dr), '', '', '', taxName('mf', e.taxDr, set), '', e.amt, taxOf(e.taxDr, e.amt), A(e.cr), '', '', '', taxName('mf', e.taxCr, set), '', e.amt, taxOf(e.taxCr, e.amt), e.memo, '', '', '', /棚卸高の振替/.test(e.memo) ? '1' : '']; }) };
-    }
-    if (soft === 'freee') {
-      return { header: ['伝票番号', '発生日', '借方勘定科目', '借方税区分', '借方金額', '借方税額', '貸方勘定科目', '貸方税区分', '貸方金額', '貸方税額', '摘要'],
-        rows: entries.map(function (e, i) { return [i + 1, slash(e.date), A(e.dr), taxName('freee', e.taxDr, set), e.amt, taxOf(e.taxDr, e.amt) || 0, A(e.cr), taxName('freee', e.taxCr, set), e.amt, taxOf(e.taxCr, e.amt) || 0, e.memo]; }) };
-    }
-    return { header: ['番号', '日付', '借方', '借方金額', '貸方', '貸方金額', '摘要'], rows: entries.map(function (e) { return [e.no, e.date, e.dr, e.amt, e.cr, e.amt, e.memo]; }) };
-  }
+  /* 申告用の数字(taxReport)・仕訳帳(journal)・会計ソフト向けの行(exportRows)は Worker の /core へ移した。ここには会計ソフトの名前だけ残す */
+  var SOFT = { freee: { label: 'freee会計' }, mf: { label: 'マネーフォワード クラウド確定申告' }, yayoi: { label: 'やよいの青色申告' } };
 
   /* ---------- Shift_JIS(弥生・マネーフォワードの取り込み用) ---------- */
   var SJ = null;
@@ -870,109 +577,10 @@
      ================================================================== */
   /** 事業者(インボイスを受け取るべき相手)からの仕入れらしいか */
   var BIZ = /楽天市場|Yahoo!ショッピング|Amazon|店舗|株式会社|\(株\)|（株）|有限会社|合同会社|ショップ|ストア|ブックオフ|セカンドストリート|ハードオフ|オフハウス|トレジャー|ゲオ|駿河屋|業者|市場|オークション会/;
-  /**
-   * 古物商特例の確認。対象は中古品を個人(適格請求書発行事業者以外)から買った仕入れ。
-   * 帳簿に要る事項: 相手の氏名・住所(古物営業法で本人確認が要る取引のみ)、年月日、品名(内容)、数量、対価、特例の対象である旨。
-   * 返り値 { rows:[{r, state:'ok'|'missing'|'biz'|'new', need:[足りない項目], idReq, why:確認が要る理由}], ok, missing, biz, amountOk }
-   */
-  function kobutsuCheck(ledger, year) {
-    var y = String(year), rows = [], tx = SC.txTotals(ledger);
-    (ledger || []).forEach(function (r) {
-      if (r.wait || !inYear(r.date, y)) return;
-      var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1));
-      if (r.cond !== '中古') { rows.push({ r: r, state: 'new', need: [], amt: amt }); return; }
-      if (r.verify === '古物商・法人から購入' || BIZ.test(String(r.party || ''))) { rows.push({ r: r, state: 'biz', need: [], amt: amt }); return; }
-      // 売り手の確認が要るか(金額を問わない品・1回の取引の合計1万円以上)は台帳と同じ判定(seller-check.js)
-      var why = SC.reason(r, tx[r.id]), idReq = !!why;
-      var need = [];
-      if (!r.date) need.push('年月日');
-      if (!String(r.name || '').trim() || /^\(名前なし\)$/.test(r.name)) need.push('品名');
-      if (!(Number(r.qty) > 0)) need.push('数量');
-      if (!(Number(r.unit) > 0)) need.push('対価');
-      if (idReq) { if (!String(r.pName || '').trim()) need.push('売り手の氏名'); if (!String(r.pAddr || '').trim()) need.push('売り手の住所'); }
-      rows.push({ r: r, state: need.length ? 'missing' : 'ok', need: need, idReq: idReq, why: why, amt: amt });
-    });
-    var c = function (s) { return rows.filter(function (x) { return x.state === s; }); };
-    var ok = c('ok'), mi = c('missing');
-    return { rows: rows, ok: ok.length, missing: mi.length, biz: c('biz').length, nw: c('new').length,
-      amountOk: ok.reduce(function (s, x) { return s + x.amt; }, 0), amountMissing: mi.reduce(function (s, x) { return s + x.amt; }, 0),
-      taxOk: round(ok.reduce(function (s, x) { return s + x.amt; }, 0) * 10 / 110) };
-  }
-
-  /* ==================================================================
-     インボイスの経過措置(免税事業者・登録番号の無い相手からの仕入れ)
-     ================================================================== */
-  /**
-   * 仕入税額相当額のうち控除できる割合。課税仕入れを行った日(商品は原則として引渡しを受けた日)で決まる。
-   * 令和8年度税制改正の後の割合(国税庁 インボイスQ&A 問113 令和8年4月改訂、確認 2026-10-27)。2031年10月1日からは0。
-   */
-  var TRANSITION = [
-    { from: '2023-10-01', to: '2026-09-30', rate: 0.8 },
-    { from: '2026-10-01', to: '2028-09-30', rate: 0.7 },
-    { from: '2028-10-01', to: '2030-09-30', rate: 0.5 },
-    { from: '2030-10-01', to: '2031-09-30', rate: 0.3 }
-  ];
-  var TRANSITION_SRC = { label: '国税庁 インボイスQ&A 問113(免税事業者等からの仕入れに係る経過措置・令和8年4月改訂)', url: 'https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/pdf/qa/01-15.pdf', checked: '2026-10-27' };
-  /** その日の課税仕入れの控除の割合(2023年9月30日までは全額=1、経過措置が終わった後は0) */
-  function transitionRate(d) {
-    d = String(d || '');
-    if (!d || d < TRANSITION[0].from) return 1;
-    for (var i = 0; i < TRANSITION.length; i++) if (d >= TRANSITION[i].from && d <= TRANSITION[i].to) return TRANSITION[i].rate;
-    return 0;
-  }
-  /** 一の相手からの経過措置の上限(税込・課税期間ごと)。令和8年10月1日以後に始まる課税期間は1億円、それより前は10億円。個人の課税期間は暦年 */
-  function transitionCap(year) { return String(year) + '-01-01' >= '2026-10-01' ? 100000000 : 1000000000; }
-  function periodLabel(t) { return t.from.slice(0, 4) + '年' + Number(t.from.slice(5, 7)) + '月〜' + t.to.slice(0, 4) + '年' + Number(t.to.slice(5, 7)) + '月'; }
+  /** 事業者らしい仕入れ先か(文字の分類だけ。判定の結果の true/false を、端末がサーバーへ送る) */
   function isBizParty(r) { return r.verify === '古物商・法人から購入' || BIZ.test(String(r.party || '')); }
   function partyKey(name) { return 'p:' + payeeKey(name); }
-  /**
-   * 課税事業者の、インボイス(登録番号)の無い仕入れの控除の目安。
-   * - 台帳: 個人から買った品(中古で古物商特例の記載がそろった行は全額なので除く)と、set.noReg で「登録番号なし」にした仕入れ先
-   * - 経費: set.noReg で「登録番号なし」にした支払先(租税公課は除く)
-   * 仕入税額相当額は10/110で計算した目安(軽減税率8%の品は扱わない)。
-   * 返り値 { rows:[{type,id,date,name,party,amt,tax,rate,credit,lost,why:'individual'|'kobMissing'|'noReg',over}], periods:[{label,rate,n,amt,tax,credit}], total, parties:[{key,name,n,amt,noReg}], cap, overCap }
-   */
-  function transitionCredit(data, year, set) {
-    set = set || {};
-    var y = String(year), L = data.ledger || [], noReg = set.noReg || {}, kst = {}, rows = [], parties = {};
-    kobutsuCheck(L, y).rows.forEach(function (x) { kst[x.r.id] = x.state; });
-    function party(key, name, amt, src) { var p = parties[key] = parties[key] || { key: key, name: name, n: 0, amt: 0, src: src, noReg: !!noReg[key] }; p.n++; p.amt += amt; }
-    L.forEach(function (r) {
-      if (r.wait || !inYear(r.date, y)) return;
-      var amt = round((Number(r.unit) || 0) * (Number(r.qty) || 1)); if (amt <= 0) return;
-      var name = String(r.party || '').trim(), biz = isBizParty(r), key = partyKey(name), why;
-      if (biz && name) party(key, name, amt, 'ledger');
-      if (kst[r.id] === 'ok') return; // 古物商特例(全額控除)
-      if (!biz) why = kst[r.id] === 'missing' ? 'kobMissing' : 'individual';
-      else if (noReg[key]) why = 'noReg';
-      else return;
-      rows.push({ type: 'ledger', id: r.id, date: r.date, name: r.name || '', party: name, key: biz ? key : 'i:' + (String(r.pName || '').trim() || name || r.id), amt: amt, why: why });
-    });
-    (data.expenses || []).forEach(function (x) {
-      if (!inYear(x.date, y) || x.acct === '租税公課') return;
-      var amt = bizAmount(x), name = String(x.payee || '').trim(); if (amt <= 0 || !name) return;
-      var key = partyKey(name);
-      party(key, name, amt, 'expense');
-      if (noReg[key]) rows.push({ type: 'expense', id: x.id, date: x.date, name: x.acct || '', party: name, key: key, amt: amt, why: 'noReg' });
-    });
-    var cap = transitionCap(y), used = {}, overCap = false;
-    rows.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }).forEach(function (x) {
-      var u = used[x.key] || 0, within = Math.max(0, Math.min(x.amt, cap - u));
-      used[x.key] = u + x.amt; x.over = x.amt - within; if (x.over) overCap = true;
-      x.tax = round(x.amt * 10 / 110); x.rate = transitionRate(x.date);
-      x.credit = round(round(within * 10 / 110) * x.rate); x.lost = x.tax - x.credit;
-    });
-    var periods = TRANSITION.map(function (t) { return { label: periodLabel(t), from: t.from, to: t.to, rate: t.rate, n: 0, amt: 0, tax: 0, credit: 0 }; });
-    var total = { n: 0, amt: 0, tax: 0, credit: 0, lost: 0 };
-    rows.forEach(function (x) {
-      var p = periods.filter(function (q) { return x.date >= q.from && x.date <= q.to; })[0];
-      if (p) { p.n++; p.amt += x.amt; p.tax += x.tax; p.credit += x.credit; }
-      total.n++; total.amt += x.amt; total.tax += x.tax; total.credit += x.credit; total.lost += x.lost;
-    });
-    var ys = y + '-01-01', ye = y + '-12-31';
-    return { rows: rows, periods: periods.filter(function (p) { return p.n || (p.from <= ye && p.to >= ys); }), total: total,
-      parties: Object.keys(parties).map(function (k) { return parties[k]; }).sort(function (a, b) { return b.amt - a.amt; }), cap: cap, overCap: overCap, src: TRANSITION_SRC };
-  }
+  /* 古物商特例の確認(kobutsuCheck)・インボイスの経過措置(transitionCredit・割合・上限)は Worker の /core へ移した */
 
   /* ==================================================================
      料金プランと機能
@@ -995,10 +603,9 @@
     findHeader: findHeader, mapHeader: mapHeader, AMZ_COLS: AMZ_COLS, amzType: amzType, parseAmazon: parseAmazon, parseMercari: parseMercari, TYPE_LABEL: TYPE_LABEL,
     GEN_COLS: GEN_COLS, FIELD_LABEL: FIELD_LABEL, detectColumns: detectColumns, applyMapping: applyMapping, sniff: sniff, asinOf: asinOf, janOf: janOf,
     ACCTS: ACCTS, ACCT_HINT: ACCT_HINT, guessAcct: guessAcct, payeeKey: payeeKey, bizAmount: bizAmount, dueRecurring: dueRecurring,
-    matchLedger: matchLedger, candidates: candidates, ledgerCodes: ledgerCodes, events: events, monthly: monthly, groupBy: groupBy, partyGroup: partyGroup, chOf: CH_OF_SELL,
-    breakEven: breakEven, stale: stale, stockAt: stockAt, stocktake: stocktake, countScan: countScan,
-    taxReport: taxReport, journal: journal, exportRows: exportRows, encodeSJIS: encodeSJIS, SOFT: SOFT, kobutsuCheck: kobutsuCheck,
-    TRANSITION: TRANSITION, TRANSITION_SRC: TRANSITION_SRC, transitionRate: transitionRate, transitionCap: transitionCap, transitionCredit: transitionCredit, partyKey: partyKey,
+    matchLedger: matchLedger, candidates: candidates, ledgerCodes: ledgerCodes, partyGroup: partyGroup, partyGroupKnown: partyGroupKnown, chOf: CH_OF_SELL,
+    itemKey: itemKey, countScan: countScan,
+    encodeSJIS: encodeSJIS, SOFT: SOFT, isBizParty: isBizParty, partyKey: partyKey,
     FEATURE_TIER: FEATURE_TIER, tierOf: tierOf, allowed: allowed
   };
 });

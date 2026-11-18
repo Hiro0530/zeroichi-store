@@ -173,7 +173,8 @@
      呼び方: JANがあれば、JANで1回探す(在庫のある品だけ・安い順・30件)。返事に載っていた店は「在庫あり」。載っていない店だけ、商品コードで1回ずつ確かめる
      (売り切れなのか、30件に入らなかっただけなのかを分ける)。どの呼び出しの前にも2秒あける。
      確かめられなかった店は unknown のまま返す(売り切れと決めつけない)。403・429・通信の失敗は、その場で全部を止める */
-  var STOCK_LIMIT = { free: 5, light: 30, total: 100, business: 300 };   // 1回に確かめる品の数の上限
+  var PAID_UNI = (function () { var c = (typeof window !== 'undefined' && window.ZW_CONFIG) || {}; return 'PAID_UNIFORM' in c ? c.PAID_UNIFORM : { bulk: 500, listed: 300 }; })();   // config.js の PAID_UNIFORM(null で前の形)
+  var STOCK_LIMIT = { free: 5, light: PAID_UNI ? PAID_UNI.listed : 30, total: PAID_UNI ? PAID_UNI.listed : 100, business: 300 };   // 1回に確かめる品の数の上限
   var STOCK_SUBS = 2;                                                     // 控えの店の数の上限(主を含めて3店まで。仕様8)
   function stockLimit(tier) { return STOCK_LIMIT[tier] || STOCK_LIMIT.free; }
   /** 品の店の並び(主が先頭)。商品コードの無いもの・重なり・4店目からは外す */

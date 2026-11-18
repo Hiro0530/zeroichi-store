@@ -175,7 +175,8 @@
   }
   /* ---------- 有料の機能の芯(Worker の /core。使うたびに問い合わせる) ---------- */
   var memo = { limits: null, until: 0 };   // 答えはメモリにだけ(保存しない)
-  function dropMemo() { memo.limits = null; memo.until = 0; }
+  var ASK = { cache: Object.create(null), n: 0, queue: null, calls: 0 };   // 同じ頼みの答えを短い時間だけ持つ・同じ瞬間の頼みを1回にまとめる(メモリだけ)
+  function dropMemo() { memo.limits = null; memo.until = 0; ASK.cache = Object.create(null); ASK.n = 0; }
   function postCore(ops, withPass) {
     if (!cfg.WORKER_URL) return Promise.reject(new Error('準備中です'));
     var b = { device: device(), ops: ops };
@@ -210,6 +211,40 @@
       return Object.assign({}, memo.limits);
     });
   }
+  /* ---------- 呼び出しを減らす工夫(2026-11-18) ----------
+     ・ask(op): 25ms のあいだに来た頼みを1回の問い合わせにまとめる(1回に最大6件・大きさ900KBまで)。同じ頼みは1つにする
+     ・同じ頼み(中身が1文字も違わない)の答えは、サーバーが言った ttl(最長10分)だけメモリに持つ。保存しない。証明が替わる・外れる時は捨てる
+     ・失敗(通信・証明)の答えは持たない */
+  function hash(str) { var h = 5381, i = str.length; while (i) h = (h * 33) ^ str.charCodeAt(--i); return (h >>> 0).toString(36) + ':' + str.length; }
+  function askFlush() {
+    var q = ASK.queue; ASK.queue = null; if (!q) return;
+    var byKey = Object.create(null), uniq = [];
+    q.forEach(function (it) { if (byKey[it.k]) byKey[it.k].w.push(it); else { byKey[it.k] = { op: it.op, k: it.k, w: [it], size: it.size }; uniq.push(byKey[it.k]); } });
+    var chunks = [], cur = [], size = 0;
+    uniq.forEach(function (u) { if (cur.length && (cur.length >= 6 || size + u.size > 900000)) { chunks.push(cur); cur = []; size = 0; } cur.push(u); size += u.size; });
+    if (cur.length) chunks.push(cur);
+    chunks.forEach(function (ch) {
+      ASK.calls++;
+      core(ch.map(function (u) { return u.op; })).then(function (j) {
+        var ttl = Math.max(0, Number(j.ttl) || 0) * 1000;
+        ch.forEach(function (u, i) {
+          var r = (j.results || [])[i] || { error: 'failed' };
+          if (!r.error && ttl) { if (ASK.n >= 24) { ASK.cache = Object.create(null); ASK.n = 0; } ASK.cache[u.k] = { until: Date.now() + ttl, val: r }; ASK.n++; }
+          u.w.forEach(function (it) { it.ok(r); });
+        });
+      }, function (e) { ch.forEach(function (u) { u.w.forEach(function (it) { it.ng(e); }); }); });
+    });
+  }
+  /** 有料の計算を1件頼む。答え({ ..., error? })を返す。通信の失敗だけ reject */
+  function ask(op) {
+    var s = JSON.stringify(op), k = hash(s), c = ASK.cache[k];
+    if (c && Date.now() < c.until && (!cur.p || Number(cur.p.exp) > now())) return Promise.resolve(c.val);
+    return new Promise(function (ok, ng) {
+      if (!ASK.queue) { ASK.queue = []; setTimeout(askFlush, 25); }
+      ASK.queue.push({ op: op, k: k, size: s.length, ok: ok, ng: ng });
+    });
+  }
+  function askStats() { return { calls: ASK.calls, cached: ASK.n }; }
   /** いま手元にある上限(無ければ null)。表示のためだけに使う(数えるのは limits() の答え) */
   function limitsNow() { return memo.limits && Date.now() < memo.until ? Object.assign({}, memo.limits) : null; }
   /** 有料の画面のプログラムを Worker から受け取って動かす(控えにも保存にも置かない。Blob の URL は読んだら消す) */
@@ -301,7 +336,7 @@
     stripePlans: stripePlans, checkout: checkout, paypalReady: function () { return false; }, provider: function () { return 'stripe'; }, portal: portal,
     renderPayButton: no, pause: no, resume: no, revise: no, cancel: no, linkStripe: no, worker: function (path, body) { return call(path, body); },
     lightCap: function () { return null; }, deleteCloud: no, cloudRows: no, deleteAccount: no, syncNow: function () {}, cfg: cfg, ready: false, billingReady: !!cfg.WORKER_URL,
-    core: core, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid
+    core: core, ask: ask, askStats: askStats, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid
   };
 
   function init() {
@@ -319,5 +354,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  return Object.assign({}, pure, { state: state, claim: claim, use: use, renew: renew, portal: portal, rotate: rotate, removeDevice: removeDevice, forget: forget, checkout: checkout, exportFile: exportFile, importText: importText, device: device, now: now, core: core, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid });
+  return Object.assign({}, pure, { state: state, claim: claim, use: use, renew: renew, portal: portal, rotate: rotate, removeDevice: removeDevice, forget: forget, checkout: checkout, exportFile: exportFile, importText: importText, device: device, now: now, core: core, ask: ask, askStats: askStats, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid });
 });

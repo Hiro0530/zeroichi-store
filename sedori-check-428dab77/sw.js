@@ -8,7 +8,7 @@ var CACHE = 'zw-sedori-v21';
 var PAID = /\/key\/app\/|\/core(\?|$)/;
 var CORE = ['./', 'rakuten-amazon/', 'muzaiko-amazon/', 'mercari-calc/', 'yahuoku-mercari/', 'auction-mercari/', 'daicho/', 'scan/', 'books/', 'plans/', 'mypage/', 'terms/', 'privacy/', 'shikumi/', 'chigai/',
   'assets/sedori.css', 'assets/calc.js', 'assets/ui.js', 'assets/sync.js', 'assets/books-sync.js', 'assets/seller-check.js', 'assets/account.js', 'assets/ra.js', 'assets/market.js', 'assets/mz.js', 'assets/ledger.js', 'assets/top.js', 'assets/shindan.js',
-  'assets/plans.js', 'assets/mypage.js', 'assets/ai.js', 'assets/scan.css', 'assets/scan.js', 'assets/scan-decoder.js', 'assets/scan-sync.js', 'books/books.css', 'books/assets/books-core.js', 'books/assets/books.js', 'assets/vendor/qrcode-generator.js', 'assets/vendor/zxing-library-0.21.3.min.js',
+  'assets/plans.js', 'assets/mypage.js', 'assets/ai.js', 'assets/scan.css', 'assets/scan.js', 'assets/scan-decoder.js', 'assets/scan-sync.js', 'books/books.css', 'books/assets/books-core.js', 'books/assets/books-srv.js', 'books/assets/books.js', 'assets/vendor/qrcode-generator.js', 'assets/vendor/zxing-library-0.21.3.min.js',
   'data/fees.json', 'icon-192.png'];
 /* あとから足す部品(まとめて・台帳の追加・ウォッチの取り直し・仕入れる前の確かめ・手引き)。まだ無いファイルがあっても、保存の準備を止めない */
 var OPT = ['assets/config.js', 'assets/license.js', 'assets/mypage-key.js', 'assets/api.js', 'assets/item.js', 'assets/item.css', 'shohin/', 'assets/listed.js', 'zaiko-ban/', 'assets/bulk.js', 'assets/ledger-plus.js', 'assets/watch-check.js', 'assets/precheck.js', 'assets/tools.css',

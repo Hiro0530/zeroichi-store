@@ -203,6 +203,9 @@ tr.diff td{background:#fdf0ef}
   .chart .ax{font-size:11px}
   .qe .qe-memo{grid-column:1/-1}
   .qe kbd{display:none}
+  .bk-pane .sum{flex-wrap:wrap}
+  .bk-pane .sum div{flex:1 1 40%;min-width:0}
+  .bk-pane .sum dd{overflow-wrap:anywhere}
   .bk-head .sum{display:grid;grid-template-columns:1fr 1fr}
   .bk-head .sum div:nth-child(3){border-left:0}
   .bk-head .sum div:nth-child(n+3){border-top:1px solid var(--line)}

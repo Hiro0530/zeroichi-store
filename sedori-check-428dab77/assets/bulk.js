@@ -214,7 +214,7 @@
           '<span class="bs-rest">' + (meta.pasted || rows.length) + '行のうち' + (rest ? ' ' + rest : '') + '</span></p>';
         askSum(); h += sumHTML(); if (sumNote()) below.push(sumNote());
         // 次にすること(1つだけ): 止まった > 行数の上限 > キーが無い
-        var overText = tierName() + 'は1回' + lim + '行までです。' + (lim + 1) + '行目から先の' + meta.over + '行は計算していません。ライトは100行、総合と業務は500行まで計算できます。';
+        var overText = tierName() + 'は1回' + lim + '行までです。' + (lim + 1) + '行目から先の' + meta.over + '行は計算していません。ライトは' + C.bulkLimit('light') + '行、総合と業務は' + C.bulkLimit('total') + '行まで計算できます。';
         var shipN = rows.filter(C.needShip).length;
         var unkText = '未入力の行は、Amazonの売値か仕入れ値がまだ無い行です。行を押して右の欄に入れると計算します。' +
           (shipN ? '送料込みの店が無かった' + shipN + '行は、送料別の一番安い店を入れています。行を押して「仕入れの送料」を入れると計算します。' : '');

@@ -353,7 +353,10 @@
   }
 
   /* ---------- まとめてチェック: 貼った一覧を読む ---------- */
-  var BULK_LIMIT = { free: 20, light: 100, total: 500, business: 500 };
+  /* 有料の段どうしの行数・品数の差をなくす設定は config.js の PAID_UNIFORM(null で前の形: ライト100行・総合と業務500行)。2026-11-18。
+     利用の鍵の形では、行数は Worker の /core の limits が決める(これは前のログインの形と試験のための表) */
+  var PAID_UNI = (function () { var c = (typeof window !== 'undefined' && window.ZW_CONFIG) || {}; return 'PAID_UNIFORM' in c ? c.PAID_UNIFORM : { bulk: 500, listed: 300 }; })();
+  var BULK_LIMIT = { free: 20, light: PAID_UNI ? PAID_UNI.bulk : 100, total: 500, business: 500 };
   /** プランごとの1回の行数の上限 */
   function bulkLimit(tier) { return BULK_LIMIT[tier] || BULK_LIMIT.free; }
   function money(v) {

@@ -23,7 +23,8 @@
     nameSim: 0.3        // 4) 商品名の似かたがこれ未満なら「店か商品が変わった」
   };
   /** プランごとの、見張れる品数と、自動で確かめる間隔(分。0 = 自動なし) */
-  var LIMIT = { free: 5, light: 30, total: 100, business: 300 };
+  var PAID_UNI = (function () { var c = (typeof window !== 'undefined' && window.ZW_CONFIG) || {}; return 'PAID_UNIFORM' in c ? c.PAID_UNIFORM : { bulk: 500, listed: 300 }; })();   // config.js の PAID_UNIFORM(null で前の形: ライト30・総合100・業務300)
+  var LIMIT = { free: 5, light: PAID_UNI ? PAID_UNI.listed : 30, total: PAID_UNI ? PAID_UNI.listed : 100, business: 300 };
   var AUTO_MIN = { free: 0, light: 30, total: 15, business: 10 };
   var CALL_GAP = 2000, PAGE = 30;
 
