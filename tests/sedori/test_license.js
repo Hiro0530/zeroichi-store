@@ -88,6 +88,8 @@ const subtle = globalThis.crypto.subtle;
     const pg = await ctx.newPage();
     pg.on('pageerror', e => errs.push(url + ' ' + e.message));
     await pg.route('**/assets/config.js*', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: cfgTest }));
+    // 楽天の検索(ウォッチの自動の取り直しの試験)。外へは出さず、呼ばれた回数だけ数える
+    await pg.route('https://openapi.rakuten.co.jp/**', r => { world.rk = (world.rk || 0) + 1; return r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ Items: [] }) }); });
     await pg.route(WURL + '/**', async route => {
       const req = route.request(), u = new URL(req.url()), body = req.postDataJSON ? (req.method() === 'POST' ? req.postDataJSON() : {}) : {};
       world.seen.push(u.pathname);
@@ -264,6 +266,70 @@ const subtle = globalThis.crypto.subtle;
     eq(/通信できないため、まとめてチェックを使えません/.test(await txt(pg, '#bulk-st')), true, '通信できない: まとめては使えないと出す');
     eq(await over(pg), 0, '通信できない時の案内も375pxで横にはみ出さない');
     await pg.close(); world.coreOffline = false;
+
+    // ---- 2026-11-18: サーバーが答える機能(まとめての要約・帳簿の集計・ウォッチの自動の旗) ----
+    const bodiesOf = op => (world.coreBodies || []).filter(b => (b.ops || []).some(o => o.op === op));
+    const priced = n0 => codes(n0).split('\n').map((c, i) => c + ',' + (900 + i * 400) + ',6000').join('\n');
+    // (7) まとめての要約: ライトの証明 → 見込みの月の利益の上位と並べ替え。送るのは数字だけ
+    world.status = 'active'; world.tier = 'light';
+    pg = await open('rakuten-amazon/', { 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-dev': dev });
+    await pg.evaluate(() => SedoriLicense.renew(true)); await pg.waitForTimeout(300);
+    await pg.click('[data-tab="b"]'); await pg.fill('#bulk-text', priced(4)); await pg.click('#bulk-run'); await pg.waitForTimeout(1500);
+    const okN = Number(await pg.$eval('.bulk-sum b', b => b.textContent));
+    eq([/見込みの月の利益が大きい順/.test(await txt(pg, '#bulk-st')), await pg.$$eval('.bulk-top li', a => a.length), okN > 0], [true, okN, true], 'ライト: まとめての結果に、見込みの月の利益の上位(届く行の数だけ・10品まで)が出る');
+    const sb = bodiesOf('bulkSum').slice(-1)[0], sop = sb.ops[0];
+    eq([!!sb.pass, Object.keys(sop.rows[0]).sort(), /490237/.test(JSON.stringify(sop))], [true, ['amz', 'cnt', 'est', 'i', 'need', 'p', 'sold'], false], 'まとめての要約: Worker へ送るのは行ごとの数字だけ(JAN・品名は送らない)');
+    const firstTop = await pg.$eval('.bulk-top li b', b => b.textContent);
+    await pg.click('#bulk-order'); await pg.waitForTimeout(400);
+    eq((await pg.evaluate(() => JSON.parse(localStorage.getItem('zw-sedori:ra-bulk')).items[0].jan)), firstTop, '「一覧をこの順に並べる」で、一覧の先頭が上位の1品目になる');
+    eq(await over(pg), 0, 'まとめての要約は375pxで横にはみ出さない');
+    await pg.close();
+    // 鍵なし: 要約は作らない(Worker にも頼まない)。ライト以上の案内だけ
+    const sumCalls = bodiesOf('bulkSum').length;
+    pg = await open('rakuten-amazon/', {});
+    await pg.click('[data-tab="b"]'); await pg.fill('#bulk-text', priced(3)); await pg.click('#bulk-run'); await pg.waitForTimeout(1500);
+    eq([/ライト以上では、目標に届く行を/.test(await txt(pg, '#bulk-bad')), await pg.$$eval('.bulk-top', a => a.length), bodiesOf('bulkSum').length, await pg.$$eval('#bulk-st .bulk-act', a => a.length) <= 1], [true, 0, sumCalls, true], '鍵なし: 要約は出さず、Worker にも頼まない(案内は一覧の下に1文だけ)');
+    await pg.evaluate(() => { SedoriAccount.paid = () => true; SedoriAccount.tier = () => 'business'; document.dispatchEvent(new CustomEvent('sedori:acct')); }); await pg.waitForTimeout(600);
+    eq([await pg.$$eval('.bulk-top', a => a.length), /ライト以上では/.test(await txt(pg, '#bulk-bad'))], [0, true], '書き換え(有料と偽る): Worker が作らないので、要約は出ない');
+    await pg.close();
+
+    // (8) 帳簿の集計: 総合の証明 → 年の売上・月ごとの利益は Worker の答え。品名・取引相手の名前は送らない
+    const Y = new Date().getMonth() < 3 ? new Date().getFullYear() - 1 : new Date().getFullYear();
+    const bookLs = { ledger: [{ id: 'b1', date: Y + '-05-01', name: '帳簿の品', party: '楽天市場 Aショップ', sellerName: '売り手 花子', qty: 1, unit: 2000, saleDate: Y + '-05-20', salePrice: 7000, sellPrice: 7000, profit: 3000, sellTo: 'Amazon', route: 'rakuten' },
+      { id: 'b2', date: Y + '-05-02', name: 'まだの品', party: '山田 太郎', qty: 1, unit: 1000 }],
+    'bk-sales': [{ id: 'x1', date: Y + '-06-03', kind: 'order', ch: 'Amazon', gross: 5000, fee: 700, ship: 0, name: '売上の品' }], 'bk-exp': [{ id: 'e1', date: Y + '-06-30', amount: 1000, acct: '通信費', payee: '電話' }] };
+    world.tier = 'total';
+    pg = await open('daicho/', Object.assign({ 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-dev': dev }, bookLs));
+    await pg.evaluate(() => SedoriLicense.renew(true)); await pg.waitForTimeout(300);
+    let bookCalls = bodiesOf('books').length;
+    await pg.goto(B + 'books/#monthly'); await pg.waitForTimeout(1200);
+    const bsum = await txt(pg, '#bk-sum');
+    eq([/12,000/.test(bsum), /6,300/.test(bsum), await pg.$$eval('#bk-pane tr.mrow', a => a.length), bodiesOf('books').length - bookCalls], [true, true, 12, 1], '総合: 年の売上・利益と月ごとの表は Worker の答え(問い合わせは1回)');
+    const bk = bodiesOf('books').slice(-1)[0].ops[0], bkTxt = JSON.stringify(bk);
+    eq([bkTxt.includes('帳簿の品'), bkTxt.includes('売り手'), bkTxt.includes('Aショップ'), bkTxt.includes('山田'), bkTxt.includes('売上の品'), bkTxt.includes('電話'), bk.ledger.length, bk.ledger[0].pg], [false, false, false, false, false, false, 1, '楽天市場'], '帳簿の集計: 品名・取引相手・支払先は送らず、仕入れ先は先頭の語に丸める・売れていない行は送らない');
+    await pg.click('[data-seg="mo"] button[data-v="party"]'); await pg.waitForTimeout(300);
+    eq([/楽天市場/.test(await txt(pg, '#bk-pane')), bodiesOf('books').length - bookCalls], [true, 1], '仕入れ先別も同じ答えから(聞き直さない)');
+    eq(await over(pg), 0, '帳簿(Worker の集計)は375pxで横にはみ出さない');
+    world.coreOffline = true; await pg.reload(); await pg.waitForTimeout(1200);
+    eq([/通信できないため、集計を出せません/.test(await txt(pg, '#bk-pane')), /12,000/.test(await txt(pg, '#bk-sum'))], [true, false], '通信できない: 集計を出さない(端末で数え直さない)');
+    world.coreOffline = false;
+    world.tier = 'light'; await pg.evaluate(() => SedoriLicense.renew(true)); bookCalls = bodiesOf('books').length;
+    await pg.goto(B + 'books/#monthly'); await pg.waitForTimeout(1000);
+    eq([await booksMode(pg), /総合で/.test(await txt(pg, '#bk-sum')), /12,000/.test(await txt(pg, '#bk-pane')), bodiesOf('books').length - bookCalls], ['ライト', true, false, 0], 'ライト: 帳簿の数字は出さず、Worker にも頼まない');
+    await pg.close();
+
+    // (9) ウォッチの自動の取り直し: 自動にしてよいかは Worker の limits.watch。鍵なし・書き換えでは動かない
+    const watchLs = { keys: { rkApp: 'app', rkKey: 'key' }, watch2: [{ code: 'shop:item1', name: 'ウォッチの品', price: 1000, base: 1000, chk: { t: 1 } }], 'watch-chk-last': 0 };
+    world.tier = 'light'; world.rk = 0;
+    pg = await open('mercari-calc/', Object.assign({ 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-dev': dev }, watchLs));
+    await pg.evaluate(() => SedoriLicense.renew(true)); await pg.evaluate(() => SedoriWatchCheck.tryAuto()); await pg.waitForTimeout(1500);
+    eq(world.rk > 0, true, 'ライト: Worker が自動を許すと、ウォッチを自動で取り直す');
+    await pg.close();
+    world.rk = 0;
+    pg = await open('mercari-calc/', watchLs);
+    await pg.evaluate(() => { SedoriAccount.paid = () => true; SedoriAccount.tier = () => 'business'; SedoriUI.tier = () => 'business'; }); await pg.evaluate(() => SedoriWatchCheck.tryAuto()); await pg.waitForTimeout(4000);
+    eq(world.rk, 0, '鍵なしで有料と偽っても、Worker が自動を許さないので取り直さない');
+    await pg.close();
     eq(errs, [], '画面の誤り(pageerror)なし');
     console.log(`OK 利用の鍵 ${n}件`);
   } catch (e) { console.error(e); process.exitCode = 1; }

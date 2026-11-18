@@ -5,7 +5,7 @@ import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 import W from '../src/index.js';
 import { signPass } from '../src/key.js';
-import { handleCore, LIMITS, prepTable, TTL_SEC } from '../src/core.js';
+import { handleCore, LIMITS, prepTable, TTL_SEC, bulkSummary, booksYear } from '../src/core.js';
 
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
@@ -90,7 +90,7 @@ const ROWS = [
     r = await call(JSON.stringify({ pass: 'x.y', device: 'devaaaa1', ops: [{ op: 'prep', rows: ROWS }] }));
     const t = await r.text();
     eq([r.status, /pass-invalid/.test(t), t.includes('品A'), t.includes('KEEPA')], [401, true, false, false], '断る時の答えに、送られた中身を入れない');
-    r = await call('{' + '"a":"' + 'x'.repeat(600 * 1024) + '"}');
+    r = await call('{' + '"a":"' + 'x'.repeat(1100 * 1024) + '"}');
     eq([r.status, (await r.json()).code], [413, 'too-big'], '大きすぎる問い合わせは読まない');
     r = await call('not json');
     eq(r.status, 400, '形の違う問い合わせ');
@@ -100,6 +100,47 @@ const ROWS = [
   eq(logs, [], '問い合わせの中身を記録しない(console に何も書かない)');
   const src = readFileSync(new URL('../src/core.js', import.meta.url), 'utf8');
   eq([/console\./.test(src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')), /\b(PAID_JS|KV|put\(|fetch\()/.test(src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, ''))], [false, false], '芯の部品は記録も保存も外への通信もしない(作りで守る)');
+}
+
+/* ---------- 5. 2026-11-18: ウォッチの自動の旗・まとめての結果の要約(ライト)・帳簿の集計(総合) ---------- */
+{
+  const f = await C({ ops: [{ op: 'limits' }] });
+  eq(f.results[0].watch, 0, '鍵なし: ウォッチの自動の取り直しは無し(旗はサーバーが決める)');
+  const l = await C({ pass: await pass('light'), device: 'devaaaa1', ops: [{ op: 'limits' }] });
+  eq(l.results[0].watch, 50, 'ライトの証明: ウォッチの自動は1回50件');
+  const forged = await C({ ops: [{ op: 'limits', watch: 50 }], watch: 50 });
+  eq(forged.results[0].watch, 0, '「自動あり」と書いて送っても、証明が無ければ自動なし');
+
+  const rows = [{ i: 0, p: 500, need: 300, sold: 60, cnt: 2 }, { i: 1, p: 800, need: 300 }, { i: 2, p: 100, need: 300, sold: 5 }, { i: 3, est: true, p: 0, need: 300 },
+    { i: 4, p: 400, need: 300, sold: 90, cnt: 0, amz: true }, { i: 5, p: 350, need: 300, sold: 3, cnt: 9, name: '品名は来ても使わない', jan: '4901234567894', keepaKey: 'KEEPA-SECRET-9' }];
+  const none = await C({ ops: [{ op: 'bulkSum', rows }] });
+  eq(none.results[0], { op: 'bulkSum', error: 'need-pass', need: 'light' }, '鍵なし: まとめての要約は作らない');
+  const r = await C({ pass: await pass('light'), device: 'devaaaa1', ops: [{ op: 'bulkSum', rows }] });
+  const s = r.results[0];
+  eq(s.n, { ok: 4, ng: 1, unk: 1 }, '要約: 届く・届かない・未入力の数');
+  eq(s.top.map(x => x.i), [0, 4, 5, 1], '上位: 見込みの月の利益の順(売れ行きの数字のある行が先、無い行は後)');
+  eq([s.top[0].take, s.top[0].month, s.top[1].take, s.top[2].take], [20, 10000, 15, 1], '月に取れそうな個数 = 月の販売÷(出品者+1)・30個まで・Amazon本体が販売中なら半分・1個より少なくしない');
+  eq(s.order, [0, 4, 5, 1, 2, 3], '並べ替え: 届く行(見込みの月の利益順)→ 届かない行(利益順)→ 未入力');
+  eq(/売れ行きの数字なし/.test(s.top[3].why.join('')), true, '売れ行きの数字が無い行は、そう書く');
+  const all = JSON.stringify(r);
+  eq([all.includes('品名は来ても'), all.includes('4901234567894'), all.includes('KEEPA')], [false, false, false], '要約の答えに、品名・JAN・キーを入れない');
+  eq(bulkSummary(new Array(700).fill(rows[0])).order.length, 500, '要約は1回500行まで');
+
+  const book = { year: 2026,
+    ledger: [{ id: 'a', qty: 2, unit: 1000, saleDate: '2026-03-05', salePrice: 2500, sellPrice: 2500, profit: 600, route: 'rakuten', pg: '楽天市場', ch: 'Amazon', name: '品名', party: '山田 太郎 東京都' },
+      { id: 'b', qty: 1, unit: 3000, saleDate: '2026-03-20', salePrice: 5000, route: 'mercari', pg: 'メルカリ', ch: 'メルカリ' }, { id: 'c', qty: 1, unit: 800, wait: true, saleDate: '2026-04-01', salePrice: 1500 }],
+    sales: [{ id: 's1', date: '2026-04-10', kind: 'order', ledgerId: 'b', ch: 'メルカリ', gross: 5200, fee: 520, ship: 700 }, { id: 's2', date: '2026-04-11', kind: 'order', ch: 'Amazon', gross: 3000, fee: 450 },
+      { id: 's3', date: '2026-04-12', kind: 'transfer', gross: 99999 }],
+    expenses: [{ date: '2026-03-31', amount: 1000 }, { date: '2026-04-30', amount: 2000, biz: 50 }, { date: '2025-12-31', amount: 5000 }] };
+  const tl = await C({ pass: await pass('light'), device: 'devaaaa1', ops: [{ op: 'books', ...book }] });
+  eq(tl.results[0].error, 'need-plan', 'ライトの証明: 帳簿の集計は作らない(総合から)');
+  const b = (await C({ pass: await pass('total'), device: 'devaaaa1', ops: [{ op: 'books', ...book }] })).results[0];
+  const mar = b.months[2], apr = b.months[3];
+  eq([b.months.length, mar.ym, mar.sales, mar.cogs, mar.fee, mar.exp, mar.profit, mar.est], [12, '2026-03', 5000, 2000, 1800, 1000, 200, 1], '3月: 台帳で売れた行(売上と結び付いていない分)から見込み利益で数える・経費を引く');
+  eq([apr.sales, apr.cogs, apr.fee, apr.ship, apr.exp, apr.profit, apr.nocost], [8200, 3000, 970, 700, 1000, 2530, 1], '4月: 取り込んだ売上(台帳と結び付いた分は原価つき・振込みは数えない・事業の分だけ経費)');
+  eq([b.total.sales, b.total.profit, b.groups.party.map(g => g.key).sort()], [13200, 2730, ['(台帳と未照合)', 'メルカリ', '楽天市場']], '年の合計と仕入れ先ごと');
+  eq(JSON.stringify(b).includes('山田'), false, '帳簿の答えに、取引相手の名前・品名を入れない(読まない欄)');
+  eq(booksYear({ year: '2026', ledger: 'x', sales: null }).total.sales, 0, '形の違う中身でも落ちない');
 }
 
 console.log(`OK 有料の機能の芯 ${n}件`);
