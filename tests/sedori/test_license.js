@@ -237,7 +237,7 @@ const subtle = globalThis.crypto.subtle;
     pg = await open('daicho/', { 'lic-code': CODE, 'lic-sid': 'sub_T', 'lic-dev': dev });
     await pg.evaluate(() => SedoriLicense.renew(true)); await pg.waitForTimeout(400);
     const lim = await pg.evaluate(() => SedoriAccount.limits(true));
-    eq([lim.tier, lim.listed, lim.bulk, lim.auto], ['total', 100, 500, 15], '正しい証明(総合): 上限は Worker の答え');
+    eq([lim.tier, lim.listed, lim.bulk, lim.auto], ['total', 300, 500, 15], '正しい証明(総合): 上限は Worker の答え');
     const before = world.coreBodies.length;
     await pg.evaluate(() => { localStorage.setItem('zw-sedori:ledger', JSON.stringify([{ id: 'r1', date: '2026-11-10', name: '納品の品', ship: 'fba', status: '仕入れ済', qty: 1, sellerName: '相手の名前' }])); SedoriAccount.tier = () => 'business'; });
     const res = await pg.evaluate(() => SedoriAccount.core([{ op: 'prep', rows: [{ id: 'r1', date: '2026-11-10', name: '納品の品', ship: 'fba', status: '仕入れ済' }], today: '2026-11-17' }]));

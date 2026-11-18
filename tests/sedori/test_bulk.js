@@ -108,7 +108,7 @@ function jan(i) {
   eq([p.items.length, p.bad.length, p.total], [1, 1, 2], '見出しとして飛ばすのは最初の1行だけ。2行目の記号だけの行は読めなかった行');
 
   // 5. プランごとの行数
-  eq([C.bulkLimit('free'), C.bulkLimit('light'), C.bulkLimit('total'), C.bulkLimit('business'), C.bulkLimit('x')], [20, 100, 500, 500, 20], '無料20・ライト100・総合と業務500');
+  eq([C.bulkLimit('free'), C.bulkLimit('light'), C.bulkLimit('total'), C.bulkLimit('business'), C.bulkLimit('x')], [20, 500, 500, 500, 20], '無料20・有料の段はどれも500(2026-11-18 そろえた。config.js の PAID_UNIFORM)');
   const many = C.parseCodes(Array.from({ length: 25 }, (_, i) => jan(i)).join('\n')).items;
   eq(many.length, 25, '25行を読む');
   let pl = B.plan(many, C.bulkLimit('free'));

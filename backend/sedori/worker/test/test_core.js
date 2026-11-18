@@ -5,7 +5,7 @@ import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 import W from '../src/index.js';
 import { signPass } from '../src/key.js';
-import { handleCore, LIMITS, prepTable, TTL_SEC, bulkSummary, booksYear } from '../src/core.js';
+import { handleCore, LIMITS, makeLimits, PAID_UNIFORM, prepTable, TTL_SEC, bulkSummary, booksYear, MAX_OPS } from '../src/core.js';
 
 let n = 0;
 function eq(a, b, msg) { assert.deepStrictEqual(a, b, `${msg}: 実際 ${JSON.stringify(a)} / 期待 ${JSON.stringify(b)}`); n++; }
@@ -34,7 +34,11 @@ const ROWS = [
   eq([r.tier, r.results[0].bulk, r.results[0].listed, r.results[0].auto, r.ttl], ['free', 20, 5, 0, TTL_SEC], '鍵なし: 無料の上限(まとめて20行・在庫番5品・自動なし)');
   const b = await C({ pass: await pass('business'), device: 'devaaaa1', ops: [{ op: 'limits' }] });
   eq([b.tier, b.results[0].bulk, b.results[0].listed, b.results[0].auto], ['business', 500, 300, 10], '業務の証明: 業務の上限');
-  eq([LIMITS.light.bulk, LIMITS.total.listed], [100, 100], 'ライトは100行・総合は100品');
+  eq([LIMITS.light.bulk, LIMITS.light.listed, LIMITS.total.bulk, LIMITS.total.listed, LIMITS.business.bulk, LIMITS.business.listed], [500, 300, 500, 300, 500, 300], '有料の段どうし: まとめて500行・在庫番300品(差をなくした。2026-11-18)');
+  eq([LIMITS.free.bulk, LIMITS.free.listed, LIMITS.light.auto, LIMITS.total.auto, LIMITS.business.auto], [20, 5, 30, 15, 10], '無料の20行・5品と、自動の確かめの間隔(段ごと)は変えない');
+  eq([PAID_UNIFORM], [{ bulk: 500, listed: 300 }], '設定1か所(PAID_UNIFORM)');
+  const old = makeLimits(null);
+  eq([old.light.bulk, old.light.listed, old.total.bulk, old.total.listed, old.business.bulk, old.business.listed, old.free.bulk], [100, 30, 500, 100, 500, 300, 20], 'PAID_UNIFORM を null にすれば、前の形(ライト100行・30品/総合500行・100品/業務500行・300品)に戻る');
   const near = await C({ pass: await pass('total', { exp: NOW + 90e3 }), device: 'devaaaa1', ops: [{ op: 'limits' }] });
   eq(near.ttl, 90, '答えを置いてよい時間は、証明の期限より長くしない');
   // 端末側の書き換え: 段の名前だけを送っても、証明が無ければ無料のまま
@@ -141,6 +145,28 @@ const ROWS = [
   eq([b.total.sales, b.total.profit, b.groups.party.map(g => g.key).sort()], [13200, 2730, ['(台帳と未照合)', 'メルカリ', '楽天市場']], '年の合計と仕入れ先ごと');
   eq(JSON.stringify(b).includes('山田'), false, '帳簿の答えに、取引相手の名前・品名を入れない(読まない欄)');
   eq(booksYear({ year: '2026', ledger: 'x', sales: null }).total.sales, 0, '形の違う中身でも落ちない');
+}
+
+/* ---------- 5. 帳簿の計算(2026-11-18 端末から移した分)。決まりの検算は tests/sedori/test_books_calc.js(乱数) ---------- */
+{
+  const L = [{ id: 'a', date: '2026-01-10', qty: 1, unit: 2000, sellPrice: 3000, profit: 400, ch: 'Amazon', ik: 1, pk: 1, xk: 2, cond: '新品' }, { id: 'b', date: '2026-02-10', saleDate: '2026-03-01', qty: 1, unit: 1000, salePrice: 2000, ch: 'メルカリ', ik: 2, pk: 3, xk: 4, cond: '中古', idReq: true, hasName: true }];
+  const body = (t, extra) => ({ pass: undefined, device: 'devaaaa1', ops: [{ op: 'stale', ledger: L, cfg: { days: 30 }, today: '2026-04-01' }, ...(extra || [])] });
+  const ask = async (t, ops) => (await C({ pass: await pass(t), device: 'devaaaa1', ops })).results;
+  const stOp = { op: 'stale', ledger: L, cfg: { days: 30 }, today: '2026-04-01' }, taxOp = { op: 'tax', year: 2026, ledger: L, sales: [], expenses: [], set: { tax: 'exempt' } };
+  eq((await ask('light', [stOp]))[0], { op: 'stale', error: 'need-plan', need: 'total' }, 'ライト: 売れ残りの判定は作らない(総合から)');
+  const s1 = (await ask('total', [stOp, taxOp]));
+  eq([s1[0].rows.map(x => [x.id, x.days, x.over, x.be, x.suggest]), s1[1].error, s1[1].need], [[['a', 81, true, 2560, 2700]], 'need-plan', 'business'], '総合: 売れ残りは出る・申告の数字は業務から');
+  const s2 = await ask('business', [taxOp, { op: 'journal', year: 2026, ledger: L, sales: [], expenses: [], set: { tax: 'exempt' } }, { op: 'kobutsu', year: 2026, ledger: L }, { op: 'stock', ledger: L, cutoff: '2026-12-31', set: { method: 'last' } }, { op: 'transition', year: 2026, ledger: L, expenses: [], set: {} }, { op: 'export', soft: 'mf', year: 2026, ledger: L, sales: [], expenses: [], set: { tax: 'exempt' } }]);
+  eq(s2.map(x => !x.error), [true, true, true, true, true, true], '業務: 申告の数字・仕訳帳・古物商特例・棚卸・経過措置・書き出しが出る(1回の問い合わせに6件まで)');
+  eq(s2[2].rows.map(x => [x.id, x.state, x.idReq, x.need]), [['a', 'new', undefined, []], ['b', 'missing', true, ['売り手の氏名', '売り手の住所']]], '古物商特例: 売り手の確認が要るのに氏名・住所の印が無ければ「足りない」');
+  eq(JSON.stringify(s2[1].entries).includes('{n}'), true, '仕訳帳の摘要は、名前を入れる所({n})だけを残した型で返す(名前はサーバーに来ない)');
+  eq((await C({ device: 'x', ops: new Array(MAX_OPS + 1).fill({ op: 'limits' }) }).catch(e => e)).code, 'bad-ops', '1回の問い合わせは6件まで');
+  // 見本(demo)の受け付け: 鍵なしでも見本の大きさ以内なら答える。印が無い・大きすぎる時は断る
+  const free = async o => (await C({ ops: [o] })).results[0];
+  eq([(await free({ ...stOp, demo: true })).rows != null, (await free(stOp)).error, (await free({ ...stOp, demo: true, ledger: new Array(301).fill(L[0]) })).error], [true, 'need-pass', 'need-pass'], '見本: 印と大きさ(300行)以内だけ、鍵なしで答える');
+  // 答えに送られた名前を入れない(読まない欄)
+  const sneaky = await ask('business', [{ op: 'journal', year: 2026, ledger: [{ ...L[0], name: '秘密の品名XYZ', party: '山田 太郎XYZ', pName: '氏名XYZ', pAddr: '住所XYZ' }], sales: [{ id: 's', date: '2026-02-01', kind: 'order', gross: 100, name: '売上名XYZ' }], expenses: [{ id: 'e', date: '2026-02-02', amount: 100, payee: '支払先XYZ', memo: 'メモXYZ', acct: '雑費' }], set: { tax: 'exempt' } }]);
+  eq(JSON.stringify(sneaky).includes('XYZ'), false, '送られても読まない欄(品名・相手の名前・住所・メモ・支払先)は、答えに出ない');
 }
 
 console.log(`OK 有料の機能の芯 ${n}件`);

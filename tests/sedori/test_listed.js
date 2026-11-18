@@ -81,7 +81,7 @@ eq([a.items[1].src[0].code, a.items[1].src[0].base], ['m:1', 1000], '送り込�
 eq(L.addIncoming(a.items, [{ jan: '4901234500012', sku: 'NEW-1' }], 'bulk', 5, T).items.filter(x => x.sku === 'NEW-1').length, 1, '送り込み: 同じJANの品に足りないSKUを埋める');
 eq(L.addIncoming(a.items, [{ jan: '4901234500099' }], 'bulk', 2, T).over, 1, '送り込み: 上限超えは入れない');
 // 見張れる品数
-eq([L.LIMIT.free, L.LIMIT.light, L.LIMIT.total, L.LIMIT.business], [5, 30, 100, 300], '見張れる品数 無料5・ライト30・総合100・業務300');
+eq([L.LIMIT.free, L.LIMIT.light, L.LIMIT.total, L.LIMIT.business], [5, 300, 300, 300], '見張れる品数 無料5・有料はどの段も300(2026-11-18 そろえた)');
 const many = Array.from({ length: 7 }, (_, i) => mk({ id: 'm' + i, sku: 'S' + i }));
 eq(L.summarize(many, { now: T, set: {}, limit: 5 }).over.length, 2, '上限の外の品は見張らない');
 eq(L.pickRound(many, 5).length, 5, '確かめる品は上限まで');

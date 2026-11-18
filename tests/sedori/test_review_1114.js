@@ -79,9 +79,9 @@ function MIN() { return M; }
   eq(miss, [], '上の帯のある全ページに、帯の印 #hd-mz と、それを描く listed.js がある(scan・books の手書きページも)');
   const rd = p => fs.readFileSync(path.join(root, SD, p, 'index.html'), 'utf8');
   const plans = rd('plans'), terms = rd('terms');
-  ok(/在庫番/.test(plans) && /5品・手で確かめる/.test(plans) && /30品/.test(plans) && /100品/.test(plans) && /300品/.test(plans), '料金表に在庫番の品数(5・30・100・300)がある');
+  ok(/在庫番/.test(plans) && /5品・手で確かめる/.test(plans) && /300品・30分おきに自動/.test(plans) && /300品・15分おきに自動/.test(plans) && /300品・10分おきに自動/.test(plans), '料金表に在庫番の品数(無料5・有料はどの段も300)がある');
   ok(/手持ちの在庫/.test(plans), '料金表の「在庫」の行は「手持ちの在庫」');
-  ok(/在庫番/.test(terms) && /無料5・ライト30・総合100・業務300/.test(terms) && /ページを開いている間だけ/.test(terms) && /損害について、当方は責任を負いません/.test(terms), '規約に、在庫番の品数・開いている間だけ・責任の範囲がある');
+  ok(/在庫番/.test(terms) && /無料5・ライト300・総合300・業務300/.test(terms) && /ページを開いている間だけ/.test(terms) && /損害について、当方は責任を負いません/.test(terms), '規約に、在庫番の品数・開いている間だけ・責任の範囲がある');
   const bad = /無在庫|ドロップシッピング|利益が高い|稼げる|必ず/;
   ok(!bad.test(plans.replace(/<script[\s\S]*?<\/script>/g, '')) && !bad.test(terms), '料金表・規約に使わない言葉が無い');
   eq(/ledger-plus\.css/.test(fs.readFileSync(path.join(root, SD, 'sw.js'), 'utf8')), false, 'sw.js の一覧に実在しない ledger-plus.css が無い');

@@ -13,6 +13,8 @@
  *  - Keepa・楽天のキーは受け取らない(どの頼みにも鍵の欄は無い。名前が key/keepa/rk… の欄が来ても読まない)。
  */
 import { verifyPass, cleanDevice } from './key.js';
+import * as BK from './books_calc.js';
+export { booksYear } from './books_calc.js';
 
 export const MAX_BODY = 1024 * 1024;   // 1回に受ける大きさ(納品リストの2,000行で約0.4MB。帳簿の集計は台帳・売上・経費の集計の欄だけを送る。1MB で約6,000行。2026-11-18 に 512KB から。無料の枠の CPU 10ms に収まるかは本番で測る)
 export const MAX_OPS = 6;
@@ -23,12 +25,20 @@ const RANK = { free: 0, light: 1, total: 2, business: 3 };
 /* ------------------------------------------------------------------ 上限(無料の範囲を含む。ここだけで決める) */
 /** まとめてチェックの1回の行数・在庫番の品数・在庫番の自動の確かめの間隔(分。0 = 自動なし)・
  *  ウォッチの自動の取り直しで1回に確かめる件数(0 = 自動なし。2026-11-18 足した。間隔は端末の6時間のまま) */
-export const LIMITS = {
+const LIMITS_SPLIT = {   // 2026-11-17 までの形(段ごとに行数・品数が違う)
   free: { bulk: 20, listed: 5, auto: 0, watch: 0 },
   light: { bulk: 100, listed: 30, auto: 30, watch: 50 },
   total: { bulk: 500, listed: 100, auto: 15, watch: 50 },
   business: { bulk: 500, listed: 300, auto: 10, watch: 50 }
 };
+/** 設定1か所: 有料の段どうしの「まとめての行数・在庫番の品数」をそろえる(2026-11-18。plan_regroup の勧め・オーナーの最終の返事待ち)。
+ *  前の形に戻すには null にする(この1行だけ。料金ページの表は build_pages.py の PAID_UNIFORM も false に) */
+export const PAID_UNIFORM = { bulk: 500, listed: 300 };
+const withUniform = (t, u) => u ? Object.fromEntries(Object.entries(t).map(([k, v]) => [k, k === 'free' ? v : { ...v, bulk: u.bulk, listed: u.listed }])) : t;
+/** 無料と有料の線は変えない(無料の20行・5品は目安のまま)。auto(自動の確かめの間隔)は段で違うまま */
+export const LIMITS = withUniform(LIMITS_SPLIT, PAID_UNIFORM);
+/** 試験用: 別の設定での上限(null = 前の形) */
+export const makeLimits = u => withUniform(LIMITS_SPLIT, u);
 
 /* ------------------------------------------------------------------ 納品リスト(業務) */
 const PREP_HEAD = ['仕入日', '仕入れ先', '注文番号', '追跡番号', '品名', 'JAN', 'ASIN', '数量', '新品/中古', '受取先・入庫ID', 'メモ'];
@@ -93,68 +103,19 @@ export function bulkSummary(rows) {
   return { n, order: sorted.map(x => x.i), top, topMonth: top.reduce((t, x) => t + x.month, 0), rule: '見込みの月の利益 = 1個の利益(ポイント抜き)× 月に取れそうな個数(月の販売 ÷ (出品者+1)、1〜30個。Amazon本体が販売中なら半分)' };
 }
 
-/* ------------------------------------------------------------------ 帳簿: 月ごとの利益と、ルート・仕入れ先・売り先ごとの集計(総合以上。2026-11-18)
- * 計算は books/assets/books-core.js の events・monthly・groupBy と同じ(試験 tests/sedori/test_core_server.js で同じ答えを確かめる)。
- * 端末から来るのは、集計に要る欄だけ。品名・取引相手の名前・住所は来ない(仕入れ先は端末で「楽天市場」などの先頭の語に丸めた pg、売り先は ch)。 */
-export const MAX_BOOK_ROWS = 20000;
-const L_FIELDS = ['id', 'qty', 'unit', 'saleDate', 'salePrice', 'sellPrice', 'profit', 'wait', 'route', 'pg', 'ch'];
-const S_FIELDS = ['id', 'date', 'kind', 'ledgerId', 'ch', 'gross', 'disc', 'fee', 'ship', 'other', 'withheld', 'qty'];
-const E_FIELDS = ['date', 'amount', 'biz'];
-function pick(rows, fields) {
-  return (Array.isArray(rows) ? rows : []).slice(0, MAX_BOOK_ROWS).filter(r => r && typeof r === 'object').map(r => {
-    const o = {}; for (const k of fields) { const v = r[k]; if (v == null) continue; o[k] = typeof v === 'boolean' || typeof v === 'number' ? v : String(v).slice(0, 80); } return o;
-  });
-}
-const rnd = n => Math.round(Number(n) || 0);
-function bizAmount(e) { const b = e.biz == null || e.biz === '' ? 100 : Number(e.biz); return rnd((Number(e.amount) || 0) * Math.max(0, Math.min(100, b)) / 100); }
-function bookEvents(L, S) {
-  const byId = {}, linked = {}, out = [];
-  L.forEach(r => { byId[r.id] = r; });
-  S.forEach(s => { if (s.ledgerId) linked[s.ledgerId] = 1; });
-  S.forEach(s => {
-    if (s.kind === 'transfer') return;
-    const lr = s.ledgerId ? byId[s.ledgerId] : null;
-    const cogs = lr && (s.kind === 'order' || s.kind === 'sale') ? rnd((Number(lr.unit) || 0) * (Number(lr.qty) || 1)) : 0;
-    out.push({ date: s.date, ch: s.ch || 'その他', route: lr ? (lr.route || '(ルートなし)') : (s.ch || 'その他') + '(台帳と未照合)', party: lr ? (lr.pg || '(仕入れ先なし)') : '(台帳と未照合)',
-      sales: rnd((Number(s.gross) || 0) + (Number(s.disc) || 0)), cogs, fee: rnd(s.fee), ship: rnd(s.ship), other: rnd(s.other) + rnd(s.withheld), est: false, nocost: !lr && (s.kind === 'order' || s.kind === 'sale') });
-  });
-  L.forEach(r => {
-    if (r.wait || !r.saleDate || linked[r.id]) return;
-    const q = Number(r.qty) || 1, sale = rnd((Number(r.salePrice) || 0) * q), cost = rnd((Number(r.unit) || 0) * q);
-    const pf = r.profit === '' || r.profit == null ? null : Number(r.profit) * q;
-    const plan = rnd((Number(r.sellPrice) || Number(r.salePrice) || 0) * q);
-    out.push({ date: r.saleDate, ch: r.ch || 'その他', route: r.route || '(ルートなし)', party: r.pg || '(仕入れ先なし)', sales: sale, cogs: cost, fee: pf == null ? 0 : Math.max(0, plan - cost - rnd(pf)), ship: 0, other: 0, est: true, nocost: false });
-  });
-  return out;
-}
-const AGG = ['sales', 'cogs', 'fee', 'ship', 'other', 'exp', 'n', 'est', 'nocost'];
-function emptyAgg() { return { sales: 0, cogs: 0, fee: 0, ship: 0, other: 0, exp: 0, profit: 0, n: 0, est: 0, nocost: 0 }; }
-function addEv(a, e) { a.sales += e.sales; a.cogs += e.cogs; a.fee += e.fee; a.ship += e.ship; a.other += e.other; a.n++; if (e.est) a.est++; if (e.nocost) a.nocost++; }
-function finish(a) { a.gross = a.sales + a.other - a.cogs - a.fee - a.ship; a.profit = a.gross - a.exp; a.rate = a.sales ? a.profit / a.sales : 0; a.grate = a.sales ? a.gross / a.sales : 0; return a; }
-export function booksYear(o) {
-  const y = /^\d{4}$/.test(String(o && o.year)) ? String(o.year) : String(new Date().getUTCFullYear());
-  const L = pick(o && o.ledger, L_FIELDS), S = pick(o && o.sales, S_FIELDS), E = pick(o && o.expenses, E_FIELDS);
-  const ev = bookEvents(L, S), months = {};
-  for (let m = 1; m <= 12; m++) months[y + '-' + String(m).padStart(2, '0')] = emptyAgg();
-  ev.forEach(e => { const k = String(e.date).slice(0, 7); if (months[k]) addEv(months[k], e); });
-  E.forEach(x => { const k = String(x.date).slice(0, 7); if (months[k]) months[k].exp += bizAmount(x); });
-  const total = emptyAgg();
-  const list = Object.keys(months).sort().map(k => { const a = finish(months[k]); a.ym = k; AGG.forEach(f => { total[f] += a[f]; }); return a; });
-  const groups = {};
-  for (const key of ['route', 'party', 'ch']) {
-    const g = {};
-    ev.forEach(e => { if (String(e.date).slice(0, 4) !== y) return; const k = e[key] || '(なし)'; if (!g[k]) g[k] = emptyAgg(); addEv(g[k], e); });
-    groups[key] = Object.keys(g).map(k => { const a = finish(g[k]); a.key = k; return a; }).sort((a, b) => b.sales - a.sales);
-  }
-  return { year: Number(y), months: list, total: finish(total), groups };
-}
-
 /* ------------------------------------------------------------------ 頼みの一覧 */
 const OPS = {
   limits: { need: 'free', run: (o, tier) => ({ tier, ...LIMITS[tier] }) },
   prep: { need: 'business', run: o => prepTable(o.rows, o.today) },
   bulkSum: { need: 'light', run: o => bulkSummary(o.rows) },
-  books: { need: 'total', run: o => booksYear(o) }
+  books: { need: 'total', demo: true, run: o => BK.booksYear(o) },
+  stale: { need: 'total', demo: true, run: o => BK.stale(o) },
+  stock: { need: 'business', demo: true, run: o => BK.stockOp(o) },
+  tax: { need: 'business', demo: true, run: o => BK.taxOp(o) },
+  journal: { need: 'business', demo: true, run: o => BK.journalOp(o) },
+  export: { need: 'business', demo: true, run: o => BK.exportOp(o) },
+  kobutsu: { need: 'business', demo: true, run: o => BK.kobutsuOp(o) },
+  transition: { need: 'business', demo: true, run: o => BK.transitionOp(o) }
 };
 
 const err = (msg, status, code) => { const e = new Error(msg); e.status = status; e.code = code; return e; };
@@ -175,7 +136,7 @@ export async function handleCore(body, env, now = Date.now()) {
   const results = ops.map(o => {
     const def = OPS[o && o.op];
     if (!def) return { op: o && o.op, error: 'unknown' };
-    if ((RANK[tier] || 0) < (RANK[def.need] || 0)) return { op: o.op, error: tier === 'free' ? 'need-pass' : 'need-plan', need: def.need };
+    if ((RANK[tier] || 0) < (RANK[def.need] || 0) && !(def.demo && BK.isDemoShape(o))) return { op: o.op, error: tier === 'free' ? 'need-pass' : 'need-plan', need: def.need };
     try { return { op: o.op, ...def.run(o, tier) }; } catch { return { op: o.op, error: 'failed' }; }
   });
   const ttl = Math.max(0, Math.min(TTL_SEC, exp ? Math.floor((exp - now) / 1000) : TTL_SEC));

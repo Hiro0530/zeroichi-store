@@ -34,7 +34,7 @@ const pick = (r) => r.shops.map(s => [s.role, s.state, s.price, s.fail]);
 
 (async () => {
   // 1. 上限と店の並び
-  eq(['free', 'light', 'total', 'business', 'なぞ'].map(W.stockLimit), [5, 30, 100, 300, 5], '件数の上限はプランごと');
+  eq(['free', 'light', 'total', 'business', 'なぞ'].map(W.stockLimit), [5, 300, 300, 300, 5], '件数の上限はプランごと');
   eq(W.stockShops({ sources: [{ code: 'a:1' }, { code: '' }, { code: 'b:1' }, { code: 'a:1' }, { code: 'c:1' }, { code: 'd:1' }, { code: 'e:1' }] }).map(s => s.role + s.code),
     ['maina:1', 'subb:1', 'subc:1'], '主を含めて3店まで(主1+控え2)。商品コードの無いもの・重なりは外す');
 

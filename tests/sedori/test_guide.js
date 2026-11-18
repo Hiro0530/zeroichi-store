@@ -138,10 +138,10 @@ eq([tocIds.every(m => fq.includes(`<h2 id="${m[1]}">`)), tocIds.reduce((t, m) =>
 const fqT = text(fq.slice(fq.indexOf('<h1>'), fq.indexOf('class="box"')));
 eq(BAD.test(fqT), false, 'よくある質問: 断定・あおりの言葉が0件');
 eq(allGuide.map(h => /無在庫|利益が高い|稼げ|必ず|利益が残|利益を残せ|もうか|儲/.test(text(h))).filter(Boolean).length, 0, '手引きの全ページ: 使わない言葉が0件');
-eq([/ページを開いている間だけ/, /寝ている間/, /直接送ってもらう売り方[\s\S]*使えません/, /無料5、ライト30、総合100、業務300/, /無料20行、ライト100行、総合と業務は500行/, /売り切れとも扱いません/].map(r => r.test(fqT)), [true, true, true, true, true, true], 'よくある質問: 見張りで出来ること・出来ないことと、件数が書いてある');
+eq([/ページを開いている間だけ/, /寝ている間/, /直接送ってもらう売り方[\s\S]*使えません/, /無料5、ライト・総合・業務はどれも300/, /無料20行、ライト・総合・業務はどれも500行/, /売り切れとも扱いません/].map(r => r.test(fqT)), [true, true, true, true, true, true], 'よくある質問: 見張りで出来ること・出来ないことと、件数が書いてある');
 eq([/公式の案内で確かめてください/.test(fqT), /このページでは判断しません/.test(fqT), /商品を選ぶこと、売れる見込みを示すことはしていません/.test(fqT), /出典と照らして確認しています|最終確認日/.test(text(fq))], [true, true, true, false], 'よくある質問: 法律と各サービスの決まりは公式で確かめる・商品は選ばない・照合済みと書かない');
 const W7 = require(path.join(root, SD, 'assets/watch-check.js')), C7 = require(path.join(root, SD, 'assets/calc.js'));
-eq([['free', 'light', 'total', 'business'].map(W7.stockLimit), ['free', 'light', 'total', 'business'].map(C7.bulkLimit), W7.STOCK_SUBS, W7.CALL_GAP, W7.AUTO_GAP / 3600000, W7.AUTO_MAX, W7.FREE_PER_DAY], [[5, 30, 100, 300], [20, 100, 500, 500], 2, 2000, 6, 50, 20], 'よくある質問の数字が、部品の値と同じ');
+eq([['free', 'light', 'total', 'business'].map(W7.stockLimit), ['free', 'light', 'total', 'business'].map(C7.bulkLimit), W7.STOCK_SUBS, W7.CALL_GAP, W7.AUTO_GAP / 3600000, W7.AUTO_MAX, W7.FREE_PER_DAY], [[5, 300, 300, 300], [20, 500, 500, 500], 2, 2000, 6, 50, 20], 'よくある質問の数字が、部品の値と同じ');
 eq([/<h1>利益計算と値付けの考え方/.test(nd), /<title>利益計算と値付けの考え方/.test(nd), idx.includes('<b>利益計算と値付けの考え方'), fs.existsSync(path.join(root, SD, 'guide/neduke/index.html'))], [true, true, true, true], '値付けのページの題を替えた(住所はそのまま)');
 eq([/a\.qa|\.qa section\{/.test(css), /\.toc a\{[^}]*min-height:44px/.test(css)], [true, true], 'よくある質問の見た目(目次の押す所は44px)');
 const scanSrc = read('assets/scan.js');
