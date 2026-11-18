@@ -139,7 +139,7 @@
   }
   /** Worker の答えを受け取る(証明を確かめてから置く) */
   function take(j) {
-    var keep = { status: j.status, planKey: j.planKey, planName: j.planName, amount: j.amount, tier: j.tier, next: j.next, end: j.end, devices: j.devices || [], limit: j.limit, at: now() };
+    var keep = { provider: j.provider || 'stripe', status: j.status, planKey: j.planKey, planName: j.planName, amount: j.amount, tier: j.tier, next: j.next, end: j.end, devices: j.devices || [], limit: j.limit, at: now() };
     set('lic-info', keep);
     if (j.code) set('lic-code', j.code);
     if (j.sid) set('lic-sid', j.sid);
@@ -162,8 +162,17 @@
   function run(p) { cur.busy = true; emit(); return p.then(function (s) { cur.busy = false; emit(); return s; }, fail); }
   /** 申し込み直後(Stripe の画面から戻った時): この端末に鍵を受け取る */
   function claim(sessionId) { return run(call('/key/claim', { sessionId: sessionId }).then(take)); }
+  /** PayPal の画面から戻った時(?subscription_id=I-…)。支払いの確定が数秒遅れることがあるので、4回まで待って聞き直す。
+      鍵をなくした時に、PayPal の画面に出る契約番号(I-…)を入れた時もここ */
+  function claimPayPal(subId, tries) {
+    tries = tries == null ? 4 : tries;
+    return call('/key/claim', { subscriptionId: subId }).then(take, function (e) {
+      if (e && e.code === 'not-complete' && tries > 0) return new Promise(function (ok) { setTimeout(ok, 2500); }).then(function () { return claimPayPal(subId, tries - 1); });
+      throw e;
+    });
+  }
   /** 鍵を入れる(別の端末・機種変更)。known=false(新しい端末として数える) */
-  function use(code) { del('lic-sid'); set('lic-info', {}); return run(call('/key/renew', { code: code, known: false }).then(take)); }
+  function use(code) { del('lic-sid'); set('lic-info', {}); if (/^\s*I-[A-Za-z0-9]{6,30}\s*$/.test(code || '')) return run(claimPayPal(String(code).trim().toUpperCase(), 0)); return run(call('/key/renew', { code: code, known: false }).then(take)); }
   /** 1日1回の更新 */
   function renew(force) {
     var code = get('lic-code', ''); if (!code) return Promise.resolve(state());
@@ -277,12 +286,16 @@
     var p = code ? call('/key/devices/remove', { code: code, target: d }).catch(function () { /* 外せなくても、この端末の鍵は消す */ }) : Promise.resolve();
     return p.then(function () { LIC_KEYS.forEach(function (k) { if (k !== 'lic-dev' && k !== 'lic-seen') del(k); }); cur.p = null; emit(); });
   }
-  function checkout(planKey) { return call('/key/checkout', { planKey: planKey }).then(function (j) { if (j.url) location.href = j.url; return j; }); }
+  /** 申し込みの決済(config の PAY_PROVIDER。stripe か paypal) */
+  function provider() { return cfg.PAY_PROVIDER === 'paypal' ? 'paypal' : 'stripe'; }
+  function checkout(planKey) { return call('/key/checkout', { planKey: planKey, provider: provider() }).then(function (j) { if (j.url) location.href = j.url; return j; }); }
+  /** アプリの「解約する」(PayPal は契約の管理の画面が無いので、ここで受ける。Stripe でも使える) */
+  function cancel() { return run(call('/key/cancel', { code: get('lic-code', '') }).then(take)); }
   var spPromise = null;
   function stripePlans() {
     if (!cfg.WORKER_URL) return Promise.resolve([]);
     if (spPromise) return spPromise;
-    spPromise = fetch(cfg.WORKER_URL.replace(/\/$/, '') + '/stripe/plans').then(function (r) { return r.ok ? r.json() : {}; })
+    spPromise = fetch(cfg.WORKER_URL.replace(/\/$/, '') + (provider() === 'paypal' ? '/key/plans?provider=paypal' : '/stripe/plans')).then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (j) { return Array.isArray(j.ready) ? j.ready : []; }).catch(function () { spPromise = null; return []; });
     return spPromise;
   }
@@ -326,14 +339,14 @@
   function acctState() {
     var s = state(), i = s.info || {};
     return { phase: 'ready', ready: false, billingReady: !!cfg.WORKER_URL, keyMode: true, user: null, sync: 'local', pending: 0, lastSync: null, error: s.error,
-      sub: s.paid || i.status ? { status: i.status || '', planKey: i.planKey || (cur.p && cur.p.k) || '', planName: i.planName || '', amount: i.amount || '', provider: 'stripe' } : null,
+      sub: s.paid || i.status ? { status: i.status || '', planKey: i.planKey || (cur.p && cur.p.k) || '', planName: i.planName || '', amount: i.amount || '', provider: i.provider || provider() } : null,
       plan: { key: s.key, paid: s.paid, tier: s.tier, label: s.label, until: s.until, next: s.next, retainUntil: null, canCancel: false }, lic: s };
   }
   var no = function () { return Promise.reject(new Error('利用の鍵の形では使いません')); };
   root.SedoriAccount = {
     keyMode: true, state: acctState, paid: function () { return stateOf(cur.p, info(), now()).paid; }, tier: function () { var s = stateOf(cur.p, info(), now()); return s.paid ? s.tier : 'free'; },
     open: function () { location.href = (document.body.getAttribute('data-base') || './') + 'mypage/#mp-key'; }, signOut: function () { return Promise.resolve(); },
-    stripePlans: stripePlans, checkout: checkout, paypalReady: function () { return false; }, provider: function () { return 'stripe'; }, portal: portal,
+    stripePlans: stripePlans, checkout: checkout, paypalReady: function () { return false; }, provider: provider, portal: portal, cancelKey: cancel,
     renderPayButton: no, pause: no, resume: no, revise: no, cancel: no, linkStripe: no, worker: function (path, body) { return call(path, body); },
     lightCap: function () { return null; }, deleteCloud: no, cloudRows: no, deleteAccount: no, syncNow: function () {}, cfg: cfg, ready: false, billingReady: !!cfg.WORKER_URL,
     core: core, ask: ask, askStats: askStats, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid
@@ -347,12 +360,15 @@
     verify(pass, cfg).then(function (p) {
       cur.p = p && p.d === device() ? p : null; cur.checked = true; emit();
       var q = new URLSearchParams(location.search), sid = q.get('session_id');
-      if (sid && /^cs_[\w-]+$/.test(sid)) {
+      var ppSub = q.get('subscription_id');
+      if (ppSub && /^I-[A-Z0-9]{6,30}$/.test(ppSub)) {
+        run(claimPayPal(ppSub)).catch(function () { /* 画面が案内を出す */ }).then(function () { if (history.replaceState) history.replaceState(null, '', location.pathname + (cur.p ? '?subscribed=1' : '') + location.hash); emit(); });
+      } else if (sid && /^cs_[\w-]+$/.test(sid)) {
         claim(sid).catch(function () { /* 画面が案内を出す */ }).then(function () { if (history.replaceState) history.replaceState(null, '', location.pathname + (cur.p ? '?subscribed=1' : '') + location.hash); emit(); });
       } else if (navigator.onLine !== false) renew(false).catch(function () { /* 期限までは手元の証明で使える */ });
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  return Object.assign({}, pure, { state: state, claim: claim, use: use, renew: renew, portal: portal, rotate: rotate, removeDevice: removeDevice, forget: forget, checkout: checkout, exportFile: exportFile, importText: importText, device: device, now: now, core: core, ask: ask, askStats: askStats, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid });
+  return Object.assign({}, pure, { state: state, claim: claim, use: use, renew: renew, portal: portal, rotate: rotate, removeDevice: removeDevice, forget: forget, checkout: checkout, cancel: cancel, provider: provider, exportFile: exportFile, importText: importText, device: device, now: now, core: core, ask: ask, askStats: askStats, limits: limits, limitsNow: limitsNow, loadPaid: loadPaid });
 });

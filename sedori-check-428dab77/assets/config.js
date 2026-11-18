@@ -42,6 +42,10 @@ window.ZW_CONFIG = {
      KEY_PUBLIC_JWK: Worker の署名の鍵の公開の部分(公開してよい値。Worker の /key/pub と同じもの。秘密の部分 d は入れない)。
      KEY_ALLOW_TEST: 署名の鍵が入る前の「試験用(署名なし)」の証明を受けるか。試験版の写しだけ true。公開の設定では必ず false(誰でも有料の機能を開けてしまうため) */
   KEY_MODE: true,
+  /* 申し込みの決済(2026-11-18。Stripe の指摘を受けた切り替えの準備)。"stripe" か "paypal"。ここ1つで、料金ページの申し込みの行き先・
+     「準備中」の判定(Worker の /key/plans)・マイページの「契約の管理」の文が変わる。鍵の発行・更新・止める流れはどちらも同じ(Worker が受け持つ)。
+     PayPal は Worker に PayPal の鍵・プランID・KV(ZW_KEYS)が揃うまで「準備中」と出る */
+  PAY_PROVIDER: "stripe",
   KEY_PUBLIC_JWK: null,
   KEY_ALLOW_TEST: true,
   /* 有料の段どうしの「まとめての行数・在庫番の品数」をそろえる(2026-11-18。plan_regroup の勧め・オーナーの最終の返事待ち)。

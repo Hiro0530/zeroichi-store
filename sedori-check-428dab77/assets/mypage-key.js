@@ -19,6 +19,7 @@
   function paintKey(s) {
     var q = new URLSearchParams(location.search);   // 申し込み直後は license.js が ?session_id を ?subscribed=1 に替えるので、毎回読む
     var box = $('#mk-box'), form = $('#mk-form'), i = s.info || {}, rows = [], btns = '', lead = '';
+    var pp = (i.provider || (L.provider && L.provider())) === 'paypal';   // 決済の種類(2026-11-18。PayPal に切り替える準備)
     form.hidden = !(s.key === 'none' || s.key === 'removed');
     $('#mk-more').hidden = !s.code;
     if (s.busy && !s.checked) { box.innerHTML = '<p class="muted">確かめています…</p>'; return; }
@@ -33,26 +34,35 @@
       box.innerHTML = '<p class="msg">この端末は、ほかの端末から外されたか、鍵が作り直されました。続けて使う時は、いまの利用の鍵を入れてください。</p>';
       return;
     }
-    if (q.get('subscribed')) lead = '<p class="msg">お申し込みが済み、この端末に利用の鍵が入りました。鍵は Stripe から届く請求書・領収書にも載っています。ほかの端末(3台まで)では、この鍵を入れてください。</p>';
+    if (q.get('subscribed')) lead = pp
+      ? '<p class="msg">お申し込みが済み、この端末に利用の鍵が入りました。<b>鍵は下の「表示する」で控えてください</b>(PayPal の明細には載りません。なくした時は、PayPal の「自動支払い」に出る契約番号 I-… を下の欄に入れると受け取り直せます)。ほかの端末(3台まで)では、この鍵を入れてください。</p>'
+      : '<p class="msg">お申し込みが済み、この端末に利用の鍵が入りました。鍵は Stripe から届く請求書・領収書にも載っています。ほかの端末(3台まで)では、この鍵を入れてください。</p>';
     if (q.get('back')) lead = '<p class="msg">契約の管理から戻りました。変えた内容は、下の「今すぐ確かめる」で反映します(1日1回は自動で確かめます)。</p>';
     rows.push(['プラン', esc(s.label)]);
     if (s.key === 'active') rows.push(['次回の請求日', jd(s.next)]);
-    if (s.key === 'past_due') rows.push(['お支払い', '<span class="warnt">前回の請求がカードで通っていません。「契約の管理」でカードを変えてください。Stripe が数日おきに請求し直す間は使えます</span>']);
+    if (s.key === 'past_due') rows.push(['お支払い', pp ? '<span class="warnt">前回の請求が PayPal で通っていません。PayPal の「自動支払い」で支払い方法を確かめてください。PayPal が請求し直す間は使えます</span>' : '<span class="warnt">前回の請求がカードで通っていません。「契約の管理」でカードを変えてください。Stripe が数日おきに請求し直す間は使えます</span>']);
     if (s.key === 'ending') rows.push(['使える期限', '<b>' + jd(s.until) + '</b>まで。以後は請求しません']);
     if (s.key === 'ended') rows.push(['状態', '有料の機能は止まっています' + (s.end ? '(' + jd(s.end) + 'に終わりました)' : '') + '。データの書き出しは、いつでもできます']);
     if (i.amount) rows.push(['料金(税込)', esc(i.amount)]);
     rows.push(['利用の鍵', '<code class="mk-code" id="mk-code-v">' + esc(showCode ? s.code : masked(s.code)) + '</code><span class="meta"><button type="button" class="lnk" id="mk-show">' + (showCode ? '隠す' : '表示する') + '</button><button type="button" class="lnk" id="mk-copy">写す</button></span>']);
-    rows.push(['お支払いの方法', 'カード(決済代行: Stripe)']);
-    if (s.key !== 'ended') btns += '<button type="button" class="btn" id="mk-portal">契約の管理(解約・カード・領収書)</button>';
+    rows.push(['お支払いの方法', pp ? 'PayPal' : 'カード(決済代行: Stripe)']);
+    if (s.key !== 'ended' && pp) btns += '<button type="button" class="btn" id="mk-portal">PayPal の自動支払いの画面</button>' + (s.key !== 'ending' ? '<button type="button" class="btn ghost" id="mk-pp-cancel">解約する</button>' : '');
+    else if (s.key !== 'ended') btns += '<button type="button" class="btn" id="mk-portal">契約の管理(解約・カード・領収書)</button>';
     else btns += '<a class="btn" href="../plans/">プランを選んで続ける</a>';
     btns += '<button type="button" class="btn sm ghost" id="mk-renew"' + (s.busy ? ' disabled' : '') + '>今すぐ確かめる</button>';
     box.innerHTML = lead + '<table class="kv wide">' + rows.map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table><div class="row-btns">' + btns + '</div>' +
-      '<p class="hint">契約の管理は、決済代行の Stripe の画面です。プランの変更・解約・カードの変更・請求書と領収書は、そこでご自身でできます。</p>';
+      (pp ? '<p class="hint">解約は、この画面の「解約する」か、PayPal の「自動支払い」からご自身でできます。どちらでも、払った期間の終わりまで使えます。プランを変える時は、解約してから選び直してください。</p>'
+          : '<p class="hint">契約の管理は、決済代行の Stripe の画面です。プランの変更・解約・カードの変更・請求書と領収書は、そこでご自身でできます。</p>');
     var sh = $('#mk-show'); if (sh) sh.addEventListener('click', function () { showCode = !showCode; render(); });
     var cp = $('#mk-copy'); if (cp) cp.addEventListener('click', function () {
       var c = L.state().code; (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(function () { U.toast('利用の鍵を写しました'); }, function () { showCode = true; render(); U.toast('鍵を表示しました。長押しで写してください'); });
     });
-    var po = $('#mk-portal'); if (po) po.addEventListener('click', function () { po.disabled = true; err(''); L.portal().catch(function (e) { po.disabled = false; err('Stripe の画面を開けませんでした(' + ((e && e.message) || '通信') + ')'); }); });
+    var po = $('#mk-portal'); if (po) po.addEventListener('click', function () { po.disabled = true; err(''); L.portal().catch(function (e) { po.disabled = false; err((pp ? 'PayPal' : 'Stripe') + ' の画面を開けませんでした(' + ((e && e.message) || '通信') + ')'); }); });
+    var cn = $('#mk-pp-cancel'); if (cn) cn.addEventListener('click', function () {
+      if (!window.confirm('解約します。払った期間の終わりまでは使えます(年払いの1回目のお支払いから30日以内は全額を返金し、その日で終わります)。よろしいですか。')) return;
+      cn.disabled = true; err('');
+      L.cancel().then(function () { U.toast('解約しました'); render(); }, function (e) { cn.disabled = false; err('解約できませんでした(' + ((e && e.message) || '通信') + ')。画面が開けない時は、PayPal の「自動支払い」からも解約できます'); });
+    });
     var rn = $('#mk-renew'); if (rn) rn.addEventListener('click', function () { err(''); L.renew(true).then(function () { U.toast('契約の様子を確かめました'); }, function (e) { err((e && e.message) || '通信できませんでした'); }); });
   }
 

@@ -4,7 +4,7 @@
    どちらも Worker(別の置き場)から来るので下の fetch では扱わず、念のため、名前に /key/app/・/core を含むものは保存も返しもしない。
    古い控えに紛れていたら、入れ替えの時(activate)に消す。
    ヤフオクの終了の通知で「出品停止にした」を押すと、開いているページに知らせる(無ければ台帳を開く)。 */
-var CACHE = 'zw-sedori-v21';
+var CACHE = 'zw-sedori-v22';
 var PAID = /\/key\/app\/|\/core(\?|$)/;
 var CORE = ['./', 'rakuten-amazon/', 'muzaiko-amazon/', 'mercari-calc/', 'yahuoku-mercari/', 'auction-mercari/', 'daicho/', 'scan/', 'books/', 'plans/', 'mypage/', 'terms/', 'privacy/', 'shikumi/', 'chigai/',
   'assets/sedori.css', 'assets/calc.js', 'assets/ui.js', 'assets/sync.js', 'assets/books-sync.js', 'assets/seller-check.js', 'assets/account.js', 'assets/ra.js', 'assets/market.js', 'assets/mz.js', 'assets/ledger.js', 'assets/top.js', 'assets/shindan.js',

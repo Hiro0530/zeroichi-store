@@ -164,7 +164,11 @@
     if (drawn === sig) return;
     drawn = sig;
     var cb = $('#pl-card'), prep = $('#pl-card-prep'), alt = $('#pl-pp-alt'), box = $('#pl-pp'), open = $('#pl-pp-open');
-    if (CARD_HTML == null) CARD_HTML = cb.innerHTML;
+    if (CARD_HTML == null) {
+      // 申し込みの決済が PayPal の時(config の PAY_PROVIDER。2026-11-18)は、ボタンと準備中の文を PayPal に
+      if (SA.keyMode && SA.provider && SA.provider() === 'paypal') { cb.innerHTML = '<span class="pay-card-l">PayPal で申し込む</span>'; prep.innerHTML = '<span class="dlg-st">準備中</span>PayPal でのお申し込みは準備中です。'; }
+      CARD_HTML = cb.innerHTML;
+    }
     payErr('');
     // PayPal は初めてのお申し込みの時だけ(PayPal のプランには無料期間が付いているため)。押した時に読み込む
     // 年払いは無料期間なしなので、PayPal の年払い(無料期間なしのプラン)を用意した時だけ(cfg.PAYPAL_YEAR)
@@ -193,7 +197,8 @@
     if (busy) return; busy = true; payErr('');
     if (CARD_HTML == null) CARD_HTML = cbtn.innerHTML;
     cbtn.disabled = true; cbtn.setAttribute('aria-busy', 'true');
-    cbtn.innerHTML = '<span class="pay-card-l">カードの画面を開いています…</span>';
+    var viaPP = SA.keyMode && SA.provider && SA.provider() === 'paypal';
+    cbtn.innerHTML = '<span class="pay-card-l">' + (viaPP ? 'PayPal' : 'カード') + 'の画面を開いています…</span>';
     SA.checkout(key()).catch(function (e) {
       cardIdle(); drawn = null;
       var code = e && e.code;
@@ -208,7 +213,7 @@
       paint();
       if (code === 'has-sub') payErr('このアカウントには、いまの契約があります。マイページの契約内容をご確認ください。');
       else if (e && e.status === 401) payErr('ログインの期限が切れました。ページを開き直して、もう一度お試しください。');
-      else payErr('カードの画面を開けませんでした。通信を確かめて、もう一度お試しください。' + (SA.paypalReady(key()) && !returning() && (st.cyc !== 'year' || cfg.PAYPAL_YEAR === true) ? '下の「PayPalで払う」からも申し込めます。' : ''));
+      else payErr((viaPP ? 'PayPal' : 'カード') + 'の画面を開けませんでした。通信を確かめて、もう一度お試しください。' + (SA.paypalReady(key()) && !returning() && (st.cyc !== 'year' || cfg.PAYPAL_YEAR === true) ? '下の「PayPalで払う」からも申し込めます。' : ''));
     });
   });
   // Stripe の画面から「戻る」で帰ってきた時(ページが保存から戻る)に、ボタンを元に戻す
