@@ -43,7 +43,7 @@ S = ROOT / OUT
 NOINDEX = OUT != "sedori"
 ROBOTS = '<meta name="robots" content="noindex,nofollow">'
 FEES = json.loads((S / "data/fees.json").read_text(encoding="utf-8"))
-VER = "20261118b"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
+VER = "20261118c"  # 11/13 機能の追加(まとめて・納品代行の費用・月の固定費・差し込み口)。部品を直したら必ず上げる
 
 # ---- 差し込み口(制作係B・Cの部品)。ファイルが assets/ に置かれたら、次の書き出しから自動で読み込む。無い間は読み込まない ----
 # 使い方は本部の docs/sedori_app/build_slots_2026-11-13.md

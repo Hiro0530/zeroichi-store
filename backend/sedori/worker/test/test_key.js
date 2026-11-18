@@ -295,3 +295,6 @@ const H = (path, body, e = env, now = NOW) => handleKey(path, body, e, keyDeps, 
 
 console.log(`OK 利用の鍵 ${n}件`);
 await import('./test_core.js');
+
+// 2026-11-18: 決済の種類を差し替える受け口(PayPal)の検算
+await import('./test_paypal_key.js');

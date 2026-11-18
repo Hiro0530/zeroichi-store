@@ -87,17 +87,19 @@ const subtle = globalThis.crypto.subtle;
     const ctx = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block', acceptDownloads: true });
     const pg = await ctx.newPage();
     pg.on('pageerror', e => errs.push(url + ' ' + e.message));
-    await pg.route('**/assets/config.js*', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: cfgTest }));
+    await pg.route('**/assets/config.js*', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: world.pp ? cfgTest.replace(/PAY_PROVIDER:\s*"stripe"/, 'PAY_PROVIDER: "paypal"') : cfgTest }));
     // 楽天の検索(ウォッチの自動の取り直しの試験)。外へは出さず、呼ばれた回数だけ数える
     await pg.route('https://openapi.rakuten.co.jp/**', r => { world.rk = (world.rk || 0) + 1; return r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ Items: [] }) }); });
     await pg.route(WURL + '/**', async route => {
       const req = route.request(), u = new URL(req.url()), body = req.postDataJSON ? (req.method() === 'POST' ? req.postDataJSON() : {}) : {};
-      world.seen.push(u.pathname);
+      world.seen.push(u.pathname); (world.bodies = world.bodies || {})[u.pathname] = body;
       const ok = o => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
       const ng = (s, o) => route.fulfill({ status: s, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
       if (u.pathname === '/stripe/plans') return ok({ ready: ['total_month', 'founder_month', 'light_month', 'business_month'] });
-      if (u.pathname === '/key/checkout') return ok({ url: B + 'terms/?fake-checkout=' + body.planKey });
-      if (u.pathname === '/key/claim') return ok(await answer(body.device));
+      if (u.pathname === '/key/plans') return ok({ provider: u.searchParams.get('provider'), ready: world.ppReady === false ? [] : ['total_month', 'founder_month', 'light_month', 'business_month'] });
+      if (u.pathname === '/key/checkout') return ok({ url: B + 'terms/?fake-checkout=' + body.planKey + '&via=' + (body.provider || '') });
+      if (u.pathname === '/key/cancel') { world.status = 'ending'; return ok(await answer(body.device, { provider: 'paypal' })); }
+      if (u.pathname === '/key/claim') return ok(await answer(body.device, body.subscriptionId ? { provider: 'paypal', sid: body.subscriptionId } : {}));
       if (u.pathname === '/key/renew') {
         if (world.full) return ng(409, { error: 'この鍵で使える端末(3台)がいっぱいです。使っていない端末を外してください', code: 'devices-full', devices: [{ id: 'old1', name: 'iPhone', lastDay: now - 9 * DAY, me: false }, { id: 'old2', name: 'iPad', lastDay: now, me: false }, { id: 'old3', name: 'Windows', lastDay: now, me: false }], limit: 3 });
         if (world.removed && body.known) return ng(403, { error: 'この端末は、ほかの端末から外されました', code: 'device-removed' });
@@ -330,6 +332,27 @@ const subtle = globalThis.crypto.subtle;
     await pg.evaluate(() => { SedoriAccount.paid = () => true; SedoriAccount.tier = () => 'business'; SedoriUI.tier = () => 'business'; }); await pg.evaluate(() => SedoriWatchCheck.tryAuto()); await pg.waitForTimeout(4000);
     eq(world.rk, 0, '鍵なしで有料と偽っても、Worker が自動を許さないので取り直さない');
     await pg.close();
+    // (10) 決済の種類の設定1つ(config の PAY_PROVIDER)で、申し込みの行き先が変わる(2026-11-18)。鍵の流れは同じ
+    world.pp = true; world.tier = 'total'; world.status = 'active'; world.seen = []; world.ppReady = false;
+    pg = await open('plans/?plan=total_month#pl-step2');
+    eq([world.seen.includes('/key/plans'), world.seen.includes('/stripe/plans'), await pg.isDisabled('#pl-card'), await pg.isVisible('#pl-card-prep'), /PayPal/.test(await txt(pg, '#pl-card-prep'))], [true, false, true, true, true], 'PayPal の準備が済むまで: 申し込めず「PayPal は準備中」');
+    await pg.close();
+    world.ppReady = true; world.seen = [];
+    pg = await open('plans/?plan=total_month#pl-step2');
+    eq(/PayPal で申し込む/.test(await txt(pg, '#pl-card')), true, 'PAY_PROVIDER=paypal: ボタンは「PayPal で申し込む」');
+    await Promise.all([pg.waitForURL(/fake-checkout=/), pg.click('#pl-card')]);
+    eq([/via=paypal/.test(pg.url()), world.bodies['/key/checkout'].provider], [true, 'paypal'], '申し込みは provider=paypal で Worker へ');
+    await pg.close();
+    pg = await open('mypage/?subscription_id=I-TESTSUB0001&ba_token=BA-1&token=T1#mp-key');
+    await pg.waitForTimeout(800);
+    const ppBox = await txt(pg, '#mk-box');
+    eq([world.bodies['/key/claim'].subscriptionId, /PayPal/.test(ppBox), /表示する」で控えて/.test(ppBox), await pg.isVisible('#mk-pp-cancel'), /subscription_id/.test(pg.url())], ['I-TESTSUB0001', true, true, true, false], 'PayPal から戻る: 契約番号で鍵を受け取り、PayPal の案内と「解約する」が出る(URL から番号を消す)');
+    eq(await over(pg), 0, 'マイページ(PayPal)は375pxで横にはみ出さない');
+    pg.once('dialog', d => d.accept());
+    await pg.click('#mk-pp-cancel'); await pg.waitForTimeout(600);
+    eq([world.seen.includes('/key/cancel'), /使える期限/.test(await txt(pg, '#mk-box'))], [true, true], '「解約する」→ Worker の /key/cancel → 使える期限が出る');
+    await pg.close();
+    world.pp = false; world.status = 'active';
     eq(errs, [], '画面の誤り(pageerror)なし');
     console.log(`OK 利用の鍵 ${n}件`);
   } catch (e) { console.error(e); process.exitCode = 1; }

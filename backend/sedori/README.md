@@ -34,7 +34,14 @@
 - 年払いを1回目のお支払いから30日以内に「契約の管理」で解約すると、Webhook が自動で全額を返金し、その日で終える
 - 秘密の値: `KEY_SIGNING_JWK`(`node tools/sedori/make_key_pair.mjs <ファイル>` で作り、`wrangler secret put KEY_SIGNING_JWK < <ファイル>`)、`KEY_CODE_SECRET`(長い乱数)。
   無い間は、証明は試験用(署名なし。画面は `KEY_ALLOW_TEST: true` の写しだけ受ける)、鍵の文字は `STRIPE_WEBHOOK_SECRET` で作る。`/stripe/diag` の `key` で今の状態が分かる
-- 検算: `node test/test_worker.js`(最後に `test/test_key.js` も流す)
+- 検算: `node test/test_worker.js`(最後に `test/test_key.js` と `test/test_paypal_key.js` も流す)
+
+### 決済の種類を差し替える受け口(2026-11-18。Stripe の指摘を受けた PayPal への切り替えの準備。本部の docs/sedori_app/stripe_taio_2026-11-18.md)
+- 鍵の発行・更新・端末・作り直し・解約の流れ(`src/key.js` の `handleKey`)は決済に寄らない。決済ごとの違いは「受け口」に任せる: Stripe は `stripeAdapter`(`src/key.js`)、PayPal は `paypalAdapter`(`src/paypal_key.js`)。結ぶのは `src/index.js` の `keyDeps.providers`(足す時はここに1行)
+- 申し込み先: 画面の `config.js` の `PAY_PROVIDER`("stripe"/"paypal")が送る `provider`。無ければ Worker の変数 `PAY_PROVIDER`(既定 stripe)
+- 足した受け口: `POST /key/cancel`(アプリの「解約する」。払った期間の終わりまで使える)・`GET /key/plans?provider=`(その決済で申し込めるプラン)。`/key/claim` は PayPal なら `{ subscriptionId: "I-…" }`
+- PayPal の置き場: 契約にメタデータを置けないので、KV `ZW_KEYS` に `s:<契約番号>`(鍵・作り直しの回数・端末・次の請求日・使える最後の日)、`c:<鍵>`(契約番号の索引)、`r:<支払う人のハッシュ>`(年払いの返金は同じ PayPal アカウントで1回まで)。名前・メール・住所・支払う人の番号そのものは置かない
+- PayPal の準備が揃うまで(`PAYPAL_CLIENT_ID`・`PAYPAL_SECRET`・KV `ZW_KEYS`・`PAYPAL_PLAN_<キー>`)は「準備中」。`PAYPAL_ENV` が sandbox(既定)の間は PayPal の試験の環境に向く。`/stripe/diag` の `key.paypal` で様子が分かる
 
 ## データの形(Firestore・asia-northeast1)
 ```

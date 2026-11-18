@@ -172,7 +172,17 @@ export function touchDevice(list, dev, label, now, limit, known) {
 }
 function viewDevices(list, dev) { return list.map(x => ({ id: x.i, name: x.n || '端末', lastDay: Number(x.t || 0) * DAY, me: x.i === dev })); }
 
-/* ------------------------------------------------------------------ Stripe とのやり取り */
+/* ------------------------------------------------------------------ 決済の受け口(2026-11-18)
+   鍵の発行・証明の更新・端末・止める流れ(下の handleKey)は、決済の種類に寄らない。決済ごとの違いは「受け口」に任せる:
+     name / ready(env) / canFind(env) / plans(env) → {プランのキー: 決済側のID}
+     checkout(env, key, app, now) → { url }      申し込みの画面
+     claim(env, body, now, claimDays) → 契約     申し込み直後に、その端末へ鍵を渡す
+     find(env, code, sid) → 契約|null           鍵の文字から契約を探す
+     meta(契約) / save(env, 契約, meta)         鍵・作り直しの回数・端末の一覧の置き場(Stripe は契約のメタデータ、PayPal は KV)
+     receipt(env, 契約, code)                   請求書に鍵を載せる(載せられる所だけ)
+     terms(契約, now, life, env) → passTerms の形 / planKey(env, 契約) / customer(契約)
+     portal(env, 契約, app) → { url } / cancel(env, 契約, now) → 契約
+   Stripe の受け口はここ(stripeAdapter)。PayPal は src/paypal_key.js。index.js の keyDeps.providers で結ぶ。 */
 async function getSub(deps, env, id) { return deps.stripe(env, 'GET', '/subscriptions/' + encodeURIComponent(id)); }
 async function saveMeta(deps, env, s, meta) {
   const r = await deps.stripe(env, 'POST', '/subscriptions/' + encodeURIComponent(s.id), { metadata: meta });
@@ -180,21 +190,86 @@ async function saveMeta(deps, env, s, meta) {
   return s;
 }
 const cusOf = s => (typeof s.customer === 'string' ? s.customer : (s.customer || {}).id) || '';
-/** 鍵がまだ無い契約に鍵を付ける(何度呼んでも同じ鍵)。請求書・領収書にも「利用の鍵」を載せる(再発行の窓口を持たないため) */
-export async function ensureCode(deps, env, s) {
-  const md = s.metadata || {};
+export function stripeAdapter(deps) {
+  return {
+    name: 'stripe',
+    ready: env => !!env.STRIPE_SECRET_KEY,
+    canFind: env => !!env.STRIPE_SECRET_KEY,
+    plans: env => (env.STRIPE_SECRET_KEY ? deps.stripePrices(env) : {}),
+    async checkout(env, key, app, now) {
+      const price = deps.stripePrices(env)[key];
+      if (!price) throw err('このプランは、いまカードで申し込めません', 400, 'no-price');
+      const year = deps.isYearKey(key);
+      const meta = { mode: 'key', planKey: key };
+      const subMeta = year ? { ...meta, refundDays: String(deps.YEAR_REFUND_DAYS) } : meta;
+      // 無料のお試しは付けない(11/17 21:50 の決定)。月払いも年払いも、申し込みの日に1回目を請求する
+      const s = await deps.stripe(env, 'POST', '/checkout/sessions', {
+        mode: 'subscription', locale: 'ja',
+        line_items: [{ price, quantity: 1 }],
+        success_url: app + 'mypage/?session_id={CHECKOUT_SESSION_ID}#mp-key',
+        cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
+        metadata: meta,
+        subscription_data: { metadata: subMeta },
+        custom_text: { submit: { message: deps.keyNote(key, false, env, now) } }
+      });
+      return { url: s.url };
+    },
+    async claim(env, body, now, claimDays) {
+      const sid = String(body.sessionId || '');
+      if (!/^cs_[\w-]+$/.test(sid)) throw err('お申し込みの番号が違います', 400, 'bad-session');
+      const cs = await deps.stripe(env, 'GET', '/checkout/sessions/' + encodeURIComponent(sid));
+      if (!cs || cs.mode !== 'subscription' || (cs.metadata || {}).mode !== 'key') throw err('このお申し込みからは鍵を受け取れません', 400, 'bad-session');
+      if (cs.status !== 'complete') throw err('お申し込みがまだ済んでいません', 409, 'not-complete');
+      if (now - secMs(cs.created) > claimDays * DAY) throw err('自動の受け取りの期限が過ぎました。請求書・領収書に載っている「利用の鍵」を入れてください', 410, 'claim-expired');
+      const subId = typeof cs.subscription === 'string' ? cs.subscription : (cs.subscription || {}).id;
+      return getSub(deps, env, subId);
+    },
+    find: (env, code, sid) => findByCode(deps, env, code, sid),
+    meta: s => s.metadata || {},
+    save: (env, s, meta) => saveMeta(deps, env, s, meta),
+    receipt: (env, s, code) => putReceiptCode(deps, env, s, code),
+    terms: (s, now, life) => passTerms(s, now, life),
+    planKey: (env, s) => deps.keyOfPrice(env, ((((s.items || {}).data || [])[0] || {}).price || {}).id || '') || (s.metadata || {}).planKey || '',
+    customer: s => cusOf(s),
+    async portal(env, s, app) {
+      const cus = cusOf(s); if (!cus) throw err('契約の中身を読めませんでした', 502);
+      const p = await deps.stripe(env, 'POST', '/billing_portal/sessions', { customer: cus, locale: 'ja', return_url: app + 'mypage/?back=1#mp-key' });
+      return { url: p.url };
+    },
+    async cancel(env, s) {
+      // 期間の終わりで終える(年払いの30日以内の全額返金は、Webhook の customer.subscription.updated で index.js の keyYearRefund が行う)
+      if (!LIVE.includes(s.status) || s.cancel_at_period_end || s.cancel_at) return s;
+      await deps.stripe(env, 'POST', '/subscriptions/' + encodeURIComponent(s.id), { cancel_at_period_end: 'true', metadata: { cancel_reason: '利用者による解約(アプリから)' } });
+      return getSub(deps, env, s.id);
+    }
+  };
+}
+/** 受け口の一覧(deps.providers が無い時は Stripe だけ) */
+export function providersOf(deps) { return (deps && deps.providers) || { stripe: stripeAdapter(deps) }; }
+/** 契約番号の形から決済の種類を見分ける(Stripe は sub_…、PayPal は I-…) */
+export function providerOfSid(sid) { const t = String(sid || ''); return /^sub_/.test(t) ? 'stripe' : /^I-[A-Z0-9]+$/.test(t) ? 'paypal' : ''; }
+/** 申し込みに使う決済(画面の設定 PAY_PROVIDER が送る値。無ければ Worker の PAY_PROVIDER、それも無ければ stripe) */
+export function chosenProvider(body, env, P) {
+  const want = String((body && body.provider) || (env && env.PAY_PROVIDER) || 'stripe');
+  return P[want] ? want : 'stripe';
+}
+
+/** 鍵がまだ無い契約に鍵を付ける(何度呼んでも同じ鍵)。請求書・領収書に載せられる決済なら載せる(再発行の窓口を持たないため) */
+async function ensureCodeA(ad, env, s) {
+  const md = ad.meta(s);
   if (normCode(md.zw_key)) return md.zw_key;
   const code = await codeFor(env, s.id, Number(md.zw_gen || 0));
-  await saveMeta(deps, env, s, { zw_key: code, zw_gen: String(Number(md.zw_gen || 0)) });
-  await putReceiptCode(deps, env, s, code);
+  await ad.save(env, s, { zw_key: code, zw_gen: String(Number(md.zw_gen || 0)) });
+  await ad.receipt(env, s, code);
   return code;
 }
+export async function ensureCode(deps, env, s) { return ensureCodeA(stripeAdapter(deps), env, s); }
 async function putReceiptCode(deps, env, s, code) {
   const cus = cusOf(s); if (!cus) return;
   try { await deps.stripe(env, 'POST', '/customers/' + encodeURIComponent(cus), { invoice_settings: { custom_fields: [{ name: '利用の鍵', value: code }] } }); }
   catch { /* 載らなくても鍵は使える(アプリのマイページに出る) */ }
 }
-/** 鍵の文字から契約を探す。sid(端末が覚えている契約番号)があれば直接読む(検索の反映待ちが無い) */
+/** 鍵の文字から契約を探す(Stripe)。sid(端末が覚えている契約番号)があれば直接読む(検索の反映待ちが無い) */
 export async function findByCode(deps, env, code, sid) {
   if (sid && /^sub_[\w]+$/.test(sid)) {
     try { const s = await getSub(deps, env, sid); if (s && (s.metadata || {}).zw_key === code) return s; } catch { /* 下の検索へ */ }
@@ -202,110 +277,115 @@ export async function findByCode(deps, env, code, sid) {
   const r = await deps.stripe(env, 'GET', '/subscriptions/search', { query: `metadata['zw_key']:'${code}'`, limit: 3 });
   return ((r && r.data) || []).find(s => (s.metadata || {}).zw_key === code) || null;
 }
+/** 鍵から契約を探す(決済の種類をまたいで)。端末が覚えている契約番号の決済を先に、無ければ PayPal の索引(KV。軽い)→ Stripe の検索 */
+async function locate(P, env, code, sid) {
+  const first = providerOfSid(sid);
+  if (first && P[first]) { const s = await P[first].find(env, code, sid); if (s) return [P[first], s]; }
+  const order = Object.keys(P).filter(n => n !== first).sort((a, b) => (a === 'stripe') - (b === 'stripe'));
+  for (const n of order) {
+    if (!P[n].canFind(env)) continue;
+    const s = await P[n].find(env, code, '');
+    if (s) return [P[n], s];
+  }
+  return [null, null];
+}
 
 /** 証明と画面に出す中身 */
-async function answer(deps, env, s, code, dev, now) {
-  const t = passTerms(s, now, passMs(env));
-  const item = ((s.items || {}).data || [])[0] || {};
-  const planKey = deps.keyOfPrice(env, (item.price || {}).id || '') || (s.metadata || {}).planKey || '';
+async function answer(ad, deps, env, s, code, dev, now) {
+  const t = ad.terms(s, now, passMs(env), env);
+  const planKey = ad.planKey(env, s);
   const plan = deps.planByKey(env, planKey) || {};
   const tier = tierOfKey(planKey);
-  const list = parseDevices(s);
+  const list = parseDevices({ metadata: ad.meta(s) });
   const out = {
-    code, sid: s.id, status: t.status, planKey, planName: plan.name || '', amount: plan.amount || '', tier: t.live ? tier : 'free',
+    code, sid: s.id, provider: ad.name, status: t.status, planKey, planName: plan.name || '', amount: plan.amount || '', tier: t.live ? tier : 'free',
     next: t.next || null, end: t.end, exp: t.exp || null, devices: viewDevices(list, dev), limit: deviceLimit(env), pass: null
   };
   if (t.live) {
-    out.pass = await signPass(env, { v: 1, t: tier, k: planKey, sid: s.id, c: await hashId(cusOf(s)), d: dev, st: t.status, iat: now, exp: t.exp, end: t.end || null });
+    out.pass = await signPass(env, { v: 1, t: tier, k: planKey, sid: s.id, c: await hashId(ad.customer(s)), d: dev, st: t.status, iat: now, exp: t.exp, end: t.end || null });
   }
   return out;
 }
 
 /* ------------------------------------------------------------------ 受け口 */
 /**
- * /key/… の頼み。ログインは使わない(利用の鍵が本人の印)。
- * deps: { stripe, stripePrices, keyOfPrice, planByKey, founderOpen(env)→Promise<bool>, isYearKey, YEAR_REFUND_DAYS, appFor, keyNote }
+ * /key/… の頼み。ログインは使わない(利用の鍵が本人の印)。決済の種類に寄らない。
+ * deps: { stripe, stripePrices, keyOfPrice, planByKey, founderOpen(env)→Promise<bool>, isYearKey, YEAR_REFUND_DAYS, appFor, keyNote, providers? }
  */
 export async function handleKey(path, body, env, deps, now = Date.now()) {
   body = body || {};
+  const P = providersOf(deps);
   if (path === '/key/checkout') {
-    const key = String(body.planKey || ''), price = deps.stripePrices(env)[key];
-    if (!price) throw err('このプランは、いまカードで申し込めません', 400, 'no-price');
-    if (/^founder_/.test(key) && !(await deps.founderOpen(env))) throw err('先着の価格の受付は終わりました', 409, 'founder-closed');
-    const app = deps.appFor(env, body), year = deps.isYearKey(key);
-    const meta = { mode: 'key', planKey: key };
-    const subMeta = year ? { ...meta, refundDays: String(deps.YEAR_REFUND_DAYS) } : meta;
-    // 無料のお試しは付けない(11/17 21:50 の決定)。月払いも年払いも、申し込みの日に1回目を請求する
-    const s = await deps.stripe(env, 'POST', '/checkout/sessions', {
-      mode: 'subscription', locale: 'ja',
-      line_items: [{ price, quantity: 1 }],
-      success_url: app + 'mypage/?session_id={CHECKOUT_SESSION_ID}#mp-key',
-      cancel_url: app + 'plans/?plan=' + key.replace(/^founder_/, 'total_') + '#pl-step2',
-      metadata: meta,
-      subscription_data: { metadata: subMeta },
-      custom_text: { submit: { message: deps.keyNote(key, false, env, now) } }
-    });
-    return { url: s.url };
+    const ad = P[chosenProvider(body, env, P)];
+    const key = String(body.planKey || '');
+    if (/^founder_/.test(key) && ad.plans(env)[key] && !(await deps.founderOpen(env))) throw err('先着の価格の受付は終わりました', 409, 'founder-closed');
+    return ad.checkout(env, key, deps.appFor(env, body), now);
   }
   const dev = cleanDevice(body.device);
   if (path === '/key/claim') {
     if (!dev) throw err('端末の番号がありません', 400, 'no-device');
-    const sid = String(body.sessionId || '');
-    if (!/^cs_[\w-]+$/.test(sid)) throw err('お申し込みの番号が違います', 400, 'bad-session');
-    const cs = await deps.stripe(env, 'GET', '/checkout/sessions/' + encodeURIComponent(sid));
-    if (!cs || cs.mode !== 'subscription' || (cs.metadata || {}).mode !== 'key') throw err('このお申し込みからは鍵を受け取れません', 400, 'bad-session');
-    if (cs.status !== 'complete') throw err('お申し込みがまだ済んでいません', 409, 'not-complete');
-    if (now - secMs(cs.created) > CLAIM_DAYS * DAY) throw err('自動の受け取りの期限が過ぎました。請求書・領収書に載っている「利用の鍵」を入れてください', 410, 'claim-expired');
-    const subId = typeof cs.subscription === 'string' ? cs.subscription : (cs.subscription || {}).id;
-    const s = await getSub(deps, env, subId);
-    const code = await ensureCode(deps, env, s);
-    return useDevice(deps, env, s, code, dev, body.label, now, false);
+    const ad = body.subscriptionId ? P.paypal : P.stripe;
+    if (!ad) throw err('このお申し込みからは鍵を受け取れません', 400, 'bad-session');
+    const s = await ad.claim(env, body, now, CLAIM_DAYS);
+    const code = await ensureCodeA(ad, env, s);
+    return useDevice(ad, deps, env, s, code, dev, body.label, now, false);
   }
   const code = normCode(body.code);
   if (path.startsWith('/key/') && !code) throw err('利用の鍵の形が違います(16文字。例 ABCD-EFGH-JKLM-NPQR)', 400, 'bad-code');
   if (!dev) throw err('端末の番号がありません', 400, 'no-device');
-  const s = await findByCode(deps, env, code, String(body.sid || ''));
+  const [ad, s] = await locate(P, env, code, String(body.sid || ''));
   if (!s) throw err('この利用の鍵は見つかりません。作り直した後の古い鍵か、打ち間違いかもしれません(申し込み直後なら1分ほど待ってからもう一度)', 404, 'no-key');
-  if (path === '/key/renew') return useDevice(deps, env, s, code, dev, body.label, now, !!body.known);
-  const list = parseDevices(s);
+  if (path === '/key/renew') return useDevice(ad, deps, env, s, code, dev, body.label, now, !!body.known);
+  const list = parseDevices({ metadata: ad.meta(s) });
   const mine = list.some(x => x.i === dev);
   if (path === '/key/devices/remove') {
     // 鍵を持っている人だけが外せる。端末がいっぱいで新しい端末から外す時もここ
     const target = cleanDevice(body.target);
     const next = list.filter(x => x.i !== target);
-    if (next.length !== list.length) await saveMeta(deps, env, s, { zw_dev: JSON.stringify(next) });
+    if (next.length !== list.length) await ad.save(env, s, { zw_dev: JSON.stringify(next) });
     return { devices: viewDevices(next, dev), limit: deviceLimit(env) };
   }
   if (!mine) throw err('この端末は、この鍵の端末に入っていません。もう一度、利用の鍵を入れてください', 403, 'device-removed');
-  if (path === '/key/portal') {
-    const cus = cusOf(s); if (!cus) throw err('契約の中身を読めませんでした', 502);
-    const p = await deps.stripe(env, 'POST', '/billing_portal/sessions', { customer: cus, locale: 'ja', return_url: deps.appFor(env, body) + 'mypage/?back=1#mp-key' });
-    return { url: p.url };
+  if (path === '/key/portal') return ad.portal(env, s, deps.appFor(env, body));
+  if (path === '/key/cancel') {
+    // アプリの「解約する」(決済の種類に寄らない)。払った期間の終わりまで使える(年払いの30日以内は全額返金でその日まで)
+    const s2 = await ad.cancel(env, s, now);
+    const out = await answer(ad, deps, env, s2, code, dev, now);
+    if (s2._refund) out.refund = s2._refund;
+    return out;
   }
   if (path === '/key/rotate') {
     // 鍵を作り直す: 古い鍵は使えなくなり、端末はこの端末だけになる(ほかの端末には新しい鍵を入れ直す)
-    const gen = Number((s.metadata || {}).zw_gen || 0) + 1;
+    const gen = Number(ad.meta(s).zw_gen || 0) + 1;
     const fresh = await codeFor(env, s.id, gen);
     const me = list.find(x => x.i === dev);
-    await saveMeta(deps, env, s, { zw_key: fresh, zw_gen: String(gen), zw_dev: JSON.stringify([me]) });
-    await putReceiptCode(deps, env, s, fresh);
-    return answer(deps, env, s, fresh, dev, now);
+    await ad.save(env, s, { zw_key: fresh, zw_gen: String(gen), zw_dev: JSON.stringify([me]) });
+    await ad.receipt(env, s, fresh);
+    return answer(ad, deps, env, s, fresh, dev, now);
   }
   throw err('not found', 404);
 }
-async function useDevice(deps, env, s, code, dev, label, now, known) {
-  const r = touchDevice(parseDevices(s), dev, label, now, deviceLimit(env), known);
+async function useDevice(ad, deps, env, s, code, dev, label, now, known) {
+  const r = touchDevice(parseDevices({ metadata: ad.meta(s) }), dev, label, now, deviceLimit(env), known);
   if (r.removed) throw err('この端末は、ほかの端末から外されました。続けて使う時は、利用の鍵をもう一度入れてください', 403, 'device-removed');
   if (r.full) throw err('この鍵で使える端末(' + deviceLimit(env) + '台)がいっぱいです。使っていない端末を外してください', 409, 'devices-full', { devices: viewDevices(r.list, dev), limit: deviceLimit(env), code });
-  if (r.changed) await saveMeta(deps, env, s, { zw_dev: JSON.stringify(r.list) });
-  return answer(deps, env, s, code, dev, now);
+  if (r.changed) await ad.save(env, s, { zw_dev: JSON.stringify(r.list) });
+  return answer(ad, deps, env, s, code, dev, now);
 }
 
-/** Webhook: 利用の鍵の契約なら、鍵を付けておく(請求書に載せるため)。名簿には何も書かない */
+/** Webhook(Stripe): 利用の鍵の契約なら、鍵を付けておく(請求書に載せるため)。名簿には何も書かない */
 export async function onKeySubscription(deps, env, s) {
   if (((s && s.metadata) || {}).mode !== 'key') return null;
   if (LIVE.includes(s.status)) await ensureCode(deps, env, s);
   return { key: true, status: s.status };
+}
+/** Webhook(PayPal): 利用の鍵の契約なら、次の請求日を控え・鍵を付ける。解約なら終わりの日を控える(年払いの30日以内は返金) */
+export async function onKeyPayPal(deps, env, subId, type, now = Date.now()) {
+  const ad = providersOf(deps).paypal;
+  if (!ad || !ad.ready(env)) return null;
+  const s = await ad.get(env, subId);
+  if (!s) return null;
+  return ad.onEvent(env, s, type, now, x => ensureCodeA(ad, env, x));
 }
 
 /* ------------------------------------------------------------------ 有料の画面のプログラムを、証明を確かめてから渡す

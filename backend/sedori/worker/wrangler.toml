@@ -37,6 +37,14 @@ PLANS = '{"P-TOTAL-MONTH":{"key":"total_month","name":"総合(月払い)","amoun
 #   wrangler secret put KEY_SIGNING_JWK     … 利用の鍵: 証明の署名の鍵(ECDSA P-256 の秘密の JWK。tools/sedori/make_key_pair.mjs で作る)。無い間は試験用(署名なし)の証明
 #   wrangler secret put KEY_CODE_SECRET     … 利用の鍵: 鍵の文字を作る合言葉(長い乱数)。無い間は STRIPE_WEBHOOK_SECRET を使う
 #   wrangler secret put PAID_JS_KEY         … 有料の画面のプログラムの包みを開く鍵(RSA-OAEP の秘密の JWK。node tools/sedori/make_key_pair.mjs --paid <ファイル> で作る)。無い間は /key/app は 503
+# 決済の種類(2026-11-18。Stripe の指摘を受けて PayPal へ切り替える準備):
+#   PAY_PROVIDER … 画面が provider を送らない時の申し込み先("stripe" か "paypal"。既定 stripe)。画面側は sedori/assets/config.js の PAY_PROVIDER
+#   PAYPAL_PLAN_<プランのキーの大文字> … 利用の鍵で使う PayPal のプランID(P-…。例 PAYPAL_PLAN_TOTAL_MONTH)。Cloudflare の画面(変数)で入れる。空欄のプランは申し込めない
+#   PayPal の利用の鍵は、鍵・端末の一覧・使える最後の日を KV に置く。KV の名前空間を作って binding = "ZW_KEYS" で結ぶまで、PayPal は「準備中」:
+#     npx wrangler kv namespace create ZW_KEYS → 出た id を下の3行の id に入れて、先頭の # を外す
+#   [[kv_namespaces]]
+#   binding = "ZW_KEYS"
+#   id = "(作った名前空間の id)"
 # 利用の鍵の変数(任意): KEY_DEVICES(1つの鍵で使える端末の数。既定3)、PAID_TIERS(有料の部品ごとの段の JSON)。
 # 有料の画面のプログラムを Worker から渡す時だけ、KV の PAID_JS を結ぶ([[kv_namespaces]] binding = "PAID_JS")。結ぶまで /key/app/… は 503
 

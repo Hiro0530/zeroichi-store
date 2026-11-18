@@ -24,7 +24,11 @@
  *     POST /key/checkout { planKey }  申し込み画面(ログイン不要)
  *     POST /key/claim { sessionId, device }  申し込み直後に、その端末へ利用の鍵と証明を渡す
  *     POST /key/renew { code, device, known }  証明の更新(1日1回)。新しい端末で鍵を入れた時もこれ
- *     POST /key/portal | /key/rotate | /key/devices/remove  契約の管理(Stripe のカスタマーポータル)・鍵の作り直し・端末を外す
+ *     POST /key/portal | /key/rotate | /key/devices/remove  契約の管理(Stripe のカスタマーポータル/PayPal の自動支払いの画面)・鍵の作り直し・端末を外す
+ *     POST /key/cancel { code, device }  アプリの「解約する」(決済の種類に寄らない。払った期間の終わりまで使える)
+ *     GET  /key/plans?provider=stripe|paypal  その決済で申し込めるプラン(料金ページの「準備中」の判定)
+ *     決済の種類(2026-11-18): 申し込みは画面の設定 PAY_PROVIDER が送る provider(無ければ Worker の変数 PAY_PROVIDER、既定 stripe)で決まる。
+ *       Stripe の受け口は key.js の stripeAdapter、PayPal は paypal_key.js(鍵・端末は KV の ZW_KEYS)。鍵の発行・更新・止める流れは共通
  *     GET  /key/app/<名前>.js  有料の画面のプログラムを、証明を確かめてから渡す(包み src/paid_bundle.js と開く鍵 PAID_JS_KEY が揃うまで 503)
  *  6. 有料の機能の芯(2026-11-17 21:50。src/core.js)
  *     POST /core { pass, device, ops }  証明が有効な時だけ有料の答えを返す。無料の範囲の上限もここが決める。送られた中身は保存も記録もしない
@@ -36,7 +40,8 @@
  * 秘密の値は wrangler secret で入れる(README)。ここには書かない。Stripe の SDK は使わず、REST を fetch で呼ぶ。
  */
 
-import { handleKey, onKeySubscription, servePaid, publicJwk, secretHash } from './key.js';
+import { handleKey, onKeySubscription, onKeyPayPal, servePaid, publicJwk, secretHash, stripeAdapter, providersOf } from './key.js';
+import { paypalAdapter, paypalReady, paypalPlans } from './paypal_key.js';
 import { handleCore, MAX_BODY } from './core.js';
 import PAID_BUNDLE from './paid_bundle.js';
 
@@ -210,8 +215,8 @@ async function ppToken(env) {
   ppTok = { token: j.access_token, exp: Date.now() + (j.expires_in || 3000) * 1000 };
   return ppTok.token;
 }
-async function pp(env, method, path, body) {
-  const r = await fetch(ppBase(env) + path, { method, headers: { Authorization: 'Bearer ' + (await ppToken(env)), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: body ? JSON.stringify(body) : undefined });
+async function pp(env, method, path, body, extraHeaders) {
+  const r = await fetch(ppBase(env) + path, { method, headers: { Authorization: 'Bearer ' + (await ppToken(env)), 'Content-Type': 'application/json', Prefer: 'return=representation', ...(extraHeaders || {}) }, body: body ? JSON.stringify(body) : undefined });
   if (!r.ok) { const t = await r.text().catch(() => ''); throw new Error(`paypal ${method} ${path} ${r.status} ${t.slice(0, 200)}`); }
   return r.status === 204 ? {} : r.json();
 }
@@ -618,8 +623,11 @@ async function founderOpen(env) {
 const keyDeps = {
   stripe: (...a) => stripe(...a), stripePrices: e => stripePrices(e), keyOfPrice: (e, id) => keyOfPrice(e, id), planByKey: (e, k) => planByKey(e, k),
   founderOpen: e => founderOpen(e), isYearKey: k => isYearKey(k), YEAR_REFUND_DAYS, appFor: (e, b) => appFor(e, b),
-  keyNote: (k, t, e, n) => keyNote(k, t, e, n)
+  keyNote: (k, t, e, n) => keyNote(k, t, e, n),
+  paypal: (...a) => pp(...a)
 };
+/** 決済の受け口(差し替えられる形。2026-11-18)。足す時はここに1行(受け口の形は key.js の説明) */
+keyDeps.providers = { stripe: stripeAdapter(keyDeps), paypal: paypalAdapter(keyDeps) };
 export { keyDeps };
 
 /** 料金ページの「お申し込み内容の確認」と同じことを、Stripe の画面のボタンの下にも書く */
@@ -971,6 +979,8 @@ export default {
         }
       }
       const keyInfo = { signing: publicJwk(env) ? 'set' : 'test', code: env.KEY_CODE_SECRET ? 'set' : (env.STRIPE_WEBHOOK_SECRET ? 'webhook' : 'test'), devices: Number(env.KEY_DEVICES || 3), passHours: Number(env.KEY_PASS_HOURS || 24), paidJs: { open: !!env.PAID_JS_KEY, items: Object.keys((PAID_BUNDLE && PAID_BUNDLE.items) || {}).length, kv: !!env.PAID_JS } };
+      keyInfo.provider = env.PAY_PROVIDER || 'stripe';
+      keyInfo.paypal = { env: env.PAYPAL_ENV === 'live' ? 'live' : 'sandbox', ready: paypalReady(env), store: !!env.ZW_KEYS, webhook: !!env.PAYPAL_WEBHOOK_ID, plans: Object.keys(paypalPlans(env)) };
       return json({ mode, key: keyInfo, webhook: !!env.STRIPE_WEBHOOK_SECRET, firebase: !!env.FIREBASE_SA_KEY, store, checkout, prices, dispatch: { token: !!env.GH_DISPATCH_TOKEN, targets: parseTargets(env.GH_DISPATCH_TARGETS).map(t => `${t.repo}:${t.file}:${t.ref}@${t.minutes.join(',')}`) } }, 200, c);
     }
     // 有料の画面のプログラム(証明を確かめてから渡す)。証明は Authorization: Bearer で受ける
@@ -979,6 +989,11 @@ export default {
       const m2 = (req.headers.get('Authorization') || '').match(/^Bearer (.+)$/);
       const r = await servePaid(ma[1], m2 && m2[1], env, Date.now(), PAID_BUNDLE).catch(() => ({ status: 500, body: 'error' }));
       return new Response(r.body, { status: r.status, headers: { ...c, 'Content-Type': r.status === 200 ? 'text/javascript; charset=utf-8' : 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+    }
+    // 決済の種類ごとの「申し込めるプラン」(料金ページが「準備中」かどうかを決める。ログイン不要)
+    if (url.pathname === '/key/plans' && req.method === 'GET') {
+      const P = providersOf(keyDeps), want = url.searchParams.get('provider') || env.PAY_PROVIDER || 'stripe', ad = P[want] || P.stripe;
+      return json({ provider: ad.name, ready: Object.keys(ad.plans(env)), trialDays: 0 }, 200, { ...c, 'Cache-Control': 'public, max-age=300' });
     }
     if (url.pathname === '/key/pub' && req.method === 'GET') {
       const pub = publicJwk(env);
@@ -1018,6 +1033,11 @@ export default {
       const ev = JSON.parse(text), r = ev.resource || {};
       const subId = /^BILLING\.SUBSCRIPTION\./.test(ev.event_type) ? r.id : (ev.event_type === 'PAYMENT.SALE.COMPLETED' ? r.billing_agreement_id : null);
       if (!subId) return json({ ignored: ev.event_type });
+      // 利用の鍵の申し込み(custom_id が zwkey:…)は名簿に書かない。KV の控え(次の請求日・終わりの日・鍵)だけ
+      if (paypalReady(env) && (/^zwkey:/.test(String(r.custom_id || '')) || ev.event_type === 'PAYMENT.SALE.COMPLETED')) {
+        try { const k = await onKeyPayPal(keyDeps, env, subId, ev.event_type); if (k) return json({ ok: true, ...k }); }
+        catch (e) { return json({ error: String(e.message || e).slice(0, 200) }, 500); } // 500 なら PayPal が送り直す
+      }
       try { const out = await syncSubscription(env, subId, r.custom_id); return json({ ok: true, status: out.sub ? out.sub.status : out.skipped }); }
       catch (e) { return json({ error: String(e.message || e) }, 500); } // 500 なら PayPal が送り直す
     }
